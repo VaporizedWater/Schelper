@@ -1,18 +1,16 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-## Getting Started
-
-Pre-requisites: 
+## Pre-requisites: 
 
 Install [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
 
 Install nodejs [using nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#usage)
 
-Instructions:
+Clone the repo to a directory and run `npm install`.
 
-First, clone the repo to a directory and run `npm install`.
+## Getting Started
 
-Next, run the development server:
+First, run the development server:
 
 ```bash
 npm run dev
