@@ -3,10 +3,12 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 ## Getting Started
 
 Pre-requisites: 
+
 Install [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
 Install nodejs using nvm
 
 Instructions:
+
 First, clone the repo to a directory and run `npm install`.
 
 Next, run the development server:
