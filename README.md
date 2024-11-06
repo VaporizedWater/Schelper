@@ -6,7 +6,7 @@ Pre-requisites:
 
 Install [nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating)
 
-Install nodejs using nvm
+Install nodejs [using nvm](https://github.com/nvm-sh/nvm?tab=readme-ov-file#usage)
 
 Instructions:
 
