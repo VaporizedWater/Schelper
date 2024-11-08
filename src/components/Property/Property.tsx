@@ -1,0 +1,1 @@
+// Child (sub-component) of ClassProperties
