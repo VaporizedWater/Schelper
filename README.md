@@ -32,3 +32,4 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 You may need to delete the node_modules, .next, or package-lock.json directories/files, then run `npm install` again to reinstall all the packages if there are any errors due to dependencies being missing or misconfigured.
 
+If you have non-descriptive errors relating to "webpack", then best solution is to manually remove all references to node, npm, nvm from your installation location, and begin again with the prerequisites above.
