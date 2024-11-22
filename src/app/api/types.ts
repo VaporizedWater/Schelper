@@ -25,4 +25,26 @@ export type ClassInfo = {
     enrollment_cap: string;
     total_waitlisted: string;
     waitlist_cap: string;
-}
+};
+
+export type DayProps = {
+    dayName: string;
+};
+
+export type PropertyProps = {
+    property: string;
+    value: string;
+};
+
+export type TagProps = {
+    tagName: string;
+    classes: number[];
+};
+
+export type TagPropList = {
+    tags: TagProps[];
+};
+
+export type ClassIdProps = {
+    classId: string;
+};

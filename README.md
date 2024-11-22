@@ -28,17 +28,8 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More [Everything below is unimportant for this project]
+## Troubleshooting:
 
-To learn more about Next.js, take a look at the following resources:
+You may need to delete the node_modules, .next, or package-lock.json directories/files, then run `npm install` again to reinstall all the packages if there are any errors due to dependencies being missing or misconfigured.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you have non-descriptive errors relating to "webpack", then best solution is to uninstall and manually remove all references to node, npm, nvm from your installation location, and begin again with the prerequisites above.
