@@ -4,7 +4,7 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
     const controller = new AbortController();
     let response: Response;
 
-    const timeoutID = setTimeout(
+    setTimeout(
         () => controller.abort(),
         timeout
     );
