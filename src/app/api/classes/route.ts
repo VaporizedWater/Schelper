@@ -1,11 +1,10 @@
 import clientPromise from "@/lib/mongodb";
 import { Document, ObjectId } from "mongodb";
-import { ClassInfo } from "../types";
+import { Class } from "../types";
 
 export async function GET(request: Request) {
   const client = await clientPromise;
   const classTable = client.db("class-scheduling-app").collection("classes");
-
   const classID = request.headers.get("id") + "";
 
   let response: Response, data;
@@ -16,7 +15,9 @@ export async function GET(request: Request) {
 
     if (data) {
       const dataDoc: Document = data;
-      const classProperties: ClassInfo = {
+      const classProperties: Class = {
+        object_id: dataDoc._id,
+        associated_properties: dataDoc.associated_properties,
         catalog_num: dataDoc.catalog_num,
         class_num: dataDoc.class_num,
         session: dataDoc.session,
@@ -25,23 +26,9 @@ export async function GET(request: Request) {
         section: dataDoc.section,
         title: dataDoc.title,
         location: dataDoc.location,
-        class_status: dataDoc.class_status,
-        instr_mode: dataDoc.instr_mode,
-        start_time: dataDoc.start_time,
-        end_time: dataDoc.end_time,
-        facility_id: dataDoc.facility_id,
-        room: dataDoc.room,
-        room_capacity: dataDoc.room_capacity,
-        days: dataDoc.days,
-        start_date: dataDoc.start_date,
-        end_date: dataDoc.end_date,
-        instructor_name: dataDoc.instructor_name,
-        instructor_email: dataDoc.instructor_email,
         min_units: dataDoc.min_units,
         max_units: dataDoc.max_units,
-        total_enrolled: dataDoc.total_enrolled,
         enrollment_cap: dataDoc.enrollment_cap,
-        total_waitlisted: dataDoc.total_waitlisted,
         waitlist_cap: dataDoc.waitlist_cap,
       };
       response = new Response(JSON.stringify(classProperties), { status: 200 });

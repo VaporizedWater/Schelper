@@ -1,8 +1,8 @@
 'use client'
 
 import { useState, useEffect } from "react";
-import { ClassInfo } from "@/app/api/types";
-import { loadClassDataOfUser } from "@/app/api/utils";
+import { Class, ClassProperty } from "@/app/api/types";
+import { loadClassOfUser } from "@/app/api/utils";
 import Day from "../Day/Day";
 import TimeDisplay from "../TimeDisplay/TimeDisplay";
 import TimeOfDay from "../TimeOfDay/TimeOfDay";
@@ -11,12 +11,12 @@ import LeftMenu from "../LeftMenu/LeftMenu";
 // Parent of: LeftMenu, Day, TimeOfDay
 
 export default function Calendar() {
-    const [classData, setClassData] = useState([] as ClassInfo[]);
+    const [classData, setClassData] = useState([] as Class[]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
         if (isLoading) {
-            loadClassDataOfUser("abc").then((result) => {
+            loadClassOfUser("abc").then((result) => {
                 setClassData(result);
                 setIsLoading(false);
             }).catch(error => {
