@@ -16,7 +16,24 @@ export async function GET(request: Request) {
 
         if (data) {
             const dataDoc: Document = data;
-            const email = dataDoc.instructor_email;
+            const email = dataDoc.instructor_email as string;
+            let name = "";
+
+            if (email.length) {
+                let emailID = email.substring(0, email.search('@'));
+                if (emailID) {
+                    const response = await fetchWithTimeout(
+                        "https://search-service.k8s.psu.edu/search-service/resources/people?text="+emailID+"&size=1"
+                    );
+
+                    if (response.status == 200 && response.body) {
+                        const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
+                        const userJSON = JSON.parse(responseText);
+                        name = userJSON[0].displayName;
+                    }
+                }
+            }
+
             const classProperties: ClassProperty = {
                 object_id: dataDoc._id,
                 associated_class: dataDoc.associated_class,
@@ -29,28 +46,12 @@ export async function GET(request: Request) {
                 start_date: dataDoc.start_date,
                 end_date: dataDoc.end_date,
                 instructor_email: email,
-                instructor_name: "test",
+                instructor_name: name,
                 total_enrolled: dataDoc.total_enrolled,
                 total_waitlisted: dataDoc.total_waitlisted
             };
             
-            // if (email.length) {
-            //     console.log("Email "+email);
-            //     let query = "https://search-service.k8s.psu.edu/search-service/resources/people?text=EMAIL_ID&size=1";
-            //     let emailID = email.split('@')[0];
-
-            //     if (emailID) {
-            //         query.replace("EMAIL_ID", emailID);
-            //         const response = await fetchWithTimeout(query);
-
-            //         if (response.status == 200 && response.body) {
-            //             console.log(response);
-            //             const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-            //             const userJSON = JSON.parse(responseText);
-                        
-            //         }
-            //     }
-            // }
+            
 
             response = new Response(JSON.stringify(classProperties), { status: 200 });
         } else {
