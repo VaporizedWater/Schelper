@@ -26,7 +26,7 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 
 // Unchanging Class Identifiers.
 
-export async function loadClassFromID(classId: string) {
+export async function loadClassFromID(classId: string): Promise<Class> {
     const classResponse = await fetchWithTimeout("./api/classes", {
         headers: {
             id: classId,
@@ -41,10 +41,10 @@ export async function loadClassFromID(classId: string) {
         return newClass;
     }
 
-    return null;
+    return new Object as Class;
 }
 
-export async function loadClassFromIDs(classIds: string[]) {
+export async function loadClassFromIDs(classIds: string[]): Promise<Class[]> {
     const classData: Class[] = [];
 
     for (let i = 0; i < classIds.length; i++) {
@@ -65,26 +65,24 @@ export async function loadClassOfUser(authentication_hash: string): Promise<Clas
         },
     });
 
-    console.log(response); // Response
+    if (response.status == 200 && response.body) {
+        const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
+        const userJSON = JSON.parse(responseText);
+        const classes = userJSON.classes;
 
-    if (response.status == 200) {
-        if (response.body) {
-            const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-            const userJSON = JSON.parse(responseText);
-            const classes = userJSON.classes;
+        const classData: Class[] = await loadClassFromIDs(classes);
 
-            const classData: Class[] = await loadClassFromIDs(classes);
-
-            return classData;
-        }
+        return classData;
+    } else {
+        console.log("response failed");
     }
 
-    return [];
+    return new Object as Class[];
 }
 
 // Editable Class Properties.
 
-export async function loadClassPropertiesFromID(classId: string) {
+export async function loadClassPropertiesFromID(classId: string): Promise<ClassProperty> {
     const propertiesResponse = await fetchWithTimeout("./api/class_properties", {
         headers: {
             id: classId,
@@ -99,5 +97,5 @@ export async function loadClassPropertiesFromID(classId: string) {
         return newProperties;
     }
 
-    return null;
+    return new Object as ClassProperty;
 }

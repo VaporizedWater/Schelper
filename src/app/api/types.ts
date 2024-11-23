@@ -1,6 +1,8 @@
+import { ObjectId } from "mongodb";
+
 export type Class = { // unchanging identifiers
-    object_id: string,
-    associated_properties: string,
+    object_id: string;
+    associated_properties: string;
     catalog_num: string;
     class_num: string;
     session: string;
@@ -16,8 +18,8 @@ export type Class = { // unchanging identifiers
 };
 
 export type ClassProperty = { // editable properties
-    object_id: string,
-    associated_class: string,
+    object_id: string;
+    associated_class: string;
     class_status: string;
     start_time: string;
     end_time: string;
@@ -27,6 +29,7 @@ export type ClassProperty = { // editable properties
     start_date: string;
     end_date: string;
     instructor_email: string;
+    instructor_name: string;
     total_enrolled: string;
     total_waitlisted: string;
 };

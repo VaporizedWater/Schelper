@@ -1,32 +1,49 @@
-import { ClassIdProps, ClassInfo } from "@/app/api/types";
-import { loadClassData } from "@/app/api/utils";
+import { ClassIdProps, Class, ClassProperty } from "@/app/api/types";
+import { loadClassFromID, loadClassPropertiesFromID } from "@/app/api/utils";
 import { useState, useEffect } from "react";
 
 const ClassDisplay = (props: ClassIdProps) => {
-    const [classData, setClassData] = useState<ClassInfo | null>();
-    const [isLoading, setIsLoading] = useState(true);
+    const [classData, setClassData] = useState<Class | null>();
+    const [isClassLoading, setIsClassLoading] = useState(true);
+    const [classProperties, setClassProperties] = useState<ClassProperty | null>();
+    const [isClassPropertiesLoading, setIsClassPropertiesLoading] = useState(true);
 
+    // Class Data
     useEffect(() => {
-        if (isLoading) {
-            loadClassData(props.classId).then((result) => {
+        if (isClassLoading) {
+            loadClassFromID(props.classId).then((result) => {
                 setClassData(result);
-                setIsLoading(false);
+                setIsClassLoading(false);
             }).catch(error => {
                 console.error("Error loading class data:", error);
-                setIsLoading(false);
+                setIsClassLoading(false);
             });
         }
-    }, [isLoading]);
+    }, [isClassLoading]);
 
-    if (!isLoading) {
+    // Class Properties
+    useEffect(() => {
+        if (isClassPropertiesLoading) {
+            loadClassPropertiesFromID(props.classId).then((result) => {
+                setClassProperties(result);
+                setIsClassPropertiesLoading(false);
+            }).catch(error => {
+                console.error("Error loading class data:", error);
+                setIsClassPropertiesLoading(false);
+            });
+        }
+    }, [isClassPropertiesLoading]);
+
+    if (!(isClassLoading && isClassPropertiesLoading)) {
         console.log(JSON.stringify(classData));
+        console.log(JSON.stringify(classProperties));
     }
 
     const nullDisplay = (
         <div>Class not found!</div>
     );
 
-    return (!classData ? nullDisplay :
+    return (!(classData && classProperties) ? nullDisplay :
         <div className="w-fit p-4">
             <div className="p-2 border-4 border-gray">
                 Class: {classData.course_subject}
@@ -42,9 +59,9 @@ const ClassDisplay = (props: ClassIdProps) => {
                 <li key="7" className="border border-gray">Course Subject:</li>
                 <li key="8" className="border border-gray">{classData.course_subject}</li>
                 <li key="9" className="border border-gray">Instructor Email: </li>
-                <li key="10" className="border border-gray">{classData.instructor_email}</li>
+                <li key="10" className="border border-gray">{classProperties.instructor_email}</li>
                 <li key="11" className="border border-gray">Instructor Name:</li>
-                <li key="12" className="border border-gray">{classData.instructor_name}</li>
+                <li key="12" className="border border-gray">{classProperties.instructor_name}</li>
             </ul>
         </div>
     );
