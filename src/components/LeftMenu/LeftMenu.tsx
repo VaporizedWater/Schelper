@@ -23,8 +23,8 @@ const LeftMenu = () => {
     }, []);
 
     return (
-        <div className="flex flex-col border-4 border-gray-400">
-            <div className="flex flex-row gap-4 p-4 items-center bg-gray-200">
+        <div className="flex flex-col border-2 border-gray-200">
+            <div className="flex flex-row gap-4 p-5 items-center bg-gray-100">
                 <div className=''>
                     <Link href={'/'}>
                         <Image
@@ -45,10 +45,10 @@ const LeftMenu = () => {
                     </Link>
                 </div>
             </div>
-            <div className="px-4 border border-gray-400">
+            <div className="px-4 border-y border-gray-200">
                 <Filters tags={tagList} />
             </div>
-            <div className="px-4">
+            <div className="p-4">
 
                 <ClassProperties />
             </div>

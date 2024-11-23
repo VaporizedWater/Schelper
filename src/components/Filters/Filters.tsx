@@ -5,7 +5,8 @@ import { TagPropList } from "@/app/api/types";
 const Filters = (props: TagPropList) => {
     return (
         <div className="flex flex-col overflow-y-auto">
-            <div className="p-1 text-center">Filters</div>
+            <div className="p-1 text-center">Filters .
+                <button className="bg-gray-300 rounded-lg">MANAGE</button></div>
             {props.tags.map((tag) => (
                 <label key={tag.tagName}>
                     <input

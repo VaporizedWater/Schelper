@@ -19,3 +19,23 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.custom-scrollbar {
+  scrollbar-width: thin; /* Makes the scrollbar thinner in Firefox */
+  scrollbar-color: auto; /* Resets to default browser colors in Firefox */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Adjusts scrollbar width */
+  height: 8px; /* Adjusts scrollbar height for horizontal scroll */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent; /* Resets to default browser behavior */
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: auto; /* Resets to default browser color */
+  border-radius: 8px; /* Optional: Keeps a modern rounded appearance */
+  border: none; /* Removes any border for a default feel */
+}
