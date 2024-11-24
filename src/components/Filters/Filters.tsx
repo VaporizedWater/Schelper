@@ -1,5 +1,4 @@
 // Child (sub-component) of left menu
-import { TagProps } from "@/app/api/types";
 import { TagPropList } from "@/app/api/types";
 
 const Filters = (props: TagPropList) => {

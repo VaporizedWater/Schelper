@@ -1,5 +1,5 @@
 import clientPromise from "@/lib/mongodb";
-import { Document, ObjectId } from "mongodb";
+import { Document } from "mongodb";
 import { ClassProperty } from "../types";
 import fetchWithTimeout from "../utils";
 
@@ -20,7 +20,7 @@ export async function GET(request: Request) {
             let name = "";
 
             if (email.length) {
-                let emailID = email.substring(0, email.search('@'));
+                const emailID = email.substring(0, email.search('@'));
                 if (emailID) {
                     const response = await fetchWithTimeout(
                         "https://search-service.k8s.psu.edu/search-service/resources/people?text="+emailID+"&size=1"

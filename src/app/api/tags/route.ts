@@ -1,13 +1,12 @@
 import clientPromise from "@/lib/mongodb";
-import { Document, ObjectId } from "mongodb";
 
-export async function GET(request: Request) {
+export async function GET() {
   const client = await clientPromise;
   const classTable = client.db("class-scheduling-app").collection("tags");
 
-  let response: Response, data;
+  let response: Response;
 
-  data = await classTable.find();
+  const data = await classTable.find();
 
   if (data) {
     const tagItems = await data.toArray();
