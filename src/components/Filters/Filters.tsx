@@ -1,22 +1,25 @@
 // Child (sub-component) of left menu
 import { TagProps } from "@/app/api/types";
 import { TagPropList } from "@/app/api/types";
+import { MdModeEdit } from "react-icons/md";
 
 const Filters = (props: TagPropList) => {
     return (
-        <div className="flex flex-col overflow-y-auto">
-            <div className="p-1 text-center">Filters .
-                <button className="bg-gray-300 rounded-lg">MANAGE</button></div>
+        <ul className="flex flex-col">
+            <div className="flex flex-row">
+                <div className="text-bold">My&nbsp;Tags</div>
+                <button className="rounded-lg px-2"><MdModeEdit className="size-4" /></button>
+            </div>
             {props.tags.map((tag) => (
-                <label key={tag.tagName}>
+                <li key={tag.tagName}>
                     <input
                         type="checkbox"
                         name={tag.tagName}
                     />
                     {tag.tagName}
-                </label>
+                </li>
             ))}
-        </div>
+        </ul>
     );
 }
 

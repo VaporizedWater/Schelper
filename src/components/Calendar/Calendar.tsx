@@ -8,7 +8,6 @@ import TimeDisplay from "../TimeDisplay/TimeDisplay";
 import TimeOfDay from "../TimeOfDay/TimeOfDay";
 import LeftMenu from "../LeftMenu/LeftMenu";
 import CalendarNav from "../CalendarNav/CalendarNav";
-import CalendarGridNav from "../CalendarGridNav/CalendarGridNav";
 
 // Parent of: LeftMenu, Day, TimeOfDay
 
@@ -37,34 +36,32 @@ export default function Calendar() {
             <CalendarNav />
 
             <div className="flex flex-row">
-                <LeftMenu />
-                <div className="flex flex-col w-full max-h-screen mx-10 rounded-lg">
-                    <div className="p-8 bg-gray-100 border border-gray rounded-t-md">
-                        <CalendarGridNav />
-                    </div>
-                    <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border border-gray overflow-y-scroll scroll-smooth custom-scrollbar rounded-b-md">
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
+                <div className="px-4"><LeftMenu /></div>
+
+                <div className="flex flex-col w-full max-h-[82vh] mr-10">
+                    <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-3xl">
+                        <div className="sticky top-0 bg-white p-3 border border-gray shadow">
                             <div className=""></div>
                         </div>
 
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day dayName="Mon"></Day>
+                        <div className="sticky top-0 bg-white p-3 border border-gray shadow">
+                            <Day dayName="Mon" date={25}></Day>
                         </div>
 
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day dayName="Tue"></Day>
+                        <div className="sticky top-0 bg-white p-3 border border-gray shadow">
+                            <Day dayName="Tue" date={26}></Day>
                         </div>
 
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day dayName="Wed"></Day>
+                        <div className="sticky top-0 bg-white p-3 border border-gray shadow">
+                            <Day dayName="Wed" date={27}></Day>
                         </div>
 
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day dayName="Thu"></Day>
+                        <div className="sticky top-0 bg-white p-3 border border-gray shadow">
+                            <Day dayName="Thu" date={28}></Day>
                         </div>
 
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day dayName="Fri"></Day>
+                        <div className="sticky top-0 bg-white p-3 border border-gray shadow">
+                            <Day dayName="Fri" date={29}></Day>
                         </div>
 
                         <TimeDisplay />

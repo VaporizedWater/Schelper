@@ -1,13 +1,11 @@
 // Parent of Filters, and ClassProperties
 import { useEffect, useState } from "react";
-
-import leftarrow from "public/left_triangle.png"
-import rightarrow from "public/right_triangle.png"
 import Image from "next/image";
 import Filters from "../Filters/Filters";
-import ClassProperties from "../ClassProperties/ClassProperties";
 import { TagProps } from "@/app/api/types";
 import Link from "next/link";
+import { MdAdd } from "react-icons/md";
+import { IoCaretDown } from "react-icons/io5";
 
 const LeftMenu = () => {
     const [tagList, setTags] = useState<TagProps[]>([]);
@@ -23,35 +21,24 @@ const LeftMenu = () => {
     }, []);
 
     return (
-        <div className="flex flex-col border-2 border-gray-200">
-            <div className="flex flex-row gap-4 p-5 items-center bg-gray-100">
+        <div className="flex flex-col">
+            <div className="flex flex-row gap-2 p-4 items-center bg-white shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit">
                 <div className=''>
-                    <Link href={'/'}>
-                        <Image
-                            src={leftarrow}
-                            alt="Logo"
-                            height={"30"}
-                        />
+                    <Link href={'/'} className="">
+                        <MdAdd className="size-7 text-lightblack"></MdAdd>
                     </Link>
                 </div>
-                <div className="">Calendar&nbsp;View</div>
+                <div className="flex">Create</div>
                 <div className=''>
-                    <Link href={'/'}>
-                        <Image
-                            src={rightarrow}
-                            alt="Logo"
-                            height={"30"}
-                        />
-                    </Link>
+                    <IoCaretDown className="size-3"></IoCaretDown>
                 </div>
             </div>
-            <div className="px-4 border-y border-gray-200">
+            <div className="px-4 mr-4 my-4 max-h-[30vh] overflow-y-scroll scrollbar-webkit scrollbar-thin">
                 <Filters tags={tagList} />
             </div>
-            <div className="p-4">
-
-                <ClassProperties />
-            </div>
+            {/* <div className="p-4"> */}
+            {/* <ClassProperties /> */}
+            {/* </div> */}
         </div>
     );
 }

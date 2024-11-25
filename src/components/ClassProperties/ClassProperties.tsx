@@ -2,7 +2,6 @@
 // Parent of Property
 
 import Property from "../Property/Property";
-import { ClassInfo } from "@/app/api/types";
 
 const ClassProperties = () => {
     return (

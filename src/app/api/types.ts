@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 
-export type Class = { // unchanging identifiers
+export type Class = {
+    // unchanging identifiers
     object_id: string;
     associated_properties: string;
     catalog_num: string;
@@ -17,7 +18,8 @@ export type Class = { // unchanging identifiers
     waitlist_cap: string;
 };
 
-export type ClassProperty = { // editable properties
+export type ClassProperty = {
+    // editable properties
     object_id: string;
     associated_class: string;
     class_status: string;
@@ -36,6 +38,7 @@ export type ClassProperty = { // editable properties
 
 export type DayProps = {
     dayName: string;
+    date: number;
 };
 
 export type PropertyProps = {
