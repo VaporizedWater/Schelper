@@ -1,5 +1,3 @@
-import { ObjectId } from "mongodb";
-
 export type Class = {
     // unchanging identifiers
     object_id: string;
@@ -36,9 +34,9 @@ export type ClassProperty = {
     total_waitlisted: string;
 };
 
-export type DayProps = {
-    dayName: string;
-    date: number;
+export type CombinedClass = {
+    classData: Class;
+    classProperties: ClassProperty;
 };
 
 export type PropertyProps = {
@@ -55,6 +53,15 @@ export type TagPropList = {
     tags: TagProps[];
 };
 
-export type ClassIdProps = {
-    classId: string;
+export type TimeGridCellProps = {
+    droppableId: string;
+};
+
+export type DayProps = {
+    day: string;
+};
+
+export type DayDateProps = {
+    day: string;
+    date: number;
 };

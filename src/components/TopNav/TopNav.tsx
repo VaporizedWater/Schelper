@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Image from "next/image";
-import logo from "public/logo.png"
 import logo1 from "public/whitebglogo2.png"
 
 const TopNav = () => {
