@@ -1,14 +1,19 @@
 // Parent of Filters, and ClassProperties
+'use client'
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Filters from "../Filters/Filters";
-import { TagProps } from "@/app/api/types";
+import { DropDownItemProps, TagProps } from "@/app/api/types";
 import Link from "next/link";
 import { MdAdd } from "react-icons/md";
-import { IoCaretDown } from "react-icons/io5";
+import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
+import DropDown from "../DropDown/DropDown";
+import logo from "public/goober.png"
 
 const LeftMenu = () => {
     const [tagList, setTags] = useState<TagProps[]>([]);
+    const [isDropOpen, setDropOpen] = useState(false);
 
     useEffect(() => {
         const fetchTags = async () => {
@@ -20,22 +25,38 @@ const LeftMenu = () => {
         fetchTags();
     }, []);
 
+    const dropDownList: DropDownItemProps[] = [
+        { content: "New Class", iconUrl: "public/goober.png", iconAlt: "test", link: "/" },
+        { content: "New Tag", iconUrl: "public/goober.png", iconAlt: "test", link: "/" }
+    ];
+
     return (
-        <div className="flex flex-col">
-            <div className="flex flex-row gap-2 p-4 items-center bg-white shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit">
-                <div className=''>
-                    <Link href={'/'} className="">
+        <div className="flex flex-col max-w-fit">
+            <div className="relative">
+                <button onClick={() => setDropOpen((prev) => !prev)} className="flex flex-row gap-2 p-4 items-center bg-white shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit">
+                    <div className=''>
                         <MdAdd className="size-7 text-lightblack"></MdAdd>
-                    </Link>
-                </div>
-                <div className="flex">Create</div>
-                <div className=''>
-                    <IoCaretDown className="size-3"></IoCaretDown>
-                </div>
+                    </div>
+                    <div className="">Create</div>
+                    <div className=''>
+                        {!isDropOpen ?
+                            <IoMdArrowDropdown className="size-4" /> :
+                            <IoMdArrowDropup className="size-4" />
+                        }
+                    </div>
+                </button>
+
+                {isDropOpen &&
+                    <div className="absolute left-0 right-0 mt-2 shadow-xl rounded-full w-full">
+                        <DropDown list={dropDownList} />
+                    </div>
+                }
             </div>
-            <div className="px-4 mr-4 my-4 max-h-[30vh] overflow-y-scroll scrollbar-webkit scrollbar-thin">
+            <div className="px-4 my-4">
                 <Filters tags={tagList} />
             </div>
+
+
             {/* <div className="p-4"> */}
             {/* <ClassProperties /> */}
             {/* </div> */}

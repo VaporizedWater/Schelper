@@ -8,20 +8,23 @@ import Image from "next/image";
 import logo from "public/goober.png";
 import { FaChevronLeft } from "react-icons/fa6";
 import { FaChevronRight } from "react-icons/fa6";
+import { useState } from "react";
+import DropDown from "../DropDown/DropDown";
 
 const CalendarNav = () => {
-    const listString: string = "border border-gray-500 bg-transparent duration-50 rounded-full";
+    const listString: string = "border border-gray-500 duration-50 rounded-full";
     const settingString: string = "opacity-70 duration-100 rounded-full hover:bg-gray-200 flex items-center p-2";
+    const [isWeekDropOpen, setWeekDropOpen] = useState(false);
 
     return (
         <div className="flex flex-row pr-8 pl-4">
             <ul className="flex flex-row gap-2 items-center">
-                <li key={1} className={`${settingString}`}>
+                <li key={1} className={`${settingString} `}>
                     <IoMenu className="size-6" />
                 </li>
                 <li key={2} className="flex flex-row items-center">
                     <Image src={logo} height={35} alt="Goober Icon" />
-                    <p className="font-bold text-lg text-lightblack text-center p-1 mr-1">Goober</p>
+                    <p className="font-bold text-lg text-lightblack text-center p-1 mr-3">Goober</p>
                 </li>
                 <li key={3} className={`${listString} px-6 py-2 hover:bg-gray-200`}>
                     <button onClick={() => { console.log("hi") }} className="">
@@ -48,10 +51,15 @@ const CalendarNav = () => {
                 <li key={2} className={`${settingString}`}>
                     <IoMdSettings className="size-6" />
                 </li>
-                <li key={3} className={`${listString} px-4 py-2 hover:bg-gray-200`}>
-                    <button onClick={() => { console.log("hi") }} className="flex flex-row items-center gap-2">
+                <li key={3} className={`${listString} px-4 py-2 hover:bg-gray-200 z-100`}>
+                    <button onClick={() => setWeekDropOpen((prev) => !prev)} className="flex flex-row items-center gap-2">
                         Week <IoCaretDown className="size-3" />
                     </button>
+                    {isWeekDropOpen &&
+                        <div className="absolute mt-4 w-fit z-100">
+                            <DropDown list={[{ content: "Day", iconAlt: "", iconUrl: "", link: "" }, { content: "Week", iconAlt: "", iconUrl: "", link: "" }, { content: "Month", iconAlt: "", iconUrl: "", link: "" }]} />
+                        </div>
+                    }
                 </li>
                 <li key={4} className={`${listString} flex flex-row divide-inherit divide-x-2 divide-solid`}>
                     <button onClick={() => { console.log("hi") }} className="py-2 px-4 bg-lightblue hover:bg-gray-200 rounded-l-full"><MdCalendarMonth className="size-6" /></button>

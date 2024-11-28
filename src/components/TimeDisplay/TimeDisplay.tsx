@@ -5,8 +5,8 @@ type TimeSlot = {
 export function TimeBlock(props: TimeSlot) {
     return (
         <div className="flex flex-col items-center">
-            <div className="min-h-10 border-x border-t border-gray w-full text-center">{props.timeSlot}</div>
-            <div className="min-h-10 border-dashed border-x border-t border-gray w-full"></div>
+            <div className="min-h-10 border-x border-b border-gray w-full text-center">{props.timeSlot}</div>
+            <div className="min-h-10 border-dashed border-x border-b border-gray w-full"></div>
         </div>
     );
 }

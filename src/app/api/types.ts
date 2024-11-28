@@ -32,6 +32,7 @@ export type ClassProperty = {
     instructor_name: string;
     total_enrolled: string;
     total_waitlisted: string;
+    tags: string[];
 };
 
 export type CombinedClass = {
@@ -64,4 +65,15 @@ export type DayProps = {
 export type DayDateProps = {
     day: string;
     date: number;
+};
+
+export type DropDownItemProps = {
+    content: string;
+    iconUrl: string;
+    iconAlt: string;
+    link: string;
+};
+
+export type DropDownItemPropList = {
+    list: DropDownItemProps[];
 };

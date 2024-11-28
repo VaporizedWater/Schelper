@@ -11,7 +11,6 @@ export async function GET(request: Request) {
     let response: Response, data;
 
     if (classID.length) {
-
         data = await classTable.findOne({ associated_class: classID });
 
         if (data) {
@@ -20,10 +19,10 @@ export async function GET(request: Request) {
             let name = "";
 
             if (email.length) {
-                const emailID = email.substring(0, email.search('@'));
+                const emailID = email.substring(0, email.search("@"));
                 if (emailID) {
                     const response = await fetchWithTimeout(
-                        "https://search-service.k8s.psu.edu/search-service/resources/people?text="+emailID+"&size=1"
+                        "https://search-service.k8s.psu.edu/search-service/resources/people?text=" + emailID + "&size=1"
                     );
 
                     if (response.status == 200 && response.body) {
@@ -48,10 +47,9 @@ export async function GET(request: Request) {
                 instructor_email: email,
                 instructor_name: name,
                 total_enrolled: dataDoc.total_enrolled,
-                total_waitlisted: dataDoc.total_waitlisted
+                total_waitlisted: dataDoc.total_waitlisted,
+                tags: dataDoc.tags,
             };
-            
-            
 
             response = new Response(JSON.stringify(classProperties), { status: 200 });
         } else {
