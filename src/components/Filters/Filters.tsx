@@ -1,21 +1,33 @@
 // Child (sub-component) of left menu
 import { TagPropList } from "@/app/api/types";
+import { MdModeEdit } from "react-icons/md";
+import Link from "next/link";
 
 const Filters = (props: TagPropList) => {
     return (
-        <div className="flex flex-col overflow-y-auto">
-            <div className="p-1 text-center">Filters .
-                <button className="bg-gray-300 rounded-lg">MANAGE</button></div>
-            {props.tags.map((tag) => (
-                <label key={tag.tagName}>
-                    <input
-                        type="checkbox"
-                        name={tag.tagName}
-                    />
-                    {tag.tagName}
-                </label>
-            ))}
-        </div>
+        <ul className="flex flex-col min-w-fit h-full max-h-[30vh]">
+            <div className="flex flex-row items-center pb-1">
+                <div className="text-bold">My&nbsp;Tags</div>
+                <Link href={'./calendar/tags'}>
+                    <button className="rounded-lg px-2"><MdModeEdit className="size-4" /></button>
+                </Link>
+
+            </div>
+            <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin pr-3">
+                {props.tags.map((tag) => (
+                    <li key={tag.tagName} className="flex flex-row items-center">
+                        <label className="flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                name={tag.tagName}
+                                className="h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                            />
+                        </label>
+                        <span className="ml-3 whitespace-nowrap">{tag.tagName}</span>
+                    </li>
+                ))}
+            </div>
+        </ul>
     );
 }
 

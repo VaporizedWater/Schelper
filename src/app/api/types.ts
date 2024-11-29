@@ -1,4 +1,5 @@
-export type Class = { // unchanging identifiers
+export type Class = {
+    // unchanging identifiers
     object_id: string;
     associated_properties: string;
     catalog_num: string;
@@ -15,7 +16,8 @@ export type Class = { // unchanging identifiers
     waitlist_cap: string;
 };
 
-export type ClassProperty = { // editable properties
+export type ClassProperty = {
+    // editable properties
     object_id: string;
     associated_class: string;
     class_status: string;
@@ -30,12 +32,13 @@ export type ClassProperty = { // editable properties
     instructor_name: string;
     total_enrolled: string;
     total_waitlisted: string;
+    tags: string[];
 };
 
 export type CombinedClass = {
     classData: Class;
     classProperties: ClassProperty;
-}
+};
 
 export type PropertyProps = {
     property: string;
@@ -53,11 +56,28 @@ export type TagPropList = {
 
 export type TimeGridCellProps = {
     droppableId: string;
-}
+};
 
 export type DayProps = {
     day: string;
-}
+};
+
+export type DayDateProps = {
+    day: string;
+    date: number;
+};
+
+export type DropDownItemProps = {
+    content: string;
+    iconUrl: string;
+    iconAlt: string;
+    link: string;
+};
+
+export type DropDownItemPropList = {
+    list: DropDownItemProps[];
+};
+
 
 export type DraggableProps = {
     id: string;

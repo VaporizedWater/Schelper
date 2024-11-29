@@ -12,7 +12,6 @@ const TimeGridCell = (props: TimeGridCellProps) => {
 
     return (
         <div ref={setNodeRef} style={style} className="min-h-10 border-x border-b hover:bg-gray-100 duration-200">
-            Cell
         </div>
     );
 }
