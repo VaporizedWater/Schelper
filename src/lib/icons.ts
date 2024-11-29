@@ -4,7 +4,7 @@
 */
 
 // Images
-import logo from "public/globe.svg"
+import logo from "public/goober.svg"
 import classIconPath from "public/globe.svg"
 import tagIconPath from "public/globe.svg"
 
