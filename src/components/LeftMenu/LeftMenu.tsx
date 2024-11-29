@@ -9,7 +9,7 @@ import Link from "next/link";
 import { MdAdd } from "react-icons/md";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import DropDown from "../DropDown/DropDown";
-import logo from "public/goober.png"
+import { classIcon, tagIcon } from "@/lib/icons";
 
 const LeftMenu = () => {
     const [tagList, setTags] = useState<TagProps[]>([]);
@@ -26,8 +26,8 @@ const LeftMenu = () => {
     }, []);
 
     const dropDownList: DropDownItemProps[] = [
-        { content: "New Class", iconUrl: "public/goober.png", iconAlt: "test", link: "/" },
-        { content: "New Tag", iconUrl: "public/goober.png", iconAlt: "test", link: "/" }
+        { content: "New Class", iconUrl: classIcon, iconAlt: "test", link: "/" },
+        { content: "New Tag", iconUrl: tagIcon, iconAlt: "test", link: "/" }
     ];
 
     return (

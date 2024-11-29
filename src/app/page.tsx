@@ -3,7 +3,7 @@
 import React from 'react';
 import Footer from '@/components/Footer/Footer';
 import Image from 'next/image';
-import logo from "public/goober.png";
+import logo from '../lib/icons';
 
 const Home = () => (
     <div className='flex flex-col'>
