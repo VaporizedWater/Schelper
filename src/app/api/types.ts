@@ -83,3 +83,7 @@ export type DraggableProps = {
     id: string;
     children: JSX.Element;
 }
+
+export type CalendarProps = {
+    classes: CombinedClass[];
+}
