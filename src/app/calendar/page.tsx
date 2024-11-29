@@ -32,10 +32,10 @@ const CalendarPage = () => {
             }>
             </Draggable>
         );
-
+{/* Proposed solution to the offset is to move the DndContext into the Calendar component so that the offset stays with the scrolling*/}
         return (<div className='flex flex-col'>
             <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                <Calendar /> {/* Proposed solution to the offset is to move the DndContext into the Calendar component so that the offset stays with the scrolling}
+                <Calendar /> 
                 {currentClass}
             </DndContext>
             <DragOverlay>
