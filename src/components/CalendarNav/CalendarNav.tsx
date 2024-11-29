@@ -5,7 +5,7 @@ import { MdCalendarMonth } from "react-icons/md";
 import { IoSearch } from "react-icons/io5";
 import { IoMenu } from "react-icons/io5";
 import Image from "next/image";
-import logo from "public/goober.png";
+import logo from "@/lib/icons";
 import { FaChevronLeft } from "react-icons/fa6";
 import { FaChevronRight } from "react-icons/fa6";
 import { useState } from "react";

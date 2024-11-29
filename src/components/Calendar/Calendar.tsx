@@ -47,35 +47,6 @@ export default function Calendar() {
                         </div >
                         <div className="w-[12px] bg-white border-y-2 border-r-2 border-gray shadow-b shadow-r"></div>
                     </div>
-<<<<<<< HEAD
-
-                    {/*scrolling frame, removed options: */}
-                    <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border border-gray overflow-y-scroll scroll-smooth custom-scrollbar rounded-b-md">
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <div className=""></div>
-                        </div>
-
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day day="Mon"></Day>
-                        </div>
-
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day day="Tue"></Day>
-                        </div>
-
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day day="Wed"></Day>
-                        </div>
-
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day day="Thu"></Day>
-                        </div>
-
-                        <div className="sticky top-0 bg-white p-4 border border-gray">
-                            <Day day="Fri"></Day>
-                        </div>
-=======
->>>>>>> refs/remotes/origin/main
 
                     <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl">
                         <TimeDisplay />

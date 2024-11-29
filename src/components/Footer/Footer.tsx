@@ -1,5 +1,5 @@
 import Image from "next/image";
-import logo from "public/goober.png";
+import logo from "@/lib/icons";
 
 const Footer = () => {
     return (
