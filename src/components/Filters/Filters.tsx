@@ -8,7 +8,7 @@ const Filters = (props: TagPropList) => {
         <ul className="flex flex-col min-w-fit h-full max-h-[30vh]">
             <div className="flex flex-row items-center pb-1">
                 <div className="text-bold">My&nbsp;Tags</div>
-                <Link href={'./calendar/tags'}>
+                <Link href={'./tags'}>
                     <button className="rounded-lg px-2"><MdModeEdit className="size-4" /></button>
                 </Link>
 
