@@ -58,3 +58,8 @@ export type TimeGridCellProps = {
 export type DayProps = {
     day: string;
 }
+
+export type DraggableProps = {
+    id: string;
+    children: JSX.Element;
+}

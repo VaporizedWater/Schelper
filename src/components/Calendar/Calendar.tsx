@@ -20,6 +20,8 @@ export default function Calendar() {
                     <div className="p-8 bg-gray-100 border border-gray rounded-t-md">
                         <CalendarGridNav />
                     </div>
+
+                    {/*scrolling frame, removed options: */}
                     <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border border-gray overflow-y-scroll scroll-smooth custom-scrollbar rounded-b-md">
                         <div className="sticky top-0 bg-white p-4 border border-gray">
                             <div className=""></div>

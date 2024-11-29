@@ -6,6 +6,7 @@ import ClassDisplay from '@/components/ClassDisplay/ClassDisplay';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
 import { CombinedClass } from '../api/types';
 import { loadClassOfUser } from '../api/utils';
+import Draggable from '@/components/Draggable/Draggable';
 
 const CalendarPage = () => {
     const [combinedClasses, setClassData] = useState([] as CombinedClass[]);
@@ -25,11 +26,16 @@ const CalendarPage = () => {
     }, [classLoading]);
 
     if (combinedClasses[0]) {
-        const currentClass = <ClassDisplay classData={combinedClasses[0].classData} classProperties={combinedClasses[0].classProperties} />;
+        const currentClass = (
+            <Draggable id={combinedClasses[0].classData.object_id} children={
+                <ClassDisplay classData={combinedClasses[0].classData} classProperties={combinedClasses[0].classProperties} />
+            }>
+            </Draggable>
+        );
 
         return (<div className='flex flex-col'>
             <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                <Calendar />
+                <Calendar /> {/* Proposed solution to the offset is to move the DndContext into the Calendar component so that the offset stays with the scrolling}
                 {currentClass}
             </DndContext>
             <DragOverlay>

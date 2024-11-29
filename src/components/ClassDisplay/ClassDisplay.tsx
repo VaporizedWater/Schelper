@@ -4,24 +4,12 @@ import { useDraggable } from "@dnd-kit/core";
 const ClassDisplay = (props: CombinedClass) => {
     const classData = props.classData;
     const classProperties = props.classProperties;
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform
-    } = useDraggable({ id: classData.object_id });
 
     let display = (<div></div>);
 
     if (classData && classProperties) {
-        const style = transform ? {
-            transform: `translate(${transform.x}px, ${transform.y}px)`,
-        } : {
-            transform: `translate(0px, 0px)`,
-        };
-
         display = (
-            <div ref={setNodeRef} style={style} {...attributes} {...listeners} className="w-fit p-4">
+            <div className="w-fit p-4">
                 <div className="p-2 border-4 border-gray">
                     Class: {classData.course_subject}
                 </div>
