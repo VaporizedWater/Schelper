@@ -21,7 +21,7 @@ const CalendarPage = () => {
         }
     }, [classLoading]);
 
-    if (combinedClasses[0]) {
+    if (classLoading) {
         return (<div className='flex flex-col'>
             <Calendar classes={combinedClasses}/>
         </div>);

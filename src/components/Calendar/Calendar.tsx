@@ -24,6 +24,8 @@ export default function Calendar(props: CalendarProps) {
         setActiveId(event.active.id);
     }
 
+    
+
     const currentClass = (
         <Draggable id={props.classes[0].classData.object_id} children={
             <ClassDisplay classData={props.classes[0].classData} classProperties={props.classes[0].classProperties} />
