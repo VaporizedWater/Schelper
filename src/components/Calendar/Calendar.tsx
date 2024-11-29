@@ -48,6 +48,7 @@ export default function Calendar() {
                         <div className="w-[12px] bg-white border-y-2 border-r-2 border-gray shadow-b shadow-r"></div>
                     </div>
 
+                    {/*scrolling frame, removed options: */}
                     <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl">
                         <TimeDisplay />
                         <TimeOfDay day="Mon" />
