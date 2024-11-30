@@ -57,6 +57,10 @@ export default function Calendar() {
                         <TimeOfDay day="Thu" />
                         <TimeOfDay day="Fri" />
                     </div >
+
+                    {/* {isSpreadSheet &&
+                        <div></div>
+                    } */}
                 </div>
             </div>
         </div>
