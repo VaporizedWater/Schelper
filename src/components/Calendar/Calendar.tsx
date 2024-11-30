@@ -7,31 +7,36 @@ import TimeOfDay from "../TimeOfDay/TimeOfDay";
 import LeftMenu from "../LeftMenu/LeftMenu";
 import CalendarNav from "../CalendarNav/CalendarNav";
 import { CalendarProps } from "@/app/api/types";
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragMoveEvent, DragOverlay, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
 import Draggable from '../Draggable/Draggable';
 import ClassDisplay from '../ClassDisplay/ClassDisplay';
 
 // Parent of: LeftMenu, Day, TimeOfDay
 
 export default function Calendar(props: CalendarProps) {
-    const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
     function handleDragEnd(event: DragEndEvent) {
-        setActiveId(null);
+        const { active, over, delta } = event;
+        if (over != null) {
+            console.log("[" + delta.x + " " + delta.y + "]");
+            console.log("data" + over.data.current);
+        }
     }
 
     function handleDragStart(event: DragStartEvent) {
-        setActiveId(event.active.id);
+
     }
 
+    let currentClass = <Draggable id=""></Draggable>
+
+    if (props.classes[0]) {
+        currentClass = (
+            <Draggable id={props.classes[0].classData.object_id} children={
+                <ClassDisplay classData={props.classes[0].classData} classProperties={props.classes[0].classProperties} />
+            }></Draggable>
+        );
+    }
     
-
-    const currentClass = (
-        <Draggable id={props.classes[0].classData.object_id} children={
-            <ClassDisplay classData={props.classes[0].classData} classProperties={props.classes[0].classProperties} />
-        }></Draggable>
-    );
-
     return (
         <div className="flex flex-col">
             <div className="z-10">
@@ -82,12 +87,15 @@ export default function Calendar(props: CalendarProps) {
                             <TimeOfDay day="Fri" />
                             {currentClass}
                         </DndContext>
-                        <DragOverlay>
-                            {activeId ? (currentClass) : null}
-                        </DragOverlay>
                     </div >
                 </div>
             </div>
         </div>
     );
 }
+
+/*
+<DragOverlay>
+                            {activeId ? (currentClass) : null}
+                        </DragOverlay>
+*/
