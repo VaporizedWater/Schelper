@@ -88,6 +88,10 @@ export default function Calendar(props: CalendarProps) {
                             {currentClass}
                         </DndContext>
                     </div >
+
+                    {/* {isSpreadSheet &&
+                        <div></div>
+                    } */}
                 </div>
             </div>
         </div>
