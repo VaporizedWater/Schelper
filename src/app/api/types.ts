@@ -85,7 +85,6 @@ export type DraggableProps = {
     id: string;
     style?: CSSProperties;
     children?: JSX.Element;
-    dragging?: boolean;
 }
 
 export type CalendarProps = {
