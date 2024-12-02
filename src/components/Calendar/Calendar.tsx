@@ -50,7 +50,7 @@ export default function Calendar(props: CalendarProps) {
 
                 <div className="flex flex-col w-full max-h-[82vh] mr-10" id='calendar-grid' title='calendar-grid'>
                     <div className="flex flex-row">
-                        <div className="w-full grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border-y border-l border-gray">
+                        <div className="w-full grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border-y border-l border-gray" title='days-of-week'>
                             <div className="bg-white p-3 border border-gray shadow min-w-14">
                                 <div className=""></div>
                             </div>
