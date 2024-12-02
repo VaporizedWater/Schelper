@@ -2,10 +2,8 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Filters from "../Filters/Filters";
 import { DropDownItemProps, TagProps } from "@/app/api/types";
-import Link from "next/link";
 import { MdAdd } from "react-icons/md";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import DropDown from "../DropDown/DropDown";

@@ -74,10 +74,10 @@ export async function loadClassFromIDs(classIds: string[]): Promise<CombinedClas
     return classData;
 }
 
-export async function loadClassOfUser(authentication_hash: string): Promise<CombinedClass[]> {
+export async function loadClassOfUser(auth: string): Promise<CombinedClass[]> {
     const response = await fetchWithTimeout("./api/users", {
         headers: {
-            authentication_hash: authentication_hash,
+            authentication_hash: auth,
         },
     });
 
