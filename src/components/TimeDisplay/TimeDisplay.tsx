@@ -13,7 +13,7 @@ export function TimeBlock(props: TimeSlot) {
 
 const TimeDisplay = () => {
     return (
-        <ul className="flex flex-col">
+        <ul className="flex flex-col min-w-14">
             {Array.from({ length: 24 }, (_, i) => (
                 <li key={i}>
                     <TimeBlock timeSlot={`${i % 12 || 12} ${i < 12 ? "AM" : "PM"}`} />
