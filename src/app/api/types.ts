@@ -12,8 +12,6 @@ export type Class = {
     section: string;
     title: string;
     location: string;
-    min_units: string;
-    max_units: string;
     enrollment_cap: string;
     waitlist_cap: string;
 };
@@ -80,13 +78,12 @@ export type DropDownItemPropList = {
     list: DropDownItemProps[];
 };
 
-
 export type DraggableProps = {
     id: string;
     style?: CSSProperties;
     children?: JSX.Element;
-}
+};
 
 export type CalendarProps = {
     classes: CombinedClass[];
-}
+};

@@ -21,15 +21,15 @@ const CalendarPage = () => {
         }
     }, [classLoading]);
 
-    if (!classLoading) {
-        return (<div className='flex flex-col'>
+    return (!classLoading) ? (
+        <div className='flex flex-col'>
             <Calendar classes={combinedClasses} />
-        </div>);
-    } else {
-        return (<div className='flex flex-col'>
+        </div>
+    ) : (
+        <div className='flex flex-col'>
             <Calendar classes={[] as CombinedClass[]} />
-        </div>);
-    }
+        </div>
+    );
 }
 
 export default CalendarPage;

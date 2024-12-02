@@ -4,25 +4,19 @@ const ClassDisplay = (props: CombinedClass) => {
     const classData = props.classData;
     const classProperties = props.classProperties;
 
-    let display = (<div></div>);
+    return (classData && classProperties) ? (
+        <div className="w-fit p-4" title="class-item">
+            <div className="p-2 border-4 border-gray">
+                Class: {classData.course_subject + classData.course_num}
+                <br></br>
 
-    if (classData && classProperties) {
-        display = (
-            <div className="w-fit p-4">
-                <div className="p-2 border-4 border-gray">
-                    Class: {classData.course_subject + classData.course_num}
-                    <br></br>
-                    
-                </div>
-                {/*
-                    Place commented portion below here, if you want to do something with it
-                */}
             </div>
-        );
-    }
-
-
-    return display;
+            {/*
+                    Place commented portion below here, if you want to do something with it
+                    Sounds good
+                */}
+        </div>
+    ) : (<div></div>);
 }
 
 export default ClassDisplay;
