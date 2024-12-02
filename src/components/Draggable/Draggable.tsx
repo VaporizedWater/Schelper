@@ -1,17 +1,28 @@
 import { DraggableProps } from "@/app/api/types";
 import { useDraggable } from "@dnd-kit/core";
+import { useRef, useState } from "react";
 
 const Draggable = (props: DraggableProps) => {
+    const position = useRef({x: 0, y: 0});
+
     const {
         attributes,
         listeners,
         setNodeRef,
-        transform
+        transform,
+        isDragging
     } = useDraggable({ id: props.id });
 
-    const style = transform ? {
-        transform: `translate3d(${transform.x >= 0 ? transform.x : 0}px, ${transform.y <= 0 ? transform.y : 0}px, 0)`,
-      } : undefined;
+    if (isDragging) {
+        if (transform) {
+            if (transform.x != position.current.x && transform.y != position.current.y) {
+                position.current.x = transform.x;
+                position.current.y = transform.y;
+            }
+        }
+    }
+    
+    const style = { transform: `translate(${position.current.x}px, ${position.current.y}px)` };
 
     return (
         <div ref={setNodeRef} style={style} {...attributes} {...listeners}>

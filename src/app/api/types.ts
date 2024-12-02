@@ -1,3 +1,5 @@
+import { CSSProperties } from "react";
+
 export type Class = {
     // unchanging identifiers
     object_id: string;
@@ -81,7 +83,8 @@ export type DropDownItemPropList = {
 
 export type DraggableProps = {
     id: string;
-    children: JSX.Element;
+    style?: CSSProperties;
+    children?: JSX.Element;
 }
 
 export type CalendarProps = {
