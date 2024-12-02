@@ -5,6 +5,10 @@ export async function GET(request: Request) {
     const classTable = client.db("class-scheduling-app").collection("tags");
 
     let response: Response;
+    
+    if (request.body) {
+        console.log(request.body);
+    }
 
     const data = await classTable.find();
 

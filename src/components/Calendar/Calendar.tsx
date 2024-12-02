@@ -1,13 +1,13 @@
 'use client'
 
-import React, { useState } from 'react';
+import React from 'react';
 import Day from "../Day/Day";
 import TimeDisplay from "../TimeDisplay/TimeDisplay";
 import TimeOfDay from "../TimeOfDay/TimeOfDay";
 import LeftMenu from "../LeftMenu/LeftMenu";
 import CalendarNav from "../CalendarNav/CalendarNav";
 import { CalendarProps } from "@/app/api/types";
-import { DndContext, DragEndEvent, DragMoveEvent, DragOverlay, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import Draggable from '../Draggable/Draggable';
 import ClassDisplay from '../ClassDisplay/ClassDisplay';
 
@@ -16,7 +16,7 @@ import ClassDisplay from '../ClassDisplay/ClassDisplay';
 export default function Calendar(props: CalendarProps) {
 
     function handleDragEnd(event: DragEndEvent) {
-        const { active, over, delta } = event;
+        const { over, delta } = event;
         if (over != null) {
             console.log("[" + delta.x + " " + delta.y + "]");
             console.log("data" + over.data.current);
@@ -24,16 +24,18 @@ export default function Calendar(props: CalendarProps) {
     }
 
     function handleDragStart(event: DragStartEvent) {
-
+        if (event.active.id) {
+            console.log('drag start');
+        }
     }
 
     let currentClass = <Draggable id=""></Draggable>
 
     if (props.classes[0]) {
         currentClass = (
-            <Draggable id={props.classes[0].classData.object_id} children={
+            <Draggable id={props.classes[0].classData.object_id}>
                 <ClassDisplay classData={props.classes[0].classData} classProperties={props.classes[0].classProperties} />
-            }></Draggable>
+            </Draggable>
         );
     }
 
@@ -77,9 +79,9 @@ export default function Calendar(props: CalendarProps) {
                     </div>
 
                     {/*scrolling frame, removed options: */}
-                    <div className="bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl">
+                    <div className="bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin ">
                         <DndContext id="scrolling_context" onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-                            <div className='grid grid-cols-[0.3fr,repeat(5,1fr)] '>
+                            <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] ">
                                 <TimeDisplay />
                                 <TimeOfDay day="Mon" />
                                 <TimeOfDay day="Tue" />

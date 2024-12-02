@@ -1,5 +1,4 @@
 import { CombinedClass } from "@/app/api/types";
-import { useDraggable } from "@dnd-kit/core";
 
 const ClassDisplay = (props: CombinedClass) => {
     const classData = props.classData;
@@ -11,9 +10,26 @@ const ClassDisplay = (props: CombinedClass) => {
         display = (
             <div className="w-fit p-4">
                 <div className="p-2 border-4 border-gray">
-                    Class: {classData.course_subject}
+                    Class: {classData.course_subject + classData.course_num}
+                    <br></br>
+                    
                 </div>
-                <ul className="border-4 border-gray grid grid-cols-2">
+                {/*
+                    Place commented portion below here, if you want to do something with it
+                */}
+            </div>
+        );
+    }
+
+
+    return display;
+}
+
+export default ClassDisplay;
+
+
+/*
+<ul className="border-4 border-gray grid grid-cols-2">
                     <li key="1" className="border border-gray">Catalog Num: </li>
                     <li key="2" className="border border-gray">{classData.catalog_num}</li>
                     <li key="3" className="border border-gray">Class Num: </li>
@@ -28,12 +44,4 @@ const ClassDisplay = (props: CombinedClass) => {
                     <li key="11" className="border border-gray">Instructor Name:</li>
                     <li key="12" className="border border-gray">{classProperties.instructor_name}</li>
                 </ul>
-            </div>
-        );
-    }
-
-
-    return display;
-}
-
-export default ClassDisplay;
+*/

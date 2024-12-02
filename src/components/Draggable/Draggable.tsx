@@ -1,6 +1,6 @@
 import { DraggableProps } from "@/app/api/types";
 import { useDraggable } from "@dnd-kit/core";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 
 const Draggable = (props: DraggableProps) => {
     const position = useRef({x: 0, y: 0});
