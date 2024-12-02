@@ -23,11 +23,11 @@ const CalendarPage = () => {
 
     if (!classLoading) {
         return (<div className='flex flex-col'>
-            <Calendar classes={combinedClasses}/>
+            <Calendar classes={combinedClasses} />
         </div>);
     } else {
         return (<div className='flex flex-col'>
-            <Calendar classes={[] as CombinedClass[]}/>
+            <Calendar classes={[] as CombinedClass[]} />
         </div>);
     }
 }
