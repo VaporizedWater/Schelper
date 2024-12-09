@@ -87,3 +87,4 @@ export type DraggableProps = {
 export type CalendarProps = {
     classes: CombinedClass[];
 };
+

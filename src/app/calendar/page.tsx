@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Calendar from '@/components/Calendar/Calendar';
 import { CombinedClass } from '../../lib/types';
-import { loadClassOfUser } from '../api/utils';
+import { loadClassOfUser } from '../../lib/utils';
 
 const CalendarPage = () => {
     const [combinedClasses, setClassData] = useState([] as CombinedClass[]);
