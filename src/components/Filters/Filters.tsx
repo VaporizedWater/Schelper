@@ -1,5 +1,5 @@
 // Child (sub-component) of left menu
-import { TagPropList } from "@/app/api/types";
+import { TagPropList } from "@/lib/types";
 import { MdModeEdit } from "react-icons/md";
 import Link from "next/link";
 

@@ -1,6 +1,6 @@
 import clientPromise from "@/lib/mongodb";
 import { Document } from "mongodb";
-import { ClassProperty } from "../types";
+import { ClassProperty } from "../../../lib/types";
 import fetchWithTimeout from "../utils";
 
 export async function GET(request: Request) {

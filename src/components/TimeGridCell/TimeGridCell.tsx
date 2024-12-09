@@ -1,4 +1,4 @@
-import { TimeGridCellProps } from "@/app/api/types";
+import { TimeGridCellProps } from "@/lib/types";
 import { useDroppable } from "@dnd-kit/core";
 
 const TimeGridCell = (props: TimeGridCellProps) => {

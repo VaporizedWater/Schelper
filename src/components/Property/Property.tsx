@@ -1,5 +1,5 @@
 // Child (sub-component) of ClassProperties
-import { PropertyProps } from "@/app/api/types";
+import { PropertyProps } from "@/lib/types";
 
 const Property = (props: PropertyProps) => {
     return (

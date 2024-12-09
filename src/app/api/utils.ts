@@ -1,4 +1,4 @@
-import { Class, ClassProperty, CombinedClass } from "./types";
+import { Class, ClassProperty, CombinedClass } from "../../lib/types";
 
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
     const controller = new AbortController();

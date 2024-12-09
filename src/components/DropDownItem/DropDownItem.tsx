@@ -1,4 +1,4 @@
-import { DropDownItemProps } from "@/app/api/types";
+import { DropDownItemProps } from "@/lib/types";
 import Image from "next/image";
 import logo from "@/lib/icons";
 

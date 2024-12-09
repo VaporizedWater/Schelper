@@ -6,7 +6,7 @@ import TimeDisplay from "../TimeDisplay/TimeDisplay";
 import TimeOfDay from "../TimeOfDay/TimeOfDay";
 import LeftMenu from "../LeftMenu/LeftMenu";
 import CalendarNav from "../CalendarNav/CalendarNav";
-import { CalendarProps } from "@/app/api/types";
+import { CalendarProps } from "@/lib/types";
 import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
 import Draggable from '../Draggable/Draggable';
 import ClassDisplay from '../ClassDisplay/ClassDisplay';

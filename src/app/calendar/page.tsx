@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Calendar from '@/components/Calendar/Calendar';
-import { CombinedClass } from '../api/types';
+import { CombinedClass } from '../../lib/types';
 import { loadClassOfUser } from '../api/utils';
 
 const CalendarPage = () => {

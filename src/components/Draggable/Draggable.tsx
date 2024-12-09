@@ -1,4 +1,4 @@
-import { DraggableProps } from "@/app/api/types";
+import { DraggableProps } from "@/lib/types";
 import { useDraggable } from "@dnd-kit/core";
 import { useRef } from "react";
 

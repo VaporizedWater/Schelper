@@ -1,6 +1,6 @@
 // Sub-component (child) of Calendar
 // Parent of TimeGridCell
-import { DayProps } from "@/app/api/types";
+import { DayProps } from "@/lib/types";
 import TimeGridCell from "../TimeGridCell/TimeGridCell";
 
 const TimeOfDay = (props: DayProps) => {
