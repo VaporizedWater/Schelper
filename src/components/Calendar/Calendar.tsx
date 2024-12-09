@@ -38,7 +38,7 @@ export default function Calendar(props: CalendarProps) {
             </Draggable>
         );
     }
-
+    
     return (
         <div className="flex flex-col">
             <div className="z-10">
@@ -48,10 +48,10 @@ export default function Calendar(props: CalendarProps) {
             <div className="flex flex-row">
                 <div className="px-4"><LeftMenu /></div>
 
-                <div className="flex flex-col w-full max-h-[82vh] mr-10" id='calendar-grid' title='calendar-grid'>
+                <div className="flex flex-col w-full max-h-[82vh] mr-10">
                     <div className="flex flex-row">
-                        <div className="w-full grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border-y border-l border-gray" title='days-of-week'>
-                            <div className="bg-white p-3 border border-gray shadow min-w-14">
+                        <div className="w-full grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border-y border-l border-gray">
+                            <div className="bg-white p-3 border border-gray shadow">
                                 <div className=""></div>
                             </div>
 
@@ -77,9 +77,9 @@ export default function Calendar(props: CalendarProps) {
                         </div >
                         <div className="w-[12px] bg-white border-y-2 border-r-2 border-gray shadow-b shadow-r"></div>
                     </div>
-
+                    
                     {/*scrolling frame, removed options: */}
-                    <div className="bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin ">
+                    <div className="bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl">
                         <DndContext id="scrolling_context" onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                             <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] ">
                                 <TimeDisplay />
