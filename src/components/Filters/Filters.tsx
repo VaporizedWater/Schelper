@@ -13,9 +13,9 @@ const Filters = (props: TagPropList) => {
                 </Link>
 
             </div>
-            <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin pr-3">
+            <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin pr-3" title="tag-list">
                 {props.tags.map((tag) => (
-                    <li key={tag.tagName} className="flex flex-row items-center">
+                    <li key={tag.tagName} className="flex flex-row items-center" title="tag-item">
                         <label className="flex items-center cursor-pointer">
                             <input
                                 type="checkbox"

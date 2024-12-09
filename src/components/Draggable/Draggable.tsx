@@ -3,7 +3,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { useRef } from "react";
 
 const Draggable = (props: DraggableProps) => {
-    const position = useRef({x: 0, y: 0});
+    const position = useRef({ x: 0, y: 0 });
 
     const {
         attributes,
@@ -21,11 +21,11 @@ const Draggable = (props: DraggableProps) => {
             }
         }
     }
-    
+
     const style = { transform: `translate(${position.current.x}px, ${position.current.y}px)` };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} title="draggable">
             {props.children}
         </div>
     );

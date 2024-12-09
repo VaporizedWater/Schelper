@@ -4,6 +4,7 @@ test("check whether the class is displayed", async ({ page }) => {
     await page.goto("/calendar");
 
     if ((await page.locator("#calendar-grid").count()) == 1) {
+        await new Promise((r) => setTimeout(r, 4000));
         // Check number of class items
         const isElementPresent = (await page.getByTitle("class-item").count()) > 0;
 
