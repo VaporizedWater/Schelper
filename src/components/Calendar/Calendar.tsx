@@ -11,29 +11,27 @@ import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, UniqueIdentifier
 import Draggable from '../Draggable/Draggable';
 import ClassDisplay from '../ClassDisplay/ClassDisplay';
 import { usePositionContext } from '../PositionContext/PositionContext';
+import { restrictToFirstScrollableAncestor, restrictToParentElement, restrictToWindowEdges } from '@dnd-kit/modifiers';
 
 // Parent of: LeftMenu, Day, TimeOfDay
 
 export default function Calendar(props: CalendarProps) {
     const { positions, updatePosition } = usePositionContext();
-    
+
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
     function handleDragEnd(event: DragEndEvent) {
         const { active, delta } = event;
-        if (active != null) {
-            updatePosition(active.id, {
-                x: positions[active.id]?.x + delta.x || delta.x,
-                y: positions[active.id]?.y + delta.y || delta.y
-            });
-        }
+        const position = positions[active.id] ? positions[active.id] : { x: 0, y: 0 };
+        updatePosition(active.id, {
+            x: position.x + delta.x,
+            y: position.y + delta.y
+        });
         setActiveId(null);
     }
 
     function handleDragStart(event: DragStartEvent) {
-        if (event.active.id) {
-            setActiveId(event.active.id);
-        }
+        setActiveId(event.active.id);
     }
 
     let currentClass = <Draggable id=""></Draggable>
@@ -55,7 +53,7 @@ export default function Calendar(props: CalendarProps) {
             <div className="flex flex-row">
                 <div className="px-4"><LeftMenu /></div>
 
-                <div className="flex flex-col w-full max-h-[82vh] mr-10">
+                <div className="flex flex-col w-full max-h-[82vh] max-w-[82vh] mr-10">
                     <div className="flex flex-row">
                         <div className="w-full grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border-y border-l border-gray">
                             <div className="bg-white p-3 border border-gray shadow">
@@ -86,8 +84,8 @@ export default function Calendar(props: CalendarProps) {
                     </div>
 
                     {/*scrolling frame, removed options: */}
-                    <div className="bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl">
-                        <DndContext id="scrolling_context" onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                    <div className="w-full bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl">
+                        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                             <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] ">
                                 <TimeDisplay />
                                 <TimeOfDay day="Mon" />
@@ -97,10 +95,16 @@ export default function Calendar(props: CalendarProps) {
                                 <TimeOfDay day="Fri" />
                             </div>
                             {currentClass /*Draggable Wrapper*/}
-                            <DragOverlay>
-                                {activeId ? currentClass : null}
+
+                            
+                            <DragOverlay modifiers={[restrictToParentElement]}>
+                                <Draggable id="0">
+                                    {activeId ? currentClass : <div className='hidden'></div>}
+                                </Draggable>
                             </DragOverlay>
+                        
                         </DndContext>
+                        
                     </div >
 
                     {/* {isSpreadSheet &&
