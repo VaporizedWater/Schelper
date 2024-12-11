@@ -1,4 +1,4 @@
-import { CombinedClass } from "@/app/api/types";
+import { CombinedClass } from "@/lib/types";
 
 const ClassDisplay = (props: CombinedClass) => {
     const classData = props.classData;

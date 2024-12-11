@@ -1,5 +1,5 @@
 // Child (sub-component) of Calendar
-import { DayDateProps } from "@/app/api/types";
+import { DayDateProps } from "@/lib/types";
 
 const Day = (props: DayDateProps) => {
 

@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import Calendar from '@/components/Calendar/Calendar';
-import { CombinedClass } from '../api/types';
-import { loadClassOfUser } from '../api/utils';
+import { CombinedClass } from '../../lib/types';
+import { loadClassOfUser } from '../../lib/utils';
+import { PositionProvider } from '@/components/PositionContext/PositionContext';
 
 const CalendarPage = () => {
     const [combinedClasses, setClassData] = useState([] as CombinedClass[]);
@@ -23,7 +24,9 @@ const CalendarPage = () => {
 
     return (
         <div className='flex flex-col'>
-            <Calendar classes={classLoading ? [] as CombinedClass[] : combinedClasses} />
+            <PositionProvider>
+                <Calendar classes={combinedClasses} />
+            </PositionProvider>
         </div>
     );
 }

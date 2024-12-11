@@ -1,6 +1,6 @@
 import clientPromise from "@/lib/mongodb";
 import { Document, ObjectId } from "mongodb";
-import { Class } from "../types";
+import { Class } from "../../../lib/types";
 
 export async function GET(request: Request) {
     const client = await clientPromise;

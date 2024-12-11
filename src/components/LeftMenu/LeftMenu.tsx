@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Filters from "../Filters/Filters";
-import { DropDownItemProps, TagProps } from "@/app/api/types";
+import { DropDownItemProps, TagProps } from "@/lib/types";
 import { MdAdd } from "react-icons/md";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import DropDown from "../DropDown/DropDown";

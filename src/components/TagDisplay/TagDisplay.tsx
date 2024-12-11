@@ -1,5 +1,5 @@
 'use client'
-import { TagProps } from "@/app/api/types";
+import { TagProps } from "@/lib/types";
 import { useState } from "react";
 import { MdExpandMore, MdExpandLess } from "react-icons/md";
 

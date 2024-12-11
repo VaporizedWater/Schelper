@@ -1,31 +1,38 @@
 'use client'
 
-import React from 'react';
+import React, { useState } from 'react';
 import Day from "../Day/Day";
 import TimeDisplay from "../TimeDisplay/TimeDisplay";
 import TimeOfDay from "../TimeOfDay/TimeOfDay";
 import LeftMenu from "../LeftMenu/LeftMenu";
 import CalendarNav from "../CalendarNav/CalendarNav";
-import { CalendarProps } from "@/app/api/types";
-import { DndContext, DragEndEvent, DragStartEvent } from '@dnd-kit/core';
+import { CalendarProps } from "@/lib/types";
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, UniqueIdentifier } from '@dnd-kit/core';
 import Draggable from '../Draggable/Draggable';
 import ClassDisplay from '../ClassDisplay/ClassDisplay';
+import { usePositionContext } from '../PositionContext/PositionContext';
 
 // Parent of: LeftMenu, Day, TimeOfDay
 
 export default function Calendar(props: CalendarProps) {
+    const { positions, updatePosition } = usePositionContext();
+    
+    const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
     function handleDragEnd(event: DragEndEvent) {
-        const { over, delta } = event;
-        if (over != null) {
-            console.log("[" + delta.x + " " + delta.y + "]");
-            console.log("data" + over.data.current);
+        const { active, delta } = event;
+        if (active != null) {
+            updatePosition(active.id, {
+                x: positions[active.id]?.x + delta.x || delta.x,
+                y: positions[active.id]?.y + delta.y || delta.y
+            });
         }
+        setActiveId(null);
     }
 
     function handleDragStart(event: DragStartEvent) {
         if (event.active.id) {
-            console.log('drag start');
+            setActiveId(event.active.id);
         }
     }
 
@@ -48,10 +55,10 @@ export default function Calendar(props: CalendarProps) {
             <div className="flex flex-row">
                 <div className="px-4"><LeftMenu /></div>
 
-                <div className="flex flex-col w-full max-h-[82vh] mr-10" id='calendar-grid' title='calendar-grid'>
+                <div className="flex flex-col w-full max-h-[82vh] mr-10">
                     <div className="flex flex-row">
-                        <div className="w-full grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border-y border-l border-gray" title='days-of-week'>
-                            <div className="bg-white p-3 border border-gray shadow min-w-14">
+                        <div className="w-full grid grid-cols-[0.3fr,repeat(5,1fr)] bg-white border-y border-l border-gray">
+                            <div className="bg-white p-3 border border-gray shadow">
                                 <div className=""></div>
                             </div>
 
@@ -79,7 +86,7 @@ export default function Calendar(props: CalendarProps) {
                     </div>
 
                     {/*scrolling frame, removed options: */}
-                    <div className="bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin ">
+                    <div className="bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl">
                         <DndContext id="scrolling_context" onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                             <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] ">
                                 <TimeDisplay />
@@ -89,7 +96,10 @@ export default function Calendar(props: CalendarProps) {
                                 <TimeOfDay day="Thu" />
                                 <TimeOfDay day="Fri" />
                             </div>
-                            {currentClass}
+                            {currentClass /*Draggable Wrapper*/}
+                            <DragOverlay>
+                                {activeId ? currentClass : null}
+                            </DragOverlay>
                         </DndContext>
                     </div >
 

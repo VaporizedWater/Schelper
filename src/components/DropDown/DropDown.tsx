@@ -1,5 +1,5 @@
 // Use an attribute to determine the appearance and behavior of the component.
-import { DropDownItemPropList } from "@/app/api/types";
+import { DropDownItemPropList } from "@/lib/types";
 import DropDownItem from "../DropDownItem/DropDownItem";
 import Link from "next/link";
 
