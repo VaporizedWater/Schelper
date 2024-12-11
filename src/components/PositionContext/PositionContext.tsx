@@ -1,3 +1,4 @@
+import { UniqueIdentifier } from '@dnd-kit/core';
 import React, { createContext, useState, ReactNode, useContext } from 'react';
 
 
@@ -8,8 +9,8 @@ interface Position {
 
 
 interface PositionContextType {
-    positions: { [key: string]: Position };
-    updatePosition: (id: string, position: Position) => void;
+    positions: { [key: UniqueIdentifier]: Position };
+    updatePosition: (id: UniqueIdentifier, position: Position) => void;
 }
 
 
@@ -21,10 +22,10 @@ interface PositionProviderProps {
 }
 
 export const PositionProvider: React.FC<PositionProviderProps> = ({ children }) => {
-    const [positions, setPositions] = useState<{ [key: string]: Position }>({});
+    const [positions, setPositions] = useState<{ [key: UniqueIdentifier]: Position }>({});
 
 
-    const updatePosition = (id: string, position: Position) => {
+    const updatePosition = (id: UniqueIdentifier, position: Position) => {
         setPositions(prevPositions => ({
             ...prevPositions,
             [id]: position
