@@ -11,7 +11,7 @@ import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, UniqueIdentifier
 import Draggable from '../Draggable/Draggable';
 import ClassDisplay from '../ClassDisplay/ClassDisplay';
 import { usePositionContext } from '../PositionContext/PositionContext';
-import { restrictToFirstScrollableAncestor, restrictToParentElement, restrictToWindowEdges } from '@dnd-kit/modifiers';
+import { createSnapModifier, restrictToFirstScrollableAncestor, restrictToParentElement, restrictToWindowEdges } from '@dnd-kit/modifiers';
 
 // Parent of: LeftMenu, Day, TimeOfDay
 
@@ -34,8 +34,10 @@ export default function Calendar(props: CalendarProps) {
         setActiveId(event.active.id);
     }
 
-    let currentClass = <Draggable id=""></Draggable>
+    const gridSize = 20;
+    const snapToGridModifier = createSnapModifier(gridSize);
 
+    let currentClass = <Draggable id=""></Draggable>
     if (props.classes[0]) {
         currentClass = (
             <Draggable id={props.classes[0].classData.object_id}>
@@ -85,7 +87,7 @@ export default function Calendar(props: CalendarProps) {
 
                     {/*scrolling frame, removed options: */}
                     <div className="w-full bg-white border border-gray overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl">
-                        <DndContext onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                        <DndContext modifiers={[snapToGridModifier]} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                             <div className="grid grid-cols-[0.3fr,repeat(5,1fr)] ">
                                 <TimeDisplay />
                                 <TimeOfDay day="Mon" />
@@ -97,12 +99,11 @@ export default function Calendar(props: CalendarProps) {
                             {currentClass /*Draggable Wrapper*/}
 
                             
-                            <DragOverlay modifiers={[restrictToParentElement]}>
+                            <DragOverlay modifiers={[snapToGridModifier, restrictToParentElement]}>
                                 <Draggable id="0">
                                     {activeId ? currentClass : <div className='hidden'></div>}
                                 </Draggable>
                             </DragOverlay>
-                        
                         </DndContext>
                         
                     </div >
