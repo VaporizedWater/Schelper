@@ -3,9 +3,9 @@ import { test, expect } from "@playwright/test";
 test("check whether all tag data is fetched correctly from db", async ({ request }) => {
     const res = await request.get("/api/tags");
 
-    expect(res.ok()).toBeTruthy();
-
     expect(res).toBeDefined;
+
+    expect(res.ok()).toBeTruthy();
 
     const data = await res.json();
 

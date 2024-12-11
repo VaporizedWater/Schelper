@@ -7,9 +7,9 @@ test("check whether class data is fetched correctly from db", async ({ request }
         },
     });
 
-    expect(res.ok()).toBeTruthy();
-
     expect(res).toBeDefined;
+
+    expect(res.ok()).toBeTruthy();
 
     const data = await res.json();
 

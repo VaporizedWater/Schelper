@@ -8,6 +8,7 @@ import { MdAdd } from "react-icons/md";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import DropDown from "../DropDown/DropDown";
 import { classIcon, tagIcon } from "@/lib/icons";
+import ClassProperties from "../ClassProperties/ClassProperties";
 
 const LeftMenu = () => {
     const [tagList, setTags] = useState<TagProps[]>([]);
@@ -55,9 +56,9 @@ const LeftMenu = () => {
             </div>
 
 
-            {/* <div className="p-4"> */}
-            {/* <ClassProperties /> */}
-            {/* </div> */}
+            <div className="p-4">
+                <ClassProperties />
+            </div>
         </div>
     );
 }

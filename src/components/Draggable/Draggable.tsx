@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { usePositionContext } from "../PositionContext/PositionContext";
 
 const Draggable = (props: DraggableProps) => {
-    const {positions, updatePosition} = usePositionContext();
+    const { positions, updatePosition } = usePositionContext();
 
     const {
         attributes,
@@ -16,7 +16,7 @@ const Draggable = (props: DraggableProps) => {
 
     useEffect(() => {
         if (!isDragging && transform) {
-            updatePosition(props.id, {x: transform.x, y:transform.y});
+            updatePosition(props.id, { x: transform.x, y: transform.y });
         }
     }, [isDragging, transform, props.id, updatePosition]);
 
@@ -25,7 +25,7 @@ const Draggable = (props: DraggableProps) => {
     const style = { transform: `translate(${x}px, ${y}px)` };
 
     return (
-        <div ref={setNodeRef} style={style} {...attributes} {...listeners} title="draggable">
+        <div ref={setNodeRef} style={style} {...attributes} {...listeners} title="draggable" className="max-w-fit">
             {props.children}
         </div>
     );
