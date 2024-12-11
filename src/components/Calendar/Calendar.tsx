@@ -16,7 +16,7 @@ import { usePositionContext } from '../PositionContext/PositionContext';
 
 export default function Calendar(props: CalendarProps) {
     const { positions, updatePosition } = usePositionContext();
-    
+
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
 
     function handleDragEnd(event: DragEndEvent) {
