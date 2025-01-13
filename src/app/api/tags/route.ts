@@ -21,3 +21,25 @@ export async function GET(request: Request) {
 
     return response;
 }
+
+export async function POST(request: Request) {
+    const client = await clientPromise;
+    const classTable = client.db("class-scheduling-app").collection("tags");
+
+    try {
+        const body = await request.json(); 
+        const { tagName } = body; 
+
+        if (!tagName) {
+            return new Response("Tag name is required", { status: 400 });
+        }
+
+        const newTag = { tagName, classes: [] }; 
+        await classTable.insertOne(newTag); 
+
+        return new Response("Tag added successfully", { status: 201 });
+    } catch (error) {
+        console.error("Error adding tag:", error);
+        return new Response("Failed to add tag", { status: 500 });
+    }
+}

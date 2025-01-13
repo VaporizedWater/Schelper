@@ -8,18 +8,34 @@ interface AddTagButtonProps {
 }
 
 const AddTagButton = ({ onAddTag }: AddTagButtonProps) => {
-    // State to control dropdown visibility
+    // Control dropdown visibility
     const [isOpen, setOpen] = useState(false);
 
-    // State to store the user input for the tag name
+    // Store the user input for the tag name
     const [inputValue, setInputValue] = useState("");
 
     // Handle adding the tag when user presses Enter
-    const handleAddTag = () => {
+    const handleAddTag = async () => {
         if (inputValue.trim() !== "") {
-            onAddTag(inputValue.trim());
-            setInputValue("");
-            setOpen(false);
+            try {
+                const response = await fetch("/api/tags", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ tagName: inputValue.trim() }),
+                });
+
+                if (response.ok) {
+                    onAddTag(inputValue.trim());
+                    setInputValue("");
+                    setOpen(false);
+                } else {
+                    console.error("Failed to add tag:", await response.text());
+                }
+            } catch (error) {
+                console.error("Error adding tag:", error);
+            }
         }
     };
 
