@@ -31,5 +31,4 @@ html, body, div, a, i, button, select, option, optgroup, hr, br {
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  cursor: default;
 }
