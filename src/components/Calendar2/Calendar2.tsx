@@ -9,17 +9,27 @@ import LeftMenu from "../LeftMenu/LeftMenu";
 const events: EventSourceInput = [
     {
         title: 'Class 1',
-        start: '2025-01-01T08:00:00',
-        end: '2025-01-01T09:00:00'
+        start: '2025-01-07T08:00:00',
+        end: '2025-01-07T09:00:00'
     },
     {
         title: 'Class 2',
-        start: '2025-01-02T09:00:00',
-        end: '2025-01-02T10:00:00'
+        start: '2025-01-06T09:00:00',
+        end: '2025-01-06T10:00:00'
     },
 ];
 
 const selectedEvents: HTMLElement[] = [];
+
+const viewFiveDays = {
+    viewFiveDays: {
+        type: 'timeGrid',
+        visibleRange: {
+            start: '2025-01-06',
+            end: '2025-01-11'
+        }
+    }
+}
 
 const Calendar2 = (props: CalendarProps) => {
     const ctrlHeldRef = useRef(false);
@@ -97,6 +107,9 @@ const Calendar2 = (props: CalendarProps) => {
                         selectedEvents.push(info.el);
                         info.el.style.borderColor = 'red';
                     }}
+                    initialView='viewFiveDays'
+                    views={viewFiveDays}
+                    headerToolbar={false}
                 />
             </div>
 
