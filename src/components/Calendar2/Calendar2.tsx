@@ -60,7 +60,10 @@ const Calendar2 = (props: CalendarProps) => {
     }
 
     function clickHandler(event: MouseEvent) {
-
+        if (event.ctrlKey) {
+            event.preventDefault();
+            return false;
+        }
     }
 
     useEffect(() => {
@@ -79,41 +82,47 @@ const Calendar2 = (props: CalendarProps) => {
     // which then drops it to the 5 minute sanpDuration
     // Possibly resize the event so it also is the correct size within this timeslot
 
+    const fullCalendar = (
+        <FullCalendar
+            plugins={[timeGridPlugin, interactionPlugin]}
+            editable
+            expandRows
+            selectable={false}
+            events={events}
+            slotDuration={'00:30:00'}
+            slotMinTime={'08:00:00'}
+            slotMaxTime={'17:00:00'}
+            snapDuration={'00:05:00'}
+            eventClick={(info: EventClickArg) => {
+                // Handle old elements
+                if (!ctrlHeldRef) {
+                    unselectAll();
+                }
+
+
+                // Handle new element
+                console.log(info.el.className);
+                selectedEvents.push(info.el);
+                info.el.style.borderColor = 'red';
+            }}
+            initialView='viewFiveDays'
+            views={viewFiveDays}
+            headerToolbar={false}
+
+
+        />
+    );
+
+    const t = <div></div>
+
     return (
         <div className="flex flex-row">
             <div className="w-1/6">
                 <LeftMenu></LeftMenu>
             </div>
             <div className="w-3/4">
-                <FullCalendar
-                    plugins={[timeGridPlugin, interactionPlugin]}
-                    editable
-                    expandRows
-                    selectable={false}
-                    events={events}
-                    slotDuration={'00:30:00'}
-                    slotMinTime={'08:00:00'}
-                    slotMaxTime={'17:00:00'}
-                    snapDuration={'00:05:00'}
-                    eventClick={(info: EventClickArg) => {
-                        // Handle old elements
-                        if (!ctrlHeldRef) {
-                            unselectAll();
-                        }
-
-
-                        // Handle new element
-                        console.log(info.el.className);
-                        selectedEvents.push(info.el);
-                        info.el.style.borderColor = 'red';
-                    }}
-                    initialView='viewFiveDays'
-                    views={viewFiveDays}
-                    headerToolbar={false}
-                />
+                {fullCalendar}
             </div>
-
-
         </div>
     );
 };
