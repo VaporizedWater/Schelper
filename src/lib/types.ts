@@ -84,7 +84,19 @@ export type DraggableProps = {
     children?: JSX.Element;
 };
 
+export type standardTimeSlot = {
+    start: string;
+    end: string;
+}
+
 export type CalendarProps = {
     classes: CombinedClass[];
+    standardTimeSlots: standardTimeSlot[];
 };
 
+export type FullCalendarClassEvent = {
+    title: string;
+    day: string;
+    startTime: string;
+    endTime: string;
+};
