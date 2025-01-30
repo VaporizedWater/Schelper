@@ -25,7 +25,7 @@ const LeftMenu = () => {
     }, []);
 
     const dropDownList: DropDownItemProps[] = [
-        { content: "New Class", iconUrl: classIcon, iconAlt: "test", link: "/" },
+        { content: "New Class", iconUrl: classIcon, iconAlt: "test", link: "/classes" },
         { content: "New Tag", iconUrl: tagIcon, iconAlt: "test", link: "/" }
     ];
 
