@@ -11,10 +11,16 @@ import { FaChevronRight } from "react-icons/fa6";
 import { useState } from "react";
 import DropDown from "../DropDown/DropDown";
 
-const CalendarNav = () => {
+interface CalendarOpenProps {
+    toggleCalendar: (isOpen: boolean) => void;
+}
+const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const listString: string = "border border-gray-500 duration-50 rounded-full";
     const settingString: string = "opacity-70 duration-100 rounded-full hover:bg-gray-200 flex items-center p-2";
     const [isWeekDropOpen, setWeekDropOpen] = useState(false);
+    const [calendarActive, setActive] = useState(true);
+    let whiteClassL: string = "py-2 px-4 hover:bg-gray-200 rounded-l-full", blueClassL: string = whiteClassL + " bg-lightblue";
+    let whiteClassR: string = "py-2 px-4 hover:bg-gray-200 rounded-r-full", blueClassR: string = whiteClassR + " bg-lightblue";
 
     return (
         <div className="flex flex-row pr-8 pl-4">
@@ -40,8 +46,8 @@ const CalendarNav = () => {
                     </button>
                 </li>
                 <li key={5} className={`flex flex-row gap-2`}>
-                    <p className="text-lg text-lightblack text-center">November 2024</p>
-                    <p className="text-lg text-lightblack text-center">FA24</p>
+                    <p className="text-lg text-lightblack text-center">January 2025</p>
+                    <p className="text-lg text-lightblack text-center">SP25</p>
                 </li>
             </ul>
             <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">
@@ -61,10 +67,12 @@ const CalendarNav = () => {
                         </div>
                     }
                 </li>
+
                 <li key={4} className={`${listString} flex flex-row divide-inherit divide-x-2 divide-solid`}>
-                    <button onClick={() => { console.log("hi") }} className="py-2 px-4 bg-lightblue hover:bg-gray-200 rounded-l-full"><MdCalendarMonth className="size-6" /></button>
-                    <button onClick={() => { console.log("hi") }} className="py-2 px-4 hover:bg-gray-200 rounded-r-full"><LuFileSpreadsheet className="size-6" /></button>
+                    <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
+                    <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
                 </li>
+
             </ul>
         </div >
     );

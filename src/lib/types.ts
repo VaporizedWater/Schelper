@@ -100,9 +100,3 @@ export type FullCalendarClassEvent = {
     startTime: string;
     endTime: string;
 };
-
-export type ProviderProps = {
-    children: ReactNode;
-};
-
-export type ClassInfoType = {};

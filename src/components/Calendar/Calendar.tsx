@@ -3,11 +3,13 @@
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { CalendarProps, FullCalendarClassEvent, ProviderProps } from "@/lib/types";
+import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
 import { EventClickArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { useContext, useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
 import { createContext } from "vm";
+import { ClassProvider, useClassContext } from "../ClassContext/ClassContext";
+import CalendarNav from "../CalendarNav/CalendarNav";
 
 const days: { [key: string]: string } = {
     Mon: '2025-01-06',
@@ -44,22 +46,13 @@ const viewFiveDays = {
         }
     }
 }
-const ClassInfoContext = createContext();
-
-export const ClassInfoProvider = ({ children }: ProviderProps) => {
-    const [classInfo, setClassInfo] = useState<number>(109);
-
-    return (
-        <ClassInfoContext.Provider value={classInfo}>
-            {children}
-        </ClassInfoContext.Provider>
-    )
-}
 
 const Calendar = (props: CalendarProps) => {
     const ctrlHeldRef = useRef(false);
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
+    // const { currClass, updateClass } = useClassContext();
+    const [isCalendarOpen, setCalendarOpen] = useState(true);
 
     useEffect(() => {
         const newEvent: string | null = localStorage.getItem("newEvent");
@@ -108,6 +101,8 @@ const Calendar = (props: CalendarProps) => {
     }
 
     function clickHandler(event: MouseEvent) {
+        // updateClass();
+
         if (event.ctrlKey) {
             event.preventDefault();
             return false;
@@ -162,16 +157,22 @@ const Calendar = (props: CalendarProps) => {
     );
 
     return (
-        <>
+        <ClassProvider>
+            <div>
+                <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
+            </div>
             <div className="flex flex-row">
                 <div className="w-1/6">
                     <LeftMenu></LeftMenu>
                 </div>
-                <div className="w-3/4">
-                    {fullCalendar}
+                <div className="w-3/4 overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl max-h-[80vh]">
+                    {isCalendarOpen ?
+                        fullCalendar :
+                        <></>
+                    }
                 </div>
             </div>
-        </>
+        </ClassProvider >
     );
 };
 
