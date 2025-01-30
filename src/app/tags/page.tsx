@@ -1,25 +1,26 @@
 'use client';
 import AddTagButton from "@/components/AddTagButton/AddTagButton";
 import TagDisplay from "@/components/TagDisplay/TagDisplay";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const ManageTags = () => {
+    const [tags, setTags] = useState<{ tagName: string; classes: number[] }[]>([]);
 
-    const [tags, setTags] = useState([
-        { tagName: "Test", classes: [12, 13, 14, 15] },
-        { tagName: "Test", classes: [12, 13, 14, 15] },
-        { tagName: "Test", classes: [12, 13, 14, 15] },
-    ]);
+    // Load tags from localStorage on mount
+    useEffect(() => {
+        const storedTags = JSON.parse(localStorage.getItem("tags") || "[]");
+        setTags(storedTags);
+    }, []);
 
-    // Add a new tag
+    // Add a new tag and update localStorage
     const handleAddTag = (newTagName: string) => {
-        // Append a new tag with the entered name and an empty classes array
-        setTags((prevTags) => [...prevTags, { tagName: newTagName, classes: [9, 10, 11] }]);
+        const updatedTags = [...tags, { tagName: newTagName, classes: [1, 2, 3] }];
+        setTags(updatedTags);
+        localStorage.setItem("tags", JSON.stringify(updatedTags));
     };
 
     return (
         <div className="flex flex-col items-right">
-
             <h1 className="text-4xl text-bold py-6 text-center">Manage Tags</h1>
 
             <AddTagButton onAddTag={handleAddTag} />
