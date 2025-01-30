@@ -7,7 +7,7 @@ import logo from '../lib/icons';
 
 const Home = () => (
     <div className='flex flex-col'>
-        <div className="bg-center bg-bottom bg-cover bg-[url('../../public/wcispsu.jpg')] h-screen max-w-screen justify-items-center">
+        <div className="bg-center bg-cover bg-[url('../../public/wcispsu.jpg')] h-screen max-w-screen justify-items-center">
             <div className='justify-items-center backdrop-blur-[1px]'>
                 <h1 className='text-lightblue mt-40 text-8xl text-center items-center flex flex-row font-bold rounded-full'>
                     <Image src={logo} height={55} alt="Schelper Icon" />
