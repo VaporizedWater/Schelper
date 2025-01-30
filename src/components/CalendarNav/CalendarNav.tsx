@@ -29,8 +29,8 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                     <IoMenu className="size-6" />
                 </li>
                 <li key={2} className="flex flex-row items-center">
-                    <Image src={logo} height={35} alt="Goober Icon" />
-                    <p className="font-bold text-lg text-lightblack text-center p-1 mr-3">Goober</p>
+                    {/* <Image src={logo} height={35} alt="Schelper Icon" /> */}
+                    <p className="font-bold text-lg text-lightblack text-center p-1 mr-3">Schelper</p>
                 </li>
                 <li key={3} className={`${listString} px-6 py-2 hover:bg-gray-200`}>
                     <button onClick={() => { console.log("hi") }} className="">
