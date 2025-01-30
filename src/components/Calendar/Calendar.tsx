@@ -10,6 +10,8 @@ import LeftMenu from "../LeftMenu/LeftMenu";
 import { createContext } from "vm";
 import { ClassProvider, useClassContext } from "../ClassContext/ClassContext";
 import CalendarNav from "../CalendarNav/CalendarNav";
+import Spreadsheet from "react-spreadsheet";
+import CalendarSheet from "../CalendarSheet/CalendarSheet";
 
 const days: { [key: string]: string } = {
     Mon: '2025-01-06',
@@ -168,7 +170,7 @@ const Calendar = (props: CalendarProps) => {
                 <div className="w-3/4 overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl max-h-[80vh]">
                     {isCalendarOpen ?
                         fullCalendar :
-                        <></>
+                        <CalendarSheet></CalendarSheet>
                     }
                 </div>
             </div>
