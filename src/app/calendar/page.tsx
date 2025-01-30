@@ -24,7 +24,7 @@ const CalendarPage = () => {
     }, [classLoading]);
 
     return (
-        <div className='flex flex-col'>
+        <div className='flex flex-col '>
             <Calendar classes={combinedClasses} standardTimeSlots={timeSlots} />
         </div>
     );

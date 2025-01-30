@@ -3,10 +3,11 @@
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
+import { CalendarProps, FullCalendarClassEvent, ProviderProps } from "@/lib/types";
 import { EventClickArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
+import { createContext } from "vm";
 
 const days: { [key: string]: string } = {
     Mon: '2025-01-06',
@@ -42,6 +43,17 @@ const viewFiveDays = {
             end: '2025-01-11'
         }
     }
+}
+const ClassInfoContext = createContext();
+
+export const ClassInfoProvider = ({ children }: ProviderProps) => {
+    const [classInfo, setClassInfo] = useState<number>(109);
+
+    return (
+        <ClassInfoContext.Provider value={classInfo}>
+            {children}
+        </ClassInfoContext.Provider>
+    )
 }
 
 const Calendar = (props: CalendarProps) => {
@@ -149,17 +161,17 @@ const Calendar = (props: CalendarProps) => {
         />
     );
 
-    const t = <div></div>
-
     return (
-        <div className="flex flex-row">
-            <div className="w-1/6">
-                <LeftMenu></LeftMenu>
+        <>
+            <div className="flex flex-row">
+                <div className="w-1/6">
+                    <LeftMenu></LeftMenu>
+                </div>
+                <div className="w-3/4">
+                    {fullCalendar}
+                </div>
             </div>
-            <div className="w-3/4">
-                {fullCalendar}
-            </div>
-        </div>
+        </>
     );
 };
 

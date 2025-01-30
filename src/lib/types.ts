@@ -1,4 +1,4 @@
-import { CSSProperties } from "react";
+import { CSSProperties, ReactNode } from "react";
 
 export type Class = {
     // unchanging identifiers
@@ -87,7 +87,7 @@ export type DraggableProps = {
 export type standardTimeSlot = {
     start: string;
     end: string;
-}
+};
 
 export type CalendarProps = {
     classes: CombinedClass[];
@@ -100,3 +100,9 @@ export type FullCalendarClassEvent = {
     startTime: string;
     endTime: string;
 };
+
+export type ProviderProps = {
+    children: ReactNode;
+};
+
+export type ClassInfoType = {};

@@ -1,7 +1,9 @@
 // List of property components.
 // Parent of Property
 
+import { ClassInfoProvider } from "../Calendar/Calendar";
 import Property from "../Property/Property";
+import { useContext } from "react";
 
 const ClassProperties = () => {
     return (
