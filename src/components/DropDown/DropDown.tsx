@@ -9,7 +9,7 @@ const DropDown = (props: DropDownItemPropList) => {
     return (
         <ul className="flex flex-col border border-gray-200 rounded-md">
             {props.list.map((item) => (
-                <li key={++i} className="bg-white w-full border border-gray-100 items-center flex items-center hover:bg-gray-100 duration-100">
+                <li key={++i} className="bg-white w-full border border-gray-100 flex items-center hover:bg-gray-100 duration-100">
                     <Link href={item.link} className="p-2 w-full">
                         <DropDownItem
                             content={item.content}
