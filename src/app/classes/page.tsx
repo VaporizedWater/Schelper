@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { FullCalendarClassEvent } from "@/lib/types";
 
 const NewClassModal = () => {
     const [title, setTitle] = useState("");
-    const [date, setDate] = useState("");
+    const [day, setDay] = useState("Mon");
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState("");
 
@@ -13,15 +14,16 @@ const NewClassModal = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title || !date || !startTime || !endTime) {
+        if (!title || !day || !startTime || !endTime) {
             alert("Please fill out all fields");
             return;
         }
 
-        const newEvent = {
+        const newEvent: FullCalendarClassEvent = {
             title,
-            start: `${date}T${startTime}`,
-            end: `${date}T${endTime}`,
+            day,
+            startTime,
+            endTime,
         };
 
         // Store new event temporarily
@@ -43,12 +45,17 @@ const NewClassModal = () => {
                         onChange={(e) => setTitle(e.target.value)} 
                         className="p-2 border rounded"
                     />
-                    <input 
-                        type="date" 
-                        value={date} 
-                        onChange={(e) => setDate(e.target.value)} 
+                    <select 
+                        value={day} 
+                        onChange={(e) => setDay(e.target.value)} 
                         className="p-2 border rounded"
-                    />
+                    >
+                        <option value="Mon">Monday</option>
+                        <option value="Tues">Tuesday</option>
+                        <option value="Wed">Wednesday</option>
+                        <option value="Thurs">Thursday</option>
+                        <option value="Fri">Friday</option>
+                    </select>
                     <input 
                         type="time" 
                         value={startTime} 

@@ -1,12 +1,22 @@
+"use client";
+
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { CalendarProps } from "@/lib/types";
-import { EventClickArg, EventSourceInput } from "@fullcalendar/core/index.js";
-import { useEffect, useRef } from "react";
+import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
+import { EventClickArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
+import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
 
-const events: EventSourceInput = [
+const days: { [key: string]: string } = {
+    Mon: '2025-01-06',
+    Tues: '2025-01-07',
+    Wed: '2025-01-08',
+    Thurs: '2025-01-09',
+    Fri: '2025-01-10',
+};
+
+let events: EventInput[] = [
     {
         title: 'Class 1',
         start: '2025-01-07T08:00:00',
@@ -18,6 +28,9 @@ const events: EventSourceInput = [
         end: '2025-01-06T10:00:00'
     },
 ];
+const addEvent = (item: EventInput) => {
+    events = [...new Set([...events, item])]
+};
 
 const selectedEvents: HTMLElement[] = [];
 
@@ -33,6 +46,29 @@ const viewFiveDays = {
 
 const Calendar = (props: CalendarProps) => {
     const ctrlHeldRef = useRef(false);
+    const [newEventText, setEvent] = useState<string | null>();
+    const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
+
+    useEffect(() => {
+        const newEvent: string | null = localStorage.getItem("newEvent");
+        setEvent(newEvent);
+        setOneClass(true);
+    }, [setEvent]);
+
+    if (oneClass && newEventText) {
+        let newEvent: FullCalendarClassEvent = JSON.parse(newEventText);
+        let convertedDay = days[newEvent.day];
+        let dateStringStart = convertedDay + 'T' + newEvent.startTime;
+        let dateStringEnd = convertedDay + 'T' + newEvent.endTime;
+
+        addEvent({
+            title: newEvent.title,
+            start: dateStringStart,
+            end: dateStringEnd
+        } as EventInput);
+        console.log(events);
+        setOneClass(false);
+    }
 
     function unselectAll() {
         selectedEvents.forEach(element => {

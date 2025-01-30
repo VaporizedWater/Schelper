@@ -94,3 +94,9 @@ export type CalendarProps = {
     standardTimeSlots: standardTimeSlot[];
 };
 
+export type FullCalendarClassEvent = {
+    title: string;
+    day: string;
+    startTime: string;
+    endTime: string;
+};
