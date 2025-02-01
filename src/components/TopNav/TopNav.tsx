@@ -16,9 +16,9 @@ const TopNav = () => {
             </Link>
 
             <div className="p-4 ml-auto text-white flex flex-row">
-                <Link href={'/login'}>
+                {/* <Link href={'/login'}>
                     <button className="px-5 rounded-md h-full w-full sm:min-w-max text-white hover:opacity-75 duration-100">Login</button>
-                </Link>
+                </Link> */}
                 <Link href={'/calendar'}>
                     <button className="px-5 rounded-md h-full w-full sm:min-w-max text-white hover:opacity-75 duration-100">Calendar</button>
                 </Link>

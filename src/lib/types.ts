@@ -69,12 +69,14 @@ export type DayDateProps = {
 
 export type DropDownItemProps = {
     content: string;
-    iconUrl: string;
-    iconAlt: string;
+    iconUrl: string | null;
+    iconAlt: string | null;
     link: string;
 };
 
-export type DropDownItemPropList = {
+export type DropDownInfo = {
+    title: string;
+    dropType: string;
     list: DropDownItemProps[];
 };
 

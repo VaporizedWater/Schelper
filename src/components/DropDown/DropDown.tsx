@@ -1,27 +1,47 @@
 // Use an attribute to determine the appearance and behavior of the component.
-import { DropDownItemPropList } from "@/lib/types";
-import DropDownItem from "../DropDownItem/DropDownItem";
+import { DropDownInfo } from "@/lib/types";
 import Link from "next/link";
+import { useState } from "react";
+import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
+import { MdAdd } from "react-icons/md";
 
-const DropDown = (props: DropDownItemPropList) => {
+const DropDown = (props: DropDownInfo) => {
+    const [isDropOpen, setDropOpen] = useState(false);
     let i = 0;
 
     return (
-        <ul className="flex flex-col border border-gray-200 rounded-md">
-            {props.list.map((item) => (
-                <li key={++i} className="bg-white w-full border border-gray-100 flex items-center hover:bg-gray-100 duration-100">
-                    <Link href={item.link} className="p-2 w-full">
-                        <DropDownItem
-                            content={item.content}
-                            iconUrl={item.iconUrl}
-                            iconAlt={item.iconAlt}
-                            link={item.link}
-                        />
-                    </Link>
+        <div>
+            {/* Button to control dropdown */}
+            <button onClick={() => setDropOpen((prev) => !prev)} className="flex flex-row gap-2 p-2 items-center bg-white rounded-full hover:bg-gray-200">
+                <div className=''>
+                    <MdAdd className="size-4 text-lightblack"></MdAdd>
+                </div>
+                <div className="">{props.title}</div>
+                <div className=''>
+                    {!isDropOpen ?
+                        <IoMdArrowDropdown className="size-4" /> :
+                        <IoMdArrowDropup className="size-4" />
+                    }
+                </div>
+            </button>
 
-                </li>
-            ))}
-        </ul>
+            {/* Dropdown List*/}
+            {isDropOpen &&
+                <div
+                    className={`absolute mt-2 border border-gray-200 bg-white shadow-md z-10 transition-transform duration-200 ease-in-out ${isDropOpen ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"} origin-top`}
+                >
+                    <ul className="flex flex-col rounded-full w-full">
+                        {props.list.map((item) => (
+                            <li key={++i} className="bg-white w-full border-y border-gray-100 flex items-center hover:bg-gray-100 duration-100">
+                                <Link href={item.link} className="py-2 px-4 w-full">
+                                    {item.content}
+                                </Link>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            }
+        </div>
     )
 }
 

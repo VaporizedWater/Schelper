@@ -25,6 +25,7 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 }
 
 // Unchanging Class Identifiers.
+// Best starting point
 
 export async function loadClassFromID(classId: string): Promise<CombinedClass> {
     const classResponse = await fetchWithTimeout("./api/classes", {
@@ -39,7 +40,14 @@ export async function loadClassFromID(classId: string): Promise<CombinedClass> {
         },
     });
 
-    const combinedClass = new Object as CombinedClass;
+    const combinedClass = new Object() as CombinedClass;
+
+    // Both classResp and PropResp should be ok.
+    if (!classResponse.ok || !propertiesResponse.ok) {
+        console.error("Could not find class!");
+
+        return {} as CombinedClass;
+    }
 
     if (classResponse.status == 200 && classResponse.body) {
         const classResponseText = new TextDecoder().decode((await classResponse.body.getReader().read()).value);
@@ -48,7 +56,9 @@ export async function loadClassFromID(classId: string): Promise<CombinedClass> {
         combinedClass.classData = newClass;
 
         if (propertiesResponse.status == 200 && propertiesResponse.body) {
-            const propertiesResponseText = new TextDecoder().decode((await propertiesResponse.body.getReader().read()).value);
+            const propertiesResponseText = new TextDecoder().decode(
+                (await propertiesResponse.body.getReader().read()).value
+            );
             const propertiesJSON = JSON.parse(propertiesResponseText);
             const newProperties = propertiesJSON as ClassProperty;
             combinedClass.classProperties = newProperties;
@@ -57,7 +67,7 @@ export async function loadClassFromID(classId: string): Promise<CombinedClass> {
         return combinedClass;
     }
 
-    return new Object as CombinedClass;
+    return new Object() as CombinedClass;
 }
 
 export async function loadClassFromIDs(classIds: string[]): Promise<CombinedClass[]> {
@@ -93,7 +103,7 @@ export async function loadClassOfUser(auth: string): Promise<CombinedClass[]> {
         console.log("response failed");
     }
 
-    return new Object as CombinedClass[];
+    return new Object() as CombinedClass[];
 }
 
 // Editable Class Properties.
@@ -113,5 +123,8 @@ export async function loadClassPropertiesFromID(classId: string): Promise<ClassP
         return newProperties;
     }
 
-    return new Object as ClassProperty;
+    return new Object() as ClassProperty;
 }
+
+// GET for Combined class info: two collections
+// POST as well ^
