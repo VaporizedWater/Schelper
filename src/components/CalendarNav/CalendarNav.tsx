@@ -16,8 +16,6 @@ interface CalendarOpenProps {
 }
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const listString: string = "border border-gray-500 duration-50 rounded-full";
-    // const settingString: string = "opacity-70 duration-100 rounded-full hover:bg-gray-200 flex items-center p-2";
-    const [isDropOpen, setDropOpen] = useState(false);
     const [calendarActive, setActive] = useState(true);
     let whiteClassL: string = "py-2 px-4 hover:bg-gray-200 rounded-l-full", blueClassL: string = whiteClassL + " bg-lightblue";
     let whiteClassR: string = "py-2 px-4 hover:bg-gray-200 rounded-r-full", blueClassR: string = whiteClassR + " bg-lightblue";
