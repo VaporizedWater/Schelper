@@ -1,16 +1,18 @@
 import clientPromise from "@/lib/mongodb";
 import { Document } from "mongodb";
 
+const client = await clientPromise;
+const collection = client.db("class-scheduling-app").collection("users");
+
 export async function GET(request: Request) {
-    const client = await clientPromise;
-    const userTable = client.db("class-scheduling-app").collection("users");
+
 
     const authID = request.headers.get("authentication_hash") + "";
 
     let response: Response, data;
 
     if (authID.length) {
-        data = await userTable.findOne({ authentication_hash: authID });
+        data = await collection.findOne({ authentication_hash: authID });
 
         if (data) {
             const dataDoc: Document = data;

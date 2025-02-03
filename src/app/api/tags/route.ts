@@ -1,9 +1,9 @@
 import clientPromise from "@/lib/mongodb";
 
-export async function GET(request: Request) {
-    const client = await clientPromise;
-    const classTable = client.db("class-scheduling-app").collection("tags");
+const client = await clientPromise;
+const classTable = client.db("class-scheduling-app").collection("tags");
 
+export async function GET(request: Request) {
     let response: Response;
     
     if (request.body) {
@@ -23,9 +23,6 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    const client = await clientPromise;
-    const classTable = client.db("class-scheduling-app").collection("tags");
-
     try {
         const body = await request.json(); 
         const { tagName } = body; 

@@ -3,15 +3,15 @@ import { Document } from "mongodb";
 import { ClassProperty } from "../../../lib/types";
 import fetchWithTimeout from "../../../lib/utils";
 
-export async function GET(request: Request) {
-    const client = await clientPromise;
-    const classTable = client.db("class-scheduling-app").collection("class_properties");
-    const classID = request.headers.get("id") + "";
+const client = await clientPromise;
+const collection = client.db("class-scheduling-app").collection("class_properties");
 
+export async function GET(request: Request) {
+    const classID = request.headers.get("id") + "";
     let response: Response, data;
 
     if (classID.length) {
-        data = await classTable.findOne({ associated_class: classID });
+        data = await collection.findOne({ associated_class: classID });
 
         if (data) {
             const dataDoc: Document = data;
@@ -63,15 +63,16 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    const client = await clientPromise;
-    const classTable = client.db("class-scheduling-app").collection("class_properties");
-
     try {
         const body = await request.json();
-        const result = await classTable.insertOne(body);
+        const result = await collection.insertOne(body);
 
         return new Response(JSON.stringify({ insertedId: result.insertedId }), { status: 201 });
     } catch (error) {
         return new Response(`Error inserting class into properties: ${error}`, { status: 500 });
     }
+}
+
+export async function PUT(request: Request) {
+
 }
