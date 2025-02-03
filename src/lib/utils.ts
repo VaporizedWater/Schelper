@@ -1,3 +1,4 @@
+import { headers } from "next/headers";
 import { Class, ClassProperty, CombinedClass } from "./types";
 
 // FETCH
@@ -115,16 +116,59 @@ export async function loadClassesOfUser(auth: string): Promise<CombinedClass[]> 
     return new Object() as CombinedClass[];
 }
 
+// DELETES
+export async function deleteClass(classID: string) {}
+
 // INSERTs/POSTs
 
 // Insert class
-export async function insertClass(classData: Class) {}
+// Include try catch maybe
+export async function insertClass(classData: Class): Promise<string | null> {
+    const response = await fetchWithTimeout("api/classes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(classData),
+    });
+
+    if (!response.ok) {
+        console.error("Error inserting class: " + response.statusText);
+        return null;
+    }
+
+    const result = await response.json();
+    return result.insertedId ?? null;
+}
 
 // Insert class_property
-export async function insertClassProperty(classProperties: ClassProperty) {}
+// Include try catch maybe
+export async function insertClassProperty(classProperties: ClassProperty) {
+    const response = await fetchWithTimeout("api/class_properties", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(classProperties),
+    });
+
+    if (!response.ok) {
+        console.error("Error inserting class: " + response.statusText);
+        return null;
+    }
+
+    const result = await response.json();
+    return result.insertedId ?? null;
+}
 
 // Insert combined class
 export async function insertCombinedClass(combinedClass: CombinedClass) {
-    insertClass(combinedClass.classData);
-    insertClassProperty(combinedClass.classProperties);
+    const classStatus = await insertClass(combinedClass.classData);
+
+    if (classStatus != null) {
+        console.error("Failed to insert class");
+        return;
+    }
+
+    const classPropStatus = await insertClassProperty(combinedClass.classProperties);
+
+    if (classPropStatus != null) {
+        console.error("Failed to insert class properties. Try again...");
+    }
 }
