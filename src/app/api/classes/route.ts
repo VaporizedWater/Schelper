@@ -39,3 +39,17 @@ export async function GET(request: Request) {
 
     return response;
 }
+
+export async function POST(request: Request) {
+    const client = await clientPromise;
+    const classTable = client.db("class-scheduling-app").collection("classes");
+
+    try {
+        const body = await request.json();
+        const result = await classTable.insertOne(body);
+
+        return new Response(JSON.stringify({ insertedId: result.insertedId }), { status: 201 });
+    } catch (error) {
+        return new Response(`Error inserting class into classes: ${error}`, { status: 500 });
+    }
+}

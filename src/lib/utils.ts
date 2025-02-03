@@ -1,5 +1,6 @@
 import { Class, ClassProperty, CombinedClass } from "./types";
 
+// FETCH
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
     const controller = new AbortController();
     let response: Response;
@@ -24,57 +25,64 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
     return response;
 }
 
-// Unchanging Class Identifiers.
-// Best starting point
+// LOADS/GETs
 
-export async function loadClassFromID(classId: string): Promise<CombinedClass> {
-    const classResponse = await fetchWithTimeout("./api/classes", {
-        headers: {
-            id: classId,
-        },
-    });
-
+// Editable Class Properties.
+export async function loadClassProperties(classId: string): Promise<ClassProperty> {
     const propertiesResponse = await fetchWithTimeout("./api/class_properties", {
         headers: {
             id: classId,
         },
     });
 
-    const combinedClass = new Object() as CombinedClass;
+    if (!propertiesResponse.ok || propertiesResponse.status != 200 || !propertiesResponse.body) {
+        console.error("Couldn't find class property!");
+        return new Object() as ClassProperty;
+    }
 
-    // Both classResp and PropResp should be ok.
-    if (!classResponse.ok || !propertiesResponse.ok) {
+    const propertiesResponseText = new TextDecoder().decode((await propertiesResponse.body.getReader().read()).value);
+    const propertiesJSON = JSON.parse(propertiesResponseText);
+    const newProperties = propertiesJSON as ClassProperty;
+    return newProperties;
+}
+
+// Load from two collections
+export async function loadCombinedClass(classId: string): Promise<CombinedClass> {
+    const classResponse = await fetchWithTimeout("./api/classes", {
+        headers: {
+            id: classId,
+        },
+    });
+
+    const combinedClass = {} as CombinedClass;
+
+    if (!classResponse.ok || classResponse.status != 200 || !classResponse.body) {
         console.error("Could not find class!");
-
         return {} as CombinedClass;
     }
 
-    if (classResponse.status == 200 && classResponse.body) {
-        const classResponseText = new TextDecoder().decode((await classResponse.body.getReader().read()).value);
-        const classJSON = JSON.parse(classResponseText);
-        const newClass = classJSON as Class;
-        combinedClass.classData = newClass;
+    const classResponseText = new TextDecoder().decode((await classResponse.body.getReader().read()).value);
+    const classJSON = JSON.parse(classResponseText);
+    const newClass = classJSON as Class;
+    combinedClass.classData = newClass;
 
-        if (propertiesResponse.status == 200 && propertiesResponse.body) {
-            const propertiesResponseText = new TextDecoder().decode(
-                (await propertiesResponse.body.getReader().read()).value
-            );
-            const propertiesJSON = JSON.parse(propertiesResponseText);
-            const newProperties = propertiesJSON as ClassProperty;
-            combinedClass.classProperties = newProperties;
-        }
+    let propId: string = newClass.associated_properties;
 
-        return combinedClass;
-    }
+    // Getting the class property
+    const newProperties: ClassProperty = await loadClassProperties(classId);
 
-    return new Object() as CombinedClass;
+    // Combining the class property
+    combinedClass.classProperties = newProperties;
+
+    return combinedClass;
 }
 
-export async function loadClassFromIDs(classIds: string[]): Promise<CombinedClass[]> {
+//
+export async function loadCombinedClasses(classIds: string[]): Promise<CombinedClass[]> {
     const classData: CombinedClass[] = [];
 
     for (let i = 0; i < classIds.length; i++) {
-        const newClass: CombinedClass | null = await loadClassFromID(classIds[i]);
+        const newClass: CombinedClass | null = await loadCombinedClass(classIds[i]);
 
         if (newClass) {
             classData.push(newClass);
@@ -84,7 +92,8 @@ export async function loadClassFromIDs(classIds: string[]): Promise<CombinedClas
     return classData;
 }
 
-export async function loadClassOfUser(auth: string): Promise<CombinedClass[]> {
+//
+export async function loadClassesOfUser(auth: string): Promise<CombinedClass[]> {
     const response = await fetchWithTimeout("./api/users", {
         headers: {
             authentication_hash: auth,
@@ -96,7 +105,7 @@ export async function loadClassOfUser(auth: string): Promise<CombinedClass[]> {
         const userJSON = JSON.parse(responseText);
         const classes = userJSON.classes;
 
-        const classData: CombinedClass[] = await loadClassFromIDs(classes);
+        const classData: CombinedClass[] = await loadCombinedClasses(classes);
 
         return classData;
     } else {
@@ -106,25 +115,16 @@ export async function loadClassOfUser(auth: string): Promise<CombinedClass[]> {
     return new Object() as CombinedClass[];
 }
 
-// Editable Class Properties.
+// INSERTs/POSTs
 
-export async function loadClassPropertiesFromID(classId: string): Promise<ClassProperty> {
-    const propertiesResponse = await fetchWithTimeout("./api/class_properties", {
-        headers: {
-            id: classId,
-        },
-    });
+// Insert class
+export async function insertClass(classData: Class) {}
 
-    if (propertiesResponse.status == 200 && propertiesResponse.body) {
-        const propertiesResponseText = new TextDecoder().decode((await propertiesResponse.body.getReader().read()).value);
-        const propertiesJSON = JSON.parse(propertiesResponseText);
-        const newProperties = propertiesJSON as ClassProperty;
+// Insert class_property
+export async function insertClassProperty(classProperties: ClassProperty) {}
 
-        return newProperties;
-    }
-
-    return new Object() as ClassProperty;
+// Insert combined class
+export async function insertCombinedClass(combinedClass: CombinedClass) {
+    insertClass(combinedClass.classData);
+    insertClassProperty(combinedClass.classProperties);
 }
-
-// GET for Combined class info: two collections
-// POST as well ^

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CombinedClass, standardTimeSlot } from '../../lib/types';
-import { loadClassOfUser } from '../../lib/utils';
+import { loadClassesOfUser } from '../../lib/utils';
 import Calendar from '@/components/Calendar/Calendar';
 
 
@@ -13,7 +13,7 @@ const CalendarPage = () => {
 
     useEffect(() => {
         if (classLoading) {
-            loadClassOfUser("abc").then((classData) => {
+            loadClassesOfUser("abc").then((classData) => {
                 setClassData(classData);
                 setClassLoading(false);
             }).catch(error => {

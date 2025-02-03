@@ -34,7 +34,7 @@ const NewClassForm = () => {
     };
 
     return (
-        <div className="p-8 max-w-xl mx-auto">
+        <div className="p-8 mx-auto">
             <h2 className="text-2xl font-semibold mb-6">Create New Class</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <input

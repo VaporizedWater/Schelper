@@ -21,7 +21,7 @@ export default function Modal({ children }: ModalProps) {
         >
             {/* Modal Content */}
             <div
-                className="bg-white w-[80%] h-[60%] md:w-[50%] md:h-[50%] rounded-lg p-6 relative"
+                className="bg-white min-w-fit min-h-fit w-[80%] h-[60%] md:w-[50%] md:h-[50%] rounded-lg p-6 relative"
                 onClick={(e) => e.stopPropagation()} // Prevent click propagation
             >
                 <button
