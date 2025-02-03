@@ -70,7 +70,7 @@ export async function loadCombinedClass(classId: string): Promise<CombinedClass>
     let propId: string = newClass.associated_properties;
 
     // Getting the class property
-    const newProperties: ClassProperty = await loadClassProperties(classId);
+    const newProperties: ClassProperty = await loadClassProperties(propId);
 
     // Combining the class property
     combinedClass.classProperties = newProperties;
@@ -159,16 +159,19 @@ export async function insertClassProperty(classProperties: ClassProperty) {
 
 // Insert combined class
 export async function insertCombinedClass(combinedClass: CombinedClass) {
+    console.log("Startinggggggg");
     const classStatus = await insertClass(combinedClass.classData);
 
-    if (classStatus != null) {
+    console.log("so we got...");
+    if (classStatus == null) {
         console.error("Failed to insert class");
         return;
     }
 
+    console.log("so we got here@");
     const classPropStatus = await insertClassProperty(combinedClass.classProperties);
 
-    if (classPropStatus != null) {
+    if (classPropStatus == null) {
         console.error("Failed to insert class properties. Try again...");
     }
 }

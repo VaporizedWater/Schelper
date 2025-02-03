@@ -21,18 +21,20 @@ export default function Modal({ children }: ModalProps) {
         >
             {/* Modal Content */}
             <div
-                className="bg-white min-w-fit min-h-fit w-[80%] h-[60%] md:w-[50%] md:h-[50%] rounded-lg p-6 relative"
+                className="bg-white min-w-fit w-[80%] md:w-[50%] rounded-lg relative"
                 onClick={(e) => e.stopPropagation()} // Prevent click propagation
             >
                 <button
-                    className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
+                    className="absolute top-3 right-4 text-gray-500 hover:text-gray-700"
                     onClick={closeModal}
                 >
                     &#x2715;
                 </button>
 
                 {/* Modal Content */}
-                {children}
+                <div className="max-h-[75vh] overflow-y-auto scrollbar-thin">
+                    {children}
+                </div>
             </div>
         </div>
     );

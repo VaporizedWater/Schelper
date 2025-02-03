@@ -5,12 +5,10 @@ import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
 import { EventClickArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
-import { createContext } from "vm";
 import { ClassProvider, useClassContext } from "../ClassContext/ClassContext";
 import CalendarNav from "../CalendarNav/CalendarNav";
-import Spreadsheet from "react-spreadsheet";
 import CalendarSheet from "../CalendarSheet/CalendarSheet";
 
 const days: { [key: string]: string } = {
