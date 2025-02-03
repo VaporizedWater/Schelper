@@ -102,3 +102,7 @@ export type FullCalendarClassEvent = {
     startTime: string;
     endTime: string;
 };
+
+export type CalendarOpenProps = {
+    toggleCalendar: (isOpen: boolean) => void;
+};

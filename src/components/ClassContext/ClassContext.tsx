@@ -2,8 +2,8 @@ import { createContext, ReactNode, use, useContext, useState } from 'react';
 import { CombinedClass } from '@/lib/types';
 
 interface ClassContextType {
-    currClass: CombinedClass | undefined;
-    updateClass: (newClass: CombinedClass) => void;
+    currCombinedClass: CombinedClass | undefined;
+    updateClass: (newCombinedClass: CombinedClass) => void;
 }
 
 const ClassContext = createContext<ClassContextType | undefined>(undefined);
@@ -13,14 +13,16 @@ interface ClassProviderProps {
 }
 
 export const ClassProvider = ({ children }: ClassProviderProps) => {
-    const [currClass, setClass] = useState<CombinedClass>();
+    const [currCombinedClass, setCombinedClass] = useState<CombinedClass>();
 
     const updateClass = (newClass: CombinedClass) => {
-        setClass(newClass);
+        setCombinedClass(newClass);
     }
 
+    console.log(currCombinedClass + "HEHEHEHHEHE");
+
     return (
-        <ClassContext.Provider value={{ currClass, updateClass }} >
+        <ClassContext.Provider value={{ currCombinedClass, updateClass }} >
             {children}
         </ClassContext.Provider>
     );
