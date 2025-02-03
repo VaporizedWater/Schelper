@@ -2,16 +2,18 @@ import clientPromise from "@/lib/mongodb";
 import { Document, ObjectId } from "mongodb";
 import { Class } from "../../../lib/types";
 
+const client = await clientPromise;
+const collection = client.db("class-scheduling-app").collection("classes");
+
 export async function GET(request: Request) {
-    const client = await clientPromise;
-    const classTable = client.db("class-scheduling-app").collection("classes");
+
     const classID = request.headers.get("id") + "";
 
     let response: Response, data;
 
     if (classID.length) {
         const objID = new ObjectId(classID);
-        data = await classTable.findOne({ _id: objID });
+        data = await collection.findOne({ _id: objID });
 
         if (data) {
             const dataDoc: Document = data;
@@ -41,12 +43,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-    const client = await clientPromise;
-    const classTable = client.db("class-scheduling-app").collection("classes");
-
     try {
         const body = await request.json();
-        const result = await classTable.insertOne(body);
+        const result = await collection.insertOne(body);
 
         return new Response(JSON.stringify({ insertedId: result.insertedId }), { status: 201 });
     } catch (error) {
