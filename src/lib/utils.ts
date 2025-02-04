@@ -42,7 +42,12 @@ export async function loadClassProperties(classId: string): Promise<ClassPropert
     }
 
     const propertiesResponseText = new TextDecoder().decode((await propertiesResponse.body.getReader().read()).value);
-    const propertiesJSON = JSON.parse(propertiesResponseText);
+    let propertiesJSON
+    try {
+        propertiesJSON = JSON.parse(propertiesResponseText);
+    } catch (e) {
+        console.error(e);
+    }
     const newProperties = propertiesJSON as ClassProperty;
     return newProperties;
 }
