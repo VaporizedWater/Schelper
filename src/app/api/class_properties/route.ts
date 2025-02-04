@@ -1,5 +1,5 @@
 import clientPromise from "@/lib/mongodb";
-import { Document } from "mongodb";
+import { Document, ObjectId } from "mongodb";
 import { ClassProperty } from "../../../lib/types";
 import fetchWithTimeout from "../../../lib/utils";
 
@@ -34,8 +34,7 @@ export async function GET(request: Request) {
             }
 
             const classProperties: ClassProperty = {
-                object_id: dataDoc._id,
-                associated_class: dataDoc.associated_class,
+                _id: dataDoc._id,
                 class_status: dataDoc.class_status,
                 start_time: dataDoc.start_time,
                 end_time: dataDoc.end_time,
@@ -65,7 +64,14 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const result = await collection.insertOne(body);
+
+        // Convert _id to an ObjectId if it's provided and valid
+        const document = {
+            ...body,
+            _id: body._id && ObjectId.isValid(body._id) ? new ObjectId(body._id) : new ObjectId(),
+        };
+
+        const result = await collection.insertOne(document);
 
         return new Response(JSON.stringify({ insertedId: result.insertedId }), { status: 201 });
     } catch (error) {
@@ -73,6 +79,4 @@ export async function POST(request: Request) {
     }
 }
 
-export async function PUT(request: Request) {
-
-}
+export async function PUT(request: Request) {}

@@ -5,16 +5,33 @@ import { useRouter } from "next/navigation";
 import { Class, ClassProperty, CombinedClass, FullCalendarClassEvent } from "@/lib/types";
 import { ObjectId } from "mongodb";
 import { insertClass, insertCombinedClass } from "@/lib/utils";
+import useLocalStorage from "@/lib/hooks";
 
 const NewClassForm = () => {
-    const [title, setTitle] = useState("");
-    const [day, setDay] = useState("Mon");
-    const [startTime, setStartTime] = useState("");
-    const [endTime, setEndTime] = useState("");
-    const [classInfo, setClassInfo] = useState<Class>({} as Class);
-    const [classProperties, setClassProperties] = useState<ClassProperty>({} as ClassProperty);
+    const [title, setTitle, clearTitle] = useLocalStorage("title", "");
+    const [day, setDay, clearDay] = useLocalStorage("day", "Mon");
+    const [startTime, setStartTime, clearStartTime] = useLocalStorage("startTime", "");
+    const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "");
+    const [classInfo, setClassInfo, clearClassInfo] = useLocalStorage<Class>("classInfo", {} as Class);
+    const [classProperties, setClassProperties, clearClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty);
 
     const router = useRouter();
+
+    const clearState = () => {
+        clearTitle();
+        clearDay();
+        clearStartTime();
+        clearEndTime();
+        setClassInfo({} as Class);
+        setClassProperties({} as ClassProperty);
+
+        // setDay("Mon");
+        // setStartTime("");
+        // setEndTime("");
+
+        // clearClassInfo();
+        // clearClassProperties();
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,13 +55,16 @@ const NewClassForm = () => {
         defaultCombined.classProperties = classProperties ?? defaultProperties;
         insertCombinedClass(defaultCombined);
 
+        // Clear state
+        clearState();
+
         // Navigate back (optional)
         router.back();
     };
 
     const defaultClass: Class = {
-        object_id: "1",
-        associated_properties: "1",
+        // object_id: {} as ObjectId,
+        _id: "",
         catalog_num: "1",
         class_num: "1",
         session: "1",
@@ -58,8 +78,8 @@ const NewClassForm = () => {
     }
 
     const defaultProperties: ClassProperty = {
-        object_id: "1",
-        associated_class: "1",
+        // object_id: {} as ObjectId,
+        _id: "",
         class_status: "1",
         start_time: "1",
         end_time: "1",
@@ -81,7 +101,7 @@ const NewClassForm = () => {
         <div className="p-8 mx-auto">
             <h2 className="text-2xl font-semibold mb-6">Create New Class</h2>
             <div className="">
-                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4" onReset={clearState}>
                     {/* For class as well as class_property */}
                     <input
                         type="text"
@@ -234,9 +254,16 @@ const NewClassForm = () => {
                         className="p-2 border rounded"
                     />
 
-                    <button type="submit" className="bg-blue-500 text-white p-2 rounded">
-                        Create
-                    </button>
+                    <div className="flex flex-row gap-2">
+                        {/* Clear button */}
+                        <button type="reset" className="bg-gray-300 text-black p-2 rounded flex-grow">
+                            Clear
+                        </button>
+                        <button type="submit" className="bg-blue-500 text-white p-2 rounded flex-grow">
+                            Create
+                        </button>
+                    </div>
+
                 </form>
             </div>
         </div>

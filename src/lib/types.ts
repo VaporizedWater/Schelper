@@ -1,9 +1,9 @@
+import { ObjectId } from "mongodb";
 import { CSSProperties, ReactNode } from "react";
 
 export type Class = {
     // unchanging identifiers
-    object_id: string;
-    associated_properties: string;
+    _id: string;
     catalog_num: string;
     class_num: string;
     session: string;
@@ -18,8 +18,7 @@ export type Class = {
 
 export type ClassProperty = {
     // editable properties
-    object_id: string;
-    associated_class: string;
+    _id: string;
     class_status: string;
     start_time: string;
     end_time: string;
