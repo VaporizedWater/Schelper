@@ -63,8 +63,8 @@ const NewClassForm = () => {
     };
 
     const defaultClass: Class = {
-        object_id: "1",
-        associated_properties: "1",
+        // object_id: {} as ObjectId,
+        _id: "",
         catalog_num: "1",
         class_num: "1",
         session: "1",
@@ -78,8 +78,8 @@ const NewClassForm = () => {
     }
 
     const defaultProperties: ClassProperty = {
-        object_id: "1",
-        associated_class: "1",
+        // object_id: {} as ObjectId,
+        _id: "",
         class_status: "1",
         start_time: "1",
         end_time: "1",

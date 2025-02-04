@@ -1,3 +1,5 @@
+"use server";
+
 import clientPromise from "@/lib/mongodb";
 import { Document, ObjectId } from "mongodb";
 import { Class } from "../../../lib/types";
@@ -6,7 +8,6 @@ const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("classes");
 
 export async function GET(request: Request) {
-
     const classID = request.headers.get("id") + "";
 
     let response: Response, data;
@@ -18,7 +19,7 @@ export async function GET(request: Request) {
         if (data) {
             const dataDoc: Document = data;
             const classProperties: Class = {
-                object_id: dataDoc._id,
+                _id: dataDoc._id,
                 associated_properties: dataDoc.associated_properties,
                 catalog_num: dataDoc.catalog_num,
                 class_num: dataDoc.class_num,
@@ -45,7 +46,14 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const result = await collection.insertOne(body);
+
+        // Convert _id to an ObjectId if it's provided and valid
+        const document = {
+            ...body,
+            _id: body._id && ObjectId.isValid(body._id) ? new ObjectId(body._id) : new ObjectId(),
+        };
+
+        const result = await collection.insertOne(document);
 
         return new Response(JSON.stringify({ insertedId: result.insertedId }), { status: 201 });
     } catch (error) {

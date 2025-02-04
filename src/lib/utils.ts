@@ -1,5 +1,7 @@
 import { headers } from "next/headers";
 import { Class, ClassProperty, CombinedClass } from "./types";
+import { O } from "node_modules/@fullcalendar/core/internal-common";
+import { ObjectId } from "mongodb";
 
 // FETCH
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
@@ -67,10 +69,8 @@ export async function loadCombinedClass(classId: string): Promise<CombinedClass>
     const newClass = classJSON as Class;
     combinedClass.classData = newClass;
 
-    let propId: string = newClass.associated_properties;
-
     // Getting the class property
-    const newProperties: ClassProperty = await loadClassProperties(propId);
+    const newProperties: ClassProperty = await loadClassProperties(classId);
 
     // Combining the class property
     combinedClass.classProperties = newProperties;
@@ -159,18 +159,20 @@ export async function insertClassProperty(classProperties: ClassProperty) {
 
 // Insert combined class
 export async function insertCombinedClass(combinedClass: CombinedClass) {
-    const classStatus = await insertClass(combinedClass.classData);
+    const classId = await insertClass(combinedClass.classData);
 
-    if (classStatus == null) {
+    if (classId == null) {
         console.error("Failed to insert class");
         return;
     } else {
-        console.log(classStatus + "HI!");
+        console.log(classId + " : Inserted class successfully!\n");
     }
+    combinedClass.classProperties._id = classId;
+    const classPropId = await insertClassProperty(combinedClass.classProperties);
 
-    const classPropStatus = await insertClassProperty(combinedClass.classProperties);
-
-    if (classPropStatus == null) {
+    if (classPropId == null) {
         console.error("Failed to insert class properties. Try again...");
+    } else {
+        console.log(classPropId + " : Inserted class properties successfully!\n");
     }
 }
