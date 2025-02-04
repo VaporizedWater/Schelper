@@ -159,16 +159,15 @@ export async function insertClassProperty(classProperties: ClassProperty) {
 
 // Insert combined class
 export async function insertCombinedClass(combinedClass: CombinedClass) {
-    console.log("Startinggggggg");
     const classStatus = await insertClass(combinedClass.classData);
 
-    console.log("so we got...");
     if (classStatus == null) {
         console.error("Failed to insert class");
         return;
+    } else {
+        console.log(classStatus + "HI!");
     }
 
-    console.log("so we got here@");
     const classPropStatus = await insertClassProperty(combinedClass.classProperties);
 
     if (classPropStatus == null) {
