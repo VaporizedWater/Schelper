@@ -1,6 +1,6 @@
 import { LuFileSpreadsheet } from "react-icons/lu";
 import { MdCalendarMonth } from "react-icons/md";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import DropDown from "../DropDown/DropDown";
 import { CalendarOpenProps } from "@/lib/types";
 
@@ -8,9 +8,9 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
     const [calendarActive, setActive] = useState(true);
 
-    let whiteClassL: string = "py-2 px-4 hover:bg-gray-200 rounded-l-full", blueClassL: string = whiteClassL + " bg-lightblue";
-    let whiteClassR: string = "py-2 px-4 hover:bg-gray-200 rounded-r-full", blueClassR: string = whiteClassR + " bg-lightblue";
-    let dropList = [
+    const whiteClassL: string = "py-2 px-4 hover:bg-gray-200 rounded-l-full", blueClassL: string = whiteClassL + " bg-lightblue";
+    const whiteClassR: string = "py-2 px-4 hover:bg-gray-200 rounded-r-full", blueClassR: string = whiteClassR + " bg-lightblue";
+    const dropList = [
         { content: "Class", iconUrl: null, iconAlt: null, link: "/classes" },
         { content: "Tag", iconUrl: null, iconAlt: null, link: "/addTag" }
     ];

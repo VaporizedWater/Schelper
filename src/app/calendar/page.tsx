@@ -19,6 +19,7 @@ const CalendarPage = () => {
             }).catch(error => {
                 console.error("Error loading class data:", error);
                 setClassLoading(false);
+                setTimeSlots([]);
             });
         }
     }, [classLoading]);

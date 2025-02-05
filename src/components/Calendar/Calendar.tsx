@@ -4,9 +4,10 @@ import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
-import { EventClickArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
+import { EventClickArg, EventInput } from "@fullcalendar/core/index.js";
 import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
+import { ClassProvider } from "../ClassContext/ClassContext";
 import { useClassContext } from "../ClassContext/ClassContext";
 import CalendarNav from "../CalendarNav/CalendarNav";
 import CalendarSheet from "../CalendarSheet/CalendarSheet";
@@ -48,6 +49,7 @@ const viewFiveDays = {
 }
 
 const Calendar = (props: CalendarProps) => {
+    console.log(props);
     const ctrlHeldRef = useRef(false);
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
@@ -61,10 +63,10 @@ const Calendar = (props: CalendarProps) => {
     }, [setEvent]);
 
     if (oneClass && newEventText) {
-        let newEvent: FullCalendarClassEvent = JSON.parse(newEventText);
-        let convertedDay = days[newEvent.day];
-        let dateStringStart = convertedDay + 'T' + newEvent.startTime;
-        let dateStringEnd = convertedDay + 'T' + newEvent.endTime;
+        const newEvent: FullCalendarClassEvent = JSON.parse(newEventText);
+        const convertedDay = days[newEvent.day];
+        const dateStringStart = convertedDay + 'T' + newEvent.startTime;
+        const dateStringEnd = convertedDay + 'T' + newEvent.endTime;
 
         addEvent({
             title: newEvent.title,
@@ -86,30 +88,30 @@ const Calendar = (props: CalendarProps) => {
         selectedEvents.length = 0;  // This effectively empties the array
     }
 
-    function downHandler(event: KeyboardEvent) {
-        if (event.key === 'Control') {
-            ctrlHeldRef.current = true;
-        }
-    }
-
-    function upHandler(event: KeyboardEvent) {
-        if (event.key === 'Control') {
-            ctrlHeldRef.current = false;
-            unselectAll();
-        }
-        console.log("Key up");
-    }
-
-    function clickHandler(event: MouseEvent) {
-        // updateClass();
-
-        if (event.ctrlKey) {
-            event.preventDefault();
-            return false;
-        }
-    }
-
     useEffect(() => {
+        function downHandler(event: KeyboardEvent) {
+            if (event.key === 'Control') {
+                ctrlHeldRef.current = true;
+            }
+        }
+
+        function upHandler(event: KeyboardEvent) {
+            if (event.key === 'Control') {
+                ctrlHeldRef.current = false;
+                unselectAll();
+            }
+            console.log("Key up");
+        }
+
+        function clickHandler(event: MouseEvent) {
+            // updateClass();
+
+            if (event.ctrlKey) {
+                event.preventDefault();
+                return false;
+            }
+        }
+
         window.addEventListener('keydown', downHandler);
         window.addEventListener('keyup', upHandler);
         window.addEventListener('click', clickHandler);
@@ -119,7 +121,7 @@ const Calendar = (props: CalendarProps) => {
             window.removeEventListener('keyup', upHandler);
             window.removeEventListener('click', clickHandler);
         };
-    }, [downHandler, upHandler, clickHandler]);
+    }, []);
 
     // Use eventDrop callback and snap the class to standard timeslots unless the control key is pressed, 
     // which then drops it to the 5 minute sanpDuration

@@ -1,7 +1,7 @@
 import clientPromise from "@/lib/mongodb";
 
 const client = await clientPromise;
-const classTable = client.db("class-scheduling-app").collection("tags");
+const collection = client.db("class-scheduling-app").collection("tags");
 
 export async function GET(request: Request) {
     let response: Response;
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
         console.log(request.body);
     }
 
-    const data = await classTable.find();
+    const data = await collection.find();
 
     if (data) {
         const tagItems = await data.toArray();
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
         }
 
         const newTag = { tagName, classes: [] }; 
-        await classTable.insertOne(newTag); 
+        await collection.insertOne(newTag); 
 
         return new Response("Tag added successfully", { status: 201 });
     } catch (error) {
