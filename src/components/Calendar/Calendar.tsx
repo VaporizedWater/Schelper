@@ -7,8 +7,7 @@ import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
 import { EventClickArg, EventInput } from "@fullcalendar/core/index.js";
 import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
-import { ClassProvider } from "../ClassContext/ClassContext";
-import { useClassContext } from "../ClassContext/ClassContext";
+// import { useClassContext } from "../ClassContext/ClassContext";
 import CalendarNav from "../CalendarNav/CalendarNav";
 import CalendarSheet from "../CalendarSheet/CalendarSheet";
 
@@ -54,7 +53,7 @@ const Calendar = (props: CalendarProps) => {
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
     const [isCalendarOpen, setCalendarOpen] = useState(true);
-    const { currCombinedClass, updateClass } = useClassContext();
+    // const { currCombinedClass, updateClass } = useClassContext();
 
     useEffect(() => {
         const newEvent: string | null = localStorage.getItem("newEvent");
