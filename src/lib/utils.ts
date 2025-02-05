@@ -41,7 +41,7 @@ export async function loadClassProperties(classId: string): Promise<ClassPropert
     }
 
     const propertiesResponseText = new TextDecoder().decode((await propertiesResponse.body.getReader().read()).value);
-    let propertiesJSON
+    let propertiesJSON;
     try {
         propertiesJSON = JSON.parse(propertiesResponseText);
     } catch (e) {
@@ -148,6 +148,7 @@ export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
             newCombined.push({
                 classData: classItem,
                 classProperties: classProperty,
+                event: undefined,
             });
         }
     }
@@ -157,7 +158,7 @@ export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
 
 // DELETES
 export async function deleteClass(classID: string) {
-    console.log("deleting "+classID);
+    console.log("deleting " + classID);
 }
 
 // INSERTs/POSTs

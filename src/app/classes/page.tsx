@@ -7,7 +7,7 @@ import { useLocalStorage } from 'usehooks-ts'
 
 const NewClassForm = () => {
     const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
-    const [day, setDay, clearDay] = useLocalStorage("day", "Mon", { initializeWithValue: false });
+    const [day, setDay] = useLocalStorage("day", "Mon", { initializeWithValue: false });
     const [startTime, setStartTime, clearStartTime] = useLocalStorage("startTime", "", { initializeWithValue: false });
     const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "", { initializeWithValue: false });
     const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
@@ -85,7 +85,7 @@ const NewClassForm = () => {
         tags: ["1", "2"]
     }
 
-    const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties };
+    const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };
 
     return (
         <div className="p-8 mx-auto">
