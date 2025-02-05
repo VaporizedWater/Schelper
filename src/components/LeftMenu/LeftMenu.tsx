@@ -20,7 +20,7 @@ const LeftMenu = () => {
     }, []);
 
     return (
-        <div className="flex flex-col max-w-fit">
+        <div className="flex flex-col max-w-fit max-h-fit min-h-fit">
             <div className="px-4 my-4">
                 <Filters tags={tagList} />
             </div>

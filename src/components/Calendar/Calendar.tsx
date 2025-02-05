@@ -160,14 +160,14 @@ const Calendar = (props: CalendarProps) => {
 
     return (
         <div className="flex flex-row">
-            <div className="">
+            <div className="w-[20vh] flex flex-col">
                 <LeftMenu></LeftMenu>
             </div>
-            <div className="w-[85vw] flex flex-col">
+            <div className="w-[80vw] flex flex-col">
                 <div>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
                 </div>
-                <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl min-h-[80vh]">
+                <div className="rounded-b-3xl min-h-[80vh]">
                     {isCalendarOpen ?
                         fullCalendar :
                         <CalendarSheet></CalendarSheet>
