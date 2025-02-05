@@ -1,19 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Class, ClassProperty, CombinedClass, FullCalendarClassEvent } from "@/lib/types";
-import { ObjectId } from "mongodb";
-import { insertClass, insertCombinedClass } from "@/lib/utils";
-import useLocalStorage from "@/lib/hooks";
+import { insertCombinedClass } from "@/lib/utils";
+import { useLocalStorage } from 'usehooks-ts'
 
 const NewClassForm = () => {
-    const [title, setTitle, clearTitle] = useLocalStorage("title", "");
-    const [day, setDay, clearDay] = useLocalStorage("day", "Mon");
-    const [startTime, setStartTime, clearStartTime] = useLocalStorage("startTime", "");
-    const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "");
-    const [classInfo, setClassInfo, clearClassInfo] = useLocalStorage<Class>("classInfo", {} as Class);
-    const [classProperties, setClassProperties, clearClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty);
+    const [title, setTitle, clearTitle] = useLocalStorage("title", "", {initializeWithValue: false});
+    const [day, setDay, clearDay] = useLocalStorage("day", "Mon", {initializeWithValue: false});
+    const [startTime, setStartTime, clearStartTime] = useLocalStorage("startTime", "", {initializeWithValue: false});
+    const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "", {initializeWithValue: false});
+    const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, {initializeWithValue: false});
+    const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty, {initializeWithValue: false});
+    const [classEvent, setClassEvent] = useLocalStorage("newEvent", "", {initializeWithValue: false});
 
     const router = useRouter();
 
@@ -40,15 +39,15 @@ const NewClassForm = () => {
             return;
         }
 
-        const newEvent: FullCalendarClassEvent = {
+        const newClassEvent: FullCalendarClassEvent = {
             title,
             day,
             startTime,
             endTime,
         };
 
-        // Store new event temporarily
-        localStorage.setItem("newEvent", JSON.stringify(newEvent));
+        setClassEvent(JSON.stringify(newClassEvent));
+        console.log(classEvent);
 
         // Testing POST Request
         defaultCombined.classData = classInfo ?? defaultClass;

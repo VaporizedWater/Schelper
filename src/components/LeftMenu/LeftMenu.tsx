@@ -3,11 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Filters from "../Filters/Filters";
-import { DropDownItemProps, TagProps } from "@/lib/types";
-import { MdAdd } from "react-icons/md";
-import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
-import DropDown from "../DropDown/DropDown";
-import { classIcon, tagIcon } from "@/lib/icons";
+import { TagProps } from "@/lib/types";
 import ClassProperties from "../ClassProperties/ClassProperties";
 
 const LeftMenu = () => {

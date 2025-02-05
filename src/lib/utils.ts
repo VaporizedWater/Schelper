@@ -1,7 +1,4 @@
-import { headers } from "next/headers";
 import { Class, ClassProperty, CombinedClass } from "./types";
-import { O } from "node_modules/@fullcalendar/core/internal-common";
-import { ObjectId } from "mongodb";
 
 // FETCH
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
@@ -122,7 +119,9 @@ export async function loadClassesOfUser(auth: string): Promise<CombinedClass[]> 
 }
 
 // DELETES
-export async function deleteClass(classID: string) {}
+export async function deleteClass(classID: string) {
+    console.log("deleting "+classID);
+}
 
 // INSERTs/POSTs
 

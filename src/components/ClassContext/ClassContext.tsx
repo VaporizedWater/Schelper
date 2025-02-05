@@ -1,4 +1,4 @@
-import { createContext, ReactNode, use, useContext, useState } from 'react';
+import { createContext, ReactNode, useContext, useState } from 'react';
 import { CombinedClass } from '@/lib/types';
 
 interface ClassContextType {
