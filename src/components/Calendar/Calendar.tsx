@@ -7,8 +7,8 @@ import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
 import { EventClickArg, EventInput } from "@fullcalendar/core/index.js";
 import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
-import { ClassProvider } from "../ClassContext/ClassContext";
-import { useClassContext } from "../ClassContext/ClassContext";
+//import { ClassProvider } from "../ClassContext/ClassContext";
+//import { useClassContext } from "../ClassContext/ClassContext";
 import CalendarNav from "../CalendarNav/CalendarNav";
 import CalendarSheet from "../CalendarSheet/CalendarSheet";
 
@@ -54,7 +54,7 @@ const Calendar = (props: CalendarProps) => {
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
     const [isCalendarOpen, setCalendarOpen] = useState(true);
-    const { currCombinedClass, updateClass } = useClassContext();
+    //const { currCombinedClass, updateClass } = useClassContext();
 
     useEffect(() => {
         const newEvent: string | null = localStorage.getItem("newEvent");
@@ -153,6 +153,7 @@ const Calendar = (props: CalendarProps) => {
             initialView='viewFiveDays'
             views={viewFiveDays}
             headerToolbar={false}
+            height={'100%'}
         />
     );
 
@@ -165,7 +166,7 @@ const Calendar = (props: CalendarProps) => {
                 <div>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
                 </div>
-                <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl max-h-[80vh]">
+                <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl min-h-[80vh]">
                     {isCalendarOpen ?
                         fullCalendar :
                         <CalendarSheet></CalendarSheet>
