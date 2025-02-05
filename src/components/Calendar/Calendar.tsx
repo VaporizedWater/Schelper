@@ -3,7 +3,7 @@
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
+import { CalendarProps, CombinedClass, FullCalendarClassEvent } from "@/lib/types";
 import { EventClickArg, EventInput } from "@fullcalendar/core/index.js";
 import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
@@ -19,7 +19,10 @@ const days: { [key: string]: string } = {
 };
 
 //use eventDragStop to constrain the date (both start and end times retaining duration) between 8AM and 5PM
+//
 
+let allCombinedClasses: CombinedClass[] = []; // Replace [] with the util function to get all classes
+//
 let events: EventInput[] = [
     {
         title: 'Class 1',
@@ -154,7 +157,7 @@ const Calendar = (props: CalendarProps) => {
             views={viewFiveDays}
             headerToolbar={false}
             height={'100%'}
-            dayHeaderFormat={{'weekday':'long'}}
+            dayHeaderFormat={{ 'weekday': 'long' }}
         />
     );
 

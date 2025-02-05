@@ -6,30 +6,23 @@ import { insertCombinedClass } from "@/lib/utils";
 import { useLocalStorage } from 'usehooks-ts'
 
 const NewClassForm = () => {
-    const [title, setTitle, clearTitle] = useLocalStorage("title", "", {initializeWithValue: false});
-    const [day, setDay, clearDay] = useLocalStorage("day", "Mon", {initializeWithValue: false});
-    const [startTime, setStartTime, clearStartTime] = useLocalStorage("startTime", "", {initializeWithValue: false});
-    const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "", {initializeWithValue: false});
-    const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, {initializeWithValue: false});
-    const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty, {initializeWithValue: false});
-    const [classEvent, setClassEvent] = useLocalStorage("newEvent", "", {initializeWithValue: false});
+    const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
+    const [day, setDay, clearDay] = useLocalStorage("day", "Mon", { initializeWithValue: false });
+    const [startTime, setStartTime, clearStartTime] = useLocalStorage("startTime", "", { initializeWithValue: false });
+    const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "", { initializeWithValue: false });
+    const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
+    const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty, { initializeWithValue: false });
+    const [classEvent, setClassEvent] = useLocalStorage("newEvent", "", { initializeWithValue: false });
 
     const router = useRouter();
 
     const clearState = () => {
         clearTitle();
-        clearDay();
+        setDay("Mon");
         clearStartTime();
         clearEndTime();
         setClassInfo({} as Class);
         setClassProperties({} as ClassProperty);
-
-        // setDay("Mon");
-        // setStartTime("");
-        // setEndTime("");
-
-        // clearClassInfo();
-        // clearClassProperties();
     }
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -62,7 +55,6 @@ const NewClassForm = () => {
     };
 
     const defaultClass: Class = {
-        // object_id: {} as ObjectId,
         _id: "",
         catalog_num: "1",
         class_num: "1",
@@ -77,7 +69,6 @@ const NewClassForm = () => {
     }
 
     const defaultProperties: ClassProperty = {
-        // object_id: {} as ObjectId,
         _id: "",
         class_status: "1",
         start_time: "1",
@@ -89,8 +80,8 @@ const NewClassForm = () => {
         end_date: "t",
         instructor_email: "t",
         instructor_name: "t",
-        total_enrolled: "t",
-        total_waitlisted: "t",
+        total_enrolled: "0",
+        total_waitlisted: "0",
         tags: ["1", "2"]
     }
 
