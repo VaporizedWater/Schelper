@@ -20,8 +20,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
             <ul className="flex flex-row items-center">
                 {/* Drop down for selecting calendars/semesters*/}
                 <li key={1} className={`flex flex-row gap-2`}>
-                    <p className="text-lg text-lightblack text-center font-semibold">January 2025</p>
-                    <p className="text-lg text-lightblack text-center">SP25</p>
+                    <p className="text-lg text-lightblack text-center font-semibold">Spring 25</p>
                 </li>
             </ul>
             <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">

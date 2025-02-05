@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { ClassProvider } from "@/components/ClassContext/ClassContext"
 
 export default function Layout({
     modals,
@@ -8,9 +8,9 @@ export default function Layout({
     children: React.ReactNode
 }) {
     return (
-        <>
+        <ClassProvider>
             <div>{modals}</div>
             <div>{children}</div>
-        </>
+        </ClassProvider>
     )
 }

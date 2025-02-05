@@ -1,7 +1,5 @@
 import { headers } from "next/headers";
 import { Class, ClassProperty, CombinedClass } from "./types";
-import { O } from "node_modules/@fullcalendar/core/internal-common";
-import { ObjectId } from "mongodb";
 
 // FETCH
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
@@ -114,6 +112,43 @@ export async function loadClassesOfUser(auth: string): Promise<CombinedClass[]> 
     }
 
     return new Object() as CombinedClass[];
+}
+
+export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
+    const response = await fetchWithTimeout("./api/classes", {
+        headers: {},
+    });
+
+    if (!response.ok || response.status != 200 || !response.body) {
+        console.error("Could not find classes!");
+        return new Object() as CombinedClass[];
+    }
+
+    const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
+    const classesJSON = JSON.parse(responseText);
+    const newClasses = classesJSON as Class[];
+
+    const newCombined = [] as CombinedClass[];
+
+    for (const classItem of newClasses) {
+        const propResponse = await fetchWithTimeout("./api/class_properties", {
+            headers: { id: classItem._id.toString() },
+        });
+
+        if (!propResponse.ok || propResponse.status != 200 || !propResponse.body) {
+            console.error("Couldn't retrieve property!");
+        } else {
+            const propResponseText = new TextDecoder().decode((await propResponse.body?.getReader().read()).value);
+            const classProperty = JSON.parse(propResponseText) as ClassProperty;
+
+            newCombined.push({
+                classData: classItem,
+                classProperties: classProperty,
+            });
+        }
+    }
+
+    return newCombined;
 }
 
 // DELETES

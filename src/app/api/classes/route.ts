@@ -20,7 +20,6 @@ export async function GET(request: Request) {
             const dataDoc: Document = data;
             const classProperties: Class = {
                 _id: dataDoc._id,
-                associated_properties: dataDoc.associated_properties,
                 catalog_num: dataDoc.catalog_num,
                 class_num: dataDoc.class_num,
                 session: dataDoc.session,

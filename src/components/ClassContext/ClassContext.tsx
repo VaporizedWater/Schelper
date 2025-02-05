@@ -1,3 +1,5 @@
+"use client"
+
 import { createContext, ReactNode, use, useContext, useState } from 'react';
 import { CombinedClass } from '@/lib/types';
 
@@ -18,8 +20,6 @@ export const ClassProvider = ({ children }: ClassProviderProps) => {
     const updateClass = (newClass: CombinedClass) => {
         setCombinedClass(newClass);
     }
-
-    console.log(currCombinedClass + "HEHEHEHHEHE");
 
     return (
         <ClassContext.Provider value={{ currCombinedClass, updateClass }} >

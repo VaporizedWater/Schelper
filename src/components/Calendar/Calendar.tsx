@@ -7,7 +7,7 @@ import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
 import { EventClickArg, EventInput, EventSourceInput } from "@fullcalendar/core/index.js";
 import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
-import { ClassProvider, useClassContext } from "../ClassContext/ClassContext";
+import { useClassContext } from "../ClassContext/ClassContext";
 import CalendarNav from "../CalendarNav/CalendarNav";
 import CalendarSheet from "../CalendarSheet/CalendarSheet";
 
@@ -51,8 +51,8 @@ const Calendar = (props: CalendarProps) => {
     const ctrlHeldRef = useRef(false);
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
-    // const { currClass, updateClass } = useClassContext();
     const [isCalendarOpen, setCalendarOpen] = useState(true);
+    const { currCombinedClass, updateClass } = useClassContext();
 
     useEffect(() => {
         const newEvent: string | null = localStorage.getItem("newEvent");
@@ -142,40 +142,35 @@ const Calendar = (props: CalendarProps) => {
                     unselectAll();
                 }
 
-
                 // Handle new element
                 console.log(info.el.className);
                 selectedEvents.push(info.el);
                 info.el.style.borderColor = 'red';
             }}
+
             initialView='viewFiveDays'
             views={viewFiveDays}
             headerToolbar={false}
-
-
         />
     );
 
     return (
-        <ClassProvider>
-            <div className="flex flex-row">
-                <div className="">
-                    <LeftMenu></LeftMenu>
-                </div>
-                <div className="w-[85vw] flex flex-col">
-                    <div>
-                        <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
-                    </div>
-                    <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl max-h-[80vh]">
-                        {isCalendarOpen ?
-                            fullCalendar :
-                            <CalendarSheet></CalendarSheet>
-                        }
-                    </div>
-                </div>
-
+        <div className="flex flex-row">
+            <div className="">
+                <LeftMenu></LeftMenu>
             </div>
-        </ClassProvider >
+            <div className="w-[85vw] flex flex-col">
+                <div>
+                    <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
+                </div>
+                <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl max-h-[80vh]">
+                    {isCalendarOpen ?
+                        fullCalendar :
+                        <CalendarSheet></CalendarSheet>
+                    }
+                </div>
+            </div>
+        </div >
     );
 };
 
