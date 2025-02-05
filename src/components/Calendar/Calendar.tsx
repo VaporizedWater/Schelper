@@ -167,7 +167,7 @@ const Calendar = (props: CalendarProps) => {
                 <div>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
                 </div>
-                <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl min-h-[80vh]">
+                <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-sm min-h-[80vh]">
                     {isCalendarOpen ?
                         fullCalendar :
                         <CalendarSheet></CalendarSheet>
