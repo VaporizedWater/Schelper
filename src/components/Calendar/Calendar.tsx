@@ -7,8 +7,6 @@ import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
 import { EventClickArg, EventInput } from "@fullcalendar/core/index.js";
 import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
-//import { ClassProvider } from "../ClassContext/ClassContext";
-//import { useClassContext } from "../ClassContext/ClassContext";
 import CalendarNav from "../CalendarNav/CalendarNav";
 import CalendarSheet from "../CalendarSheet/CalendarSheet";
 
@@ -20,6 +18,8 @@ const days: { [key: string]: string } = {
     Fri: '2025-01-10',
 };
 
+//use eventDragStop to constrain the date (both start and end times retaining duration) between 8AM and 5PM
+
 let events: EventInput[] = [
     {
         title: 'Class 1',
@@ -29,7 +29,7 @@ let events: EventInput[] = [
     {
         title: 'Class 2',
         start: '2025-01-06T09:00:00',
-        end: '2025-01-06T10:00:00'
+        end: '2025-01-06T10:00:00',
     },
 ];
 const addEvent = (item: EventInput) => {
@@ -149,11 +149,12 @@ const Calendar = (props: CalendarProps) => {
                 selectedEvents.push(info.el);
                 info.el.style.borderColor = 'red';
             }}
-
+            allDaySlot={false}
             initialView='viewFiveDays'
             views={viewFiveDays}
             headerToolbar={false}
             height={'100%'}
+            dayHeaderFormat={{'weekday':'long'}}
         />
     );
 
