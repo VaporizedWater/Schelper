@@ -21,6 +21,11 @@ const days: { [key: string]: string } = {
     Fri: '2025-01-10',
 };
 
+//use eventDragStop to constrain the date (both start and end times retaining duration) between 8AM and 5PM
+//
+
+// const allCombinedClasses: CombinedClass[] = []; // Replace [] with the util function to get all classes
+//
 let events: EventInput[] = [
     {
         title: 'Class 1',
@@ -170,25 +175,25 @@ const Calendar = (props: CalendarProps) => {
 
             
 
+            height={'100%'}
+            dayHeaderFormat={{ 'weekday': 'long' }}
         />
     );
 
     return (
-        <ClassProvider>
-            <div className="flex flex-row">
-                <div className="">
-                    <LeftMenu></LeftMenu>
+        <div className="flex flex-row">
+            <div className="w-[20vh] flex flex-col">
+                <LeftMenu></LeftMenu>
+            </div>
+            <div className="w-[80vw] flex flex-col">
+                <div>
+                    <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
                 </div>
-                <div className="w-[85vw] flex flex-col">
-                    <div>
-                        <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
-                    </div>
-                    <div className="overflow-y-scroll scrollbar-webkit scrollbar-thin rounded-b-3xl max-h-[80vh]">
-                        {isCalendarOpen ?
-                            fullCalendar :
-                            <CalendarSheet></CalendarSheet>
-                        }
-                    </div>
+                <div className="rounded-b-3xl min-h-[80vh]">
+                    {isCalendarOpen ?
+                        fullCalendar :
+                        <CalendarSheet></CalendarSheet>
+                    }
                 </div>
 
             </div>
