@@ -158,6 +158,8 @@ const Calendar = (props: CalendarProps) => {
             initialView='viewFiveDays'
             views={viewFiveDays}
             headerToolbar={false}
+            height={'100%'}
+            dayHeaderFormat={{ 'weekday': 'long' }}
 
             eventDidMount={(info) => {
                 const startTime = info.event.start ? info.event.start.toLocaleString() : "No Start Time";
@@ -175,8 +177,7 @@ const Calendar = (props: CalendarProps) => {
 
 
 
-            height={'100%'}
-            dayHeaderFormat={{ 'weekday': 'long' }}
+
         />
     );
 
