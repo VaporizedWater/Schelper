@@ -173,7 +173,7 @@ const Calendar = (props: CalendarProps) => {
                 });
             }}
 
-            
+
 
             height={'100%'}
             dayHeaderFormat={{ 'weekday': 'long' }}
@@ -181,21 +181,22 @@ const Calendar = (props: CalendarProps) => {
     );
 
     return (
-        <div className="flex flex-row">
-            <div className="w-[20vh] flex flex-col">
-                <LeftMenu></LeftMenu>
-            </div>
-            <div className="w-[80vw] flex flex-col">
-                <div>
-                    <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
+        <ClassProvider >
+            <div className="flex flex-row">
+                <div className="w-[20vh] flex flex-col">
+                    <LeftMenu></LeftMenu>
                 </div>
-                <div className="rounded-b-3xl min-h-[80vh]">
-                    {isCalendarOpen ?
-                        fullCalendar :
-                        <CalendarSheet></CalendarSheet>
-                    }
+                <div className="w-[80vw] flex flex-col">
+                    <div>
+                        <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
+                    </div>
+                    <div className="rounded-b-3xl min-h-[80vh]">
+                        {isCalendarOpen ?
+                            fullCalendar :
+                            <CalendarSheet></CalendarSheet>
+                        }
+                    </div>
                 </div>
-
             </div>
         </ClassProvider >
     );
