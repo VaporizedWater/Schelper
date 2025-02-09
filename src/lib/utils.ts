@@ -41,14 +41,13 @@ export async function loadClassProperties(classId: string): Promise<ClassPropert
     }
 
     const propertiesResponseText = new TextDecoder().decode((await propertiesResponse.body.getReader().read()).value);
-    let propertiesJSON;
-    try {
-        propertiesJSON = JSON.parse(propertiesResponseText);
-    } catch (e) {
-        console.error(e);
+
+    if (propertiesResponseText === "" || typeof propertiesResponseText === undefined) {
+        console.warn("Invalid JSON response from class_properties, returning empty properties");
+        return new Object() as ClassProperty;
     }
-    const newProperties = propertiesJSON as ClassProperty;
-    return newProperties;
+
+    return JSON.parse(propertiesResponseText) as ClassProperty;
 }
 
 // Load from two collections
