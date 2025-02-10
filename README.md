@@ -1,3 +1,9 @@
+## MongoDB Playground
+
+The validation.mongodb.js script allows you to run a validation test on the classes and class_properties to ensure there is a 1 to 1 relationship. It will generate an error report in the "error" collection, and also print the results to your console. To run this script, you must have MongoDB for VS Code installed, and you need to open the playground in the leaf menu to the left, and click the run button in the upper right on VS Code's navigation bar.
+
+## Next.js
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Pre-requisites: 
