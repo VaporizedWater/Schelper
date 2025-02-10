@@ -3,37 +3,31 @@
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
+import { CalendarProps, CombinedClass, FullCalendarClassEvent } from "@/lib/types";
 import { EventClickArg, EventInput } from "@fullcalendar/core/index.js";
 import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
 import CalendarNav from "../CalendarNav/CalendarNav";
 import CalendarSheet from "../CalendarSheet/CalendarSheet";
+import { useCalendarContext } from "../CalendarContext/CalendarContext";
 
-const days: { [key: string]: string } = {
-    Mon: '2025-01-06',
-    Tues: '2025-01-07',
-    Wed: '2025-01-08',
-    Thurs: '2025-01-09',
-    Fri: '2025-01-10',
-};
 
 //use eventDragStop to constrain the date (both start and end times retaining duration) between 8AM and 5PM
 //
 
-// const allCombinedClasses: CombinedClass[] = []; // Replace [] with the util function to get all classes
+
 //
 let events: EventInput[] = [
-    {
-        title: 'Class 1',
-        start: '2025-01-07T08:00:00',
-        end: '2025-01-07T09:00:00'
-    },
-    {
-        title: 'Class 2',
-        start: '2025-01-06T09:00:00',
-        end: '2025-01-06T10:00:00',
-    },
+    // {
+    //     title: 'Class 1',
+    //     start: '2025-01-07T08:00:00',
+    //     end: '2025-01-07T09:00:00'
+    // },
+    // {
+    //     title: 'Class 2',
+    //     start: '2025-01-06T09:00:00',
+    //     end: '2025-01-06T10:00:00',
+    // },
 ];
 const addEvent = (item: EventInput) => {
     events = [...new Set([...events, item])]
@@ -52,12 +46,12 @@ const viewFiveDays = {
 }
 
 const Calendar = (props: CalendarProps) => {
-    console.log(props);
+    // console.log(props);
     const ctrlHeldRef = useRef(false);
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
     const [isCalendarOpen, setCalendarOpen] = useState(true);
-    //const { currCombinedClass, updateClass } = useClassContext();
+    const { allEvents, currCombinedClass, updateCurrClass, allClasses } = useCalendarContext()
 
     useEffect(() => {
         const newEvent: string | null = localStorage.getItem("newEvent");
@@ -67,15 +61,13 @@ const Calendar = (props: CalendarProps) => {
 
     if (oneClass && newEventText) {
         const newEvent: FullCalendarClassEvent = JSON.parse(newEventText);
-        const convertedDay = days[newEvent.day];
-        const dateStringStart = convertedDay + 'T' + newEvent.startTime;
-        const dateStringEnd = convertedDay + 'T' + newEvent.endTime;
 
-        addEvent({
-            title: newEvent.title,
-            start: dateStringStart,
-            end: dateStringEnd
-        } as EventInput);
+
+        // addEvent({
+        //     title: newEvent.title,
+        //     start: dateStringStart,
+        //     end: dateStringEnd
+        // } as EventInput);
         console.log(events);
         setOneClass(false);
     }
@@ -107,7 +99,7 @@ const Calendar = (props: CalendarProps) => {
         }
 
         function clickHandler(event: MouseEvent) {
-            // updateClass();
+            // updateCurrClass();
 
             if (event.ctrlKey) {
                 event.preventDefault();
@@ -126,6 +118,26 @@ const Calendar = (props: CalendarProps) => {
         };
     }, []);
 
+    const handleEventClick = (info: EventClickArg) => {
+        // Handle old elements
+        if (!ctrlHeldRef) {
+            unselectAll();
+        }
+
+        // Handle new element
+        // console.log(info.el.className);
+        // selectedEvents.push(info.el);
+        info.el.style.borderColor = 'red';
+
+        const foundClass = allClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
+
+        if (foundClass) {
+            updateCurrClass(foundClass);
+        }
+
+        console.log("Current Class: \n" + JSON.stringify(currCombinedClass));
+    }
+
     // Use eventDrop callback and snap the class to standard timeslots unless the control key is pressed, 
     // which then drops it to the 5 minute sanpDuration
     // Possibly resize the event so it also is the correct size within this timeslot
@@ -136,22 +148,12 @@ const Calendar = (props: CalendarProps) => {
             editable
             expandRows
             selectable={false}
-            events={events}
+            events={allEvents}
             slotDuration={'00:30:00'}
             slotMinTime={'08:00:00'}
             slotMaxTime={'17:00:00'}
             snapDuration={'00:05:00'}
-            eventClick={(info: EventClickArg) => {
-                // Handle old elements
-                if (!ctrlHeldRef) {
-                    unselectAll();
-                }
-
-                // Handle new element
-                console.log(info.el.className);
-                selectedEvents.push(info.el);
-                info.el.style.borderColor = 'red';
-            }}
+            eventClick={handleEventClick}
             allDaySlot={false}
             initialView='viewFiveDays'
             views={viewFiveDays}

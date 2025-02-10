@@ -1,4 +1,6 @@
+import { headers } from "next/headers";
 import { Class, ClassProperty, CombinedClass } from "./types";
+import { time } from "console";
 
 // FETCH
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
@@ -96,27 +98,27 @@ export async function loadCombinedClasses(classIds: string[]): Promise<CombinedC
 }
 
 //
-export async function loadClassesOfUser(auth: string): Promise<CombinedClass[]> {
-    const response = await fetchWithTimeout("./api/users", {
-        headers: {
-            authentication_hash: auth,
-        },
-    });
+// export async function loadClassesOfUser(auth: string): Promise<CombinedClass[]> {
+//     const response = await fetchWithTimeout("./api/users", {
+//         headers: {
+//             authentication_hash: auth,
+//         },
+//     });
 
-    if (response.status == 200 && response.body) {
-        const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-        const userJSON = JSON.parse(responseText);
-        const classes = userJSON.classes;
+//     if (response.status == 200 && response.body) {
+//         const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
+//         const userJSON = JSON.parse(responseText);
+//         const classes = userJSON.classes;
 
-        const classData: CombinedClass[] = await loadCombinedClasses(classes);
+//         const classData: CombinedClass[] = await loadCombinedClasses(classes);
 
-        return classData;
-    } else {
-        console.log("response failed");
-    }
+//         return classData;
+//     } else {
+//         console.log("response failed");
+//     }
 
-    return new Object() as CombinedClass[];
-}
+//     return new Object() as CombinedClass[];
+// }
 
 export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
     const response = await fetchWithTimeout("./api/classes", {
@@ -124,7 +126,16 @@ export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
     });
 
     if (!response.ok || response.status != 200 || !response.body) {
-        console.error("Could not find classes!");
+        console.error("Could not find classes!\n");
+        console.log(response);
+        if (response.ok) {
+            console.log(response.statusText + "ok");
+        }
+        console.log("status: " + response.status);
+
+        if (response.body) {
+            console.log("body" + response.body);
+        }
         return new Object() as CombinedClass[];
     }
 
@@ -134,24 +145,32 @@ export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
 
     const newCombined = [] as CombinedClass[];
 
+    console.log(JSON.stringify(newClasses) + "\n");
+
     for (const classItem of newClasses) {
         const propResponse = await fetchWithTimeout("./api/class_properties", {
             headers: { id: classItem._id.toString() },
         });
 
-        if (!propResponse.ok || propResponse.status != 200 || !propResponse.body) {
-            console.error("Couldn't retrieve property!");
-        } else {
-            const propResponseText = new TextDecoder().decode((await propResponse.body?.getReader().read()).value);
-            const classProperty = JSON.parse(propResponseText) as ClassProperty;
+        // Read entire response as text first
+        const propText = await propResponse.text();
 
-            newCombined.push({
-                classData: classItem,
-                classProperties: classProperty,
-                event: undefined,
-            });
+        if (!propResponse.ok || !propText || propText.trim().length === 0) {
+            console.error("Couldn't retrieve property for id:", classItem._id.toString());
+            continue; // Skip this iteration if there's no property data
         }
+
+        // Otherwise, parse the text
+        const classProperty = JSON.parse(propText) as ClassProperty;
+
+        newCombined.push({
+            classData: classItem,
+            classProperties: classProperty,
+            event: undefined,
+        });
     }
+
+    // console.log(JSON.stringify(newCombined) + "\n");
 
     return newCombined;
 }

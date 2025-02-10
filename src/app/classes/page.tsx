@@ -32,6 +32,9 @@ const NewClassForm = () => {
             return;
         }
 
+        // Blank tags for now by default until we take them as input
+        setClassProperties({ ...classProperties, tags: [] } as ClassProperty);
+
         const newClassEvent: FullCalendarClassEvent = {
             title,
             day,
@@ -65,7 +68,7 @@ const NewClassForm = () => {
         title: "1",
         location: "1",
         enrollment_cap: "1",
-        waitlist_cap: "1"
+        waitlist_cap: "1",
     }
 
     const defaultProperties: ClassProperty = {
@@ -76,13 +79,11 @@ const NewClassForm = () => {
         room: "1",
         facility_id: "1",
         days: ["Mon"],
-        start_date: "t",
-        end_date: "t",
         instructor_email: "t",
         instructor_name: "t",
         total_enrolled: "0",
         total_waitlisted: "0",
-        tags: ["1", "2"]
+        tags: ["1", "2"],
     }
 
     const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };

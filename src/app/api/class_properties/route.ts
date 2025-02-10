@@ -1,64 +1,62 @@
 import clientPromise from "@/lib/mongodb";
 import { Document, ObjectId } from "mongodb";
-import { ClassProperty } from "../../../lib/types";
-import fetchWithTimeout from "../../../lib/utils";
+import fetchWithTimeout from "@/lib/utils";
+import { ClassProperty } from "@/lib/types";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("class_properties");
 
 export async function GET(request: Request) {
-    const classID = request.headers.get("id") + "";
-    let response: Response, data;
+    const headerId = request.headers.get("id");
+    const classID = headerId ? headerId : "";
+    let response: Response;
 
-    if (classID.length) {
-        data = await collection.findOne({ associated_class: classID });
-
-        if (data) {
-            const dataDoc: Document = data;
-            const email = dataDoc.instructor_email as string;
-            let name = "";
-
-            if (email.length) {
-                const emailID = email.substring(0, email.search("@"));
-                if (emailID) {
-                    const response = await fetchWithTimeout(
-                        "https://search-service.k8s.psu.edu/search-service/resources/people?text=" + emailID + "&size=1"
-                    );
-
-                    if (response.status == 200 && response.body) {
-                        const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-                        const userJSON = JSON.parse(responseText);
-                        name = userJSON[0].displayName;
-                    }
-                }
-            }
-
-            const classProperties: ClassProperty = {
-                _id: dataDoc._id,
-                class_status: dataDoc.class_status,
-                start_time: dataDoc.start_time,
-                end_time: dataDoc.end_time,
-                room: dataDoc.room,
-                facility_id: dataDoc.facility_id,
-                days: dataDoc.days,
-                start_date: dataDoc.start_date,
-                end_date: dataDoc.end_date,
-                instructor_email: email,
-                instructor_name: name,
-                total_enrolled: dataDoc.total_enrolled,
-                total_waitlisted: dataDoc.total_waitlisted,
-                tags: dataDoc.tags,
-            };
-
-            response = new Response(JSON.stringify(classProperties), { status: 200 });
-        } else {
-            response = new Response(null, { status: 200 });
-        }
-    } else {
-        response = new Response(null, { status: 200 });
+    if (!classID.length || !ObjectId.isValid(classID)) {
+        return Response.json({ error: "Invalid class ID" }, { status: 400 });
     }
 
-    return response;
+    const objID = new ObjectId(classID);
+    const data = await collection.findOne({ _id: objID });
+
+    if (data) {
+        const dataDoc: Document = data;
+        const email = dataDoc.instructor_email as string;
+        let name = "";
+
+        if (email.length) {
+            const emailID = email.substring(0, email.search("@"));
+            if (emailID) {
+                const response = await fetchWithTimeout(
+                    "https://search-service.k8s.psu.edu/search-service/resources/people?text=" + emailID + "&size=1"
+                );
+
+                if (response.status == 200 && response.body) {
+                    const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
+                    const userJSON = JSON.parse(responseText);
+                    name = userJSON[0].displayName;
+                }
+            }
+        }
+
+        const classProperty: ClassProperty = {
+            _id: dataDoc._id,
+            class_status: dataDoc.class_status,
+            start_time: dataDoc.start_time,
+            end_time: dataDoc.end_time,
+            room: dataDoc.room,
+            facility_id: dataDoc.facility_id,
+            days: dataDoc.days,
+            instructor_email: email,
+            instructor_name: name,
+            total_enrolled: dataDoc.total_enrolled,
+            total_waitlisted: dataDoc.total_waitlisted,
+            tags: dataDoc.tags,
+        };
+
+        return Response.json(classProperty);
+    }
+
+    return new Response(null, { status: 200 });
 }
 
 export async function POST(request: Request) {

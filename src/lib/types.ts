@@ -1,3 +1,4 @@
+import { EventInput } from "@fullcalendar/core/index.js";
 import { CSSProperties } from "react";
 
 export type Class = {
@@ -24,8 +25,6 @@ export type ClassProperty = {
     room: string;
     facility_id: string;
     days: string[];
-    start_date: string;
-    end_date: string;
     instructor_email: string;
     instructor_name: string;
     total_enrolled: string;
@@ -36,7 +35,7 @@ export type ClassProperty = {
 export type CombinedClass = {
     classData: Class;
     classProperties: ClassProperty;
-    event: InputEvent | undefined;
+    event: EventInput | undefined;
 };
 
 export type PropertyProps = {

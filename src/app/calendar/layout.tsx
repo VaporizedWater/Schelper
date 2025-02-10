@@ -1,4 +1,4 @@
-import { ClassProvider } from "@/components/ClassContext/ClassContext"
+import { CalendarProvider } from "@/components/CalendarContext/CalendarContext"
 
 export default function Layout({
     modals,
@@ -8,9 +8,9 @@ export default function Layout({
     children: React.ReactNode
 }) {
     return (
-        <ClassProvider>
+        <CalendarProvider>
             <div>{modals}</div>
             <div>{children}</div>
-        </ClassProvider>
+        </CalendarProvider>
     )
 }
