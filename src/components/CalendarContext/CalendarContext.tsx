@@ -98,11 +98,11 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
             setTagList(newTagMap);
 
             // Display tagList in full with all objects and subobjects expanded
-            const serializableTagList = Array.from(newTagMap.entries()).map(([id, { tagName, classIds }]) => ({
-                id,
-                tagName,
-                classIds: Array.from(classIds),
-            }));
+            // const serializableTagList = Array.from(newTagMap.entries()).map(([id, { tagName, classIds }]) => ({
+            //     id,
+            //     tagName,
+            //     classIds: Array.from(classIds),
+            // }));
 
             // console.log("Full tagList:", JSON.stringify(serializableTagList, null, 2));
         }

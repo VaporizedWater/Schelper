@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import Spreadsheet, { Matrix } from "react-spreadsheet";
 import { updateCombinedClass } from "@/lib/utils";
-import { ex } from "node_modules/@fullcalendar/core/internal-common";
-import { EventInput } from "@fullcalendar/core/index.js";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context

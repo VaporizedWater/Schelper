@@ -1,15 +1,15 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
-import { CombinedClass, standardTimeSlot } from '../../lib/types';
+// import React, { useState, useEffect } from 'react';
+// import { CombinedClass, standardTimeSlot } from '../../lib/types';
 import Calendar from '@/components/Calendar/Calendar';
-import { loadAllCombinedClasses } from '@/lib/utils';
+// import { loadAllCombinedClasses } from '@/lib/utils';
 
 
 const CalendarPage = () => {
-    const [combinedClasses, setClassData] = useState([] as CombinedClass[]);
-    const [timeSlots, setTimeSlots] = useState([] as standardTimeSlot[]);
-    const [classLoading, setClassLoading] = useState(true);
+    // const [combinedClasses, setClassData] = useState([] as CombinedClass[]);
+    // const [timeSlots, setTimeSlots] = useState([] as standardTimeSlot[]);
+    // const [classLoading, setClassLoading] = useState(true);
 
     // useEffect(() => {
     //     if (classLoading) {

@@ -7,7 +7,7 @@ import { TagProps } from "@/lib/types";
 import ClassProperties from "../ClassProperties/ClassProperties";
 
 const LeftMenu = () => {
-    const [tagList, setTags] = useState<TagProps[]>([]);
+    const [, setTags] = useState<TagProps[]>([]);
 
     useEffect(() => {
         const fetchTags = async () => {

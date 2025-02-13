@@ -6,9 +6,9 @@ const collection = client.db("class-scheduling-app").collection("tags");
 export async function GET(request: Request) {
     let response: Response;
 
-    // if (request.body) {
-    //     console.log(request.body);
-    // }
+    if (!request.body) {
+        console.log("Request body doesn't exist!");
+    }
 
     const data = await collection.find();
 

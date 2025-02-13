@@ -10,7 +10,6 @@ const collection = client.db("class-scheduling-app").collection("class_propertie
 export async function GET(request: Request) {
     const headerId = request.headers.get("id");
     const classID = headerId ? headerId : "";
-    let response: Response;
 
     if (!classID.length || !ObjectId.isValid(classID)) {
         return Response.json({ error: "Invalid class ID" }, { status: 400 });

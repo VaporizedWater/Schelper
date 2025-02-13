@@ -3,9 +3,9 @@
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
-import { EventClickArg, EventInput } from "@fullcalendar/core/index.js";
-import { useEffect, useRef, useState } from "react";
+// import { FullCalendarClassEvent } from "@/lib/types";
+import { EventClickArg } from "@fullcalendar/core/index.js";
+import { useEffect, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
 import CalendarNav from "../CalendarNav/CalendarNav";
 import CalendarSheet from "../CalendarSheet/CalendarSheet";
@@ -17,21 +17,22 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 
 
 //
-let events: EventInput[] = [
-    // {
-    //     title: 'Class 1',
-    //     start: '2025-01-07T08:00:00',
-    //     end: '2025-01-07T09:00:00'
-    // },
-    // {
-    //     title: 'Class 2',
-    //     start: '2025-01-06T09:00:00',
-    //     end: '2025-01-06T10:00:00',
-    // },
-];
-const addEvent = (item: EventInput) => {
-    events = [...new Set([...events, item])]
-};
+// let events: EventInput[] = [
+//     // {
+//     //     title: 'Class 1',
+//     //     start: '2025-01-07T08:00:00',
+//     //     end: '2025-01-07T09:00:00'
+//     // },
+//     // {
+//     //     title: 'Class 2',
+//     //     start: '2025-01-06T09:00:00',
+//     //     end: '2025-01-06T10:00:00',
+//     // },
+// ];
+// 
+// const addEvent = (item: EventInput) => {
+//     events = [...new Set([...events, item])]
+// };
 
 const selectedEvents: HTMLElement[] = [];
 
@@ -49,7 +50,7 @@ const Calendar = () => {
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
     const [isCalendarOpen, setCalendarOpen] = useState(true);
-    const { allEvents, currCombinedClass, updateCurrClass, allClasses, displayClasses, displayEvents } = useCalendarContext()
+    const { updateCurrClass, displayClasses, displayEvents } = useCalendarContext()
 
     useEffect(() => {
         const newEvent: string | null = localStorage.getItem("newEvent");
@@ -58,7 +59,7 @@ const Calendar = () => {
     }, [setEvent]);
 
     if (oneClass && newEventText) {
-        const newEvent: FullCalendarClassEvent = JSON.parse(newEventText);
+        // const newEvent: FullCalendarClassEvent = JSON.parse(newEventText);
 
         // addEvent({
         //     title: newEvent.title,
@@ -81,7 +82,7 @@ const Calendar = () => {
     }
 
     useEffect(() => {
-        function downHandler(event: KeyboardEvent) {
+        function downHandler() {
             // empty for now
         }
 
