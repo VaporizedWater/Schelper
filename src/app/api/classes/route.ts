@@ -60,7 +60,7 @@ export async function GET(request: Request) {
                 waitlist_cap: doc.waitlist_cap,
             }));
 
-            console.log("\n" + JSON.stringify(classData));
+            // console.log("\n" + JSON.stringify(classData));
 
             response = NextResponse.json(classData, { status: 200 });
         } else {

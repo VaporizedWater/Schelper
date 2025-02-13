@@ -74,10 +74,10 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
                 for (const tag of classItem.classProperties.tags) {
                     if (newTagMap.has(tag.id)) {
                         newTagMap.get(tag.id)?.classIds.add(classItem.classData._id);
-                        console.log("Added class: " + classItem.classData._id + " to tag: " + tag.name);
+                        // console.log("Added class: " + classItem.classData._id + " to tag: " + tag.name);
                     } else {
                         newTagMap.set(tag.id, { tagName: tag.name, classIds: new Set([classItem.classData._id]) });
-                        console.log("Added tag: " + tag.name + " with class: " + classItem.classData._id);
+                        // console.log("Added tag: " + tag.name + " with class: " + classItem.classData._id);
                     }
                 }
             }
@@ -93,7 +93,6 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
 
             // Set display classes to all classes
             setDisplayClasses(allClasses);
-            console.log("HERE");
 
             // Update state for tagList with a new Map so that consumers get a new reference
             setTagList(newTagMap);
@@ -105,7 +104,7 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
                 classIds: Array.from(classIds),
             }));
 
-            console.log("Full tagList:", JSON.stringify(serializableTagList, null, 2));
+            // console.log("Full tagList:", JSON.stringify(serializableTagList, null, 2));
         }
         loadClasses();
     }, []);

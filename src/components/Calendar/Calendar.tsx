@@ -46,7 +46,6 @@ const viewFiveDays = {
 }
 
 const Calendar = () => {
-    const ctrlHeldRef = useRef(false);
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
     const [isCalendarOpen, setCalendarOpen] = useState(true);
@@ -66,7 +65,7 @@ const Calendar = () => {
         //     start: dateStringStart,
         //     end: dateStringEnd
         // } as EventInput);
-        console.log(events);
+        // console.log(events);
         setOneClass(false);
     }
 
@@ -83,22 +82,17 @@ const Calendar = () => {
 
     useEffect(() => {
         function downHandler(event: KeyboardEvent) {
-            if (event.key === 'Control') {
-                ctrlHeldRef.current = true;
-            }
+            // empty for now
         }
 
         function upHandler(event: KeyboardEvent) {
             if (event.key === 'Control') {
-                ctrlHeldRef.current = false;
                 unselectAll();
             }
-            console.log("Key up");
+            // console.log("Key up");
         }
 
         function clickHandler(event: MouseEvent) {
-            // updateCurrClass();
-
             if (event.ctrlKey) {
                 event.preventDefault();
                 return false;
@@ -117,12 +111,9 @@ const Calendar = () => {
     }, []);
 
     const handleEventClick = (info: EventClickArg) => {
-        // Handle old elements
-        if (!ctrlHeldRef) {
-            unselectAll();
-        }
-
+        unselectAll();
         info.el.style.borderColor = 'red';
+        selectedEvents.push(info.el);
 
         const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
 
@@ -130,7 +121,7 @@ const Calendar = () => {
             updateCurrClass(foundClass);
         }
 
-        console.log("Current Class: \n" + JSON.stringify(currCombinedClass));
+        // console.log("Current Class: \n" + JSON.stringify(currCombinedClass));
     }
 
     // Use eventDrop callback and snap the class to standard timeslots unless the control key is pressed, 
@@ -155,6 +146,7 @@ const Calendar = () => {
             headerToolbar={false}
             height={'100%'}
             dayHeaderFormat={{ 'weekday': 'long' }}
+        // eventDrop={}
         />
     );
 

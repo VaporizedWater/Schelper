@@ -9,7 +9,7 @@ import { EventInput } from "@fullcalendar/core/index.js";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
-    const { allClasses, updateAllClasses } = useCalendarContext();
+    const { allClasses, updateAllClasses, updateDisplayClasses } = useCalendarContext();
 
     // Compute a hidden mapping of row index (starting at 0 for first data row) to class id.
     const classIds = allClasses.map((item) => item.classData._id);
@@ -119,7 +119,7 @@ export default function CalendarSheet() {
                 const id = classIds[idx]; // Get the id from the mapping
                 console.log("id " + id);
                 const existing = allClasses.find((item) => item.classData._id === id);
-                console.log("existing ", JSON.stringify(existing));
+                // console.log("existing ", JSON.stringify(existing));
 
                 return {
                     classData: {
@@ -161,7 +161,9 @@ export default function CalendarSheet() {
             // Update the context with the modified classes.
             updateAllClasses(newClassesData);
 
-            console.log(JSON.stringify(newClassesData) + "YEP");
+            updateDisplayClasses(newClassesData);
+
+            // console.log(JSON.stringify(newClassesData) + "YEP");
         }
     };
 

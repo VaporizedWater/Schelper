@@ -4,7 +4,6 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const ImportSheet = () => {
-    console.log("THIS WORKS");
     const [file, setFile] = useState<File | null>(null);
 
     const router = useRouter();

@@ -30,7 +30,7 @@ const Filters = () => {
         setSelectedTags(newSelectedTags);
 
         // Display selected tags in console by expanding the set to an array
-        console.log("Selected tags: ", Array.from(newSelectedTags));
+        // console.log("Selected tags: ", Array.from(newSelectedTags));
 
         // update display classes based on selected tags using tagList from context
         // Filter allClasses so that each class has at least one tag from the selected tag set.
@@ -42,7 +42,7 @@ const Filters = () => {
         // Update display events as well
         updateDisplayEvents(newDisplayClasses.map((item) => item.event as EventInput));
 
-        console.log("Display classes: ", newDisplayClasses);
+        // console.log("Display classes: ", newDisplayClasses);
     };
 
 

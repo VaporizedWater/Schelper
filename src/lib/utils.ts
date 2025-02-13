@@ -107,9 +107,10 @@ export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
         }
         console.log("status: " + response.status);
 
-        if (response.body) {
-            console.log("body" + response.body);
-        }
+        // if (response.body) {
+        //     console.log("body" + response.body);
+        // }
+
         return new Object() as CombinedClass[];
     }
 
@@ -119,7 +120,7 @@ export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
 
     const newCombined = [] as CombinedClass[];
 
-    console.log(JSON.stringify(newClasses) + "\n");
+    // console.log(JSON.stringify(newClasses) + "\n");
 
     for (const classItem of newClasses) {
         const propResponse = await fetchWithTimeout("./api/class_properties", {
@@ -239,8 +240,6 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(combinedClass.classData),
     });
-
-    console.log(classResponse.json() + "111111");
 
     if (!classResponse.ok) {
         console.error("Error updating class: " + classResponse.statusText);
