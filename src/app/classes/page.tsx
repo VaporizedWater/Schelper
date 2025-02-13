@@ -83,7 +83,7 @@ const NewClassForm = () => {
         instructor_name: "t",
         total_enrolled: "0",
         total_waitlisted: "0",
-        tags: ["1", "2"],
+        tags: [{ id: "1", name: "Test 1" }, { id: "2", name: "Test 2" }],
     }
 
     const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };

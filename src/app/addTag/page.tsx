@@ -17,6 +17,9 @@ const AddTag = () => {
                 localStorage.setItem("tags", JSON.stringify(updatedTags));
 
                 setInputValue(""); // Clear input
+
+                // Store tags in database
+
                 router.push('/tags'); // Navigate to the tags page
             } catch (error) {
                 console.error("Error saving tag:", error);

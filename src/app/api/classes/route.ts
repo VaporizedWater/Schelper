@@ -62,7 +62,6 @@ export async function GET(request: Request) {
                 location: doc.location,
                 enrollment_cap: doc.enrollment_cap,
                 waitlist_cap: doc.waitlist_cap,
-                tags: doc.tags,
             }));
 
             console.log("\n" + JSON.stringify(classData));

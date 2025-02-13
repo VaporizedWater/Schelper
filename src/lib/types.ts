@@ -29,7 +29,9 @@ export type ClassProperty = {
     instructor_name: string;
     total_enrolled: string;
     total_waitlisted: string;
-    tags: string[];
+
+    // tags with id and name
+    tags: { id: string; name: string }[];
 };
 
 export type CombinedClass = {
@@ -45,7 +47,6 @@ export type PropertyProps = {
 
 export type TagProps = {
     tagName: string;
-    classes: number[];
 };
 
 export type TagPropList = {

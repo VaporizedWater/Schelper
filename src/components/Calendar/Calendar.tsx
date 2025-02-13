@@ -3,7 +3,7 @@
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import { CalendarProps, CombinedClass, FullCalendarClassEvent } from "@/lib/types";
+import { CalendarProps, FullCalendarClassEvent } from "@/lib/types";
 import { EventClickArg, EventInput } from "@fullcalendar/core/index.js";
 import { useEffect, useRef, useState } from "react";
 import LeftMenu from "../LeftMenu/LeftMenu";
@@ -45,13 +45,12 @@ const viewFiveDays = {
     }
 }
 
-const Calendar = (props: CalendarProps) => {
-    // console.log(props);
+const Calendar = () => {
     const ctrlHeldRef = useRef(false);
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
     const [isCalendarOpen, setCalendarOpen] = useState(true);
-    const { allEvents, currCombinedClass, updateCurrClass, allClasses } = useCalendarContext()
+    const { allEvents, currCombinedClass, updateCurrClass, allClasses, displayClasses, displayEvents } = useCalendarContext()
 
     useEffect(() => {
         const newEvent: string | null = localStorage.getItem("newEvent");
@@ -61,7 +60,6 @@ const Calendar = (props: CalendarProps) => {
 
     if (oneClass && newEventText) {
         const newEvent: FullCalendarClassEvent = JSON.parse(newEventText);
-
 
         // addEvent({
         //     title: newEvent.title,
@@ -129,7 +127,7 @@ const Calendar = (props: CalendarProps) => {
         // selectedEvents.push(info.el);
         info.el.style.borderColor = 'red';
 
-        const foundClass = allClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
+        const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
 
         if (foundClass) {
             updateCurrClass(foundClass);
@@ -148,7 +146,7 @@ const Calendar = (props: CalendarProps) => {
             editable
             expandRows
             selectable={false}
-            events={allEvents}
+            events={displayEvents}
             slotDuration={'00:30:00'}
             slotMinTime={'08:00:00'}
             slotMaxTime={'17:00:00'}

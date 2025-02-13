@@ -1,6 +1,4 @@
-import { headers } from "next/headers";
 import { Class, ClassProperty, CombinedClass } from "./types";
-import { time } from "console";
 
 // FETCH
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
@@ -235,4 +233,21 @@ export async function insertCombinedClass(combinedClass: CombinedClass) {
     } else {
         console.log(classPropId + " : Inserted class properties successfully!\n");
     }
+}
+
+// Insert tag
+export async function insertTag(tagName: string) {
+    const response = await fetchWithTimeout("api/tags", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: tagName }),
+    });
+
+    if (!response.ok) {
+        console.error("Error inserting tag: " + response.statusText);
+        return null;
+    }
+
+    const result = await response.json();
+    return result.insertedId ?? null;
 }

@@ -4,13 +4,17 @@ import { createContext, ReactNode, useContext, useEffect, useState } from 'react
 import { CombinedClass } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { loadAllCombinedClasses } from '@/lib/utils';
-import { s } from 'node_modules/@fullcalendar/core/internal-common';
 
 interface CalendarContextType {
     currCombinedClass: CombinedClass | undefined;
     updateCurrClass: (newCombinedClass: CombinedClass) => void;
     allClasses: CombinedClass[];
+    displayClasses: CombinedClass[];
+    updateDisplayClasses: (newDisplayClasses: CombinedClass[]) => void;
     allEvents: EventInput[];
+    displayEvents: EventInput[];
+    updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
+    tagList: Map<string, { tagName: string; classIds: Set<string> }>; // Map of tags to a set of class ids
 }
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -31,11 +35,19 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
     const [combinedClasses, setClasses] = useState<CombinedClass[]>([]); // All the classes in the context
     const [allEvents, setAllEvents] = useState<EventInput[]>([]); // All the events in the context
     const [currCombinedClass, setCurrClass] = useState<CombinedClass>(); // The currently selected class(es).
+    const [displayClasses, setDisplayClasses] = useState<CombinedClass[]>([]); // The classes to display on the calendar based on tags
+    const [displayEvents, setDisplayEvents] = useState<EventInput[]>([]); // The events to display on the calendar based on tags
+    const [tagList, setTagList] = useState<Map<string, { tagName: string; classIds: Set<string> }>>(
+        new Map()
+    );
 
     // Load in all classes
     useEffect(() => {
         const loadClasses = async () => {
             const allClasses = await loadAllCombinedClasses(); // load from db
+
+            // Create a new Map which will be set in state
+            const newTagMap = new Map<string, { tagName: string; classIds: Set<string> }>();
 
             // Fill up all classes with events
             for (const classItem of allClasses) {
@@ -49,28 +61,78 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
                     end: dateStringEnd,
                     extendedProps: {
                         combinedClassId: classItem.classData._id,
-                    }
+                    },
                 };
+
+                // Add tags to newTagMap instead of directly modifying state tagList
+                if (!classItem.classProperties.tags || classItem.classProperties.tags.length === 0) {
+                    console.log("No tags for class: " + classItem.classData._id);
+                    continue;
+                }
+
+                for (const tag of classItem.classProperties.tags) {
+                    if (newTagMap.has(tag.id)) {
+                        newTagMap.get(tag.id)?.classIds.add(classItem.classData._id);
+                        console.log("Added class: " + classItem.classData._id + " to tag: " + tag.name);
+                    } else {
+                        newTagMap.set(tag.id, { tagName: tag.name, classIds: new Set([classItem.classData._id]) });
+                        console.log("Added tag: " + tag.name + " with class: " + classItem.classData._id);
+                    }
+                }
             }
 
             // Set events to the events in all classes
             setAllEvents(allClasses.map((item) => item.event as EventInput));
 
+            // Set all display events to all events
+            setDisplayEvents(allClasses.map((item) => item.event as EventInput));
+
             // Set all classes
             setClasses(allClasses);
 
-            // console.log(JSON.stringify(allClasses) + " THIS IS ALL CLASSES\n");
-            // console.log(JSON.stringify(currCombinedClass) + " THIS IS CURR CLASS\n");
+            // Set display classes to all classes
+            setDisplayClasses(allClasses);
+            console.log("HERE");
+
+            // Update state for tagList with a new Map so that consumers get a new reference
+            setTagList(newTagMap);
+
+            // Display tagList in full with all objects and subobjects expanded
+            const serializableTagList = Array.from(newTagMap.entries()).map(([id, { tagName, classIds }]) => ({
+                id,
+                tagName,
+                classIds: Array.from(classIds),
+            }));
+
+            console.log("Full tagList:", JSON.stringify(serializableTagList, null, 2));
         }
         loadClasses();
     }, []);
 
-    const updateCurrClass = (newClass: CombinedClass) => { // Update the currently selected class
+    const updateCurrClass = (newClass: CombinedClass) => {
         setCurrClass(newClass);
     }
 
+    const updateDisplayClasses = (newDisplayClasses: CombinedClass[]) => {
+        setDisplayClasses(newDisplayClasses);
+    }
+
+    const updateDisplayEvents = (newDisplayEvents: EventInput[]) => {
+        setDisplayEvents(newDisplayEvents);
+    }
+
     return (
-        <CalendarContext.Provider value={{ currCombinedClass, updateCurrClass, allClasses: combinedClasses, allEvents }} >
+        <CalendarContext.Provider value={{
+            currCombinedClass,
+            updateCurrClass,
+            allClasses: combinedClasses,
+            displayClasses,
+            updateDisplayClasses,
+            allEvents,
+            displayEvents,
+            updateDisplayEvents,
+            tagList,
+        }}>
             {children}
         </CalendarContext.Provider>
     );
@@ -83,4 +145,3 @@ export const useCalendarContext = () => {
     }
     return context;
 }
-
