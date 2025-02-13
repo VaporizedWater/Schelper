@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import TopNav from "@/components/TopNav/TopNav";
+import { CalendarProvider } from "@/components/CalendarContext/CalendarContext";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -31,7 +32,9 @@ export default function RootLayout({
       >
         <TopNav></TopNav>
         <div className="bg-graybg">
-          {children}
+          <CalendarProvider>
+            {children}
+          </CalendarProvider>
         </div>
       </body>
     </html>
