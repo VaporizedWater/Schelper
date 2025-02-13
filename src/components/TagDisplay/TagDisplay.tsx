@@ -2,11 +2,9 @@
 import { TagProps } from "@/lib/types";
 import { useState } from "react";
 import { MdExpandMore, MdExpandLess } from "react-icons/md";
-import { useCalendarContext } from "../CalendarContext/CalendarContext";
 
 const TagDisplay = (props: TagProps) => {
     const [isOpen, setOpen] = useState(false);
-    const { tagList } = useCalendarContext();
 
     // Need to replace the manual dropdown with the existing dropdown component
     return (
@@ -18,18 +16,16 @@ const TagDisplay = (props: TagProps) => {
 
                 <li>TagName: {props.tagName}</li>
 
-                {/* Length of classes */}
-                <li>Classes: {tagList.get(props.tagName)?.classIds.size ?? 0} </li>
             </ul>
 
             {isOpen &&
                 // Get the classes from the tagList context
                 <ul className="flex flex-row gap-3">
-                    {[...(tagList.get(props.tagName)?.classIds ?? [])].map((classId) => (
+                    {/* {[...(tagList.get(props.tagName)?.classIds ?? [])].map((classId) => (
                         <li key={classId}>
                             {classId}
                         </li>
-                    ))}
+                    ))} */}
                 </ul>
             }
         </div>
