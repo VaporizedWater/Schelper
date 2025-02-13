@@ -13,7 +13,7 @@ const ClassProperties = () => {
             <li className="border-b-2">{currCombinedClass?.classData.title}</li>
             <li className="border-b-2">{currCombinedClass?.classProperties.instructor_name}</li>
             <li className="border-b-2">{currCombinedClass?.classProperties.days.join(", ")}</li>
-            {/* <li className="border-b-2">{currCombinedClass?.classProperties.tags}</li> */}
+            <li className="border-b-2">{currCombinedClass?.classProperties.tags?.map(tag => tag.name).join(', ')}</li>
         </ul>
     );
 }

@@ -94,29 +94,6 @@ export async function loadCombinedClasses(classIds: string[]): Promise<CombinedC
     return classData;
 }
 
-//
-// export async function loadClassesOfUser(auth: string): Promise<CombinedClass[]> {
-//     const response = await fetchWithTimeout("./api/users", {
-//         headers: {
-//             authentication_hash: auth,
-//         },
-//     });
-
-//     if (response.status == 200 && response.body) {
-//         const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-//         const userJSON = JSON.parse(responseText);
-//         const classes = userJSON.classes;
-
-//         const classData: CombinedClass[] = await loadCombinedClasses(classes);
-
-//         return classData;
-//     } else {
-//         console.log("response failed");
-//     }
-
-//     return new Object() as CombinedClass[];
-// }
-
 export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
     const response = await fetchWithTimeout("./api/classes", {
         headers: {},
@@ -250,4 +227,34 @@ export async function insertTag(tagName: string) {
 
     const result = await response.json();
     return result.insertedId ?? null;
+}
+
+// --------
+// PUTS/UPDATES
+
+export async function updateCombinedClass(combinedClass: CombinedClass) {
+    console.log("Updating class: " + combinedClass.classData._id);
+    const classResponse = await fetchWithTimeout("/api/classes", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(combinedClass.classData),
+    });
+
+    console.log(classResponse.json() + "111111");
+
+    if (!classResponse.ok) {
+        console.error("Error updating class: " + classResponse.statusText);
+        return;
+    }
+
+    const classPropResponse = await fetchWithTimeout("/api/class_properties", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(combinedClass.classProperties),
+    });
+
+    if (!classPropResponse.ok) {
+        console.error("Error updating class properties: " + classPropResponse.statusText);
+        return;
+    }
 }

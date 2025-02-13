@@ -75,6 +75,7 @@ export type DropDownItemProps = {
 
 export type DropDownInfo = {
     title: string;
+    titleInfo: string;
     dropType: string;
     list: DropDownItemProps[];
 };

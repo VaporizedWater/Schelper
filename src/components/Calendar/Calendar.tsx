@@ -122,9 +122,6 @@ const Calendar = () => {
             unselectAll();
         }
 
-        // Handle new element
-        // console.log(info.el.className);
-        // selectedEvents.push(info.el);
         info.el.style.borderColor = 'red';
 
         const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
@@ -164,16 +161,19 @@ const Calendar = () => {
     return (
         <div className="flex flex-row">
             <div className="w-[20vh] flex flex-col">
-                <LeftMenu></LeftMenu>
+                <LeftMenu />
             </div>
             <div className="w-[80vw] flex flex-col">
                 <div>
-                    <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
+                    <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)} />
                 </div>
                 <div className="rounded-b-3xl min-h-[80vh]">
                     {isCalendarOpen ?
                         fullCalendar :
-                        <CalendarSheet></CalendarSheet>
+                        <div className="overflow-x-auto scrollbar-thin">
+                            <CalendarSheet />
+                        </div>
+
                     }
                 </div>
             </div>

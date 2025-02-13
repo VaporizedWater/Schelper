@@ -9,6 +9,7 @@ interface CalendarContextType {
     currCombinedClass: CombinedClass | undefined;
     updateCurrClass: (newCombinedClass: CombinedClass) => void;
     allClasses: CombinedClass[];
+    updateAllClasses: (newClasses: CombinedClass[]) => void;
     displayClasses: CombinedClass[];
     updateDisplayClasses: (newDisplayClasses: CombinedClass[]) => void;
     allEvents: EventInput[];
@@ -109,6 +110,10 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
         loadClasses();
     }, []);
 
+    const updateAllClasses = (newClasses: CombinedClass[]) => {
+        setClasses(newClasses);
+    }
+
     const updateCurrClass = (newClass: CombinedClass) => {
         setCurrClass(newClass);
     }
@@ -126,6 +131,7 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
             currCombinedClass,
             updateCurrClass,
             allClasses: combinedClasses,
+            updateAllClasses,
             displayClasses,
             updateDisplayClasses,
             allEvents,

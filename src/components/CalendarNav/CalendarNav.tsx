@@ -10,9 +10,12 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
 
     const whiteClassL: string = "py-2 px-4 hover:bg-gray-200 rounded-l-full", blueClassL: string = whiteClassL + " bg-lightblue";
     const whiteClassR: string = "py-2 px-4 hover:bg-gray-200 rounded-r-full", blueClassR: string = whiteClassR + " bg-lightblue";
-    const dropList = [
+    const createDropList = [
         { content: "Class", iconUrl: null, iconAlt: null, link: "/classes" },
-        { content: "Tag", iconUrl: null, iconAlt: null, link: "/addTag" }
+        { content: "Tag", iconUrl: null, iconAlt: null, link: "/addTag" },
+    ];
+    const uploadDropList = [
+        { content: "Sheet", iconUrl: null, iconAlt: null, link: "/importSheet" },
     ];
 
     return (
@@ -25,12 +28,15 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
             </ul>
             <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">
                 <li key={2} className={`${listString} hover:bg-gray-200`}>
-                    <DropDown title="Create" list={dropList} dropType="button"></DropDown>
+                    <DropDown title="Import" titleInfo="" list={uploadDropList} dropType="button"></DropDown>
+                </li>
+                <li key={3} className={`${listString} hover:bg-gray-200`}>
+                    <DropDown title="Create" titleInfo="" list={createDropList} dropType="button"></DropDown>
                 </li>
 
                 {/* create calendar button somewhere here */}
 
-                <li key={3} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
+                <li key={4} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
                     <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
                     <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
                 </li>

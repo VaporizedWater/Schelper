@@ -31,7 +31,7 @@ const DropDown = (props: DropDownInfo) => {
                 <div className=''>
                     <MdAdd className="size-4 text-lightblack"></MdAdd>
                 </div>
-                <div className="">{props.title}</div>
+                <div className={props.titleInfo}>{props.title}</div>
                 <div className=''>
                     {!isDropOpen ?
                         <IoMdArrowDropdown className="size-4" /> :
@@ -43,7 +43,7 @@ const DropDown = (props: DropDownInfo) => {
             {/* Dropdown List*/}
             {isDropOpen &&
                 <div
-                    className={`absolute mt-2 border border-gray-200 bg-white shadow-md z-10 transition-transform duration-200 ease-in-out ${isDropOpen ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"} origin-top`}
+                    className={`absolute w-full mt-2 border border-gray-200 bg-white shadow-md z-10 transition-transform duration-200 ease-in-out ${isDropOpen ? "opacity-100 scale-y-100" : "opacity-0 scale-y-0"} origin-top`}
                 >
                     <ul className="flex flex-col rounded-full w-full">
                         {props.list.map((item) => (

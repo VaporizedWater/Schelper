@@ -19,13 +19,13 @@ const TagDisplay = (props: TagProps) => {
                 <li>TagName: {props.tagName}</li>
 
                 {/* Length of classes */}
-                <li>Classes: {tagList.get(props.tagName)?.size ?? 0} </li>
+                <li>Classes: {tagList.get(props.tagName)?.classIds.size ?? 0} </li>
             </ul>
 
             {isOpen &&
                 // Get the classes from the tagList context
                 <ul className="flex flex-row gap-3">
-                    {[...tagList.get(props.tagName) ?? []].map((classId) => (
+                    {[...(tagList.get(props.tagName)?.classIds ?? [])].map((classId) => (
                         <li key={classId}>
                             {classId}
                         </li>
