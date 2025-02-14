@@ -3,7 +3,7 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import DropDown from "../DropDown/DropDown";
 
 const TagDisplay = () => {
-    const { tagList } = useCalendarContext();
+    const { tagList, allClasses } = useCalendarContext();
 
     return (
         <div>
@@ -13,7 +13,23 @@ const TagDisplay = () => {
                     <li key={tagId} className="">
                         <DropDown
                             title={tagData.tagName + '  : ' + tagData.classIds.size}
-                            list={Array.from(tagData.classIds).map(id => ({ id, content: id, label: id, iconUrl: '', iconAlt: '', link: '' }))}
+                            // List content gets class name from classIds
+                            list={Array.from(tagData.classIds).map((id) => {
+                                const foundClass = allClasses.find(
+                                    (cls) => String(cls.classData._id) === id
+                                );
+                                const content = foundClass
+                                    ? foundClass.classData.title
+                                    : id;
+                                return {
+                                    id,
+                                    content,
+                                    label: id,
+                                    iconUrl: "",
+                                    iconAlt: "",
+                                    link: "",
+                                };
+                            })}
                             dropType="list"
                             titleInfo="text-lightblack"
                         />
