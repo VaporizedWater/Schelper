@@ -3,6 +3,7 @@
 import clientPromise from "@/lib/mongodb";
 import { Document, ObjectId } from "mongodb";
 import { Class } from "../../../lib/types";
+import { NextResponse } from "next/server";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("classes");
@@ -15,7 +16,7 @@ export async function GET(request: Request) {
 
     if (classID.length) {
         if (!ObjectId.isValid(classID)) {
-            return Response.json({ error: "Invalid class ID" }, { status: 400 });
+            return NextResponse.json({ error: "Invalid class ID" }, { status: 400 });
         }
 
         const objID = new ObjectId(classID);
@@ -36,9 +37,9 @@ export async function GET(request: Request) {
                 enrollment_cap: dataDoc.enrollment_cap,
                 waitlist_cap: dataDoc.waitlist_cap,
             };
-            response = new Response(JSON.stringify(classData), { status: 200 });
+            response = NextResponse.json(classData, { status: 200 });
         } else {
-            response = new Response(null, { status: 200 });
+            response = NextResponse.json(null, { status: 200 });
         }
     } else {
         // No ID provided - return all classes
@@ -74,13 +75,35 @@ export async function POST(request: Request) {
         // Convert _id to an ObjectId if it's provided and valid
         const document = {
             ...body,
-            _id: body._id && ObjectId.isValid(body._id) ? new ObjectId(body._id) : new ObjectId(),
+            _id: body._id && ObjectId.isValid(String(body._id)) ? new ObjectId(String(body._id)) : new ObjectId(),
         };
 
         const result = await collection.insertOne(document);
 
-        return new Response(JSON.stringify({ insertedId: result.insertedId }), { status: 201 });
+        return NextResponse.json({ insertedId: result.insertedId }, { status: 201 });
     } catch (error) {
-        return new Response(`Error inserting class into classes: ${error}`, { status: 500 });
+        return NextResponse.json({ error: `Error inserting class into classes: ${error}` }, { status: 500 });
+    }
+}
+
+export async function PUT(request: Request) {
+    try {
+        const body = await request.json();
+
+        if (!body._id || !ObjectId.isValid(body._id)) {
+            console.log("Received blank or invalid _id in class update:", body._id);
+            return NextResponse.json({ error: "Invalid class ID" }, { status: 400 });
+        } else {
+            console.log("Valid class ID" + body._id);
+        }
+
+        const { _id, ...updateData } = body;
+
+        const objID = new ObjectId(String(_id));
+        const result = await collection.updateOne({ _id: objID }, { $set: updateData });
+
+        return NextResponse.json({ modifiedCount: result.modifiedCount }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ error: `Error updating class in classes: ${error}` }, { status: 500 });
     }
 }

@@ -2,6 +2,7 @@ import clientPromise from "@/lib/mongodb";
 import { Document, ObjectId } from "mongodb";
 import fetchWithTimeout from "@/lib/utils";
 import { ClassProperty } from "@/lib/types";
+import { NextResponse } from "next/server";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("class_properties");
@@ -9,7 +10,6 @@ const collection = client.db("class-scheduling-app").collection("class_propertie
 export async function GET(request: Request) {
     const headerId = request.headers.get("id");
     const classID = headerId ? headerId : "";
-    let response: Response;
 
     if (!classID.length || !ObjectId.isValid(classID)) {
         return Response.json({ error: "Invalid class ID" }, { status: 400 });
@@ -77,4 +77,21 @@ export async function POST(request: Request) {
     }
 }
 
-//export async function PUT(request: Request) {}
+export async function PUT(request: Request) {
+    try {
+        const body = await request.json();
+
+        if (!ObjectId.isValid(body._id)) {
+            return NextResponse.json({ error: "Invalid class ID" }, { status: 400 });
+        }
+
+        const { _id, ...updateData } = body;
+
+        const objID = new ObjectId(String(_id));
+        const result = await collection.updateOne({ _id: objID }, { $set: updateData });
+
+        return NextResponse.json({ modifiedCount: result.modifiedCount }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ error: `Error updating class in classes: ${error}` }, { status: 500 });
+    }
+}

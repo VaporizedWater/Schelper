@@ -1,27 +1,11 @@
 "use client"
 
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { CombinedClass } from '@/lib/types';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { CalendarContextType, CombinedClass, ProviderProps } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { loadAllCombinedClasses } from '@/lib/utils';
 
-interface CalendarContextType {
-    currCombinedClass: CombinedClass | undefined;
-    updateCurrClass: (newCombinedClass: CombinedClass) => void;
-    allClasses: CombinedClass[];
-    displayClasses: CombinedClass[];
-    updateDisplayClasses: (newDisplayClasses: CombinedClass[]) => void;
-    allEvents: EventInput[];
-    displayEvents: EventInput[];
-    updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
-    tagList: Map<string, { tagName: string; classIds: Set<string> }>; // Map of tags to a set of class ids
-}
-
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
-
-interface CalendarProviderProps {
-    children: ReactNode;
-}
 
 const days: { [key: string]: string } = {
     Mon: '2025-01-06',
@@ -31,7 +15,7 @@ const days: { [key: string]: string } = {
     Fri: '2025-01-10',
 };
 
-export const CalendarProvider = ({ children }: CalendarProviderProps) => {
+export const CalendarProvider = ({ children }: ProviderProps) => {
     const [combinedClasses, setClasses] = useState<CombinedClass[]>([]); // All the classes in the context
     const [allEvents, setAllEvents] = useState<EventInput[]>([]); // All the events in the context
     const [currCombinedClass, setCurrClass] = useState<CombinedClass>(); // The currently selected class(es).
@@ -73,10 +57,10 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
                 for (const tag of classItem.classProperties.tags) {
                     if (newTagMap.has(tag.id)) {
                         newTagMap.get(tag.id)?.classIds.add(classItem.classData._id);
-                        console.log("Added class: " + classItem.classData._id + " to tag: " + tag.name);
+                        // console.log("Added class: " + classItem.classData._id + " to tag: " + tag.name);
                     } else {
                         newTagMap.set(tag.id, { tagName: tag.name, classIds: new Set([classItem.classData._id]) });
-                        console.log("Added tag: " + tag.name + " with class: " + classItem.classData._id);
+                        // console.log("Added tag: " + tag.name + " with class: " + classItem.classData._id);
                     }
                 }
             }
@@ -92,22 +76,25 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
 
             // Set display classes to all classes
             setDisplayClasses(allClasses);
-            console.log("HERE");
 
             // Update state for tagList with a new Map so that consumers get a new reference
             setTagList(newTagMap);
 
             // Display tagList in full with all objects and subobjects expanded
-            const serializableTagList = Array.from(newTagMap.entries()).map(([id, { tagName, classIds }]) => ({
-                id,
-                tagName,
-                classIds: Array.from(classIds),
-            }));
+            // const serializableTagList = Array.from(newTagMap.entries()).map(([id, { tagName, classIds }]) => ({
+            //     id,
+            //     tagName,
+            //     classIds: Array.from(classIds),
+            // }));
 
-            console.log("Full tagList:", JSON.stringify(serializableTagList, null, 2));
+            // console.log("Full tagList:", JSON.stringify(serializableTagList, null, 2));
         }
         loadClasses();
     }, []);
+
+    const updateAllClasses = (newClasses: CombinedClass[]) => {
+        setClasses(newClasses);
+    }
 
     const updateCurrClass = (newClass: CombinedClass) => {
         setCurrClass(newClass);
@@ -126,6 +113,7 @@ export const CalendarProvider = ({ children }: CalendarProviderProps) => {
             currCombinedClass,
             updateCurrClass,
             allClasses: combinedClasses,
+            updateAllClasses,
             displayClasses,
             updateDisplayClasses,
             allEvents,

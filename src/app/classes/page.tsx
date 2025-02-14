@@ -50,6 +50,8 @@ const NewClassForm = () => {
         defaultCombined.classProperties = classProperties ?? defaultProperties;
         insertCombinedClass(defaultCombined);
 
+        // console.log(JSON.stringify(defaultCombined));
+
         // Clear state
         clearState();
 
@@ -245,6 +247,8 @@ const NewClassForm = () => {
                         className="p-2 border rounded"
                     />
 
+                    {/* Display dropdown of tags that can be checked */}
+
                     <div className="flex flex-row gap-2">
                         {/* Clear button */}
                         <button type="reset" className="bg-gray-300 text-black p-2 rounded flex-grow">
@@ -254,7 +258,6 @@ const NewClassForm = () => {
                             Create
                         </button>
                     </div>
-
                 </form>
             </div>
         </div>
