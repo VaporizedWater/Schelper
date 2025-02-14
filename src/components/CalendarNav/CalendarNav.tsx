@@ -1,8 +1,9 @@
 import { LuFileSpreadsheet } from "react-icons/lu";
 import { MdCalendarMonth } from "react-icons/md";
 import { useState } from "react";
-import DropDown from "../DropDown/DropDown";
+import DropDown from "../ButtonDropDown/ButtonDropDown";
 import { CalendarOpenProps } from "@/lib/types";
+import ButtonDropDown from "../ButtonDropDown/ButtonDropDown";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
@@ -11,11 +12,11 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const whiteClassL: string = "py-2 px-4 hover:bg-gray-200 rounded-l-full", blueClassL: string = whiteClassL + " bg-lightblue";
     const whiteClassR: string = "py-2 px-4 hover:bg-gray-200 rounded-r-full", blueClassR: string = whiteClassR + " bg-lightblue";
     const createDropList = [
-        { content: "Class", iconUrl: null, iconAlt: null, link: "/classes" },
-        { content: "Tag", iconUrl: null, iconAlt: null, link: "/addTag" },
+        { content: "Class", link: "/classes" },
+        { content: "Tag", link: "/addTag" },
     ];
     const uploadDropList = [
-        { content: "Sheet", iconUrl: null, iconAlt: null, link: "/importSheet" },
+        { content: "Sheet", link: "/importSheet" },
     ];
 
     return (
@@ -28,10 +29,10 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
             </ul>
             <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">
                 <li key={2} className={`${listString} hover:bg-gray-200`}>
-                    <DropDown title="Import" titleInfo="" list={uploadDropList} dropType="button"></DropDown>
+                    <ButtonDropDown title="Import" items={uploadDropList} ></ButtonDropDown>
                 </li>
                 <li key={3} className={`${listString} hover:bg-gray-200`}>
-                    <DropDown title="Create" titleInfo="" list={createDropList} dropType="button"></DropDown>
+                    <ButtonDropDown title="Create" items={createDropList} ></ButtonDropDown>
                 </li>
 
                 {/* create calendar button somewhere here */}

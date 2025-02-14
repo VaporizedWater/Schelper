@@ -1,17 +1,11 @@
 "use client"
 
-import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { CalendarContextType, CombinedClass } from '@/lib/types';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { CalendarContextType, CombinedClass, ProviderProps } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { loadAllCombinedClasses } from '@/lib/utils';
 
-
-
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
-
-interface CalendarProviderProps {
-    children: ReactNode;
-}
 
 const days: { [key: string]: string } = {
     Mon: '2025-01-06',
@@ -21,7 +15,7 @@ const days: { [key: string]: string } = {
     Fri: '2025-01-10',
 };
 
-export const CalendarProvider = ({ children }: CalendarProviderProps) => {
+export const CalendarProvider = ({ children }: ProviderProps) => {
     const [combinedClasses, setClasses] = useState<CombinedClass[]>([]); // All the classes in the context
     const [allEvents, setAllEvents] = useState<EventInput[]>([]); // All the events in the context
     const [currCombinedClass, setCurrClass] = useState<CombinedClass>(); // The currently selected class(es).

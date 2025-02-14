@@ -1,4 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
+import { ReactNode } from "react";
 
 export type Class = {
     // unchanging identifiers
@@ -39,18 +40,19 @@ export type CombinedClass = {
     event: EventInput | undefined;
 };
 
-export type DropDownItemProps = {
-    content: string;
-    iconUrl: string | null;
-    iconAlt: string | null;
-    link: string;
+export type DropDownProps = {
+    /** Function to render the button content */
+    renderButton: (isOpen: boolean) => ReactNode;
+    /** Function to render the dropdown content */
+    renderDropdown: () => ReactNode;
+    /** Additional class names */
+    buttonClassName?: string;
+    dropdownClassName?: string;
 };
 
-export type DropDownInfo = {
+export type ButtonDropDownProps = {
     title: string;
-    titleInfo: string;
-    dropType: string;
-    list: DropDownItemProps[];
+    items: { link: string; content: string }[];
 };
 
 export type FullCalendarClassEvent = {
@@ -62,6 +64,10 @@ export type FullCalendarClassEvent = {
 
 export type CalendarOpenProps = {
     toggleCalendar: (isOpen: boolean) => void;
+};
+
+export type ProviderProps = {
+    children: ReactNode;
 };
 
 export type CalendarContextType = {
