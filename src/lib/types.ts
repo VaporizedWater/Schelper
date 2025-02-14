@@ -1,5 +1,4 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CSSProperties } from "react";
 
 export type Class = {
     // unchanging identifiers
@@ -40,32 +39,6 @@ export type CombinedClass = {
     event: EventInput | undefined;
 };
 
-export type PropertyProps = {
-    property: string;
-    value: string;
-};
-
-export type TagProps = {
-    tagName: string;
-};
-
-export type TagPropList = {
-    tags: TagProps[];
-};
-
-export type TimeGridCellProps = {
-    droppableId: string;
-};
-
-export type DayProps = {
-    day: string;
-};
-
-export type DayDateProps = {
-    day: string;
-    date: number;
-};
-
 export type DropDownItemProps = {
     content: string;
     iconUrl: string | null;
@@ -80,22 +53,6 @@ export type DropDownInfo = {
     list: DropDownItemProps[];
 };
 
-export type DraggableProps = {
-    id: string;
-    style?: CSSProperties;
-    children?: JSX.Element;
-};
-
-export type standardTimeSlot = {
-    start: string;
-    end: string;
-};
-
-export type CalendarProps = {
-    classes: CombinedClass[];
-    standardTimeSlots: standardTimeSlot[];
-};
-
 export type FullCalendarClassEvent = {
     title: string;
     day: string;
@@ -105,4 +62,17 @@ export type FullCalendarClassEvent = {
 
 export type CalendarOpenProps = {
     toggleCalendar: (isOpen: boolean) => void;
+};
+
+export type CalendarContextType = {
+    currCombinedClass: CombinedClass | undefined;
+    updateCurrClass: (newCombinedClass: CombinedClass) => void;
+    allClasses: CombinedClass[];
+    updateAllClasses: (newClasses: CombinedClass[]) => void;
+    displayClasses: CombinedClass[];
+    updateDisplayClasses: (newDisplayClasses: CombinedClass[]) => void;
+    allEvents: EventInput[];
+    displayEvents: EventInput[];
+    updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
+    tagList: Map<string, { tagName: string; classIds: Set<string> }>; // Map of tags to a set of class ids
 };

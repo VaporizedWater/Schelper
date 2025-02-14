@@ -50,6 +50,8 @@ const NewClassForm = () => {
         defaultCombined.classProperties = classProperties ?? defaultProperties;
         insertCombinedClass(defaultCombined);
 
+        // console.log(JSON.stringify(defaultCombined));
+
         // Clear state
         clearState();
 

@@ -1,22 +1,11 @@
 "use client"
 
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { CombinedClass } from '@/lib/types';
+import { CalendarContextType, CombinedClass } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { loadAllCombinedClasses } from '@/lib/utils';
 
-interface CalendarContextType {
-    currCombinedClass: CombinedClass | undefined;
-    updateCurrClass: (newCombinedClass: CombinedClass) => void;
-    allClasses: CombinedClass[];
-    updateAllClasses: (newClasses: CombinedClass[]) => void;
-    displayClasses: CombinedClass[];
-    updateDisplayClasses: (newDisplayClasses: CombinedClass[]) => void;
-    allEvents: EventInput[];
-    displayEvents: EventInput[];
-    updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
-    tagList: Map<string, { tagName: string; classIds: Set<string> }>; // Map of tags to a set of class ids
-}
+
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
