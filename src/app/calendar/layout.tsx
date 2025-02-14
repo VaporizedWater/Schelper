@@ -8,9 +8,9 @@ export default function Layout({
     children: React.ReactNode
 }) {
     return (
-        <CalendarProvider>
+        <div>
             <div>{modals}</div>
             <div>{children}</div>
-        </CalendarProvider>
+        </div>
     )
 }

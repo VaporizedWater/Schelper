@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Spreadsheet, { Matrix } from "react-spreadsheet";
 
-export default function CalendarSheet() {
+export default function CalendarSheet2() {
     const [data, setData] = useState<Matrix<{ value: string }>>([
         [
             { value: "Catalog Number" },

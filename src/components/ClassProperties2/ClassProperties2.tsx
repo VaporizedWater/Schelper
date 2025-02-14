@@ -3,7 +3,7 @@
 
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 
-const ClassProperties = () => {
+const ClassProperties2 = () => {
     const { currCombinedClass } = useCalendarContext();
 
     return (
@@ -18,4 +18,4 @@ const ClassProperties = () => {
     );
 }
 
-export default ClassProperties;
+export default ClassProperties2;

@@ -10,12 +10,10 @@ const collection = client.db("class-scheduling-app").collection("classes");
 export async function GET(request: Request) {
     const headerId = request.headers.get("id");
     const classID = headerId ? headerId : "";
-    console.log("classID: " + classID);
 
     let response: Response, data;
 
     if (classID.length) {
-        console.log("We not there!");
         if (!ObjectId.isValid(classID)) {
             return Response.json({ error: "Invalid class ID" }, { status: 400 });
         }
@@ -44,12 +42,9 @@ export async function GET(request: Request) {
         }
     } else {
         // No ID provided - return all classes
-        console.log("WE HERE!!!");
         data = await collection.find({}).toArray();
 
         if (data) {
-            console.log("MADE IT");
-            console.log(JSON.stringify(data));
             const classData: Class[] = data.map((doc: Document) => ({
                 _id: doc._id,
                 catalog_num: doc.catalog_num,
@@ -63,12 +58,8 @@ export async function GET(request: Request) {
                 enrollment_cap: doc.enrollment_cap,
                 waitlist_cap: doc.waitlist_cap,
             }));
-
-            console.log("\n" + JSON.stringify(classData));
-
             response = new Response(JSON.stringify(classData), { status: 200 });
         } else {
-            console.log("NOPE!");
             response = new Response(null, { status: 200 });
         }
     }
