@@ -15,7 +15,7 @@ const TagDisplay = () => {
                         <DropDown
                             renderButton={(isOpen) => (
                                 <div className="flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
-                                    <span>{tagData.tagName} : {tagData.classIds.size}</span>
+                                    <span>{tagData.tagName} : {tagData.classIds.size + " Class" + (tagData.classIds.size > 1 ? "es" : "")}</span>
                                     {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                                 </div>
                             )}

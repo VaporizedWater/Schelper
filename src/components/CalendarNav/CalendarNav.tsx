@@ -34,9 +34,6 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                 <li key={3} className={`${listString} hover:bg-gray-200`}>
                     <ButtonDropDown title="Create" items={createDropList} ></ButtonDropDown>
                 </li>
-
-                {/* create calendar button somewhere here */}
-
                 <li key={4} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
                     <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
                     <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
