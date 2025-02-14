@@ -3,11 +3,13 @@ import { DropDownInfo } from "@/lib/types";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
-import { MdAdd } from "react-icons/md";
+import { MdAdd, MdExpandLess, MdExpandMore } from "react-icons/md";
 
 const DropDown = (props: DropDownInfo) => {
     const [isDropOpen, setDropOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const buttonStyles: string = "flex flex-row gap-2 p-2 items-center bg-white rounded-full hover:bg-gray-200";
+    const listStyles: string = "w-full rounded-md items-center flex flex-row border border-gray-300 bg-gray-200 hover:bg-gray-300";
 
     const handleClickOutside = (event: MouseEvent) => {
         if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -27,17 +29,29 @@ const DropDown = (props: DropDownInfo) => {
     return (
         <div ref={dropdownRef} className="relative">
             {/* Button to control dropdown */}
-            <button onClick={() => setDropOpen((prev) => !prev)} className="flex flex-row gap-2 p-2 items-center bg-white rounded-full hover:bg-gray-200">
-                <div className=''>
-                    <MdAdd className="size-4 text-lightblack"></MdAdd>
-                </div>
+            <button onClick={() => setDropOpen((prev) => !prev)} className={props.dropType == "button" ? buttonStyles : listStyles}>
+                {props.dropType == "button" ?
+                    <div className=''>
+                        <MdAdd className="size-4 text-lightblack"></MdAdd>
+                    </div>
+                    :
+                    <div className=''>
+                        {isDropOpen ?
+                            <MdExpandLess /> : <MdExpandMore />
+                        }
+                    </div>
+                }
+
                 <div className={props.titleInfo}>{props.title}</div>
-                <div className=''>
-                    {!isDropOpen ?
-                        <IoMdArrowDropdown className="size-4" /> :
-                        <IoMdArrowDropup className="size-4" />
-                    }
-                </div>
+                {
+                    props.dropType == "button" &&
+                    <div className=''>
+                        {!isDropOpen ?
+                            <IoMdArrowDropdown className="size-4" /> :
+                            <IoMdArrowDropup className="size-4" />
+                        }
+                    </div>
+                }
             </button>
 
             {/* Dropdown List*/}

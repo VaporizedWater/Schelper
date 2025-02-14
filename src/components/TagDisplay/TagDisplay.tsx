@@ -1,33 +1,27 @@
 'use client'
-import { TagProps } from "@/lib/types";
 import { useState } from "react";
 import { MdExpandMore, MdExpandLess } from "react-icons/md";
+import { useCalendarContext } from "../CalendarContext/CalendarContext";
+import DropDown from "../DropDown/DropDown";
 
-const TagDisplay = (props: TagProps) => {
-    const [isOpen, setOpen] = useState(false);
+const TagDisplay = () => {
+    const { tagList } = useCalendarContext();
 
-    // Need to replace the manual dropdown with the existing dropdown component
     return (
-        <div className="w-full rounded-md flex flex-col items-center border border-gray-300">
-            <ul onClick={() => setOpen((prev) => !prev)} className="flex flex-row w-full cursor-pointer bg-gray-200 hover:bg-gray-300 gap-4 ">
-                <li className="flex items-center">
-                    {isOpen ? <MdExpandLess /> : <MdExpandMore />}
-                </li>
-
-                <li>TagName: {props.tagName}</li>
-
+        <div>
+            {/* Each tag must be iterated through from tagList*/}
+            <ul className="flex flex-col gap-3">
+                {Array.from(tagList).map(([tagId, tagData]) => (
+                    <li key={tagId} className="">
+                        <DropDown
+                            title={tagData.tagName}
+                            list={Array.from(tagData.classIds).map(id => ({ id, content: id, label: id, iconUrl: '', iconAlt: '', link: '' }))}
+                            dropType="list"
+                            titleInfo="text-lightblack"
+                        />
+                    </li>
+                ))}
             </ul>
-
-            {isOpen &&
-                // Get the classes from the tagList context
-                <ul className="flex flex-row gap-3">
-                    {/* {[...(tagList.get(props.tagName)?.classIds ?? [])].map((classId) => (
-                        <li key={classId}>
-                            {classId}
-                        </li>
-                    ))} */}
-                </ul>
-            }
         </div>
     );
 }

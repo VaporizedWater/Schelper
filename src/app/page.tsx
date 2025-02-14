@@ -9,7 +9,7 @@ const Home = () => {
     const [backgroundUrl, setBackgroundUrl] = useState("/wcispsu.jpg");
 
     useEffect(() => {
-        const images = ["/wcispsu.jpg", "/NittanyLionShrine.jpg", "/PSU_Light_Dark.jpg"]; 
+        const images = ["/wcispsu.jpg", "/NittanyLionShrine.jpg", "/PSU_Light_Dark.jpg"];
         let index = 0;
 
         const interval = setInterval(() => {
@@ -22,7 +22,7 @@ const Home = () => {
 
     return (
         <div className='flex flex-col'>
-            <div className="bg-center bg-cover h-screen max-w-screen justify-items-center transition-all duration-500 ease-in-out" 
+            <div className="bg-center bg-cover h-screen max-w-screen justify-items-center transition-all duration-500 fade-in-out"
                 style={{ backgroundImage: `url(${backgroundUrl})` }}>
                 <div className='justify-items-center backdrop-blur-[1px]'>
                     <h1 className='text-lightblue mt-40 text-8xl text-center items-center flex flex-row font-bold rounded-full'>
