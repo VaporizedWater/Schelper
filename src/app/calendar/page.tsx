@@ -24,23 +24,6 @@ const CalendarPage = () => {
     );
 }
 
-// (<div className='flex flex-col'>
-//     <div className="min-w-[20vh] flex flex-col">
-//         <LeftMenu></LeftMenu>
-//     </div>
-//     <div className="min-w-[80vw] flex flex-col">
-//         <div>
-//             <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
-//         </div>
-//         <div className="rounded-b-3xl min-h-[80vh]">
-//             {isCalendarOpen ?
-//                 <Calendar></Calendar> :
-//                 <CalendarSheet></CalendarSheet>
-//             }
-//         </div>
-//     </div>
-// </div>);
-
 export default CalendarPage;
 
 // return (
@@ -61,3 +44,21 @@ export default CalendarPage;
 //         </div>
 //     </div>
 // );
+
+
+// (<div className='flex flex-col'>
+//     <div className="min-w-[20vh] flex flex-col">
+//         <LeftMenu></LeftMenu>
+//     </div>
+//     <div className="min-w-[80vw] flex flex-col">
+//         <div>
+//             <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
+//         </div>
+//         <div className="rounded-b-3xl min-h-[80vh]">
+//             {isCalendarOpen ?
+//                 <Calendar></Calendar> :
+//                 <CalendarSheet></CalendarSheet>
+//             }
+//         </div>
+//     </div>
+// </div>);

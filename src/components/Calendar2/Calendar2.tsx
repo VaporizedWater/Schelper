@@ -45,7 +45,7 @@ const viewFiveDays = {
     }
 }
 
-const Calendar = () => {
+const Calendar2 = () => {
     const ctrlHeldRef = useRef(false);
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
@@ -166,4 +166,4 @@ const Calendar = () => {
     );
 };
 
-export default Calendar;
+export default Calendar2;

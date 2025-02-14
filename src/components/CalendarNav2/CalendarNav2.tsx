@@ -4,7 +4,7 @@ import { useState } from "react";
 import DropDown from "../DropDown/DropDown";
 import { CalendarOpenProps } from "@/lib/types";
 
-const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
+const CalendarNav2 = ({ toggleCalendar }: CalendarOpenProps) => {
     const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
     const [calendarActive, setActive] = useState(true);
 
@@ -28,7 +28,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     );
 }
 
-export default CalendarNav;
+export default CalendarNav2;
 
 // return (
 //     <div className="flex flex-row px-2">
