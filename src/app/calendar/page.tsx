@@ -13,8 +13,8 @@ const CalendarPage = () => {
     return (
         <div className='h-full grid grid-cols-[8%_85%]'>
             <LeftMenu></LeftMenu>
-            <div className='grid grid-rows-[10%_85%]'>
-                <div className='w-full h-full'>
+            <div className='grid grid-rows-[8%_85%]'>
+                <div className='w-full h-full content-center'>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
                 </div>
                 <div className='w-full h-full overflow-x-hidden'>
