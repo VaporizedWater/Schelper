@@ -1,29 +1,30 @@
 'use client'
 
 import React, { useState } from 'react';
-import LeftMenu from '@/components/LeftMenu/LeftMenu';
-import CalendarSheet from '@/components/CalendarSheet/CalendarSheet';
-import CalendarNav from '@/components/CalendarNav/CalendarNav';
 import Calendar from '@/components/Calendar/Calendar';
+import CalendarSheet from '@/components/CalendarSheet/CalendarSheet';
+import LeftMenu from '@/components/LeftMenu/LeftMenu';
+import CalendarNav from '@/components/CalendarNav/CalendarNav';
+
 
 const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
 
     return (
-        <div className='h-full grid grid-cols-[15%_80%]'>
+        <div className='h-full grid grid-cols-[10%_85%]'>
             <LeftMenu></LeftMenu>
-            <div className='grid grid-rows-[10%_85%] mr-4'>
-                <div className='h-full'>
+            <div className='grid grid-rows-[10%_85%]'>
+                <div className='w-full h-full'>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
                 </div>
-                <div className='h-full overflow-x-hidden'>
+                <div className='w-full h-full'>
                     {isCalendarOpen ?
-                        <Calendar /> :
-                        <CalendarSheet />
+                        <Calendar></Calendar> :
+                        <CalendarSheet></CalendarSheet>
                     }
                 </div>
             </div>
-        </div >
+        </div>
     );
 };
 
