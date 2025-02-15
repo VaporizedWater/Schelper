@@ -3,7 +3,6 @@
 
 import Filters from "../Filters/Filters";
 import ClassProperties from "../ClassProperties/ClassProperties";
-import ClassProperties2 from "../ClassProperties2/ClassProperties2";
 
 const LeftMenu = () => {
     return (
@@ -13,7 +12,7 @@ const LeftMenu = () => {
             </div>
 
             <div className="p-4">
-                <ClassProperties2 />
+                <ClassProperties />
             </div>
         </div>
     );

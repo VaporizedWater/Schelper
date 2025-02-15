@@ -10,7 +10,7 @@ const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
 
     return (
-        <div className='h-full grid grid-cols-[10%_85%]'>
+        <div className='h-full grid grid-cols-[15%_80%]'>
             <LeftMenu></LeftMenu>
             <div className='grid grid-rows-[10%_85%] mr-4'>
                 <div className='h-full'>
