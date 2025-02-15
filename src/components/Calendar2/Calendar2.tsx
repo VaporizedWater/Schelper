@@ -142,7 +142,7 @@ const Calendar2 = () => {
     // Possibly resize the event so it also is the correct size within this timeslot
 
     return (
-        <div className="">
+        <div className="min-w-full min-h-[100%]">
             <FullCalendar
                 plugins={[timeGridPlugin, interactionPlugin]}
                 editable

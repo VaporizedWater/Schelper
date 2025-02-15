@@ -8,9 +8,9 @@ export default function Layout({
     children: React.ReactNode
 }) {
     return (
-        <div>
-            <div>{modals}</div>
-            <div>{children}</div>
+        <div className="w-full h-full">
+            <div className="">{modals}</div>
+            <div className="w-full h-full">{children}</div>
         </div>
     )
 }

@@ -18,10 +18,15 @@ const CalendarNav2 = ({ toggleCalendar }: CalendarOpenProps) => {
     return (
         <div className="flex flex-row justify-between items-center w-full">
             <div>
-            <p className="text-lg text-lightblack text-center font-semibold">Spring</p>
+                <ul className="flex flex-row items-center">
+                    {/* Drop down for selecting calendars/semesters*/}
+                    <li key={1} className={`flex flex-row gap-2`}>
+                        <p className="text-lg text-lightblack text-center font-semibold">Spring 25</p>
+                    </li>
+                </ul>
             </div>
             <div>
-            <p className="text-lg text-lightblack text-center font-semibold">25</p>
+                <p className="text-lg text-lightblack text-center font-semibold">25</p>
             </div>
         </div>
 

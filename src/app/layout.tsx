@@ -27,9 +27,9 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-graybg`}>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-graybg h-[100vh]`}>
                 <TopNav></TopNav>
-                <div className="bg-graybg">
+                <div className="bg-graybg h-full">
                     <CalendarProvider>
                         {children}
                     </CalendarProvider>
