@@ -6,7 +6,7 @@ import ClassProperties from "../ClassProperties/ClassProperties";
 
 const LeftMenu = () => {
     return (
-        <div className="flex flex-col max-w-fit max-h-fit min-h-fit">
+        <div className="flex flex-col max-w-fit min-h-full">
             <div className="px-4 my-4">
                 <Filters />
             </div>
