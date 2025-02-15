@@ -37,7 +37,6 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                     <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
                     <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
                 </li>
-
             </ul>
         </div >
     );

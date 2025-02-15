@@ -7,19 +7,24 @@ import LeftMenu from '@/components/LeftMenu/LeftMenu';
 import CalendarNav2 from '@/components/CalendarNav2/CalendarNav2';
 import Calendar from '@/components/Calendar/Calendar';
 import CalendarSheet from '@/components/CalendarSheet/CalendarSheet';
+import CalendarNav from '@/components/CalendarNav/CalendarNav';
+
 
 const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
 
     return (
-        <div className="grid grid-cols-[auto,1fr] min-h-[calc(100vh-4rem)]">
-            <LeftMenu />
-            <div className="flex flex-col">
-                <div className="">
-                    <CalendarNav2 toggleCalendar={(status: boolean) => setCalendarOpen(status)} />
+        <div className='h-full grid grid-cols-[10%_85%]'>
+            <LeftMenu></LeftMenu>
+            <div className='grid grid-rows-[10%_85%]'>
+                <div className='w-full h-full'>
+                    <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
                 </div>
-                <div className="">
-                    {isCalendarOpen ? <Calendar2 /> : <CalendarSheet2 />}
+                <div className='w-full h-full'>
+                    {isCalendarOpen ?
+                        <Calendar2></Calendar2> :
+                        <CalendarSheet2></CalendarSheet2>
+                    }
                 </div>
             </div>
         </div>
