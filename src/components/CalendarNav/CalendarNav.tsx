@@ -20,25 +20,29 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     ];
 
     return (
-        <div className="flex flex-row px-2">
-            <ul className="flex flex-row items-center">
-                {/* Drop down for selecting calendars/semesters*/}
-                <li key={1} className={`flex flex-row gap-2`}>
-                    <p className="text-lg text-lightblack text-center font-semibold">Spring 25</p>
-                </li>
-            </ul>
-            <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">
-                <li key={2} className={`${listString} hover:bg-gray-200`}>
-                    <ButtonDropDown title="Import" items={uploadDropList} ></ButtonDropDown>
-                </li>
-                <li key={3} className={`${listString} hover:bg-gray-200`}>
-                    <ButtonDropDown title="Create" items={createDropList} ></ButtonDropDown>
-                </li>
-                <li key={4} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
-                    <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
-                    <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
-                </li>
-            </ul>
+        <div className="flex flex-row justify-between items-center w-full">
+            <div>
+                <ul className="flex flex-row items-center">
+                    {/* Drop down for selecting calendars/semesters*/}
+                    <li key={1} className={`flex flex-row gap-2`}>
+                        <p className="text-lg text-lightblack text-center font-semibold">Spring 25</p>
+                    </li>
+                </ul>
+            </div>
+            <div>
+                <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">
+                    <li key={2} className={`${listString} hover:bg-gray-200`}>
+                        <ButtonDropDown title="Import" items={uploadDropList} ></ButtonDropDown>
+                    </li>
+                    <li key={3} className={`${listString} hover:bg-gray-200`}>
+                        <ButtonDropDown title="Create" items={createDropList} ></ButtonDropDown>
+                    </li>
+                    <li key={4} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
+                        <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
+                        <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
+                    </li>
+                </ul>
+            </div>
         </div >
     );
 }

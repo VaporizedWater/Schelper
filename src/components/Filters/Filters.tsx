@@ -47,7 +47,7 @@ const Filters = () => {
 
 
     return (
-        <div className="flex flex-col min-w-fit h-full max-h-[30vh]">
+        <div className="flex flex-col">
             <div className="flex flex-row items-center pb-1">
                 <div className="text-bold">My&nbsp;Tags</div>
                 <Link href={'./tags'}>
@@ -57,7 +57,7 @@ const Filters = () => {
             </div>
 
             {/* Use tagList instead of props */}
-            <ul className="overflow-y-scroll scrollbar-webkit scrollbar-thin pr-3" title="tag-list">
+            <ul className="pr-3" title="tag-list">
                 {Array.from(tagList.entries()).map(([id, { tagName }]) => (
                     <li key={id} className="flex flex-row items-center" title="tag-item">
                         <label className="flex items-center cursor-pointer">

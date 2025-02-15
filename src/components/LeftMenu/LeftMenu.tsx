@@ -3,16 +3,17 @@
 
 import Filters from "../Filters/Filters";
 import ClassProperties from "../ClassProperties/ClassProperties";
+import ClassProperties2 from "../ClassProperties2/ClassProperties2";
 
 const LeftMenu = () => {
     return (
-        <div className="flex flex-col max-w-fit max-h-fit min-h-fit">
+        <div className="flex flex-col">
             <div className="px-4 my-4">
                 <Filters />
             </div>
 
             <div className="p-4">
-                <ClassProperties />
+                <ClassProperties2 />
             </div>
         </div>
     );
