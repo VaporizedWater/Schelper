@@ -5,6 +5,7 @@ const ClassProperties = () => {
 
     return (
         <div className="">
+            {/* <h2 className="">Class Properties</h2> */}
             <ul className="flex flex-col w-full">
                 <li className="flex border-b pb-1">
                     <span className="font-medium text-gray-700 min-w-24">Subject</span>
