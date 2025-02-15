@@ -3,36 +3,12 @@
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
-// import { FullCalendarClassEvent } from "@/lib/types";
-import { EventClickArg } from "@fullcalendar/core/index.js";
+
+import { EventClickArg } from "@fullcalendar/core";
 import { useEffect, useState } from "react";
-import LeftMenu from "../LeftMenu/LeftMenu";
-import CalendarNav from "../CalendarNav/CalendarNav";
-import CalendarSheet from "../CalendarSheet/CalendarSheet";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 
-
 //use eventDragStop to constrain the date (both start and end times retaining duration) between 8AM and 5PM
-//
-
-
-//
-// let events: EventInput[] = [
-//     // {
-//     //     title: 'Class 1',
-//     //     start: '2025-01-07T08:00:00',
-//     //     end: '2025-01-07T09:00:00'
-//     // },
-//     // {
-//     //     title: 'Class 2',
-//     //     start: '2025-01-06T09:00:00',
-//     //     end: '2025-01-06T10:00:00',
-//     // },
-// ];
-// 
-// const addEvent = (item: EventInput) => {
-//     events = [...new Set([...events, item])]
-// };
 
 const selectedEvents: HTMLElement[] = [];
 
@@ -49,7 +25,6 @@ const viewFiveDays = {
 const Calendar = () => {
     const [newEventText, setEvent] = useState<string | null>();
     const [oneClass, setOneClass] = useState(false); // Used for debounce to ensure only one class is added at a time
-    const [isCalendarOpen, setCalendarOpen] = useState(true);
     const { updateCurrClass, displayClasses, displayEvents } = useCalendarContext()
 
     useEffect(() => {
@@ -59,14 +34,6 @@ const Calendar = () => {
     }, [setEvent]);
 
     if (oneClass && newEventText) {
-        // const newEvent: FullCalendarClassEvent = JSON.parse(newEventText);
-
-        // addEvent({
-        //     title: newEvent.title,
-        //     start: dateStringStart,
-        //     end: dateStringEnd
-        // } as EventInput);
-        // console.log(events);
         setOneClass(false);
     }
 
@@ -90,7 +57,6 @@ const Calendar = () => {
             if (event.key === 'Control') {
                 unselectAll();
             }
-            // console.log("Key up");
         }
 
         function clickHandler(event: MouseEvent) {
@@ -121,12 +87,9 @@ const Calendar = () => {
         if (foundClass) {
             updateCurrClass(foundClass);
         }
-
-        // console.log("Current Class: \n" + JSON.stringify(currCombinedClass));
     }
 
-    // Use eventDrop callback and snap the class to standard timeslots unless the control key is pressed, 
-    // which then drops it to the 5 minute sanpDuration
+    // Use eventDrop callback and snap class to standard timeslots unless ctrl is pressed -> drops to 5 min snapDuration
     // Possibly resize the event so it also is the correct size within this timeslot
 
     const fullCalendar = (
@@ -152,25 +115,9 @@ const Calendar = () => {
     );
 
     return (
-        <div className="flex flex-row">
-            <div className="w-[20vh] flex flex-col">
-                <LeftMenu />
-            </div>
-            <div className="w-[80vw] flex flex-col">
-                <div>
-                    <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)} />
-                </div>
-                <div className="rounded-b-3xl min-h-[80vh]">
-                    {isCalendarOpen ?
-                        fullCalendar :
-                        <div className="overflow-x-auto scrollbar-thin">
-                            <CalendarSheet />
-                        </div>
-
-                    }
-                </div>
-            </div>
-        </div >
+        <div className="h-full">
+            {fullCalendar}
+        </div>
     );
 };
 

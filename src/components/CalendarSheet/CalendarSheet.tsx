@@ -63,53 +63,6 @@ export default function CalendarSheet() {
 
     // When the data changes, update both local state and the context.
     const handleSpreadsheetChange = (newData: Matrix<{ value: string }>) => {
-        // updateCombinedClass({
-        //     classData: {
-        //         _id: "67a846c73155f76158186935",
-        //         title: "NEW TEST Intro Engr Dsgn",
-        //         catalog_num: "15393",
-        //         class_num: "5936",
-        //         session: "1",
-        //         course_subject: "EDSGN",
-        //         course_num: "100S",
-        //         section: "1",
-        //         location: "ERIE",
-        //         enrollment_cap: "18",
-        //         waitlist_cap: "0"
-        //     }, classProperties: {
-        //         _id: "67a846c73155f76158186935",
-        //         days: [
-        //             "Tues"
-        //         ],
-        //         start_time: "10:00",
-        //         end_time: "11:50",
-        //         class_status: "Active",
-        //         facility_id: "972181209",
-        //         room: "AMIC 209",
-        //         instructor_email: "dql11@psu.edu",
-        //         instructor_name: "Dean Lewis",
-        //         total_enrolled: "10",
-        //         total_waitlisted: "10",
-        //         tags: [
-        //             {
-        //                 "id": "673cc5b59a22e99e74f004f5",
-        //                 "name": "Tag 1"
-        //             },
-        //             {
-        //                 "id": "67ab6f243fac7a8db3cb2b4f",
-        //                 "name": "Tag 2"
-        //             }
-        //         ]
-        //     }, event: {
-        //         title: "TEST",
-        //         start: "TEST",
-        //         end: "TEST",
-        //         extendedProps: {
-        //             combinedClassId: "67a846c73155f76158186935",
-        //         },
-        //     }
-        // }); // This is a placeholder for the actual function
-
         setData(newData);
         // Ensure there is at least one row of data (excluding headers)
         if (newData.length > 1) {
@@ -160,14 +113,12 @@ export default function CalendarSheet() {
             updateAllClasses(newClassesData);
 
             updateDisplayClasses(newClassesData);
-
-            // console.log(JSON.stringify(newClassesData) + "YEP");
         }
     };
 
     return (
-        <div className="">
-            <Spreadsheet data={data} onChange={handleSpreadsheetChange} />
+        <div className="overflow-scroll scrollbar-thin">
+            <Spreadsheet data={data} onChange={handleSpreadsheetChange} className="" />
         </div>
     );
 }

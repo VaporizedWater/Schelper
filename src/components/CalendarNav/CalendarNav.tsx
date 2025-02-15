@@ -19,7 +19,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     ];
 
     return (
-        <div className="flex flex-row px-2">
+        <div className="flex flex-row px-2 ">
             <ul className="flex flex-row items-center">
                 {/* Drop down for selecting calendars/semesters*/}
                 <li key={1} className={`flex flex-row gap-2`}>
@@ -37,6 +37,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                     <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
                     <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
                 </li>
+
             </ul>
         </div >
     );

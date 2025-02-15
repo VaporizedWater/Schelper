@@ -1,14 +1,10 @@
 'use client'
 
 import React, { useState } from 'react';
-import Calendar2 from '@/components/Calendar2/Calendar2';
-import CalendarSheet2 from '@/components/CalendarSheet2/CalendarSheet2';
 import LeftMenu from '@/components/LeftMenu/LeftMenu';
-import CalendarNav2 from '@/components/CalendarNav2/CalendarNav2';
-import Calendar from '@/components/Calendar/Calendar';
 import CalendarSheet from '@/components/CalendarSheet/CalendarSheet';
 import CalendarNav from '@/components/CalendarNav/CalendarNav';
-
+import Calendar from '@/components/Calendar/Calendar';
 
 const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
@@ -16,18 +12,18 @@ const CalendarPage = () => {
     return (
         <div className='h-full grid grid-cols-[10%_85%]'>
             <LeftMenu></LeftMenu>
-            <div className='grid grid-rows-[10%_85%]'>
-                <div className='w-full h-full'>
+            <div className='grid grid-rows-[10%_85%] mr-4'>
+                <div className='h-full'>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
                 </div>
-                <div className='w-full h-full'>
+                <div className='h-full overflow-x-hidden'>
                     {isCalendarOpen ?
-                        <Calendar2></Calendar2> :
-                        <CalendarSheet2></CalendarSheet2>
+                        <Calendar /> :
+                        <CalendarSheet />
                     }
                 </div>
             </div>
-        </div>
+        </div >
     );
 };
 
