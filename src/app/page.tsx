@@ -43,7 +43,7 @@ const Home = () => {
                                 onClick={() => router.push('/calendar')}
                             />
                             <span className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-red-500 bg-opacity-100 text-black text-lg font-semibold opacity-0 group-hover:opacity-100 transition">
-                                Open Calendar
+                                Edit Calendar
                             </span>
                         </div>
                         <div className="relative group">
@@ -56,7 +56,7 @@ const Home = () => {
                                 onClick={() => router.push('/tags')}
                             />
                             <span className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-red-500 bg-opacity-100 text-black text-lg font-semibold opacity-0 group-hover:opacity-100 transition">
-                                Open Manage Tags
+                                Manage Tags
                             </span>
                         </div>
                     </div>
