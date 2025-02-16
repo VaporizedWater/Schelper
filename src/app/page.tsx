@@ -36,7 +36,7 @@ const Home = () => {
                         <div className="relative group">
                             <Image
                                 src="/calendar1.png"
-                                alt="Open Calendar"
+                                alt="Edit Calendar"
                                 width={160}
                                 height={64}
                                 className="cursor-pointer transition rounded-lg"
@@ -49,7 +49,7 @@ const Home = () => {
                         <div className="relative group">
                             <Image
                                 src="/tag.png"
-                                alt="Open Manage Tags"
+                                alt="Manage Tags"
                                 width={160}
                                 height={64}
                                 className="cursor-pointer transition rounded-lg"
