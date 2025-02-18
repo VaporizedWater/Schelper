@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Class, ClassProperty, CombinedClass, FullCalendarClassEvent } from "@/lib/types";
 import { insertCombinedClass } from "@/lib/utils";
 import { useLocalStorage } from 'usehooks-ts'
+import DropDown from "@/components/DropDown/DropDown";
 
 const NewClassForm = () => {
     const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
@@ -248,6 +249,14 @@ const NewClassForm = () => {
                     />
 
                     {/* Display dropdown of tags that can be checked */}
+                    <DropDown
+                        renderButton={() => <button className="p-2 border rounded w-full">Select Tags</button>}
+                        renderDropdown={() => (
+                            <div className="p-2 border rounded">
+                                {/* Add your tag selection content here */}
+                            </div>
+                        )}
+                    />
 
                     <div className="flex flex-row gap-2">
                         {/* Clear button */}

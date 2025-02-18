@@ -17,7 +17,7 @@ const CalendarPage = () => {
                 <div className='w-full h-full'>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
                 </div>
-                <div className='w-full h-full'>
+                <div className='w-full h-full overflow-hidden'>
                     {isCalendarOpen ?
                         <Calendar></Calendar> :
                         <CalendarSheet></CalendarSheet>
