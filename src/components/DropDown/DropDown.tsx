@@ -18,7 +18,7 @@ const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClass
 
     return (
         <div ref={dropdownRef} className="relative">
-            <button onClick={() => setIsOpen((prev) => !prev)} className={buttonClassName}>
+            <button type="button" onClick={() => setIsOpen((prev) => !prev)} className={buttonClassName}>
                 {renderButton(isOpen)}
             </button>
 

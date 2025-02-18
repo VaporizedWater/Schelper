@@ -5,6 +5,9 @@ import { Class, ClassProperty, CombinedClass, FullCalendarClassEvent } from "@/l
 import { insertCombinedClass } from "@/lib/utils";
 import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
+import { MdExpandLess, MdExpandMore } from "react-icons/md";
+import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
+import { useState } from "react";
 
 const NewClassForm = () => {
     const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
@@ -14,6 +17,8 @@ const NewClassForm = () => {
     const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
     const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty, { initializeWithValue: false });
     const [classEvent, setClassEvent] = useLocalStorage("newEvent", "", { initializeWithValue: false });
+    const [selectedTags, setSelectedTags] = useState<{ id: string; name: string; }[]>([]);
+    const { allTags } = useCalendarContext();
 
     const router = useRouter();
 
@@ -24,6 +29,7 @@ const NewClassForm = () => {
         clearEndTime();
         setClassInfo({} as Class);
         setClassProperties({} as ClassProperty);
+        setSelectedTags([]);
     }
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -91,6 +97,7 @@ const NewClassForm = () => {
 
     const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };
 
+    console.log(JSON.stringify(allTags));
     return (
         <div className="p-8 mx-auto">
             <h2 className="text-2xl font-semibold mb-6">Create New Class</h2>
@@ -250,10 +257,43 @@ const NewClassForm = () => {
 
                     {/* Display dropdown of tags that can be checked */}
                     <DropDown
-                        renderButton={() => <button className="p-2 border rounded w-full">Select Tags</button>}
+                        buttonClassName="p-2 border rounded w-full"
+                        renderButton={(isOpen) => (
+                            <div className="flex justify-between items-center cursor-pointer">
+                                <span>Select Tags ({selectedTags.length})</span>
+                                {isOpen ? <MdExpandLess /> : <MdExpandMore />}
+                            </div>
+                        )}
                         renderDropdown={() => (
-                            <div className="p-2 border rounded">
-                                {/* Add your tag selection content here */}
+                            <div className="p-2 border rounded flex flex-col gap-2">
+                                {allTags.map((tag) => (
+                                    <label key={tag.id} className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedTags.some(t => t.id === tag.id)}
+                                            onChange={(e) => {
+                                                const tagData = { id: tag.id, name: tag.name };
+                                                if (e.target.checked) {
+                                                    const newTags = [...selectedTags, tagData];
+                                                    setSelectedTags(newTags);
+                                                    setClassProperties({
+                                                        ...classProperties,
+                                                        tags: newTags
+                                                    } as ClassProperty);
+                                                } else {
+                                                    const newTags = selectedTags.filter(t => t.id !== tag.id);
+                                                    setSelectedTags(newTags);
+                                                    setClassProperties({
+                                                        ...classProperties,
+                                                        tags: newTags
+                                                    } as ClassProperty);
+                                                }
+                                            }}
+                                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                        />
+                                        <span className="text-gray-700">{tag.name}</span>
+                                    </label>
+                                ))}
                             </div>
                         )}
                     />

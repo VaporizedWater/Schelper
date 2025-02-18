@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { CalendarContextType, CombinedClass, ProviderProps } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
-import { loadAllCombinedClasses } from '@/lib/utils';
+import { loadAllCombinedClasses, loadAllTags } from '@/lib/utils';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -24,6 +24,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     const [tagList, setTagList] = useState<Map<string, { tagName: string; classIds: Set<string> }>>(
         new Map()
     );
+    const [allTags, setAllTags] = useState<{ id: string, name: string }[]>([]) // All the tags in database
 
     // Load in all classes
     useEffect(() => {
@@ -88,6 +89,11 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             // }));
 
             // console.log("Full tagList:", JSON.stringify(serializableTagList, null, 2));
+
+            // Set all tags to all the tags in the database using loadAllTags
+            const tags = await loadAllTags();
+            setAllTags(tags);
+
         }
         loadClasses();
     }, []);
@@ -120,6 +126,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             displayEvents,
             updateDisplayEvents,
             tagList,
+            allTags,
         }}>
             {children}
         </CalendarContext.Provider>
