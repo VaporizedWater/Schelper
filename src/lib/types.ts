@@ -29,9 +29,7 @@ export type ClassProperty = {
     instructor_name: string;
     total_enrolled: string;
     total_waitlisted: string;
-
-    // tags with id and name
-    tags: { id: string; name: string }[];
+    tags: string[];
 };
 
 export type CombinedClass = {
@@ -80,6 +78,6 @@ export type CalendarContextType = {
     allEvents: EventInput[];
     displayEvents: EventInput[];
     updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
-    tagList: Map<string, { tagName: string; classIds: Set<string> }>; // Map of tags to a set of class ids
+    tagList: string[];
     updateCurrentClass: (newClass: CombinedClass) => void;
 };

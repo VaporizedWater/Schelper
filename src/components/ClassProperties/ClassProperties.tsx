@@ -12,7 +12,7 @@ const ClassProperties = () => {
     const [title, setTitle] = useState(initialData.title || '');
     const [instructor, setInstructor] = useState(initialProps.instructor_name || '');
     const [days, setDays] = useState<string[]>(initialProps.days || []);
-    const [tags, setTags] = useState<string[]>(initialProps.tags?.map((tag: { name: string }) => tag.name) || []);
+    const [tags, setTags] = useState<string[]>(initialProps.tags || []);
 
     useEffect(() => {
         if (currCombinedClass) {
@@ -23,7 +23,7 @@ const ClassProperties = () => {
             setTitle(newData.title || '');
             setInstructor(newProps.instructor_name || '');
             setDays(newProps.days || []);
-            setTags(newProps.tags?.map((tag: { name: string }) => tag.name) || []);
+            setTags(newProps.tags || []);
         }
     }, [currCombinedClass]);
 
@@ -73,6 +73,8 @@ const ClassProperties = () => {
         const tagArray = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
         setTags(tagArray);
         const modifiedClass: CombinedClass = currCombinedClass || {} as CombinedClass;
+        modifiedClass.classProperties.tags = tagArray;
+        updateCurrentClass(modifiedClass);
     };
 
     return (
