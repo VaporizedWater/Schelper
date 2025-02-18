@@ -114,6 +114,13 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         setDisplayEvents(newDisplayEvents);
     }
 
+    const updateCurrentClass = (newClass: CombinedClass) => {
+        // Find the difference between currCombinedClass and newClass
+        // Store the difference in a new array or changelog in the database
+        // Update the currCombinedClass with the newClass
+        // Store the update the currCombinedClass in the database with the newClass
+    }
+
     return (
         <CalendarContext.Provider value={{
             currCombinedClass,
@@ -127,6 +134,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             updateDisplayEvents,
             tagList,
             allTags,
+            updateCurrentClass,
         }}>
             {children}
         </CalendarContext.Provider>

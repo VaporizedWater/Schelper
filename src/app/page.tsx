@@ -33,7 +33,7 @@ const Home = () => {
                     </h1>
                     <h2 className='pt-4 text-3xl text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
                     <div className='mt-10 flex justify-center gap-6'>
-                        <div className="relative group">
+                        <div className="relative group overflow-hidden">
                             <Image
                                 src="/calendar1.png"
                                 alt="Edit Calendar"
