@@ -11,16 +11,16 @@ const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
 
     return (
-        <div className='h-full grid grid-cols-[15%_80%]'>
-            <LeftMenu></LeftMenu>
-            <div className='grid grid-rows-[8%_85%]'>
+        <div className='h-full grid grid-cols-[10%_85%]'>
+            <LeftMenu />
+            <div className='grid grid-rows-[10%_85%]'>
                 <div className='w-full h-full content-center'>
-                    <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)}></CalendarNav>
+                    <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)} />
                 </div>
                 <div className='w-full h-full overflow-x-hidden'>
                     {isCalendarOpen ?
-                        <Calendar></Calendar> :
-                        <CalendarSheet></CalendarSheet>
+                        <Calendar /> :
+                        <CalendarSheet />
                     }
                 </div>
             </div>

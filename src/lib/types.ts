@@ -78,6 +78,7 @@ export type CalendarContextType = {
     allEvents: EventInput[];
     displayEvents: EventInput[];
     updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
-    tagList: string[];
+    tagList: Map<string, { tagName: string; classIds: Set<string> }>; // Map of tags to a set of class ids
+    allTags: { id: string; name: string }[];
     updateCurrentClass: (newClass: CombinedClass) => void;
 };
