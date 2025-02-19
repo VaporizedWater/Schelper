@@ -25,7 +25,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     //     new Map()
     // );
     const [tagList, setTagList] = useState<tagListType>(new Map<string, { tagName: string; classIds: Set<string> }>()); // Map of tags to a set of class ids
-    const [allTags, setAllTags] = useState<string[]>([]) // All the tags in database
+    const [allTags, setAllTags] = useState<Set<string>>(new Set()); // All the tags in the context
 
     // Load in all classes
     useEffect(() => {
@@ -51,7 +51,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 };
 
                 // Add tags to newTagMap instead of directly modifying state tagList
-                if (!classItem.classProperties.tags || classItem.classProperties.tags.length === 0) {
+                if (!classItem.classProperties.tags || classItem.classProperties.tags.size === 0) {
                     console.log("No tags for class: " + classItem.classData._id);
                     continue;
                 }

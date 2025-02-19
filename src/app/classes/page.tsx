@@ -17,7 +17,7 @@ const NewClassForm = () => {
     const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
     const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty, { initializeWithValue: false });
     const [classEvent, setClassEvent] = useLocalStorage("newEvent", "", { initializeWithValue: false });
-    const [selectedTags, setSelectedTags] = useState<string[]>([]);
+    const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
     const { allTags } = useCalendarContext();
 
     const router = useRouter();
@@ -29,7 +29,7 @@ const NewClassForm = () => {
         clearEndTime();
         setClassInfo({} as Class);
         setClassProperties({} as ClassProperty);
-        setSelectedTags([]);
+        setSelectedTags(new Set());
     }
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -40,7 +40,7 @@ const NewClassForm = () => {
         }
 
         // Blank tags for now by default until we take them as input
-        setClassProperties({ ...classProperties, tags: [] } as ClassProperty);
+        setClassProperties({ ...classProperties, tags: new Set<string>() } as ClassProperty);
 
         const newClassEvent: FullCalendarClassEvent = {
             title,
@@ -92,7 +92,7 @@ const NewClassForm = () => {
         instructor_name: "t",
         total_enrolled: "0",
         total_waitlisted: "0",
-        tags: ["Test 1", "Test 2"],
+        tags: new Set(["Test 1", "Test 2"]),
     }
 
     const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };
@@ -260,34 +260,29 @@ const NewClassForm = () => {
                         buttonClassName="p-2 border rounded w-full"
                         renderButton={(isOpen) => (
                             <div className="flex justify-between items-center cursor-pointer">
-                                <span>Select Tags ({selectedTags.length})</span>
+                                <span>Select Tags ({selectedTags.size})</span>
                                 {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                             </div>
                         )}
                         renderDropdown={() => (
                             <div className="p-2 border rounded flex flex-col gap-2">
-                                {allTags.map((tag) => (
+                                {[...allTags].map((tag) => (
                                     <label key={tag} className="flex items-center gap-2 cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            checked={selectedTags.some(t => t === tag)}
+                                            checked={selectedTags.has(tag)}
                                             onChange={(e) => {
-                                                const tagData = tag;
+                                                const newTags = new Set(selectedTags);
                                                 if (e.target.checked) {
-                                                    const newTags = [...selectedTags, tagData];
-                                                    setSelectedTags(newTags);
-                                                    setClassProperties({
-                                                        ...classProperties,
-                                                        tags: newTags
-                                                    } as ClassProperty);
+                                                    newTags.add(tag);
                                                 } else {
-                                                    const newTags = selectedTags.filter(t => t !== tag);
-                                                    setSelectedTags(newTags);
-                                                    setClassProperties({
-                                                        ...classProperties,
-                                                        tags: newTags
-                                                    } as ClassProperty);
+                                                    newTags.delete(tag);
                                                 }
+                                                setSelectedTags(newTags);
+                                                setClassProperties({
+                                                    ...classProperties,
+                                                    tags: newTags
+                                                } as ClassProperty);
                                             }}
                                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                         />
@@ -314,4 +309,3 @@ const NewClassForm = () => {
 };
 
 export default NewClassForm;
-

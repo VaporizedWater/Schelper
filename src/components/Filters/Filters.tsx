@@ -35,7 +35,7 @@ const Filters = () => {
         // update display classes based on selected tags using tagList from context
         // Filter allClasses so that each class has at least one tag from the selected tag set.
         const newDisplayClasses = allClasses.filter((classItem) =>
-            classItem.classProperties.tags.some((tag) => newSelectedTags.has(tag))
+            Array.from(classItem.classProperties.tags).some((tag) => newSelectedTags.has(tag))
         );
         updateDisplayClasses(newDisplayClasses);
 
@@ -58,7 +58,7 @@ const Filters = () => {
 
             {/* Use tagList instead of props */}
             <ul className="pr-3" title="tag-list">
-                {Array.from(tagList.entries()).map(([tag, classIds]) => (
+                {Array.from(tagList.entries()).map(([tag]) => (
                     <li key={tag} className="flex flex-row items-center" title="tag-item">
                         <label className="flex items-center cursor-pointer">
                             <input

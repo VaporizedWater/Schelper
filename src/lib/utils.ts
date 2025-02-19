@@ -27,19 +27,21 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 
 // LOADS/GETs
 // Get all tags
-export async function loadAllTags(): Promise<string[]> {
-    const response = await fetchWithTimeout("./api/tags", {
-        headers: {},
-    });
+export async function loadAllTags(): Promise<Set<string>> {
+    const response = await fetchWithTimeout("./api/tags", { headers: {} });
 
-    if (!response.ok || response.status != 200 || !response.body) {
+    if (!response.ok || response.status !== 200 || !response.body) {
         console.error("Could not find tags!");
-        return [];
+        return new Set<string>();
     }
 
     const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
     const tagsJSON = JSON.parse(responseText);
-    return tagsJSON as string[];
+
+    // tagsJSON is an array of objects like { id: "tag1" }.
+    const tagIds = (tagsJSON as { _id: string }[]).map((tag) => tag._id);
+    console.log(JSON.stringify(tagIds));
+    return new Set(tagIds);
 }
 
 // Editable Class Properties.
