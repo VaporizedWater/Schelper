@@ -24,7 +24,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     // const [tagList, setTagList] = useState<Map<string, { tagName: string; classIds: Set<string> }>>(
     //     new Map()
     // );
-    const [tagList, setTagList] = useState<tagListType>(new Map<string, { tagName: string; classIds: Set<string> }>()); // Map of tags to a set of class ids
+    const [tagList, setTagList] = useState<tagListType>(new Map<string, { classIds: Set<string> }>()); // Map of tags to a set of class ids
     const [allTags, setAllTags] = useState<Set<string>>(new Set()); // All the tags in the context
 
     // Load in all classes
