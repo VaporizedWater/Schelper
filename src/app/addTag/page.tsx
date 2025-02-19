@@ -1,28 +1,20 @@
 'use client';
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { insertTag } from "@/lib/utils";
 
 const AddTag = () => {
     const [inputValue, setInputValue] = useState("");
-    const router = useRouter(); // Initialize router
+    const router = useRouter();
 
-    // Function to handle adding a tag
-    const handleAddTag = () => {
+    const handleAddTag = async () => {
         if (inputValue.trim() !== "") {
-            try {
-                const storedTags = JSON.parse(localStorage.getItem("tags") || "[]");
-
-                // Add new tag and update localStorage
-                const updatedTags = [...storedTags, { tagName: inputValue.trim(), classes: [12, 13, 14, 15] }];
-                localStorage.setItem("tags", JSON.stringify(updatedTags));
-
-                setInputValue(""); // Clear input
-
-                // Store tags in database
-
-                router.push('/tags'); // Navigate to the tags page
-            } catch (error) {
-                console.error("Error saving tag:", error);
+            const result = await insertTag(inputValue.trim());
+            if (result) {
+                setInputValue("");
+                router.push('/tags');
+            } else {
+                console.error("Failed to insert tag");
             }
         }
     };
