@@ -51,7 +51,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 };
 
                 // Add tags to newTagMap instead of directly modifying state tagList
-                if (!classItem.classProperties.tags || classItem.classProperties.tags.size === 0) {
+                if (!classItem.classProperties.tags || classItem.classProperties.tags.length === 0) {
                     console.log("No tags for class: " + classItem.classData._id);
                     continue;
                 }
