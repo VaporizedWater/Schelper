@@ -10,9 +10,9 @@ const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
 
     return (
-        <div className='h-full grid grid-cols-[8%_85%]'>
+        <div className='h-full grid grid-cols-[10%_85%]'>
             <LeftMenu />
-            <div className='grid grid-rows-[8%_85%]'>
+            <div className='grid grid-rows-[10%_85%]'>
                 <div className='w-full h-full content-center'>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)} />
                 </div>

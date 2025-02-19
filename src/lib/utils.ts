@@ -27,7 +27,7 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 
 // LOADS/GETs
 // Get all tags
-export async function loadAllTags(): Promise<tagType[]> {
+export async function loadAllTags(): Promise<string[]> {
     const response = await fetchWithTimeout("./api/tags", {
         headers: {},
     });
@@ -39,7 +39,7 @@ export async function loadAllTags(): Promise<tagType[]> {
 
     const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
     const tagsJSON = JSON.parse(responseText);
-    return tagsJSON as { id: string; name: string }[];
+    return tagsJSON as string[];
 }
 
 // Editable Class Properties.

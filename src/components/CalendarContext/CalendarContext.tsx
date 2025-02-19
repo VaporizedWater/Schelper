@@ -57,12 +57,10 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 }
 
                 for (const tag of classItem.classProperties.tags) {
-                    if (newTagMap.has(tag.id)) {
-                        newTagMap.get(tag.id)?.classIds.add(classItem.classData._id);
-                        // console.log("Added class: " + classItem.classData._id + " to tag: " + tag.name);
+                    if (newTagMap.has(tag)) {
+                        newTagMap.get(tag)?.classIds.add(classItem.classData._id);
                     } else {
-                        newTagMap.set(tag.id, { tagName: tag.name, classIds: new Set([classItem.classData._id]) });
-                        // console.log("Added tag: " + tag.name + " with class: " + classItem.classData._id);
+                        newTagMap.set(tag, { tagName: tag, classIds: new Set([classItem.classData._id]) });
                     }
                 }
             }

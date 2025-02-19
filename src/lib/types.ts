@@ -1,13 +1,7 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { t } from "node_modules/@fullcalendar/core/internal-common";
 import { ReactNode } from "react";
 
-export type tagType = {
-    id: string;
-    name: string;
-};
-
-export type tagListType = Map<string, { tagName: string; classIds: Set<string> }>;
+export type tagListType = Map<string, { classIds: Set<string> }>;
 
 export type Class = {
     // unchanging identifiers
@@ -37,9 +31,7 @@ export type ClassProperty = {
     instructor_name: string;
     total_enrolled: string;
     total_waitlisted: string;
-
-    // tags with id and name
-    tags: tagType[];
+    tags: string[];
 };
 
 export type CombinedClass = {
@@ -88,7 +80,7 @@ export type CalendarContextType = {
     allEvents: EventInput[];
     displayEvents: EventInput[];
     updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
-    tagList: Map<string, { tagName: string; classIds: Set<string> }>; // Map of tags to a set of class ids
-    allTags: { id: string; name: string }[];
+    tagList: tagListType; // Map of tags to a set of class ids
+    allTags: string[];
     updateCurrentClass: (newClass: CombinedClass) => void;
 };
