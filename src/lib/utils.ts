@@ -1,4 +1,4 @@
-import { Class, ClassProperty, CombinedClass } from "./types";
+import { Class, ClassProperty, CombinedClass, tagType } from "./types";
 
 // FETCH
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
@@ -27,7 +27,7 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 
 // LOADS/GETs
 // Get all tags
-export async function loadAllTags(): Promise<{ id: string; name: string }[]> {
+export async function loadAllTags(): Promise<tagType[]> {
     const response = await fetchWithTimeout("./api/tags", {
         headers: {},
     });

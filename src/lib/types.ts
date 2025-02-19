@@ -1,5 +1,13 @@
 import { EventInput } from "@fullcalendar/core/index.js";
+import { t } from "node_modules/@fullcalendar/core/internal-common";
 import { ReactNode } from "react";
+
+export type tagType = {
+    id: string;
+    name: string;
+};
+
+export type tagListType = Map<string, { tagName: string; classIds: Set<string> }>;
 
 export type Class = {
     // unchanging identifiers
@@ -31,7 +39,7 @@ export type ClassProperty = {
     total_waitlisted: string;
 
     // tags with id and name
-    tags: { id: string; name: string }[];
+    tags: tagType[];
 };
 
 export type CombinedClass = {

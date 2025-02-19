@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { CalendarContextType, CombinedClass, ProviderProps } from '@/lib/types';
+import { CalendarContextType, CombinedClass, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { loadAllCombinedClasses, loadAllTags } from '@/lib/utils';
 
@@ -21,9 +21,10 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     const [currCombinedClass, setCurrClass] = useState<CombinedClass>(); // The currently selected class(es).
     const [displayClasses, setDisplayClasses] = useState<CombinedClass[]>([]); // The classes to display on the calendar based on tags
     const [displayEvents, setDisplayEvents] = useState<EventInput[]>([]); // The events to display on the calendar based on tags
-    const [tagList, setTagList] = useState<Map<string, { tagName: string; classIds: Set<string> }>>(
-        new Map()
-    );
+    // const [tagList, setTagList] = useState<Map<string, { tagName: string; classIds: Set<string> }>>(
+    //     new Map()
+    // );
+    const [tagList, setTagList] = useState<tagListType>(new Map<string, { tagName: string; classIds: Set<string> }>()); // Map of tags to a set of class ids
     const [allTags, setAllTags] = useState<{ id: string, name: string }[]>([]) // All the tags in database
 
     // Load in all classes

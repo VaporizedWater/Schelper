@@ -6,7 +6,6 @@ import CalendarSheet from '@/components/CalendarSheet/CalendarSheet';
 import LeftMenu from '@/components/LeftMenu/LeftMenu';
 import CalendarNav from '@/components/CalendarNav/CalendarNav';
 
-
 const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
 
