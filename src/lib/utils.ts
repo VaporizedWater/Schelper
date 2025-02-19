@@ -40,8 +40,19 @@ export async function loadAllTags(): Promise<Set<string>> {
 
     // tagsJSON is an array of objects like { id: "tag1" }.
     const tagIds = (tagsJSON as { _id: string }[]).map((tag) => tag._id);
-    console.log(JSON.stringify(tagIds));
+    // console.log(JSON.stringify(tagIds));
     return new Set(tagIds);
+}
+
+// Get one tag by id
+export async function getTag(tagId: string): Promise<any> {
+    const response = await fetchWithTimeout(`./api/tags?id=${tagId}`, { headers: {} });
+    if (!response.ok) {
+        console.error("Error fetching tag:", response.statusText);
+        return null;
+    }
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
 }
 
 // Editable Class Properties.
@@ -231,20 +242,19 @@ export async function insertCombinedClass(combinedClass: CombinedClass) {
 }
 
 // Insert tag
-export async function insertTag(tagName: string) {
+export async function insertTag(tagName: string): Promise<string | null> {
+    // Process tagName: convert to lowercase and remove spaces
+    const processedTag = tagName.toLowerCase().replace(/\s+/g, "");
     const response = await fetchWithTimeout("api/tags", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: tagName }),
+        headers: { "Content-Type": "text/plain" },
+        body: processedTag,
     });
-
     if (!response.ok) {
         console.error("Error inserting tag: " + response.statusText);
         return null;
     }
-
-    const result = await response.json();
-    return result.insertedId ?? null;
+    return processedTag;
 }
 
 // --------

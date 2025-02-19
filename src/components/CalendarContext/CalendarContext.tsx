@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { CalendarContextType, CombinedClass, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
-import { loadAllCombinedClasses, loadAllTags } from '@/lib/utils';
+import { insertTag, loadAllCombinedClasses, loadAllTags } from '@/lib/utils';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -114,6 +114,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     }
 
     const updateCurrentClass = (newClass: CombinedClass) => {
+        console.log("Updating current class" + newClass.classData._id);
         // Find the difference between currCombinedClass and newClass
         // Store the difference in a new array or changelog in the database
         // Update the currCombinedClass with the newClass
