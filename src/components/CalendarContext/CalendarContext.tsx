@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { CalendarContextType, CombinedClass, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
-import { insertTag, loadAllCombinedClasses, loadAllTags } from '@/lib/utils';
+import { loadAllCombinedClasses, loadAllTags } from '@/lib/utils';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 

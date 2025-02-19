@@ -21,7 +21,7 @@ const viewFiveDays = {
 }
 
 const Calendar = () => {
-    const calendarRef = useRef<any>(null);
+    const calendarRef = useRef<FullCalendar>(null);
     const { updateCurrClass, displayClasses, displayEvents } = useCalendarContext();
 
     function unselectAll() {

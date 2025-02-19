@@ -45,7 +45,7 @@ export async function loadAllTags(): Promise<Set<string>> {
 }
 
 // Get one tag by id
-export async function getTag(tagId: string): Promise<any> {
+export async function getTag(tagId: string): Promise<string | null> {
     const response = await fetchWithTimeout(`./api/tags?id=${tagId}`, { headers: {} });
     if (!response.ok) {
         console.error("Error fetching tag:", response.statusText);

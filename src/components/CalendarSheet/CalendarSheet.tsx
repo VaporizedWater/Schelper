@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import Spreadsheet, { Matrix } from "react-spreadsheet";
-import { updateCombinedClass } from "@/lib/utils";
+// import { updateCombinedClass } from "@/lib/utils";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { Class, ClassProperty } from "@/lib/types";
 
@@ -141,6 +141,7 @@ export default function CalendarSheet() {
 
             // Update everything in the right order
             updateAllClasses(newClassesData);
+            updateAllEvents(newClassesData.map(c => c.event as EventInput));
             updateDisplayClasses(newClassesData);
             updateDisplayEvents(newClassesData.map(c => c.event as EventInput));
         }
