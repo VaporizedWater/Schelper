@@ -35,7 +35,7 @@ const Filters = () => {
         // update display classes based on selected tags using tagList from context
         // Filter allClasses so that each class has at least one tag from the selected tag set.
         const newDisplayClasses = allClasses.filter((classItem) =>
-            classItem.classProperties.tags.some((tag) => newSelectedTags.has(tag.id))
+            classItem.classProperties.tags.some((tag) => newSelectedTags.has(tag))
         );
         updateDisplayClasses(newDisplayClasses);
 
@@ -58,19 +58,19 @@ const Filters = () => {
 
             {/* Use tagList instead of props */}
             <ul className="pr-3" title="tag-list">
-                {Array.from(tagList.entries()).map(([id, { tagName }]) => (
-                    <li key={id} className="flex flex-row items-center" title="tag-item">
+                {Array.from(tagList.entries()).map(([tag, classIds]) => (
+                    <li key={tag} className="flex flex-row items-center" title="tag-item">
                         <label className="flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
-                                name={tagName}
-                                id={id}
+                                name={tag}
+                                id={tag}
                                 className="h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
                                 defaultChecked={true}
                                 onChange={updateTags}
                             />
                         </label>
-                        <span className="ml-3 whitespace-nowrap">{tagName}</span>
+                        <span className="ml-3 whitespace-nowrap">{tag}</span>
                     </li>
                 ))}
             </ul>
