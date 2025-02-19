@@ -40,7 +40,7 @@ const NewClassForm = () => {
         }
 
         // Blank tags for now by default until we take them as input
-        setClassProperties({ ...classProperties, tags: new Set<string>() } as ClassProperty);
+        setClassProperties({ ...classProperties, tags: [] } as ClassProperty);
 
         const newClassEvent: FullCalendarClassEvent = {
             title,
@@ -92,7 +92,7 @@ const NewClassForm = () => {
         instructor_name: "t",
         total_enrolled: "0",
         total_waitlisted: "0",
-        tags: new Set(["Test 1", "Test 2"]),
+        tags: ["Test 1", "Test 2"],
     }
 
     const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };
@@ -281,7 +281,7 @@ const NewClassForm = () => {
                                                 setSelectedTags(newTags);
                                                 setClassProperties({
                                                     ...classProperties,
-                                                    tags: newTags
+                                                    tags: Array.from(newTags)
                                                 } as ClassProperty);
                                             }}
                                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"

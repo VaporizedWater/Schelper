@@ -31,7 +31,7 @@ export type ClassProperty = {
     instructor_name: string;
     total_enrolled: string;
     total_waitlisted: string;
-    tags: Set<string>;
+    tags: string[];
 };
 
 export type CombinedClass = {
