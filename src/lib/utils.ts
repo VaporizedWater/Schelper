@@ -1,4 +1,4 @@
-import { Class, ClassProperty, CombinedClass, tagType } from "./types";
+import { Class, ClassProperty, CombinedClass } from "./types";
 
 // FETCH
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {

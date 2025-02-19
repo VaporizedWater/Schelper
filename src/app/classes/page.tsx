@@ -17,7 +17,7 @@ const NewClassForm = () => {
     const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
     const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty, { initializeWithValue: false });
     const [classEvent, setClassEvent] = useLocalStorage("newEvent", "", { initializeWithValue: false });
-    const [selectedTags, setSelectedTags] = useState<{ id: string; name: string; }[]>([]);
+    const [selectedTags, setSelectedTags] = useState<string[]>([]);
     const { allTags } = useCalendarContext();
 
     const router = useRouter();
@@ -92,7 +92,7 @@ const NewClassForm = () => {
         instructor_name: "t",
         total_enrolled: "0",
         total_waitlisted: "0",
-        tags: [{ id: "1", name: "Test 1" }, { id: "2", name: "Test 2" }],
+        tags: ["Test 1", "Test 2"],
     }
 
     const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };
@@ -267,12 +267,12 @@ const NewClassForm = () => {
                         renderDropdown={() => (
                             <div className="p-2 border rounded flex flex-col gap-2">
                                 {allTags.map((tag) => (
-                                    <label key={tag.id} className="flex items-center gap-2 cursor-pointer">
+                                    <label key={tag} className="flex items-center gap-2 cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            checked={selectedTags.some(t => t.id === tag.id)}
+                                            checked={selectedTags.some(t => t === tag)}
                                             onChange={(e) => {
-                                                const tagData = { id: tag.id, name: tag.name };
+                                                const tagData = tag;
                                                 if (e.target.checked) {
                                                     const newTags = [...selectedTags, tagData];
                                                     setSelectedTags(newTags);
@@ -281,7 +281,7 @@ const NewClassForm = () => {
                                                         tags: newTags
                                                     } as ClassProperty);
                                                 } else {
-                                                    const newTags = selectedTags.filter(t => t.id !== tag.id);
+                                                    const newTags = selectedTags.filter(t => t !== tag);
                                                     setSelectedTags(newTags);
                                                     setClassProperties({
                                                         ...classProperties,
@@ -291,7 +291,7 @@ const NewClassForm = () => {
                                             }}
                                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                         />
-                                        <span className="text-gray-700">{tag.name}</span>
+                                        <span className="text-gray-700">{tag}</span>
                                     </label>
                                 ))}
                             </div>
