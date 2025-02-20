@@ -42,7 +42,7 @@ const Home = () => {
                                 className="cursor-pointer transition rounded-lg"
                                 onClick={() => router.push('/calendar')}
                             />
-                            <span className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-red-500 bg-opacity-100 text-black text-lg font-semibold opacity-0 group-hover:opacity-100 transition">
+                            <span className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition">
                                 Edit Calendar
                             </span>
                         </div>
@@ -55,7 +55,7 @@ const Home = () => {
                                 className="cursor-pointer transition rounded-lg"
                                 onClick={() => router.push('/tags')}
                             />
-                            <span className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-red-500 bg-opacity-100 text-black text-lg font-semibold opacity-0 group-hover:opacity-100 transition">
+                            <span className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition">
                                 Manage Tags
                             </span>
                         </div>
