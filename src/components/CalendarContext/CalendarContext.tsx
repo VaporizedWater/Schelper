@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { CalendarContextType, CombinedClass, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
-import { loadAllCombinedClasses, loadAllTags } from '@/lib/utils';
+import { loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -127,6 +127,9 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         setCurrClass(newClass);
         setClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
         setDisplayClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
+
+        // Update the database (THIS IS TEMPORARY FOR THE DEMO AND PRESENTATION, MAKE SURE TO DO THE DIFFERENCES TRACKING IN THE FUTURE)
+        updateCombinedClass(newClass);
 
         // Recompute event
         const fullDay = newClass.classProperties.days[0];
