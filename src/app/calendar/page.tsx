@@ -14,7 +14,7 @@ const CalendarPage = () => {
             <div className='min-w-24'>
                 <LeftMenu />
             </div>
-            <div className='grid grid-rows-[10%_90%]'>
+            <div className='grid grid-rows-[10%_88%]'>
                 <div className='w-full h-full content-center'>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)} />
                 </div>
