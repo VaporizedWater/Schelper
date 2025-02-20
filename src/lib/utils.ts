@@ -274,3 +274,33 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
         return;
     }
 }
+
+export function normalizeDayName(day: string): string {
+    const dayMap: { [key: string]: string } = {
+        // Monday variations
+        monday: "Mon",
+        mon: "Mon",
+        m: "Mon",
+        // Tuesday variations
+        tuesday: "Tue",
+        tues: "Tue",
+        tue: "Tue",
+        t: "Tue",
+        // Wednesday variations
+        wednesday: "Wed",
+        wed: "Wed",
+        w: "Wed",
+        // Thursday variations
+        thursday: "Thurs",
+        thur: "Thurs",
+        thu: "Thurs",
+        th: "Thurs",
+        // Friday variations
+        friday: "Fri",
+        fri: "Fri",
+        f: "Fri",
+    };
+
+    const normalized = dayMap[day.toLowerCase().trim()];
+    return normalized || "Mon"; // Default to Monday if no match
+}

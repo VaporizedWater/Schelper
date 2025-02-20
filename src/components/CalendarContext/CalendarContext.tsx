@@ -9,9 +9,9 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 const days: { [key: string]: string } = {
     Mon: '2025-01-06',
-    Tues: '2025-01-07',
+    Tue: '2025-01-07',
     Wed: '2025-01-08',
-    Thurs: '2025-01-09',
+    Thu: '2025-01-09',
     Fri: '2025-01-10',
 };
 
@@ -115,9 +115,9 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
 
     const dayMapping: { [full: string]: string } = {
         "Monday": "Mon",
-        "Tuesday": "Tues",
+        "Tuesday": "Tue",
         "Wednesday": "Wed",
-        "Thursday": "Thurs",
+        "Thursday": "Thu",
         "Friday": "Fri"
     };
 
