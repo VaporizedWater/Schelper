@@ -23,66 +23,73 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     const [displayEvents, setDisplayEvents] = useState<EventInput[]>([]); // The events to display on the calendar based on tags
     const [tagList, setTagList] = useState<tagListType>(new Map<string, { classIds: Set<string> }>()); // Map of tags to a set of class ids
     const [allTags, setAllTags] = useState<Set<string>>(new Set()); // All the tags in the context
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Load in all classes
     useEffect(() => {
+        let mounted = true;
+
         const loadClasses = async () => {
-            const allClasses = await loadAllCombinedClasses(); // load from db
+            try {
+                setIsLoading(true);
+                setError(null);
 
-            // Create a new Map which will be set in state
-            const newTagMap = new Map<string, { tagName: string; classIds: Set<string> }>();
+                const allClasses = await loadAllCombinedClasses();
+                if (!mounted) return;
 
-            // Fill up all classes with events
-            for (const classItem of allClasses) {
-                const convertedDay = days[classItem.classProperties.days[0]];
-                const dateStringStart = convertedDay + 'T' + classItem.classProperties.start_time;
-                const dateStringEnd = convertedDay + 'T' + classItem.classProperties.end_time;
+                const newTagMap = new Map<string, { classIds: Set<string> }>();
+                const newEvents: EventInput[] = [];
 
-                classItem.event = {
-                    title: classItem.classData.title,
-                    start: dateStringStart,
-                    end: dateStringEnd,
-                    extendedProps: {
-                        combinedClassId: classItem.classData._id,
-                    },
-                };
+                allClasses.forEach(classItem => {
+                    if (!classItem.classProperties.days?.[0]) return;
 
-                // Add tags to newTagMap instead of directly modifying state tagList
-                if (!classItem.classProperties.tags || classItem.classProperties.tags.length === 0) {
-                    console.log("No tags for class: " + classItem.classData._id);
-                    continue;
-                }
+                    const convertedDay = days[classItem.classProperties.days[0]];
+                    const dateStringStart = `${convertedDay}T${classItem.classProperties.start_time}`;
+                    const dateStringEnd = `${convertedDay}T${classItem.classProperties.end_time}`;
 
-                for (const tag of classItem.classProperties.tags) {
-                    if (newTagMap.has(tag)) {
+                    classItem.event = {
+                        title: classItem.classData.title,
+                        start: dateStringStart,
+                        end: dateStringEnd,
+                        extendedProps: {
+                            combinedClassId: classItem.classData._id,
+                        },
+                    };
+                    newEvents.push(classItem.event);
+
+                    // Process tags
+                    classItem.classProperties.tags?.forEach(tag => {
+                        if (!newTagMap.has(tag)) {
+                            newTagMap.set(tag, { classIds: new Set() });
+                        }
                         newTagMap.get(tag)?.classIds.add(classItem.classData._id);
-                    } else {
-                        newTagMap.set(tag, { tagName: tag, classIds: new Set([classItem.classData._id]) });
-                    }
+                    });
+                });
+
+                if (mounted) {
+                    setAllEvents(newEvents);
+                    setDisplayEvents(newEvents);
+                    setClasses(allClasses);
+                    setDisplayClasses(allClasses);
+                    setTagList(newTagMap);
+
+                    const tags = await loadAllTags();
+                    setAllTags(tags);
+                }
+            } catch (err) {
+                if (mounted) {
+                    console.error('Error loading classes:', err);
+                    setError(err instanceof Error ? err.message : 'Failed to load classes');
+                }
+            } finally {
+                if (mounted) {
+                    setIsLoading(false);
                 }
             }
+        };
 
-            // Set events to the events in all classes
-            setAllEvents(allClasses.map((item) => item.event as EventInput));
-
-            // Set all display events to all events
-            setDisplayEvents(allClasses.map((item) => item.event as EventInput));
-
-            // Set all classes
-            setClasses(allClasses);
-
-            // Set display classes to all classes
-            setDisplayClasses(allClasses);
-
-            // Update state for tagList with a new Map so that consumers get a new reference
-            setTagList(newTagMap);
-
-            // Set all tags to all the tags in the database using loadAllTags
-            const tags = await loadAllTags();
-            setAllTags(tags);
-
-        }
         loadClasses();
+        return () => { mounted = false; };
     }, []);
 
     const updateAllClasses = (newClasses: CombinedClass[]) => {
@@ -148,6 +155,8 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
 
     return (
         <CalendarContext.Provider value={{
+            isLoading,
+            error,
             currCombinedClass,
             updateCurrClass,
             allClasses: combinedClasses,

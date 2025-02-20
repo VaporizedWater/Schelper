@@ -25,6 +25,17 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
     return response;
 }
 
+// Retry helper
+async function retry<T>(fn: () => Promise<T>, attempts: number = 3, delay: number = 1000): Promise<T> {
+    try {
+        return await fn();
+    } catch (error) {
+        if (attempts <= 1) throw error;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return retry(fn, attempts - 1, delay);
+    }
+}
+
 // LOADS/GETs
 // Get all tags
 export async function loadAllTags(): Promise<Set<string>> {
@@ -123,59 +134,38 @@ export async function loadCombinedClasses(classIds: string[]): Promise<CombinedC
 }
 
 export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
-    const response = await fetchWithTimeout("./api/classes", {
-        headers: {},
+    return retry(async () => {
+        const response = await fetch("/api/classes", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) throw new Error(`Failed to fetch classes: ${response.statusText}`);
+
+        const classes = await response.json();
+        const combined = await Promise.all(
+            classes.map(async (classItem: Class) => {
+                const propsResponse = await fetch("/api/class_properties", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        id: classItem._id,
+                    },
+                });
+
+                if (!propsResponse.ok) throw new Error(`Failed to fetch properties for class ${classItem._id}`);
+
+                const props = await propsResponse.json();
+                return {
+                    classData: classItem,
+                    classProperties: props,
+                    event: undefined,
+                };
+            })
+        );
+
+        return combined;
     });
-
-    if (!response.ok || response.status != 200 || !response.body) {
-        console.error("Could not find classes!\n");
-        console.log(response);
-        if (response.ok) {
-            console.log(response.statusText + "ok");
-        }
-        console.log("status: " + response.status);
-
-        // if (response.body) {
-        //     console.log("body" + response.body);
-        // }
-
-        return new Object() as CombinedClass[];
-    }
-
-    const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-    const classesJSON = JSON.parse(responseText);
-    const newClasses = classesJSON as Class[];
-
-    const newCombined = [] as CombinedClass[];
-
-    // console.log(JSON.stringify(newClasses) + "\n");
-
-    for (const classItem of newClasses) {
-        const propResponse = await fetchWithTimeout("./api/class_properties", {
-            headers: { id: classItem._id.toString() },
-        });
-
-        // Read entire response as text first
-        const propText = await propResponse.text();
-
-        if (!propResponse.ok || !propText || propText.trim().length === 0) {
-            console.error("Couldn't retrieve property for id:", classItem._id.toString());
-            continue; // Skip this iteration if there's no property data
-        }
-
-        // Otherwise, parse the text
-        const classProperty = JSON.parse(propText) as ClassProperty;
-
-        newCombined.push({
-            classData: classItem,
-            classProperties: classProperty,
-            event: undefined,
-        });
-    }
-
-    // console.log(JSON.stringify(newCombined) + "\n");
-
-    return newCombined;
 }
 
 // DELETES

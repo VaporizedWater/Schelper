@@ -71,7 +71,9 @@ export type ProviderProps = {
 };
 
 export type CalendarContextType = {
-    currCombinedClass: CombinedClass | undefined;
+    isLoading: boolean;
+    error: string | null;
+    currCombinedClass?: CombinedClass | undefined;
     updateCurrClass: (newCombinedClass: CombinedClass) => void;
     allClasses: CombinedClass[];
     updateAllClasses: (newClasses: CombinedClass[]) => void;
