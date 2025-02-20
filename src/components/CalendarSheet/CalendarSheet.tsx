@@ -6,6 +6,7 @@ import Spreadsheet, { Matrix } from "react-spreadsheet";
 // import { updateCombinedClass } from "@/lib/utils";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { Class, ClassProperty } from "@/lib/types";
+import { updateCombinedClass } from "@/lib/utils";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
@@ -137,6 +138,10 @@ export default function CalendarSheet() {
                     classProperties: newProperties,
                     event: newEvent
                 };
+            });
+
+            newClassesData.forEach(async (combinedClass) => {
+                await updateCombinedClass(combinedClass);
             });
 
             // Update everything in the right order
