@@ -114,6 +114,11 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     }
 
     const updateCurrentClass = (newClass: CombinedClass) => {
+        if (currCombinedClass) {
+            Object.keys(currCombinedClass.classData).forEach(key => {
+                console.log(key, currCombinedClass.classData[key as keyof typeof currCombinedClass.classData]);
+            });
+        }
         // Find the difference between currCombinedClass and newClass
         // Store the difference in a new array or changelog in the database
         // Update the currCombinedClass with the newClass
