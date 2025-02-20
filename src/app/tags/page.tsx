@@ -1,10 +1,11 @@
 'use client';
 import AddTagButton from "@/components/AddTagButton/AddTagButton";
 import TagDisplay from "@/components/TagDisplay/TagDisplay";
+import { insertTag } from "@/lib/utils";
 
 const ManageTags = () => {
-    // Add a new tag and update localStorage
     const handleAddTag = (newTagName: string) => {
+        insertTag(newTagName);
     };
 
     return (

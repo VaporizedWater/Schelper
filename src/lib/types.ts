@@ -71,13 +71,16 @@ export type ProviderProps = {
 };
 
 export type CalendarContextType = {
-    currCombinedClass: CombinedClass | undefined;
+    isLoading: boolean;
+    error: string | null;
+    currCombinedClass?: CombinedClass | undefined;
     updateCurrClass: (newCombinedClass: CombinedClass) => void;
     allClasses: CombinedClass[];
     updateAllClasses: (newClasses: CombinedClass[]) => void;
     displayClasses: CombinedClass[];
     updateDisplayClasses: (newDisplayClasses: CombinedClass[]) => void;
     allEvents: EventInput[];
+    updateAllEvents: (newEvents: EventInput[]) => void;
     displayEvents: EventInput[];
     updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
     tagList: tagListType; // Map of tags to a set of class ids

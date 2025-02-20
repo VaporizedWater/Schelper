@@ -49,7 +49,7 @@ const Filters = () => {
     return (
         <div className="flex flex-col">
             <div className="flex flex-row items-center pb-1">
-                <div className="text-bold">My&nbsp;Tags</div>
+                <div className="text-bold">Filters</div>
                 <Link href={'./tags'}>
                     <button className="rounded-lg px-2"><MdModeEdit className="size-4" /></button>
                 </Link>

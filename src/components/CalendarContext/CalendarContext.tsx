@@ -9,9 +9,9 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 const days: { [key: string]: string } = {
     Mon: '2025-01-06',
-    Tues: '2025-01-07',
+    Tue: '2025-01-07',
     Wed: '2025-01-08',
-    Thurs: '2025-01-09',
+    Thu: '2025-01-09',
     Fri: '2025-01-10',
 };
 
@@ -21,80 +21,75 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     const [currCombinedClass, setCurrClass] = useState<CombinedClass>(); // The currently selected class(es).
     const [displayClasses, setDisplayClasses] = useState<CombinedClass[]>([]); // The classes to display on the calendar based on tags
     const [displayEvents, setDisplayEvents] = useState<EventInput[]>([]); // The events to display on the calendar based on tags
-    // const [tagList, setTagList] = useState<Map<string, { tagName: string; classIds: Set<string> }>>(
-    //     new Map()
-    // );
     const [tagList, setTagList] = useState<tagListType>(new Map<string, { classIds: Set<string> }>()); // Map of tags to a set of class ids
     const [allTags, setAllTags] = useState<Set<string>>(new Set()); // All the tags in the context
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-    // Load in all classes
     useEffect(() => {
+        let mounted = true;
+
         const loadClasses = async () => {
-            const allClasses = await loadAllCombinedClasses(); // load from db
+            try {
+                setIsLoading(true);
+                setError(null);
 
-            // Create a new Map which will be set in state
-            const newTagMap = new Map<string, { tagName: string; classIds: Set<string> }>();
+                const allClasses = await loadAllCombinedClasses();
+                if (!mounted) return;
 
-            // Fill up all classes with events
-            for (const classItem of allClasses) {
-                const convertedDay = days[classItem.classProperties.days[0]];
-                const dateStringStart = convertedDay + 'T' + classItem.classProperties.start_time;
-                const dateStringEnd = convertedDay + 'T' + classItem.classProperties.end_time;
+                const newTagMap = new Map<string, { classIds: Set<string> }>();
+                const newEvents: EventInput[] = [];
 
-                classItem.event = {
-                    title: classItem.classData.title,
-                    start: dateStringStart,
-                    end: dateStringEnd,
-                    extendedProps: {
-                        combinedClassId: classItem.classData._id,
-                    },
-                };
+                allClasses.forEach(classItem => {
+                    if (!classItem.classProperties.days?.[0]) return;
 
-                // Add tags to newTagMap instead of directly modifying state tagList
-                if (!classItem.classProperties.tags || classItem.classProperties.tags.length === 0) {
-                    console.log("No tags for class: " + classItem.classData._id);
-                    continue;
-                }
+                    const convertedDay = days[classItem.classProperties.days[0]];
+                    const dateStringStart = `${convertedDay}T${classItem.classProperties.start_time}`;
+                    const dateStringEnd = `${convertedDay}T${classItem.classProperties.end_time}`;
 
-                for (const tag of classItem.classProperties.tags) {
-                    if (newTagMap.has(tag)) {
+                    classItem.event = {
+                        title: classItem.classData.title,
+                        start: dateStringStart,
+                        end: dateStringEnd,
+                        extendedProps: {
+                            combinedClassId: classItem.classData._id,
+                        },
+                    };
+                    newEvents.push(classItem.event);
+
+                    // Process tags
+                    classItem.classProperties.tags?.forEach(tag => {
+                        if (!newTagMap.has(tag)) {
+                            newTagMap.set(tag, { classIds: new Set() });
+                        }
                         newTagMap.get(tag)?.classIds.add(classItem.classData._id);
-                    } else {
-                        newTagMap.set(tag, { tagName: tag, classIds: new Set([classItem.classData._id]) });
-                    }
+                    });
+                });
+
+                if (mounted) {
+                    setAllEvents(newEvents);
+                    setDisplayEvents(newEvents);
+                    setClasses(allClasses);
+                    setDisplayClasses(allClasses);
+                    setTagList(newTagMap);
+
+                    const tags = await loadAllTags();
+                    setAllTags(tags);
+                }
+            } catch (err) {
+                if (mounted) {
+                    console.error('Error loading classes:', err);
+                    setError(err instanceof Error ? err.message : 'Failed to load classes');
+                }
+            } finally {
+                if (mounted) {
+                    setIsLoading(false);
                 }
             }
+        };
 
-            // Set events to the events in all classes
-            setAllEvents(allClasses.map((item) => item.event as EventInput));
-
-            // Set all display events to all events
-            setDisplayEvents(allClasses.map((item) => item.event as EventInput));
-
-            // Set all classes
-            setClasses(allClasses);
-
-            // Set display classes to all classes
-            setDisplayClasses(allClasses);
-
-            // Update state for tagList with a new Map so that consumers get a new reference
-            setTagList(newTagMap);
-
-            // Display tagList in full with all objects and subobjects expanded
-            // const serializableTagList = Array.from(newTagMap.entries()).map(([id, { tagName, classIds }]) => ({
-            //     id,
-            //     tagName,
-            //     classIds: Array.from(classIds),
-            // }));
-
-            // console.log("Full tagList:", JSON.stringify(serializableTagList, null, 2));
-
-            // Set all tags to all the tags in the database using loadAllTags
-            const tags = await loadAllTags();
-            setAllTags(tags);
-
-        }
         loadClasses();
+        return () => { mounted = false; };
     }, []);
 
     const updateAllClasses = (newClasses: CombinedClass[]) => {
@@ -111,22 +106,57 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
 
     const updateDisplayEvents = (newDisplayEvents: EventInput[]) => {
         setDisplayEvents(newDisplayEvents);
+        console.log("Display events updated" + JSON.stringify(newDisplayEvents));
     }
 
+    const updateAllEvents = (newEvents: EventInput[]) => {
+        setAllEvents(newEvents);
+    }
+
+    const dayMapping: { [full: string]: string } = {
+        "Monday": "Mon",
+        "Tuesday": "Tue",
+        "Wednesday": "Wed",
+        "Thursday": "Thu",
+        "Friday": "Fri"
+    };
+
     const updateCurrentClass = (newClass: CombinedClass) => {
-        if (currCombinedClass) {
-            Object.keys(currCombinedClass.classData).forEach(key => {
-                console.log(key, currCombinedClass.classData[key as keyof typeof currCombinedClass.classData]);
-            });
-        }
-        // Find the difference between currCombinedClass and newClass
-        // Store the difference in a new array or changelog in the database
-        // Update the currCombinedClass with the newClass
-        // Store the update the currCombinedClass in the database with the newClass
+        console.log("Updating current class " + newClass.classData._id);
+        // Update the class lists
+        setCurrClass(newClass);
+        setClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
+        setDisplayClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
+
+        // Recompute event
+        const fullDay = newClass.classProperties.days[0];
+        const shortDay = dayMapping[fullDay] || fullDay;
+        const convertedDay = days[shortDay] || '2025-01-06';
+        const dateStringStart = convertedDay + 'T' + newClass.classProperties.start_time;
+        const dateStringEnd = convertedDay + 'T' + newClass.classProperties.end_time;
+
+        const newEvent = {
+            title: newClass.classData.title,
+            start: dateStringStart,
+            end: dateStringEnd,
+            extendedProps: {
+                combinedClassId: newClass.classData._id,
+            }
+        };
+
+        // Update events arrays
+        setAllEvents(prev => prev.map(ev =>
+            ev.extendedProps?.combinedClassId === newClass.classData._id ? newEvent : ev
+        ));
+        setDisplayEvents(prev => prev.map(ev =>
+            ev.extendedProps?.combinedClassId === newClass.classData._id ? newEvent : ev
+        ));
     }
 
     return (
         <CalendarContext.Provider value={{
+            isLoading,
+            error,
             currCombinedClass,
             updateCurrClass,
             allClasses: combinedClasses,
@@ -134,6 +164,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             displayClasses,
             updateDisplayClasses,
             allEvents,
+            updateAllEvents,
             displayEvents,
             updateDisplayEvents,
             tagList,
@@ -152,3 +183,10 @@ export const useCalendarContext = () => {
     }
     return context;
 }
+
+// A method for iterating over the contents of a custom type without manually specifying the property names
+// if (currCombinedClass) {
+//     Object.keys(currCombinedClass.classData).forEach(key => {
+//         console.log(key, currCombinedClass.classData[key as keyof typeof currCombinedClass.classData]);
+//     });
+// }

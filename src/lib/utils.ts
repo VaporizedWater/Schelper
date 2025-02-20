@@ -25,6 +25,17 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
     return response;
 }
 
+// Retry helper
+async function retry<T>(fn: () => Promise<T>, attempts: number = 3, delay: number = 1000): Promise<T> {
+    try {
+        return await fn();
+    } catch (error) {
+        if (attempts <= 1) throw error;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+        return retry(fn, attempts - 1, delay);
+    }
+}
+
 // LOADS/GETs
 // Get all tags
 export async function loadAllTags(): Promise<Set<string>> {
@@ -40,8 +51,19 @@ export async function loadAllTags(): Promise<Set<string>> {
 
     // tagsJSON is an array of objects like { id: "tag1" }.
     const tagIds = (tagsJSON as { _id: string }[]).map((tag) => tag._id);
-    console.log(JSON.stringify(tagIds));
+    // console.log(JSON.stringify(tagIds));
     return new Set(tagIds);
+}
+
+// Get one tag by id
+export async function getTag(tagId: string): Promise<string | null> {
+    const response = await fetchWithTimeout(`./api/tags?id=${tagId}`, { headers: {} });
+    if (!response.ok) {
+        console.error("Error fetching tag:", response.statusText);
+        return null;
+    }
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
 }
 
 // Editable Class Properties.
@@ -112,59 +134,38 @@ export async function loadCombinedClasses(classIds: string[]): Promise<CombinedC
 }
 
 export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
-    const response = await fetchWithTimeout("./api/classes", {
-        headers: {},
+    return retry(async () => {
+        const response = await fetch("/api/classes", {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+
+        if (!response.ok) throw new Error(`Failed to fetch classes: ${response.statusText}`);
+
+        const classes = await response.json();
+        const combined = await Promise.all(
+            classes.map(async (classItem: Class) => {
+                const propsResponse = await fetch("/api/class_properties", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        id: classItem._id,
+                    },
+                });
+
+                if (!propsResponse.ok) throw new Error(`Failed to fetch properties for class ${classItem._id}`);
+
+                const props = await propsResponse.json();
+                return {
+                    classData: classItem,
+                    classProperties: props,
+                    event: undefined,
+                };
+            })
+        );
+
+        return combined;
     });
-
-    if (!response.ok || response.status != 200 || !response.body) {
-        console.error("Could not find classes!\n");
-        console.log(response);
-        if (response.ok) {
-            console.log(response.statusText + "ok");
-        }
-        console.log("status: " + response.status);
-
-        // if (response.body) {
-        //     console.log("body" + response.body);
-        // }
-
-        return new Object() as CombinedClass[];
-    }
-
-    const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-    const classesJSON = JSON.parse(responseText);
-    const newClasses = classesJSON as Class[];
-
-    const newCombined = [] as CombinedClass[];
-
-    // console.log(JSON.stringify(newClasses) + "\n");
-
-    for (const classItem of newClasses) {
-        const propResponse = await fetchWithTimeout("./api/class_properties", {
-            headers: { id: classItem._id.toString() },
-        });
-
-        // Read entire response as text first
-        const propText = await propResponse.text();
-
-        if (!propResponse.ok || !propText || propText.trim().length === 0) {
-            console.error("Couldn't retrieve property for id:", classItem._id.toString());
-            continue; // Skip this iteration if there's no property data
-        }
-
-        // Otherwise, parse the text
-        const classProperty = JSON.parse(propText) as ClassProperty;
-
-        newCombined.push({
-            classData: classItem,
-            classProperties: classProperty,
-            event: undefined,
-        });
-    }
-
-    // console.log(JSON.stringify(newCombined) + "\n");
-
-    return newCombined;
 }
 
 // DELETES
@@ -231,20 +232,19 @@ export async function insertCombinedClass(combinedClass: CombinedClass) {
 }
 
 // Insert tag
-export async function insertTag(tagName: string) {
+export async function insertTag(tagName: string): Promise<string | null> {
+    // Process tagName: convert to lowercase and remove spaces
+    const processedTag = tagName.toLowerCase().replace(/\s+/g, "");
     const response = await fetchWithTimeout("api/tags", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: tagName }),
+        headers: { "Content-Type": "text/plain" },
+        body: processedTag,
     });
-
     if (!response.ok) {
         console.error("Error inserting tag: " + response.statusText);
         return null;
     }
-
-    const result = await response.json();
-    return result.insertedId ?? null;
+    return processedTag;
 }
 
 // --------
@@ -273,4 +273,34 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
         console.error("Error updating class properties: " + classPropResponse.statusText);
         return;
     }
+}
+
+export function normalizeDayName(day: string): string {
+    const dayMap: { [key: string]: string } = {
+        // Monday variations
+        monday: "Mon",
+        mon: "Mon",
+        m: "Mon",
+        // Tuesday variations
+        tuesday: "Tue",
+        tues: "Tue",
+        tue: "Tue",
+        t: "Tue",
+        // Wednesday variations
+        wednesday: "Wed",
+        wed: "Wed",
+        w: "Wed",
+        // Thursday variations
+        thursday: "Thurs",
+        thur: "Thurs",
+        thu: "Thurs",
+        th: "Thurs",
+        // Friday variations
+        friday: "Fri",
+        fri: "Fri",
+        f: "Fri",
+    };
+
+    const normalized = dayMap[day.toLowerCase().trim()];
+    return normalized || "Mon"; // Default to Monday if no match
 }

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
+import { DayDisplayEndings, ShortenedDays } from '@/lib/commonConstants';
+
 
 const ClassProperties = () => {
     const { currCombinedClass, updateCurrentClass } = useCalendarContext();
@@ -26,8 +28,6 @@ const ClassProperties = () => {
             setTags(newProps.tags || []);
         }
     }, [currCombinedClass]);
-
-    const availableDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
     const handleCourseSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
@@ -124,9 +124,9 @@ const ClassProperties = () => {
                         value={days}
                         onChange={handleDaysChange}
                     >
-                        {availableDays.map(day => (
-                            <option key={day} value={day}>
-                                {day}
+                        {ShortenedDays.map(day => (
+                            <option key={day} value={day} defaultChecked={days.includes(day)}>
+                                {day + DayDisplayEndings.get(day)}
                             </option>
                         ))}
                     </select>

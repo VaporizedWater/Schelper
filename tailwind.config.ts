@@ -18,6 +18,7 @@ const config: Config = {
                 grayblue: "#ecf2fc",
                 graybg: "#f8fafa",
                 lightblue: "#c2e7ff",
+                lightblue2: "#2e6cd3",
             },
         },
     },

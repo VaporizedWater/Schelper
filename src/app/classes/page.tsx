@@ -7,7 +7,6 @@ import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
-import { useState } from "react";
 
 const NewClassForm = () => {
     const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
@@ -17,7 +16,7 @@ const NewClassForm = () => {
     const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
     const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty, { initializeWithValue: false });
     const [classEvent, setClassEvent] = useLocalStorage("newEvent", "", { initializeWithValue: false });
-    const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+    const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<string[]>("selectedTags", [], { initializeWithValue: false });
     const { allTags } = useCalendarContext();
 
     const router = useRouter();
@@ -29,7 +28,7 @@ const NewClassForm = () => {
         clearEndTime();
         setClassInfo({} as Class);
         setClassProperties({} as ClassProperty);
-        setSelectedTags(new Set());
+        clearSelectedTags();
     }
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -260,7 +259,7 @@ const NewClassForm = () => {
                         buttonClassName="p-2 border rounded w-full"
                         renderButton={(isOpen) => (
                             <div className="flex justify-between items-center cursor-pointer">
-                                <span>Select Tags ({selectedTags.size})</span>
+                                <span>Select Tags ({selectedTags.length})</span>
                                 {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                             </div>
                         )}
@@ -270,18 +269,18 @@ const NewClassForm = () => {
                                     <label key={tag} className="flex items-center gap-2 cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            checked={selectedTags.has(tag)}
+                                            checked={selectedTags.includes(tag)}
                                             onChange={(e) => {
-                                                const newTags = new Set(selectedTags);
+                                                let newTags: string[];
                                                 if (e.target.checked) {
-                                                    newTags.add(tag);
+                                                    newTags = [...selectedTags, tag];
                                                 } else {
-                                                    newTags.delete(tag);
+                                                    newTags = selectedTags.filter(t => t !== tag);
                                                 }
                                                 setSelectedTags(newTags);
                                                 setClassProperties({
                                                     ...classProperties,
-                                                    tags: Array.from(newTags)
+                                                    tags: newTags
                                                 } as ClassProperty);
                                             }}
                                             className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"

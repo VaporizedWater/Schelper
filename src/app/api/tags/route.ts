@@ -1,7 +1,7 @@
 import clientPromise from "@/lib/mongodb";
 
 const client = await clientPromise;
-const collection = client.db("class-scheduling-app").collection("tags");
+const collection = client.db("class-scheduling-app").collection<{ _id: string }>("tags");
 
 export async function GET(request: Request) {
     let response: Response;
@@ -24,16 +24,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
-        const body = await request.json();
-        const { tagName } = body;
-
+        // Read and process the tag name: lowercase and remove spaces
+        let tagName = (await request.text()).trim();
         if (!tagName) {
             return new Response("Tag name is required", { status: 400 });
         }
-
-        const newTag = { tagName, classes: [] };
-        await collection.insertOne(newTag);
-
+        tagName = tagName.toLowerCase().replace(/\s+/g, "");
+        // Insert the tag with _id set to the processed tagName
+        await collection.insertOne({ _id: tagName });
         return new Response("Tag added successfully", { status: 201 });
     } catch (error) {
         console.error("Error adding tag:", error);
