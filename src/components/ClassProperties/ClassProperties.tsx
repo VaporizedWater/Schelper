@@ -81,46 +81,46 @@ const ClassProperties = () => {
         <div>
             <ul className="flex flex-col w-full">
                 <li className="flex border-b pb-1">
-                    <span className="font-medium text-gray-700 min-w-24">Subject</span>
+                    <span className="font-medium text-gray-700 min-w-20">Subject</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1"
+                        className="flex-1 border p-1 w-full"
                         value={courseSubject}
                         onChange={handleCourseSubjectChange}
                     />
                 </li>
                 <li className="flex border-b pb-1">
-                    <span className="font-medium text-gray-700 min-w-24">Number</span>
+                    <span className="font-medium text-gray-700 min-w-20">Number</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1"
+                        className="flex-1 border p-1 w-full"
                         value={courseNum}
                         onChange={handleCourseNumChange}
                     />
                 </li>
                 <li className="flex border-b pb-1">
-                    <span className="font-medium text-gray-700 min-w-24">Title</span>
+                    <span className="font-medium text-gray-700 min-w-20">Title</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1"
+                        className="flex-1 border p-1 w-full"
                         value={title}
                         onChange={handleTitleChange}
                     />
                 </li>
                 <li className="flex border-b pb-1">
-                    <span className="font-medium text-gray-700 min-w-24">Instructor</span>
+                    <span className="font-medium text-gray-700 min-w-20">Instructor</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1"
+                        className="flex-1 border p-1 w-full"
                         value={instructor}
                         onChange={handleInstructorChange}
                     />
                 </li>
                 <li className="flex border-b pb-1">
-                    <span className="font-medium text-gray-700 min-w-24">Days</span>
+                    <span className="font-medium text-gray-700 min-w-20">Days</span>
                     <select
                         multiple
-                        className="flex-1 border p-1"
+                        className="flex-1 border p-1 w-full"
                         value={days}
                         onChange={handleDaysChange}
                     >
@@ -132,10 +132,10 @@ const ClassProperties = () => {
                     </select>
                 </li>
                 <li className="flex border-b pb-1">
-                    <span className="font-medium text-gray-700 min-w-24">Tags</span>
+                    <span className="font-medium text-gray-700 min-w-20">Tags</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1"
+                        className="flex-1 border p-1 w-full"
                         value={tags.join(', ')}
                         onChange={handleTagsChange}
                         placeholder="Comma separated tags"
