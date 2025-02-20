@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
-import { DayDisplayEndings, ShortenedDays } from '@/lib/commonConstants';
+import { DayDisplayEndings, ShortenedDays } from '@/lib/common';
 
 
 const ClassProperties = () => {

@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Class, ClassProperty, CombinedClass, FullCalendarClassEvent } from "@/lib/types";
+import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { insertCombinedClass } from "@/lib/utils";
 import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
+import { EventInput } from "@fullcalendar/core/index.js";
 
 const NewClassForm = () => {
     const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
@@ -41,7 +42,7 @@ const NewClassForm = () => {
         // Blank tags for now by default until we take them as input
         setClassProperties({ ...classProperties, tags: [] } as ClassProperty);
 
-        const newClassEvent: FullCalendarClassEvent = {
+        const newClassEvent: EventInput = {
             title,
             day,
             startTime,
@@ -56,7 +57,10 @@ const NewClassForm = () => {
         defaultCombined.classProperties = classProperties ?? defaultProperties;
         insertCombinedClass(defaultCombined);
 
-        // console.log(JSON.stringify(defaultCombined));
+        // Update the context as well
+
+
+        console.log(JSON.stringify(defaultCombined));
 
         // Clear state
         clearState();

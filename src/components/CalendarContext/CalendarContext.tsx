@@ -4,16 +4,9 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { CalendarContextType, CombinedClass, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
+import { createEventFromCombinedClass, days } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
-
-const days: { [key: string]: string } = {
-    Mon: '2025-01-06',
-    Tue: '2025-01-07',
-    Wed: '2025-01-08',
-    Thu: '2025-01-09',
-    Fri: '2025-01-10',
-};
 
 export const CalendarProvider = ({ children }: ProviderProps) => {
     const [combinedClasses, setClasses] = useState<CombinedClass[]>([]); // All the classes in the context
@@ -43,18 +36,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 allClasses.forEach(classItem => {
                     if (!classItem.classProperties.days?.[0]) return;
 
-                    const convertedDay = days[classItem.classProperties.days[0]];
-                    const dateStringStart = `${convertedDay}T${classItem.classProperties.start_time}`;
-                    const dateStringEnd = `${convertedDay}T${classItem.classProperties.end_time}`;
-
-                    classItem.event = {
-                        title: classItem.classData.title,
-                        start: dateStringStart,
-                        end: dateStringEnd,
-                        extendedProps: {
-                            combinedClassId: classItem.classData._id,
-                        },
-                    };
+                    classItem.event = createEventFromCombinedClass(classItem);
                     newEvents.push(classItem.event);
 
                     // Process tags
