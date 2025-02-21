@@ -2,6 +2,7 @@
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import DropDown from "../DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
+import AddClassToTag from "../AddClassToTag/AddClassToTag";
 
 const TagDisplay = () => {
     const { tagList, allTags, allClasses } = useCalendarContext();
@@ -36,18 +37,22 @@ const TagDisplay = () => {
                                 </div>
                             )}
                             renderDropdown={() => (
-                                <ul className="flex flex-col gap-1 bg-white border rounded shadow-lg">
-                                    {Array.from(tagData.classIds).map((classId) => {
-                                        const foundClass = allClasses.find(
-                                            (cls) => String(cls.classData._id) === classId
-                                        );
-                                        return (
-                                            <li key={classId} className="p-2 hover:bg-gray-200">
-                                                {foundClass ? foundClass.classData.title : classId}
-                                            </li>
-                                        );
-                                    })}
-                                </ul>
+                                <div>
+                                    <ul className="flex flex-col gap-1 bg-white border rounded shadow-lg">
+                                        {Array.from(tagData.classIds).map((classId) => {
+                                            const foundClass = allClasses.find(
+                                                (cls) => String(cls.classData._id) === classId
+                                            );
+                                            return (
+                                                <li key={classId} className="p-2 hover:bg-gray-200">
+                                                    {foundClass ? foundClass.classData.title : classId}
+                                                </li>
+                                            );
+                                        })}
+                                    </ul>
+                                    {/* AddClassToTag component */}
+                                    <AddClassToTag tagId={tagId} />
+                                </div>
                             )}
                             buttonClassName="w-full"
                             dropdownClassName="w-full mt-1"
