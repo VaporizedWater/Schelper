@@ -1,14 +1,13 @@
 "use client";
 
 import FullCalendar from "@fullcalendar/react";
-import interactionPlugin, { DateClickArg, EventResizeStopArg } from "@fullcalendar/interaction";
+import interactionPlugin, { EventResizeStopArg } from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 
 import { EventClickArg, EventDropArg } from "@fullcalendar/core";
 import { useRef } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { createEventFromCombinedClass, emptyCombinedClass, ShortenedDays } from "@/lib/common";
-import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
 
@@ -49,7 +48,7 @@ const Calendar = () => {
     }
 
     // This triggers when clicking on any date/time slot that isn't an event
-    const handleDateClick = (info: DateClickArg) => {
+    const handleDateClick = () => {
         unselectAll();
         setCurrClass(emptyCombinedClass);
     };

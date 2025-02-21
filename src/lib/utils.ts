@@ -173,6 +173,19 @@ export async function deleteClass(classID: string) {
     console.log("deleting " + classID);
 }
 
+// Delete tag and return if deleted or not
+export async function deleteTag(tagId: string) {
+    const response = await fetchWithTimeout("api/tags", {
+        method: "DELETE",
+        headers: { "Content-Type": "text/plain" },
+        body: tagId,
+    });
+
+    if (!response.ok) {
+        console.error("Error deleting tag: " + response.statusText);
+    }
+}
+
 // INSERTs/POSTs
 
 // Insert class

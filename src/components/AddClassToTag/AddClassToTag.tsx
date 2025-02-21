@@ -24,6 +24,7 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
         );
         if (!classToUpdate) {
             setError("Class not found");
+            console.log(error);
             return;
         }
 
@@ -44,7 +45,7 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
 
     return (
         <DropDown
-            renderButton={(isOpen) => (
+            renderButton={() => (
                 <button className="px-2 py-1 bg-blue-500 text-white rounded">
                     Add Class
                 </button>

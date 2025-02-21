@@ -1,11 +1,14 @@
 'use client'
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import DropDown from "../DropDown/DropDown";
-import { MdExpandLess, MdExpandMore } from "react-icons/md";
+import { MdDelete, MdExpandLess, MdExpandMore } from "react-icons/md";
 import AddClassToTag from "../AddClassToTag/AddClassToTag";
+import { useState } from "react";
+import { deleteTag } from "@/lib/utils";
 
 const TagDisplay = () => {
     const { tagList, allTags, allClasses } = useCalendarContext();
+    const [hoveredTagId, setHoveredTagId] = useState<string | null>(null);
 
     // Get the IDs of tags that are linked to classes.
     const linkedTagIds = new Set(Array.from(tagList).map(([tagId]) => tagId));
@@ -20,22 +23,49 @@ const TagDisplay = () => {
         return typeof tag === "object" ? !linkedTagIds.has(tag._id) : !linkedTagIds.has(tag);
     });
 
+    const handleTagDelete = (tagName: string) => {
+        console.log("Delete tag");
+        const isConfirmed = window.confirm(`Are you sure you want to delete the tag "${tagName}"?`);
+
+        if (isConfirmed) {
+            deleteTag(tagName);
+            tagList.delete(tagName);
+        }
+
+
+    }
+
     return (
         <div>
             <ul className="flex flex-col gap-3">
                 {/* Render linked tags with prefixed key */}
                 {Array.from(tagList).map(([tagId, tagData]) => (
-                    <li key={`linked-${tagId}`}>
+                    <li
+                        key={`linked-${tagId}`}
+                        onMouseEnter={() => setHoveredTagId(tagId)}
+                        onMouseLeave={() => setHoveredTagId(null)}
+                    >
                         <DropDown
+                            buttonClassName="w-full"
                             renderButton={(isOpen) => (
-                                <div className="flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
+                                <div className="hover:bg-grayblue flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
                                     <span>
                                         {tagId} : {tagData.classIds.size} Class
                                         {tagData.classIds.size > 1 ? "es" : ""}
                                     </span>
-                                    {isOpen ? <MdExpandLess /> : <MdExpandMore />}
+                                    <div className="flex items-center gap-2">
+                                        {hoveredTagId === tagId && (
+                                            <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={() => handleTagDelete(tagId)}>
+                                                <MdDelete />
+                                            </div>
+                                        )}
+                                        {isOpen ? <MdExpandLess /> : <MdExpandMore />}
+                                    </div>
+
                                 </div>
                             )}
+
+                            dropdownClassName="w-full mt-1"
                             renderDropdown={() => (
                                 <div>
                                     <ul className="flex flex-col gap-1 bg-white border rounded shadow-lg">
@@ -44,18 +74,16 @@ const TagDisplay = () => {
                                                 (cls) => String(cls.classData._id) === classId
                                             );
                                             return (
-                                                <li key={classId} className="p-2 hover:bg-gray-200">
+                                                <li key={classId} className="p-2 hover:bg-gray-100">
                                                     {foundClass ? foundClass.classData.title : classId}
                                                 </li>
                                             );
                                         })}
                                     </ul>
                                     {/* AddClassToTag component */}
-                                    <AddClassToTag tagId={tagId} />
+                                    {/* <AddClassToTag tagId={tagId} /> */}
                                 </div>
                             )}
-                            buttonClassName="w-full"
-                            dropdownClassName="w-full mt-1"
                         />
                     </li>
                 ))}
@@ -65,9 +93,18 @@ const TagDisplay = () => {
                     const displayValue =
                         typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
                     return (
-                        <li key={`unlinked-${keyValue}-${index}`}>
-                            <div className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <li
+                            key={`unlinked-${keyValue}-${index}`}
+                            onMouseEnter={() => setHoveredTagId(keyValue)}
+                            onMouseLeave={() => setHoveredTagId(null)}
+                        >
+                            <div className="flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
                                 <span>{displayValue} : 0 Classes</span>
+                                {hoveredTagId === keyValue && (
+                                    <div className="hover:bg-gray-300 p-1 rounded" onClick={() => handleTagDelete(keyValue)}>
+                                        <MdDelete />
+                                    </div>
+                                )}
                             </div>
                         </li>
                     );
