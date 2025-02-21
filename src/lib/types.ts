@@ -74,7 +74,8 @@ export type CalendarContextType = {
     isLoading: boolean;
     error: string | null;
     currCombinedClass?: CombinedClass | undefined;
-    updateCurrClass: (newCombinedClass: CombinedClass) => void;
+    setCurrClass: (newCombinedClass: CombinedClass) => void;
+    updateCurrentClass: (newCombinedClass: CombinedClass) => void;
     allClasses: CombinedClass[];
     updateAllClasses: (newClasses: CombinedClass[]) => void;
     displayClasses: CombinedClass[];
@@ -85,5 +86,4 @@ export type CalendarContextType = {
     updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
     tagList: tagListType; // Map of tags to a set of class ids
     allTags: Set<string>;
-    updateCurrentClass: (newClass: CombinedClass) => void;
 };

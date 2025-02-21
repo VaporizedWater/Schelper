@@ -78,10 +78,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         setClasses(newClasses);
     }
 
-    const updateCurrClass = (newClass: CombinedClass) => {
-        setCurrClass(newClass);
-    }
-
     const updateDisplayClasses = (newDisplayClasses: CombinedClass[]) => {
         setDisplayClasses(newDisplayClasses);
     }
@@ -143,7 +139,8 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             isLoading,
             error,
             currCombinedClass,
-            updateCurrClass,
+            setCurrClass,
+            updateCurrentClass,
             allClasses: combinedClasses,
             updateAllClasses,
             displayClasses,
@@ -154,7 +151,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             updateDisplayEvents,
             tagList,
             allTags,
-            updateCurrentClass,
         }}>
             {children}
         </CalendarContext.Provider>
