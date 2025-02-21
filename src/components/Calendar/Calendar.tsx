@@ -1,13 +1,14 @@
 "use client";
 
 import FullCalendar from "@fullcalendar/react";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, { DateClickArg, EventResizeStopArg } from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 
 import { EventClickArg, EventDropArg } from "@fullcalendar/core";
 import { useRef } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { createEventFromCombinedClass, ShortenedDays } from "@/lib/common";
+import { createEventFromCombinedClass, emptyCombinedClass, ShortenedDays } from "@/lib/common";
+import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
 
@@ -47,6 +48,12 @@ const Calendar = () => {
         }
     }
 
+    // This triggers when clicking on any date/time slot that isn't an event
+    const handleDateClick = (info: DateClickArg) => {
+        unselectAll();
+        setCurrClass(emptyCombinedClass);
+    };
+
     const handleEventDrop = (info: EventDropArg) => {
         // Update the class in the context
         const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
@@ -67,6 +74,22 @@ const Calendar = () => {
             foundClass.classProperties.days = [newDay];
             foundClass.event = createEventFromCombinedClass(foundClass);
 
+            updateCurrentClass(foundClass);
+        }
+    }
+
+    const handleEventResize = (info: EventResizeStopArg) => {
+        const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
+
+        if (foundClass) {
+            const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            if (!newEnd) {
+                return;
+            }
+
+            foundClass.classProperties.end_time = newEnd;
+            foundClass.event = createEventFromCombinedClass(foundClass);
             updateCurrentClass(foundClass);
         }
     }
@@ -92,6 +115,8 @@ const Calendar = () => {
                 height={'100%'}
                 dayHeaderFormat={{ 'weekday': 'long' }}
                 eventDrop={handleEventDrop}
+                eventResize={handleEventResize}
+                dateClick={handleDateClick}
             />
         </div>
     );

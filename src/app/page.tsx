@@ -33,29 +33,29 @@ const Home = () => {
                     </h1>
                     <h2 className='pt-4 text-3xl text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
                     <div className='mt-10 flex justify-center gap-6'>
-                        <div className="relative group overflow-hidden">
+                        <div className="relative group overflow-hidden"
+                            onClick={() => router.push('/calendar')}>
                             <Image
                                 src="/calendar1.png"
                                 alt="Edit Calendar"
                                 width={160}
                                 height={64}
                                 className="cursor-pointer transition rounded-lg"
-                                onClick={() => router.push('/calendar')}
                             />
-                            <span className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition">
+                            <span className="rounded-b-lg absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition cursor-pointer">
                                 Edit Calendar
                             </span>
                         </div>
-                        <div className="relative group">
+                        <div className="relative group"
+                            onClick={() => router.push('/tags')}>
                             <Image
                                 src="/tag.png"
                                 alt="Manage Tags"
                                 width={160}
                                 height={64}
                                 className="cursor-pointer transition rounded-lg"
-                                onClick={() => router.push('/tags')}
                             />
-                            <span className="absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition">
+                            <span className="rounded-b-lg absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition cursor-pointer">
                                 Manage Tags
                             </span>
                         </div>

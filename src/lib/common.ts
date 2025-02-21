@@ -19,6 +19,37 @@ export const days: { [key: string]: string } = {
     Fri: "2025-01-10",
 };
 
+export const emptyCombinedClass: CombinedClass = {
+    classData: {
+        _id: "",
+        catalog_num: "",
+        class_num: "",
+        session: "",
+        course_subject: "",
+        course_num: "",
+        section: "",
+        title: "",
+        location: "",
+        enrollment_cap: "",
+        waitlist_cap: "",
+    },
+    classProperties: {
+        _id: "",
+        class_status: "",
+        start_time: "",
+        end_time: "",
+        room: "",
+        facility_id: "",
+        days: [] as string[],
+        instructor_email: "",
+        instructor_name: "",
+        total_enrolled: "",
+        total_waitlisted: "",
+        tags: {} as string[],
+    },
+    event: undefined,
+};
+
 export function normalizeDayName(day: string): string {
     const dayMap: { [key: string]: string } = {
         // Monday variations

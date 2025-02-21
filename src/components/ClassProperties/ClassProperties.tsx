@@ -1,20 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
-import { DayDisplayEndings, ShortenedDays } from '@/lib/common';
+import { createEventFromCombinedClass, DayDisplayEndings, ShortenedDays } from '@/lib/common';
 
 
 const ClassProperties = () => {
     const { currCombinedClass, updateCurrentClass } = useCalendarContext();
     const initialData: Class = currCombinedClass?.classData || {} as Class;
     const initialProps: ClassProperty = currCombinedClass?.classProperties || {} as ClassProperty;
+    console.log('initialData', JSON.stringify(initialData));
+    console.log('initialProps', JSON.stringify(initialProps));
 
     const [courseSubject, setCourseSubject] = useState(initialData.course_subject || '');
     const [courseNum, setCourseNum] = useState(initialData.course_num || '');
     const [title, setTitle] = useState(initialData.title || '');
     const [instructor, setInstructor] = useState(initialProps.instructor_name || '');
     const [days, setDays] = useState<string[]>(initialProps.days || []);
-    const [tags, setTags] = useState<string[]>(initialProps.tags || []);
+    const [tags, setTags] = useState<string[]>(Array.isArray(initialProps.tags) ? initialProps.tags : []);
+    const [startTime, setStartTime] = useState(initialProps.start_time || '');
+    const [endTime, setEndTime] = useState(initialProps.end_time || '');
 
     useEffect(() => {
         if (currCombinedClass) {
@@ -25,7 +29,9 @@ const ClassProperties = () => {
             setTitle(newData.title || '');
             setInstructor(newProps.instructor_name || '');
             setDays(newProps.days || []);
-            setTags(newProps.tags || []);
+            setTags(Array.isArray(newProps.tags) ? newProps.tags : []);
+            setStartTime(newProps.start_time || '');
+            setEndTime(newProps.end_time || '');
         }
     }, [currCombinedClass]);
 
@@ -74,6 +80,24 @@ const ClassProperties = () => {
         setTags(tagArray);
         const modifiedClass: CombinedClass = currCombinedClass || {} as CombinedClass;
         modifiedClass.classProperties.tags = tagArray;
+        updateCurrentClass(modifiedClass);
+    };
+
+    const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newVal = e.target.value;
+        setStartTime(newVal);
+        const modifiedClass: CombinedClass = currCombinedClass || {} as CombinedClass;
+        modifiedClass.classProperties.start_time = newVal;
+        modifiedClass.event = createEventFromCombinedClass(modifiedClass);
+        updateCurrentClass(modifiedClass);
+    };
+
+    const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newVal = e.target.value;
+        setEndTime(newVal);
+        const modifiedClass: CombinedClass = currCombinedClass || {} as CombinedClass;
+        modifiedClass.classProperties.end_time = newVal;
+        modifiedClass.event = createEventFromCombinedClass(modifiedClass);
         updateCurrentClass(modifiedClass);
     };
 
@@ -139,6 +163,28 @@ const ClassProperties = () => {
                         value={tags.join(', ')}
                         onChange={handleTagsChange}
                         placeholder="Comma separated tags"
+                    />
+                </li>
+
+                {/* Start time */}
+                <li className="flex border-b pb-1">
+                    <span className="font-medium text-gray-700 min-w-20">Start Time</span>
+                    <input
+                        type="time"
+                        className="flex-1 border p-1 w-full"
+                        value={startTime}
+                        onChange={handleStartTimeChange}
+                    />
+                </li>
+
+                {/* End time */}
+                <li className="flex border-b pb-1">
+                    <span className="font-medium text-gray-700 min-w-20">Start Time</span>
+                    <input
+                        type="time"
+                        className="flex-1 border p-1 w-full"
+                        value={endTime}
+                        onChange={handleEndTimeChange}
                     />
                 </li>
             </ul>
