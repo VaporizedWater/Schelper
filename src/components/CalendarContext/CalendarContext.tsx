@@ -143,8 +143,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             tagData.classIds.delete(classId);
             if (tagData.classIds.size === 0) {
                 newTagList.delete(tagId);
-                // Delete from db
-                deleteTag(tagId);
             } else {
                 newTagList.set(tagId, tagData);
             }
@@ -178,9 +176,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         newTagList.delete(tagId);
         setTagList(newTagList);
 
-        // Delete from db
-        deleteTag(tagId);
-
         const newClasses = combinedClasses.map(c => {
             c.classProperties.tags = c.classProperties.tags.filter(t => t !== tagId);
             updateCombinedClass(c);
@@ -188,6 +183,18 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         });
         setClasses(newClasses);
     }
+
+    const unlinkAllTagsFromAllClasses = () => {
+        const newClasses = combinedClasses.map(c => {
+            c.classProperties.tags = [];
+            updateCombinedClass(c);
+            return c;
+        });
+        setClasses(newClasses);
+
+        setTagList(new Map());
+    }
+
 
     return (
         <CalendarContext.Provider value={{
@@ -208,7 +215,8 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             allTags,
             unlinkTagFromClass,
             unlinkAllTagsFromClass,
-            unlinkAllClassesFromTag
+            unlinkAllClassesFromTag,
+            unlinkAllTagsFromAllClasses
         }}>
             {children}
         </CalendarContext.Provider>

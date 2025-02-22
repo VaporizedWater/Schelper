@@ -2,8 +2,12 @@
 import AddTagButton from "@/components/AddTagButton/AddTagButton";
 import TagDisplay from "@/components/TagDisplay/TagDisplay";
 import { insertTag } from "@/lib/utils";
+import { BiUnlink } from "react-icons/bi";
+import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 
 const ManageTags = () => {
+    const { unlinkAllTagsFromAllClasses } = useCalendarContext();
+
     const handleAddTag = (newTagName: string) => {
         insertTag(newTagName);
     };
@@ -15,8 +19,21 @@ const ManageTags = () => {
             {/* Tag Menu */}
             <div className="flex justify-center pb-4 gap-2">
                 <AddTagButton onAddTag={handleAddTag} />
-                <AddTagButton onAddTag={handleAddTag} />
-                <div></div>
+
+                <button
+                    className="flex gap-2 items-center justify-center bg-white px-2 shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit"
+                    onClick={() => {
+                        // Get confirmation from user
+                        const isConfirmed = window.confirm("Are you sure you want to unlink all tags from all classes?\n (This will not delete any tags)");
+                        if (!isConfirmed) return;
+
+                        // unlink all tags
+                        unlinkAllTagsFromAllClasses();
+                    }}
+                >
+                    <BiUnlink className="text-xl" />
+                    <span className="pr-2">Unlink All</span>
+                </button>
             </div>
 
 

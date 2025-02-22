@@ -110,10 +110,10 @@ const TagDisplay = () => {
                             onMouseEnter={() => setHoveredTagId(keyValue)}
                             onMouseLeave={() => setHoveredTagId(null)}
                         >
-                            <div className="flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
+                            <div className="flex justify-between items-center p-2 bg-gray-100 rounded">
                                 <span>{displayValue} : 0 Classes</span>
                                 {hoveredTagId === keyValue && (
-                                    <div className="hover:bg-gray-300 p-1 rounded" onClick={(e) => {
+                                    <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
                                         e.stopPropagation();
                                         handleEmptyTagDelete(keyValue)
                                     }}>
