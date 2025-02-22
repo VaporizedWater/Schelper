@@ -145,12 +145,15 @@ const ClassProperties = () => {
                     <span className="font-medium text-gray-700 min-w-20">Days</span>
                     <select
                         multiple
-                        className="flex-1 border p-1 w-full"
+                        className="flex-1 border p-1 w-full scrollbar-thin"
                         value={days}
                         onChange={handleDaysChange}
                     >
                         {ShortenedDays.map(day => (
-                            <option key={day} value={day} defaultChecked={days.includes(day)}>
+                            <option
+                                key={day} value={day} defaultChecked={days.includes(day)}
+                                className={`${days.includes(day) ? 'bg-lightblue' : 'bg-white'}`}
+                            >
                                 {day + DayDisplayEndings.get(day)}
                             </option>
                         ))}
@@ -160,7 +163,7 @@ const ClassProperties = () => {
                 {/* Tags to be selected from list of checkboxes */}
                 <li className="flex border-b pb-1">
                     <span className="font-medium text-gray-700 min-w-20">Tags</span>
-                    <div className="flex-1 flex-col gap-2">
+                    <div className="flex-1 flex-col gap-2 overflow-y-scroll scrollbar-thin">
                         {Array.from(allTags).map((tag) => {
                             return (
                                 <label key={tag} className="flex items-center gap-1">
@@ -178,7 +181,7 @@ const ClassProperties = () => {
                                             modifiedClass.classProperties.tags = updatedTags;
                                             updateCurrentClass(modifiedClass);
                                         }}
-                                        className="form-checkbox h-4 w-4"
+                                        className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
                                     />
                                     <span>{tag}</span>
                                 </label>

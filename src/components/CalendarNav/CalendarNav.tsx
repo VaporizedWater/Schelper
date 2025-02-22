@@ -3,6 +3,7 @@ import { MdCalendarMonth } from "react-icons/md";
 import { useState } from "react";
 import { CalendarOpenProps } from "@/lib/types";
 import ButtonDropDown from "../ButtonDropDown/ButtonDropDown";
+import Link from "next/link";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
@@ -28,12 +29,19 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
             </ul>
             <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">
                 <li key={2} className={`${listString} hover:bg-gray-200`}>
-                    <ButtonDropDown title="Import" items={uploadDropList} ></ButtonDropDown>
+                    <button>
+                        <Link href="/viewConflicts">
+                            <span>View Conflicts</span>
+                        </Link>
+                    </button>
                 </li>
                 <li key={3} className={`${listString} hover:bg-gray-200`}>
+                    <ButtonDropDown title="Import" items={uploadDropList} ></ButtonDropDown>
+                </li>
+                <li key={4} className={`${listString} hover:bg-gray-200`}>
                     <ButtonDropDown title="Create" items={createDropList} ></ButtonDropDown>
                 </li>
-                <li key={4} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
+                <li key={5} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
                     <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
                     <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
                 </li>
