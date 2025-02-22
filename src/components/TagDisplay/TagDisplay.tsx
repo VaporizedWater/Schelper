@@ -5,10 +5,12 @@ import { MdDelete, MdExpandLess, MdExpandMore } from "react-icons/md";
 // import AddClassToTag from "../AddClassToTag/AddClassToTag";
 import { useState } from "react";
 import { deleteTag } from "@/lib/utils";
+import { BiUnlink } from "react-icons/bi";
 
 const TagDisplay = () => {
-    const { tagList, allTags, allClasses, unlinkAllClassesFromTag } = useCalendarContext();
+    const { tagList, allTags, allClasses, unlinkAllClassesFromTag, unlinkTagFromClass } = useCalendarContext();
     const [hoveredTagId, setHoveredTagId] = useState<string | null>(null);
+    const [hoveredTagClassId, setHoveredTagClassId] = useState<string[] | null>(null);
 
     // Get the IDs of tags that are linked to classes.
     const linkedTagIds = new Set(Array.from(tagList).map(([tagId]) => tagId));
@@ -41,6 +43,18 @@ const TagDisplay = () => {
         if (isConfirmed) {
             deleteTag(tagName);
             tagList.delete(tagName);
+        }
+    }
+
+    const handleClassUnlink = (tagId: string, classId: string) => {
+        // Get class name from id
+        const className = allClasses.find((cls) => String(cls.classData._id) === classId)?.classData.title;
+
+        console.log(`Unlink class "${className}" with id "${classId}" from tag "${tagId}"`);
+        const isConfirmed = window.confirm(`Unlink class "${className}" from tag "${tagId}"?`);
+
+        if (isConfirmed) {
+            unlinkTagFromClass(tagId, classId);
         }
     }
 
@@ -86,8 +100,20 @@ const TagDisplay = () => {
                                                 (cls) => String(cls.classData._id) === classId
                                             );
                                             return (
-                                                <li key={classId} className="p-2 hover:bg-gray-100">
+                                                <li
+                                                    key={classId} className="p-2 hover:bg-gray-100 flex justify-between items-center"
+                                                    onMouseEnter={() => setHoveredTagClassId([tagId, classId])}
+                                                    onMouseLeave={() => setHoveredTagClassId(null)}
+                                                >
                                                     {foundClass ? foundClass.classData.title : classId}
+                                                    {hoveredTagClassId && hoveredTagClassId[0] === tagId && hoveredTagClassId[1] === classId && (
+                                                        <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleClassUnlink(tagId, classId)
+                                                        }}>
+                                                            <BiUnlink />
+                                                        </div>
+                                                    )}
                                                 </li>
                                             );
                                         })}
