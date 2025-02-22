@@ -5,7 +5,7 @@ import { createEventFromCombinedClass, DayDisplayEndings, ShortenedDays } from '
 
 
 const ClassProperties = () => {
-    const { currCombinedClass, updateCurrentClass } = useCalendarContext();
+    const { currCombinedClass, updateCurrentClass, allTags, tagList } = useCalendarContext();
     const initialData: Class = currCombinedClass?.classData || {} as Class;
     const initialProps: ClassProperty = currCombinedClass?.classProperties || {} as ClassProperty;
     console.log('initialData', JSON.stringify(initialData));
@@ -74,6 +74,7 @@ const ClassProperties = () => {
         modifiedClass.classProperties.days = selected;
         updateCurrentClass(modifiedClass);
     };
+
 
     const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const tagArray = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
@@ -155,15 +156,36 @@ const ClassProperties = () => {
                         ))}
                     </select>
                 </li>
+
+                {/* Tags to be selected from list of checkboxes */}
                 <li className="flex border-b pb-1">
                     <span className="font-medium text-gray-700 min-w-20">Tags</span>
-                    <input
-                        type="text"
-                        className="flex-1 border p-1 w-full"
-                        value={tags.join(', ')}
-                        onChange={handleTagsChange}
-                        placeholder="Comma separated tags"
-                    />
+                    <div className="flex-1 flex-col gap-2">
+                        {Array.from(allTags).map((tag) => {
+                            return (
+                                <label key={tag} className="flex items-center gap-1">
+                                    <input
+                                        type="checkbox"
+                                        checked={tags.includes(tag)}
+                                        onChange={(e) => {
+                                            const isChecked = e.target.checked;
+                                            const updatedTags = isChecked
+                                                ? [...tags, tag]
+                                                : tags.filter(t => t !== tag);
+
+                                            setTags(updatedTags);
+                                            const modifiedClass: CombinedClass = currCombinedClass || {} as CombinedClass;
+                                            modifiedClass.classProperties.tags = updatedTags;
+                                            updateCurrentClass(modifiedClass);
+                                        }}
+                                        className="form-checkbox h-4 w-4"
+                                    />
+                                    <span>{tag}</span>
+                                </label>
+                            );
+                        })}
+                    </div>
+
                 </li>
 
                 {/* Start time */}

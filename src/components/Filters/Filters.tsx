@@ -58,21 +58,26 @@ const Filters = () => {
 
             {/* Use tagList instead of props */}
             <ul className="pr-3" title="tag-list">
-                {Array.from(tagList.entries()).map(([tag]) => (
-                    <li key={tag} className="flex flex-row items-center" title="tag-item">
-                        <label className="flex items-center cursor-pointer">
-                            <input
-                                type="checkbox"
-                                name={tag}
-                                id={tag}
-                                className="h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
-                                defaultChecked={true}
-                                onChange={updateTags}
-                            />
-                        </label>
-                        <span className="ml-3 whitespace-nowrap">{tag}</span>
-                    </li>
-                ))}
+                {Array.from(tagList.entries())
+                    .sort((a, b) => a[0].localeCompare(b[0], undefined, {
+                        numeric: true,
+                        sensitivity: 'base'
+                    }))
+                    .map(([tag]) => (
+                        <li key={tag} className="flex flex-row items-center" title="tag-item">
+                            <label className="flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    name={tag}
+                                    id={tag}
+                                    className="h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                                    defaultChecked={true}
+                                    onChange={updateTags}
+                                />
+                            </label>
+                            <span className="ml-3 whitespace-nowrap">{tag}</span>
+                        </li>
+                    ))}
             </ul>
 
         </div>
