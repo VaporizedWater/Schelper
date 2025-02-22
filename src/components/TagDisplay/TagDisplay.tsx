@@ -2,12 +2,12 @@
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import DropDown from "../DropDown/DropDown";
 import { MdDelete, MdExpandLess, MdExpandMore } from "react-icons/md";
-import AddClassToTag from "../AddClassToTag/AddClassToTag";
+// import AddClassToTag from "../AddClassToTag/AddClassToTag";
 import { useState } from "react";
 import { deleteTag } from "@/lib/utils";
 
 const TagDisplay = () => {
-    const { tagList, allTags, allClasses } = useCalendarContext();
+    const { tagList, allTags, allClasses, unlinkAllClassesFromTag } = useCalendarContext();
     const [hoveredTagId, setHoveredTagId] = useState<string | null>(null);
 
     // Get the IDs of tags that are linked to classes.
@@ -28,11 +28,20 @@ const TagDisplay = () => {
         const isConfirmed = window.confirm(`Are you sure you want to delete the tag "${tagName}"?`);
 
         if (isConfirmed) {
+            unlinkAllClassesFromTag(tagName);
             deleteTag(tagName);
             tagList.delete(tagName);
         }
+    }
 
+    const handleEmptyTagDelete = (tagName: string) => {
+        console.log("Delete empty tag");
+        const isConfirmed = window.confirm(`Delete the empty tag "${tagName}"?`);
 
+        if (isConfirmed) {
+            deleteTag(tagName);
+            tagList.delete(tagName);
+        }
     }
 
     return (
@@ -55,7 +64,10 @@ const TagDisplay = () => {
                                     </span>
                                     <div className="flex items-center gap-2">
                                         {hoveredTagId === tagId && (
-                                            <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={() => handleTagDelete(tagId)}>
+                                            <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleTagDelete(tagId)
+                                            }}>
                                                 <MdDelete />
                                             </div>
                                         )}
@@ -101,7 +113,10 @@ const TagDisplay = () => {
                             <div className="flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
                                 <span>{displayValue} : 0 Classes</span>
                                 {hoveredTagId === keyValue && (
-                                    <div className="hover:bg-gray-300 p-1 rounded" onClick={() => handleTagDelete(keyValue)}>
+                                    <div className="hover:bg-gray-300 p-1 rounded" onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleEmptyTagDelete(keyValue)
+                                    }}>
                                         <MdDelete />
                                     </div>
                                 )}

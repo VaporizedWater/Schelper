@@ -86,4 +86,7 @@ export type CalendarContextType = {
     updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
     tagList: tagListType; // Map of tags to a set of class ids
     allTags: Set<string>;
+    unlinkTagFromClass: (classId: string, tagId: string) => void;
+    unlinkAllTagsFromClass: (classId: string) => void;
+    unlinkAllClassesFromTag: (tagId: string) => void;
 };

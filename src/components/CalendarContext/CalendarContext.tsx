@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { CalendarContextType, CombinedClass, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
-import { loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
+import { deleteTag, loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
 import { createEventFromCombinedClass, days } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -74,6 +74,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         return () => { mounted = false; };
     }, []);
 
+    // 
     const updateAllClasses = (newClasses: CombinedClass[]) => {
         setClasses(newClasses);
     }
@@ -134,6 +135,60 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         ));
     }
 
+    const unlinkTagFromClass = (tagId: string, classId: string) => {
+        // Unlink tag from class
+        const newTagList = new Map(tagList);
+        const tagData = newTagList.get(tagId);
+        if (tagData) {
+            tagData.classIds.delete(classId);
+            if (tagData.classIds.size === 0) {
+                newTagList.delete(tagId);
+                // Delete from db
+                deleteTag(tagId);
+            } else {
+                newTagList.set(tagId, tagData);
+            }
+            setTagList(newTagList);
+        }
+
+        // Remove tag from class
+        const newClasses = combinedClasses.map(c => {
+            if (c.classData._id === classId) {
+                c.classProperties.tags = c.classProperties.tags.filter(t => t !== tagId);
+                updateCombinedClass(c);
+            }
+            return c;
+        });
+        setClasses(newClasses);
+    }
+
+    const unlinkAllTagsFromClass = (classId: string) => {
+        const newClasses = combinedClasses.map(c => {
+            if (c.classData._id === classId) {
+                c.classProperties.tags = [];
+                updateCombinedClass(c);
+            }
+            return c;
+        });
+        setClasses(newClasses);
+    }
+
+    const unlinkAllClassesFromTag = (tagId: string) => {
+        const newTagList = new Map(tagList);
+        newTagList.delete(tagId);
+        setTagList(newTagList);
+
+        // Delete from db
+        deleteTag(tagId);
+
+        const newClasses = combinedClasses.map(c => {
+            c.classProperties.tags = c.classProperties.tags.filter(t => t !== tagId);
+            updateCombinedClass(c);
+            return c;
+        });
+        setClasses(newClasses);
+    }
+
     return (
         <CalendarContext.Provider value={{
             isLoading,
@@ -151,6 +206,9 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             updateDisplayEvents,
             tagList,
             allTags,
+            unlinkTagFromClass,
+            unlinkAllTagsFromClass,
+            unlinkAllClassesFromTag
         }}>
             {children}
         </CalendarContext.Provider>
