@@ -30,8 +30,8 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
             <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">
                 <li key={2} className={`${listString} hover:bg-gray-200`}>
                     <button>
-                        <Link href="/viewConflicts">
-                            <span>View Conflicts</span>
+                        <Link href="/viewConflicts" className="flex items-center p-2 bg-white rounded-full hover:bg-gray-200">
+                            <div>View Conflicts</div>
                         </Link>
                     </button>
                 </li>

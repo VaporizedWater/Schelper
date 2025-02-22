@@ -90,4 +90,5 @@ export type CalendarContextType = {
     unlinkAllTagsFromClass: (classId: string) => void;
     unlinkAllClassesFromTag: (tagId: string) => void;
     unlinkAllTagsFromAllClasses: () => void;
+    detectConflicts: () => void;
 };

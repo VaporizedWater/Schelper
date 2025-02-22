@@ -8,8 +8,8 @@ const ClassProperties = () => {
     const { currCombinedClass, updateCurrentClass, allTags, tagList } = useCalendarContext();
     const initialData: Class = currCombinedClass?.classData || {} as Class;
     const initialProps: ClassProperty = currCombinedClass?.classProperties || {} as ClassProperty;
-    console.log('initialData', JSON.stringify(initialData));
-    console.log('initialProps', JSON.stringify(initialProps));
+    // console.log('initialData', JSON.stringify(initialData));
+    // console.log('initialProps', JSON.stringify(initialProps));
 
     const [courseSubject, setCourseSubject] = useState(initialData.course_subject || '');
     const [courseNum, setCourseNum] = useState(initialData.course_num || '');

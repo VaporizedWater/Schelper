@@ -28,6 +28,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 setError(null);
 
                 const allClasses = await loadAllCombinedClasses();
+                // console.log(JSON.stringify(allClasses));
                 if (!mounted) return;
 
                 const newTagMap = new Map<string, { classIds: Set<string> }>();
@@ -195,6 +196,30 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         setTagList(new Map());
     }
 
+    const detectConflicts = () => {
+        // Check for conflicts
+        // Sort by start time
+        const sortedClasses = combinedClasses.slice().sort((a, b) => {
+            const aStart = a.classProperties.start_time;
+            const bStart = b.classProperties.start_time;
+            return aStart.localeCompare(bStart);
+        });
+
+        //Sort sortedClasses by day
+        sortedClasses.sort((a, b) => {
+            const aDay = a.classProperties.days[0];
+            const bDay = b.classProperties.days[0];
+            return days[aDay].localeCompare(days[bDay]);
+        });
+
+        // Print out each class title in the sorted class
+        // console.log("Sorted classes:");
+        // sortedClasses.forEach(c => console.log(c.classData.title));
+
+        // Check for conflicts using two pointers
+
+    }
+
 
     return (
         <CalendarContext.Provider value={{
@@ -216,7 +241,8 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             unlinkTagFromClass,
             unlinkAllTagsFromClass,
             unlinkAllClassesFromTag,
-            unlinkAllTagsFromAllClasses
+            unlinkAllTagsFromAllClasses,
+            detectConflicts
         }}>
             {children}
         </CalendarContext.Provider>

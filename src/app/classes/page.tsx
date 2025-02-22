@@ -120,9 +120,9 @@ const NewClassForm = () => {
                         className="p-2 border rounded"
                     >
                         <option value="Mon">Monday</option>
-                        <option value="Tues">Tuesday</option>
+                        <option value="Tue">Tuesday</option>
                         <option value="Wed">Wednesday</option>
-                        <option value="Thurs">Thursday</option>
+                        <option value="Thu">Thursday</option>
                         <option value="Fri">Friday</option>
                     </select>
                     <input
