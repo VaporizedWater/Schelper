@@ -4,8 +4,10 @@ import { useState } from "react";
 import { CalendarOpenProps } from "@/lib/types";
 import ButtonDropDown from "../ButtonDropDown/ButtonDropDown";
 import Link from "next/link";
+import { useCalendarContext } from "../CalendarContext/CalendarContext";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
+    const { displayClasses } = useCalendarContext();
     const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
     const [calendarActive, setActive] = useState(true);
 
@@ -23,8 +25,10 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
         <div className="flex flex-row px-2 ">
             <ul className="flex flex-row items-center">
                 {/* Drop down for selecting calendars/semesters*/}
-                <li key={1} className={`flex flex-row gap-2`}>
+                <li key={1} className={`flex flex-row gap-3 items-center`}>
                     <p className="text-lg text-lightblack text-center font-semibold">Spring 25</p>
+                    {/* Show number of classes */}
+                    <p className="text-sm text-gray-400">{displayClasses.length} Class{displayClasses.length !== 1 && 'es'}</p>
                 </li>
             </ul>
             <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">
