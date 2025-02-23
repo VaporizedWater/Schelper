@@ -71,32 +71,32 @@ const NewClassForm = () => {
 
     const defaultClass: Class = {
         _id: "",
-        catalog_num: "1",
-        class_num: "1",
-        session: "1",
-        course_subject: "1",
-        course_num: "1",
-        section: "1",
-        title: "1",
-        location: "1",
-        enrollment_cap: "1",
-        waitlist_cap: "1",
-    }
+        catalog_num: "",
+        class_num: "",
+        session: "",
+        course_subject: "",
+        course_num: "",
+        section: "",
+        title: "",
+        location: "",
+        enrollment_cap: "",
+        waitlist_cap: "",
+    };
 
     const defaultProperties: ClassProperty = {
         _id: "",
-        class_status: "1",
-        start_time: "1",
-        end_time: "1",
-        room: "1",
-        facility_id: "1",
+        class_status: "",
+        start_time: "",
+        end_time: "",
+        room: "",
+        facility_id: "",
         days: ["Mon"],
-        instructor_email: "t",
-        instructor_name: "t",
-        total_enrolled: "0",
-        total_waitlisted: "0",
-        tags: ["Test 1", "Test 2"],
-    }
+        instructor_email: "",
+        instructor_name: "",
+        total_enrolled: "",
+        total_waitlisted: "",
+        tags: [],
+    };
 
     const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };
 

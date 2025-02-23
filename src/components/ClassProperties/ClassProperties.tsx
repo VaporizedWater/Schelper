@@ -3,7 +3,6 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
 import { createEventFromCombinedClass, DayDisplayEndings, ShortenedDays } from '@/lib/common';
 
-
 const ClassProperties = () => {
     const { currCombinedClass, updateCurrentClass, allTags, tagList } = useCalendarContext();
     const initialData: Class = currCombinedClass?.classData || {} as Class;
@@ -15,6 +14,8 @@ const ClassProperties = () => {
     const [courseNum, setCourseNum] = useState(initialData.course_num || '');
     const [title, setTitle] = useState(initialData.title || '');
     const [instructor, setInstructor] = useState(initialProps.instructor_name || '');
+    const [room, setRoom] = useState(initialProps.room || '');
+    const [location, setLocation] = useState(initialData.location || '');
     const [days, setDays] = useState<string[]>(initialProps.days || []);
     const [tags, setTags] = useState<string[]>(Array.isArray(initialProps.tags) ? initialProps.tags : []);
     const [startTime, setStartTime] = useState(initialProps.start_time || '');
@@ -28,6 +29,8 @@ const ClassProperties = () => {
             setCourseNum(newData.course_num || '');
             setTitle(newData.title || '');
             setInstructor(newProps.instructor_name || '');
+            setRoom(newProps.room || '');
+            setLocation(newData.location || '');
             setDays(newProps.days || []);
             setTags(Array.isArray(newProps.tags) ? newProps.tags : []);
             setStartTime(newProps.start_time || '');
@@ -67,6 +70,22 @@ const ClassProperties = () => {
         updateCurrentClass(modifiedClass);
     };
 
+    const handleRoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newVal = e.target.value;
+        setRoom(newVal);
+        const modifiedClass: CombinedClass = currCombinedClass || {} as CombinedClass;
+        modifiedClass.classProperties.room = newVal;
+        updateCurrentClass(modifiedClass);
+    };
+
+    const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newVal = e.target.value;
+        setLocation(newVal);
+        const modifiedClass: CombinedClass = currCombinedClass || {} as CombinedClass;
+        modifiedClass.classData.location = newVal;
+        updateCurrentClass(modifiedClass);
+    };
+
     const handleDaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selected = Array.from(e.target.selectedOptions, option => option.value);
         setDays(selected);
@@ -75,12 +94,14 @@ const ClassProperties = () => {
         updateCurrentClass(modifiedClass);
     };
 
+    const handleTagCheck = (tag: string, isChecked: boolean) => {
+        const updatedTags = isChecked
+            ? [...tags, tag]
+            : tags.filter(t => t !== tag);
 
-    const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const tagArray = e.target.value.split(',').map(t => t.trim()).filter(Boolean);
-        setTags(tagArray);
+        setTags(updatedTags);
         const modifiedClass: CombinedClass = currCombinedClass || {} as CombinedClass;
-        modifiedClass.classProperties.tags = tagArray;
+        modifiedClass.classProperties.tags = updatedTags;
         updateCurrentClass(modifiedClass);
     };
 
@@ -142,17 +163,36 @@ const ClassProperties = () => {
                     />
                 </li>
                 <li className="flex border-b pb-1">
+                    <span className="font-medium text-gray-700 min-w-20">Room</span>
+                    <input
+                        type="text"
+                        className="flex-1 border p-1 w-full"
+                        value={room}
+                        onChange={handleRoomChange}
+                    />
+                </li>
+                <li className="flex border-b pb-1">
+                    <span className="font-medium text-gray-700 min-w-20">Location</span>
+                    <input
+                        type="text"
+                        className="flex-1 border p-1 w-full"
+                        value={location}
+                        onChange={handleLocationChange}
+                    />
+                </li>
+                <li className="flex border-b pb-1">
                     <span className="font-medium text-gray-700 min-w-20">Days</span>
                     <select
                         multiple
-                        className="flex-1 border p-1 w-full scrollbar-thin"
+                        className="flex-1 border p-1 w-full overflow-hidden"
+                        size={ShortenedDays.length}
                         value={days}
                         onChange={handleDaysChange}
                     >
                         {ShortenedDays.map(day => (
                             <option
                                 key={day} value={day} defaultChecked={days.includes(day)}
-                                className={`${days.includes(day) ? 'bg-lightblue' : 'bg-white'}`}
+                                className={`${days.includes(day) ? 'bg-lightblue' : 'bg-white'} py-1 `}
                             >
                                 {day + DayDisplayEndings.get(day)}
                             </option>
@@ -170,17 +210,7 @@ const ClassProperties = () => {
                                     <input
                                         type="checkbox"
                                         checked={tags.includes(tag)}
-                                        onChange={(e) => {
-                                            const isChecked = e.target.checked;
-                                            const updatedTags = isChecked
-                                                ? [...tags, tag]
-                                                : tags.filter(t => t !== tag);
-
-                                            setTags(updatedTags);
-                                            const modifiedClass: CombinedClass = currCombinedClass || {} as CombinedClass;
-                                            modifiedClass.classProperties.tags = updatedTags;
-                                            updateCurrentClass(modifiedClass);
-                                        }}
+                                        onChange={(e) => handleTagCheck(tag, e.target.checked)}
                                         className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
                                     />
                                     <span>{tag}</span>
@@ -204,7 +234,7 @@ const ClassProperties = () => {
 
                 {/* End time */}
                 <li className="flex border-b pb-1">
-                    <span className="font-medium text-gray-700 min-w-20">Start Time</span>
+                    <span className="font-medium text-gray-700 min-w-20">End Time</span>
                     <input
                         type="time"
                         className="flex-1 border p-1 w-full"

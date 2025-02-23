@@ -216,8 +216,48 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         // console.log("Sorted classes:");
         // sortedClasses.forEach(c => console.log(c.classData.title));
 
+        console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
         // Check for conflicts using two pointers
 
+        const conflicts: { class1: CombinedClass, class2: CombinedClass }[] = [];
+
+        // Two-pointer approach
+        for (let i = 0; i < sortedClasses.length - 1; i++) {
+            const class1 = sortedClasses[i];
+
+            for (let j = i + 1; j < sortedClasses.length; j++) {
+                const class2 = sortedClasses[j];
+
+                // If we've moved to a different day, break inner loop
+                if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
+                    break;
+                }
+
+                // Check for time overlap
+                const class1End = class1.classProperties.end_time;
+                const class2Start = class2.classProperties.start_time;
+
+                if (class2Start < class1End) {
+                    // Conflict found
+                    conflicts.push({
+                        class1: class1,
+                        class2: class2
+                    });
+                } else {
+                    // No more possible conflicts with class1
+                    // Since classes are sorted by start time
+                    break;
+                }
+            }
+        }
+
+        // Return conflicts array
+
+        // Console log the classes in conflicts by title only
+        console.log("Conflicts:");
+        conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
+
+        // return conflicts;
     }
 
 

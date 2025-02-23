@@ -29,6 +29,8 @@ const Calendar = () => {
         selectedEvents.forEach(element => {
             if (element) {
                 element.style.borderColor = 'transparent';
+
+                // Remove the ctrl click effect
             }
         });
 
