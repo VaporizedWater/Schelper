@@ -19,6 +19,14 @@ export const days: { [key: string]: string } = {
     Fri: "2025-01-10",
 };
 
+export const dayMapping: { [full: string]: string } = {
+    Monday: "Mon",
+    Tuesday: "Tue",
+    Wednesday: "Wed",
+    Thursday: "Thu",
+    Friday: "Fri",
+};
+
 export const emptyCombinedClass: CombinedClass = {
     classData: {
         _id: "",

@@ -70,6 +70,11 @@ export type ProviderProps = {
     children: ReactNode;
 };
 
+export type ConflictType = {
+    class1: CombinedClass;
+    class2: CombinedClass;
+};
+
 export type CalendarContextType = {
     isLoading: boolean;
     error: string | null;
@@ -91,4 +96,5 @@ export type CalendarContextType = {
     unlinkAllClassesFromTag: (tagId: string) => void;
     unlinkAllTagsFromAllClasses: () => void;
     detectConflicts: () => void;
+    conflicts: ConflictType[];
 };
