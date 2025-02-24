@@ -1,15 +1,18 @@
-import { MdAdd } from "react-icons/md";
+import { MdAdd, MdFileDownload, MdFileUpload } from "react-icons/md";
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import Link from "next/link";
 import DropDown from "../DropDown/DropDown";
 import { ButtonDropDownProps } from "@/lib/types";
 
-const ButtonDropDown = ({ title, items }: ButtonDropDownProps) => {
+const ButtonDropDown = ({ title, items, type }: ButtonDropDownProps) => {
     return (
         <DropDown
             renderButton={(isOpen) => (
                 <div className="flex items-center p-2 bg-white rounded-full hover:bg-gray-200">
-                    <MdAdd className="size-4 text-lightblack" />
+                    {type.toLocaleLowerCase() === "create" && <MdAdd className="size-4 text-lightblack" />}
+                    {type.toLocaleLowerCase() === "upload" && <MdFileUpload className="size-4 text-gray-600" />}
+                    {type.toLocaleLowerCase() === "download" && <MdFileDownload className="size-4 text-gray-600" />}
+
                     <span>{title}</span>
                     {isOpen ? <IoMdArrowDropup className="size-4" /> : <IoMdArrowDropdown className="size-4" />}
                 </div>

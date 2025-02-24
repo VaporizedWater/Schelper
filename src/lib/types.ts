@@ -53,6 +53,7 @@ export type DropDownProps = {
 export type ButtonDropDownProps = {
     title: string;
     items: { link: string; content: string }[];
+    type: string;
 };
 
 export type FullCalendarClassEvent = {

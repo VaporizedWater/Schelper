@@ -17,6 +17,9 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
         { content: "Class", link: "/classes" },
         { content: "Tag", link: "/addTag" },
     ];
+    const downloadDropList = [
+        { content: "Sheet", link: "/exportSheet" },
+    ];
     const uploadDropList = [
         { content: "Sheet", link: "/importSheet" },
     ];
@@ -40,16 +43,18 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                     </button>
                 </li>
                 <li key={3} className={`${listString} hover:bg-gray-200`}>
-                    <ButtonDropDown title="Import" items={uploadDropList} ></ButtonDropDown>
+                    <ButtonDropDown title="Export" items={downloadDropList} type="download"></ButtonDropDown>
                 </li>
                 <li key={4} className={`${listString} hover:bg-gray-200`}>
-                    <ButtonDropDown title="Create" items={createDropList} ></ButtonDropDown>
+                    <ButtonDropDown title="Import" items={uploadDropList} type="upload"></ButtonDropDown>
                 </li>
-                <li key={5} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
+                <li key={5} className={`${listString} hover:bg-gray-200`}>
+                    <ButtonDropDown title="Create" items={createDropList} type="create"></ButtonDropDown>
+                </li>
+                <li key={6} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
                     <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
                     <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
                 </li>
-
             </ul>
         </div >
     );

@@ -5,6 +5,7 @@ import Footer from '@/components/Footer/Footer';
 import Image from 'next/image';
 import logo from '../lib/icons';
 import { useRouter } from 'next/navigation';
+import Link from "next/link";
 
 const Home = () => {
     const [backgroundUrl, setBackgroundUrl] = useState("/wcispsu.jpg");
@@ -33,8 +34,8 @@ const Home = () => {
                     </h1>
                     <h2 className='pt-4 text-3xl text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
                     <div className='mt-10 flex justify-center gap-6'>
-                        <div className="relative group overflow-hidden"
-                            onClick={() => router.push('/calendar')}>
+                        <Link className="relative group overflow-hidden"
+                            href='/calendar'>
                             <Image
                                 src="/calendar1.png"
                                 alt="Edit Calendar"
@@ -45,9 +46,9 @@ const Home = () => {
                             <span className="rounded-b-lg absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition cursor-pointer">
                                 Edit Calendar
                             </span>
-                        </div>
-                        <div className="relative group"
-                            onClick={() => router.push('/tags')}>
+                        </Link>
+                        <Link className="relative group"
+                            href='/calendar'>
                             <Image
                                 src="/tag.png"
                                 alt="Manage Tags"
@@ -58,7 +59,7 @@ const Home = () => {
                             <span className="rounded-b-lg absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition cursor-pointer">
                                 Manage Tags
                             </span>
-                        </div>
+                        </Link>
                     </div>
                 </div>
             </div>
