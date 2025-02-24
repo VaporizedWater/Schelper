@@ -35,6 +35,7 @@ export default function CalendarSheet() {
         { value: "Instructor Email" },
         { value: "Enrollment Capacity" },
         { value: "Waitlist Capacity" },
+        { value: "Tags" },
     ]];
 
     // Convert allClasses data to our expected spreadsheet matrix.
@@ -59,6 +60,7 @@ export default function CalendarSheet() {
             { value: String(item.classProperties.instructor_email) },
             { value: String(item.classData.enrollment_cap) },
             { value: String(item.classData.waitlist_cap) },
+            { value: String(item.classProperties.tags.join(', ')) },
         ]),
     ];
 
@@ -111,7 +113,9 @@ export default function CalendarSheet() {
                     instructor_email: row[15]?.value ?? '',
                     total_enrolled: String(existing?.classProperties.total_enrolled ?? 0),
                     total_waitlisted: String(existing?.classProperties.total_waitlisted ?? 0),
-                    tags: existing?.classProperties.tags ?? [],
+                    // Tags but list is sorted and trimmed
+                    tags: row[18]?.value ? row[18].value.split(",").map((t) => t.trim()).sort() : [],
+
                 }
 
                 // Make sure events are properly formatted with the correct day
