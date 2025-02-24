@@ -57,7 +57,7 @@ const Filters = () => {
             </div>
 
             {/* Use tagList instead of props */}
-            <ul className="pr-3" title="tag-list">
+            <ul className="pr-3 max-h-[18vh] overflow-y-scroll scrollbar-thin" title="tag-list">
                 {Array.from(tagList.entries())
                     .sort((a, b) => a[0].localeCompare(b[0], undefined, {
                         numeric: true,

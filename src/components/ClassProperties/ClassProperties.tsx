@@ -126,65 +126,65 @@ const ClassProperties = () => {
     return (
         <div>
             <ul className="flex flex-col w-full">
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Subject</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1 w-full"
+                        className="flex-1 border px-1 w-full"
                         value={courseSubject}
                         onChange={handleCourseSubjectChange}
                     />
                 </li>
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Number</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1 w-full"
+                        className="flex-1 border px-1 w-full"
                         value={courseNum}
                         onChange={handleCourseNumChange}
                     />
                 </li>
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Title</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1 w-full"
+                        className="flex-1 border px-1 w-full"
                         value={title}
                         onChange={handleTitleChange}
                     />
                 </li>
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Instructor</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1 w-full"
+                        className="flex-1 border px-1 w-full"
                         value={instructor}
                         onChange={handleInstructorChange}
                     />
                 </li>
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Room</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1 w-full"
+                        className="flex-1 border px-1 w-full"
                         value={room}
                         onChange={handleRoomChange}
                     />
                 </li>
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Location</span>
                     <input
                         type="text"
-                        className="flex-1 border p-1 w-full"
+                        className="flex-1 border px-1 w-full"
                         value={location}
                         onChange={handleLocationChange}
                     />
                 </li>
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Days</span>
                     <select
                         multiple
-                        className="flex-1 border p-1 w-full overflow-hidden"
+                        className="flex-1 border px-1 w-full overflow-hidden"
                         size={ShortenedDays.length}
                         value={days}
                         onChange={handleDaysChange}
@@ -192,7 +192,7 @@ const ClassProperties = () => {
                         {ShortenedDays.map(day => (
                             <option
                                 key={day} value={day} defaultChecked={days.includes(day)}
-                                className={`${days.includes(day) ? 'bg-lightblue' : 'bg-white'} py-1 `}
+                                className={`${days.includes(day) ? 'bg-lightblue' : 'bg-white'}`}
                             >
                                 {day + DayDisplayEndings.get(day)}
                             </option>
@@ -201,9 +201,9 @@ const ClassProperties = () => {
                 </li>
 
                 {/* Tags to be selected from list of checkboxes */}
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Tags</span>
-                    <div className="flex-1 flex-col gap-2 overflow-y-scroll scrollbar-thin">
+                    <div className="flex-1 flex-col gap-2 max-h-[18vh] overflow-y-scroll scrollbar-thin">
                         {Array.from(allTags).map((tag) => {
                             return (
                                 <label key={tag} className="flex items-center gap-1">
@@ -222,22 +222,22 @@ const ClassProperties = () => {
                 </li>
 
                 {/* Start time */}
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Start Time</span>
                     <input
                         type="time"
-                        className="flex-1 border p-1 w-full"
+                        className="flex-1 border px-1 w-full"
                         value={startTime}
                         onChange={handleStartTimeChange}
                     />
                 </li>
 
                 {/* End time */}
-                <li className="flex border-b pb-1">
+                <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">End Time</span>
                     <input
                         type="time"
-                        className="flex-1 border p-1 w-full"
+                        className="flex-1 border px-1 w-full"
                         value={endTime}
                         onChange={handleEndTimeChange}
                     />
