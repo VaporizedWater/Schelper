@@ -29,7 +29,9 @@ const AddTagButton = ({ onAddTag }: AddTagButtonProps) => {
                 <div className="flex flex-row bg-white gap-2 p-2 items-center shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit">
                     <MdAdd className="size-7 text-lightblack" />
                     <span>Add Tag</span>
-                    {isOpen ? <MdExpandLess /> : <MdExpandMore />}
+                    <div className="ml-auto">
+                        {isOpen ? <MdExpandLess /> : <MdExpandMore />}
+                    </div>
                 </div>
             )}
             renderDropdown={() => (

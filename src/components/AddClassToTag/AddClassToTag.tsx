@@ -3,6 +3,8 @@
 import { useState } from "react";
 import DropDown from "../DropDown/DropDown";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
+import { MdExpandLess, MdExpandMore } from "react-icons/md";
+import { BiLink } from "react-icons/bi";
 
 interface AddClassToTagProps {
     tagId: string;
@@ -45,10 +47,14 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
 
     return (
         <DropDown
-            renderButton={() => (
-                <button className="px-2 py-1 bg-blue-500 text-white rounded">
-                    Add Class
-                </button>
+            renderButton={(isOpen) => (
+                <div className="flex flex-row items-center bg-blue-500 text-white rounded px-2 py-1 ">
+                    <BiLink className="text-xl" />
+                    <p>
+                        Link Class
+                    </p>
+                    {isOpen ? <MdExpandLess /> : <MdExpandMore />}
+                </div>
             )}
             renderDropdown={() => (
                 <ul className="bg-white border rounded shadow-lg">
@@ -56,7 +62,7 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
                         availableClasses.map((c) => (
                             <li
                                 key={c.classData._id}
-                                className="p-2 hover:bg-gray-200 cursor-pointer"
+                                className="p-2 hover:bg-gray-100 cursor-pointer"
                                 onClick={() => handleSelectClass(c.classData._id)}
                             >
                                 {c.classData.title}
@@ -67,8 +73,8 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
                     )}
                 </ul>
             )}
-            buttonClassName="w-full"
-            dropdownClassName="w-full mt-1"
+            buttonClassName="hover:bg-grayblue cursor-pointer w-full flex justify-center py-1"
+            dropdownClassName="w-full my-1"
         />
     );
 };

@@ -38,7 +38,7 @@ const ManageTags = () => {
 
 
             {/* Display all tags*/}
-            <div className="px-10 w-full flex flex-col gap-3">
+            <div className="px-10 w-full flex flex-col gap-3 pb-10">
                 <TagDisplay />
             </div>
         </div>

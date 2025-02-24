@@ -6,6 +6,7 @@ import { MdDelete, MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useState } from "react";
 import { deleteTag } from "@/lib/utils";
 import { BiUnlink } from "react-icons/bi";
+import AddClassToTag from "../AddClassToTag/AddClassToTag";
 
 const TagDisplay = () => {
     const { tagList, allTags, allClasses, unlinkAllClassesFromTag, unlinkTagFromClass } = useCalendarContext();
@@ -117,41 +118,46 @@ const TagDisplay = () => {
                                                 </li>
                                             );
                                         })}
+                                        <div className="">
+                                            <AddClassToTag tagId={tagId} />
+                                        </div>
+
                                     </ul>
-                                    {/* AddClassToTag component */}
-                                    {/* <AddClassToTag tagId={tagId} /> */}
                                 </div>
-                            )}
+                            )
+                            }
                         />
-                    </li>
+                    </li >
                 ))}
-                {unlinkedTags.map((tag: string | TagObject, index) => {
-                    const keyValue =
-                        typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
-                    const displayValue =
-                        typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
-                    return (
-                        <li
-                            key={`unlinked-${keyValue}-${index}`}
-                            onMouseEnter={() => setHoveredTagId(keyValue)}
-                            onMouseLeave={() => setHoveredTagId(null)}
-                        >
-                            <div className="flex justify-between items-center p-2 bg-gray-100 rounded">
-                                <span>{displayValue} : 0 Classes</span>
-                                {hoveredTagId === keyValue && (
-                                    <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleEmptyTagDelete(keyValue)
-                                    }}>
-                                        <MdDelete />
-                                    </div>
-                                )}
-                            </div>
-                        </li>
-                    );
-                })}
-            </ul>
-        </div>
+                {
+                    unlinkedTags.map((tag: string | TagObject, index) => {
+                        const keyValue =
+                            typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
+                        const displayValue =
+                            typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
+                        return (
+                            <li
+                                key={`unlinked-${keyValue}-${index}`}
+                                onMouseEnter={() => setHoveredTagId(keyValue)}
+                                onMouseLeave={() => setHoveredTagId(null)}
+                            >
+                                <div className="flex justify-between items-center p-2 bg-gray-100 rounded">
+                                    <span>{displayValue} : 0 Classes</span>
+                                    {hoveredTagId === keyValue && (
+                                        <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleEmptyTagDelete(keyValue)
+                                        }}>
+                                            <MdDelete />
+                                        </div>
+                                    )}
+                                </div>
+                            </li>
+                        );
+                    })
+                }
+            </ul >
+        </div >
     );
 };
 

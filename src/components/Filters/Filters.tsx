@@ -20,31 +20,31 @@ const Filters = () => {
 
     // Function to update list of tags based on selected tags. It should add a tag to the set if checked and remove if unchecked.
     const updateTags = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const newSelectedTags = new Set(selectedTags);
-        if (event.target.checked) {
-            newSelectedTags.add(event.target.id);
+        let newSelectedTags: Set<string>;
+
+        // Handle the "toggle-all" checkbox
+        if (event.target.id === "toggle-all") {
+            newSelectedTags = event.target.checked
+                ? new Set(Array.from(tagList.keys()))
+                : new Set();
         } else {
-            newSelectedTags.delete(event.target.id);
+            // Handle individual tag checkboxes
+            newSelectedTags = new Set(selectedTags);
+            if (event.target.checked) {
+                newSelectedTags.add(event.target.id);
+            } else {
+                newSelectedTags.delete(event.target.id);
+            }
         }
 
         setSelectedTags(newSelectedTags);
 
-        // Display selected tags in console by expanding the set to an array
-        // console.log("Selected tags: ", Array.from(newSelectedTags));
-
-        // update display classes based on selected tags using tagList from context
-        // Filter allClasses so that each class has at least one tag from the selected tag set.
         const newDisplayClasses = allClasses.filter((classItem) =>
             Array.from(classItem.classProperties.tags).some((tag) => newSelectedTags.has(tag))
         );
         updateDisplayClasses(newDisplayClasses);
-
-        // Update display events as well
         updateDisplayEvents(newDisplayClasses.map((item) => item.event as EventInput));
-
-        // console.log("Display classes: ", newDisplayClasses);
     };
-
 
     return (
         <div className="flex flex-col">
@@ -53,7 +53,18 @@ const Filters = () => {
                 <Link href={'./tags'}>
                     <button className="rounded-lg px-2"><MdModeEdit className="size-4" /></button>
                 </Link>
-
+                <div className="ml-auto">
+                    <label className="flex items-center cursor-pointer">
+                        <input
+                            type="checkbox"
+                            id="toggle-all"
+                            className="h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                            checked={selectedTags.size === tagList.size}
+                            onChange={updateTags}
+                        />
+                        <span className="ml-2 text-sm">All</span>
+                    </label>
+                </div>
             </div>
 
             {/* Use tagList instead of props */}
@@ -71,7 +82,7 @@ const Filters = () => {
                                     name={tag}
                                     id={tag}
                                     className="h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
-                                    defaultChecked={true}
+                                    checked={selectedTags.has(tag)}
                                     onChange={updateTags}
                                 />
                             </label>
