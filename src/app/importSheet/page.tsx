@@ -62,7 +62,7 @@ const ImportSheet = () => {
             const classData = combinedClass.classData;
             const temp_id = crypto.randomUUID();
             classData._id = temp_id;
-            console.log("temp id: "+temp_id);
+            console.log("temp id: " + temp_id);
             const classProperties = combinedClass.classProperties;
 
             Object.keys(element).forEach(key => {
