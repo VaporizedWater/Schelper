@@ -107,7 +107,7 @@ export function createEventFromCombinedClass(combinedClass: CombinedClass): Even
     const dateStringEnd = `${convertedDay}T${combinedClass.classProperties.end_time}`;
 
     return {
-        title: combinedClass.classData.title,
+        title: combinedClass.classData.course_subject+combinedClass.classData.course_num,
         start: dateStringStart,
         end: dateStringEnd,
         extendedProps: {
