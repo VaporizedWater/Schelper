@@ -15,6 +15,7 @@ export function newDefaultEmptyClass() {
             _id: ''
         } as Class,
         classProperties: {
+            _id: '',
             days: [] as string[],
             tags: [] as string[]
         } as ClassProperty

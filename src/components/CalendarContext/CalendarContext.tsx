@@ -19,6 +19,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [conflicts, setConflicts] = useState<ConflictType[]>([]);
+    const [reset, RefreshComponent] = useState<string>("");
 
     useEffect(() => {
         let mounted = true;
@@ -135,17 +136,11 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     }
 
     const uploadNewClasses = (uploadedClasses: CombinedClass[]) => {
-        console.log("uploaded classes: ");
-        console.log(uploadedClasses);
         uploadedClasses.forEach(element => {
-            element = RecomputeClass(element);
-            element.event = createEventFromCombinedClass(element);
+            updateCombinedClass(element)
         });
 
-        updateAllClasses(uploadedClasses);
-        updateDisplayClasses(uploadedClasses);
-
-        detectConflicts();
+        RefreshComponent("");
     }
 
     const updateCurrentClass = (newClass: CombinedClass) => {

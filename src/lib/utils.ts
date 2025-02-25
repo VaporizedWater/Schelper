@@ -267,6 +267,7 @@ export async function insertTag(tagName: string): Promise<string | null> {
 // PUTS/UPDATES
 
 export async function updateCombinedClass(combinedClass: CombinedClass) {
+    console.log(combinedClass);
     console.log("Updating class: " + combinedClass.classData._id);
     const classResponse = await fetchWithTimeout("/api/classes", {
         method: "PUT",
@@ -280,6 +281,9 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
     }
 
     const updatedClassData = await classResponse.json();
+
+    console.log(updatedClassData);
+
     if (updatedClassData._id) {
         combinedClass.classData._id = updatedClassData._id;
         combinedClass.classProperties._id = updatedClassData._id;

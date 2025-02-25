@@ -88,7 +88,8 @@ export async function PUT(request: Request) {
         const { _id, ...updateData } = body;
 
         const objID = new ObjectId(String(_id));
-        const result = await collection.updateOne({ _id: objID }, { $set: updateData });
+
+        const result = await collection.updateOne({ _id: objID }, { $set: updateData }, { upsert: true });
 
         return NextResponse.json({ modifiedCount: result.modifiedCount }, { status: 200 });
     } catch (error) {
