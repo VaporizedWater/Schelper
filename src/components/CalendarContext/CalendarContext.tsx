@@ -83,15 +83,15 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         }
     }, [combinedClasses]); // Run whenever classes change
 
-    
-    const RecomputeClass = (combinedClass: CombinedClass) => {
+
+    const recomputeClass = (combinedClass: CombinedClass) => {
         // Recompute event
         const fullDay = combinedClass.classProperties.days[0];
         const shortDay = dayMapping[fullDay] || fullDay;
         const convertedDay = days[shortDay] || '2025-01-06';
         const dateStringStart = convertedDay + 'T' + combinedClass.classProperties.start_time;
         const dateStringEnd = convertedDay + 'T' + combinedClass.classProperties.end_time;
-    
+
         const newEvent = {
             title: combinedClass.classData.title,
             start: dateStringStart,
@@ -100,7 +100,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 combinedClassId: combinedClass.classData._id,
             }
         };
-    
+
         // Update events arrays
         setAllEvents(prev => prev.map(ev =>
             ev.extendedProps?.combinedClassId === combinedClass.classData._id ? newEvent : ev
@@ -153,7 +153,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         // Update the database (THIS IS TEMPORARY FOR THE DEMO AND PRESENTATION, MAKE SURE TO DO THE DIFFERENCES TRACKING IN THE FUTURE)
         updateCombinedClass(newClass);
 
-        newClass = RecomputeClass(newClass);
+        newClass = recomputeClass(newClass);
 
         detectConflicts();
     }
@@ -224,6 +224,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         const sortedClasses = combinedClasses.slice().sort((a, b) => {
             const aStart = a.classProperties.start_time;
             const bStart = b.classProperties.start_time;
+            if (!aStart || !bStart) return 0;
             return aStart.localeCompare(bStart);
         });
 
@@ -231,6 +232,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         sortedClasses.sort((a, b) => {
             const aDay = a.classProperties.days[0];
             const bDay = b.classProperties.days[0];
+            if (!aDay || !bDay) return 0;
             return days[aDay].localeCompare(days[bDay]);
         });
 
