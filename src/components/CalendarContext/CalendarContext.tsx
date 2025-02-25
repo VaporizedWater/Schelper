@@ -1,19 +1,12 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { CalendarContextType, CombinedClass, ProviderProps, tagListType } from '@/lib/types';
+import { CalendarContextType, CombinedClass, ConflictType, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
-import { loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
+import { deleteTag, loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
+import { createEventFromCombinedClass, dayMapping, days } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
-
-const days: { [key: string]: string } = {
-    Mon: '2025-01-06',
-    Tue: '2025-01-07',
-    Wed: '2025-01-08',
-    Thu: '2025-01-09',
-    Fri: '2025-01-10',
-};
 
 export const CalendarProvider = ({ children }: ProviderProps) => {
     const [combinedClasses, setClasses] = useState<CombinedClass[]>([]); // All the classes in the context
@@ -25,6 +18,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     const [allTags, setAllTags] = useState<Set<string>>(new Set()); // All the tags in the context
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [conflicts, setConflicts] = useState<ConflictType[]>([]);
 
     useEffect(() => {
         let mounted = true;
@@ -35,6 +29,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 setError(null);
 
                 const allClasses = await loadAllCombinedClasses();
+                // console.log(JSON.stringify(allClasses));
                 if (!mounted) return;
 
                 const newTagMap = new Map<string, { classIds: Set<string> }>();
@@ -43,18 +38,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 allClasses.forEach(classItem => {
                     if (!classItem.classProperties.days?.[0]) return;
 
-                    const convertedDay = days[classItem.classProperties.days[0]];
-                    const dateStringStart = `${convertedDay}T${classItem.classProperties.start_time}`;
-                    const dateStringEnd = `${convertedDay}T${classItem.classProperties.end_time}`;
-
-                    classItem.event = {
-                        title: classItem.classData.title,
-                        start: dateStringStart,
-                        end: dateStringEnd,
-                        extendedProps: {
-                            combinedClassId: classItem.classData._id,
-                        },
-                    };
+                    classItem.event = createEventFromCombinedClass(classItem);
                     newEvents.push(classItem.event);
 
                     // Process tags
@@ -92,17 +76,21 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         return () => { mounted = false; };
     }, []);
 
+    useEffect(() => {
+        if (combinedClasses.length > 0) {
+            detectConflicts();
+        }
+    }, [combinedClasses]); // Run whenever classes change
+
+    // 
     const updateAllClasses = (newClasses: CombinedClass[]) => {
         console.log(newClasses);
         setClasses(newClasses);
     }
 
-    const updateCurrClass = (newClass: CombinedClass) => {
-        setCurrClass(newClass);
-    }
-
     const updateDisplayClasses = (newDisplayClasses: CombinedClass[]) => {
         setDisplayClasses(newDisplayClasses);
+        detectConflicts();
     }
 
     const updateDisplayEvents = (newDisplayEvents: EventInput[]) => {
@@ -114,13 +102,9 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         setAllEvents(newEvents);
     }
 
-    const dayMapping: { [full: string]: string } = {
-        "Monday": "Mon",
-        "Tuesday": "Tue",
-        "Wednesday": "Wed",
-        "Thursday": "Thu",
-        "Friday": "Fri"
-    };
+    const updateConflicts = (newConflicts: ConflictType[]) => {
+        setConflicts(newConflicts);
+    }
 
     const updateCurrentClass = (newClass: CombinedClass) => {
         console.log("Updating current class " + newClass.classData._id);
@@ -155,14 +139,142 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         setDisplayEvents(prev => prev.map(ev =>
             ev.extendedProps?.combinedClassId === newClass.classData._id ? newEvent : ev
         ));
+
+        detectConflicts();
     }
+
+    const unlinkTagFromClass = (tagId: string, classId: string) => {
+        // Unlink tag from class
+        const newTagList = new Map(tagList);
+        const tagData = newTagList.get(tagId);
+        if (tagData) {
+            tagData.classIds.delete(classId);
+            if (tagData.classIds.size === 0) {
+                newTagList.delete(tagId);
+            } else {
+                newTagList.set(tagId, tagData);
+            }
+            setTagList(newTagList);
+        }
+
+        // Remove tag from class
+        const newClasses = combinedClasses.map(c => {
+            if (c.classData._id === classId) {
+                c.classProperties.tags = c.classProperties.tags.filter(t => t !== tagId);
+                updateCombinedClass(c);
+            }
+            return c;
+        });
+        setClasses(newClasses);
+    }
+
+    const unlinkAllTagsFromClass = (classId: string) => {
+        const newClasses = combinedClasses.map(c => {
+            if (c.classData._id === classId) {
+                c.classProperties.tags = [];
+                updateCombinedClass(c);
+            }
+            return c;
+        });
+        setClasses(newClasses);
+    }
+
+    const unlinkAllClassesFromTag = (tagId: string) => {
+        const newTagList = new Map(tagList);
+        newTagList.delete(tagId);
+        setTagList(newTagList);
+
+        const newClasses = combinedClasses.map(c => {
+            c.classProperties.tags = c.classProperties.tags.filter(t => t !== tagId);
+            updateCombinedClass(c);
+            return c;
+        });
+        setClasses(newClasses);
+    }
+
+    const unlinkAllTagsFromAllClasses = () => {
+        const newClasses = combinedClasses.map(c => {
+            c.classProperties.tags = [];
+            updateCombinedClass(c);
+            return c;
+        });
+        setClasses(newClasses);
+
+        setTagList(new Map());
+    }
+
+    const detectConflicts = () => {
+        // Check for conflicts
+        // Sort by start time
+        const sortedClasses = combinedClasses.slice().sort((a, b) => {
+            const aStart = a.classProperties.start_time;
+            const bStart = b.classProperties.start_time;
+            return aStart.localeCompare(bStart);
+        });
+
+        //Sort sortedClasses by day
+        sortedClasses.sort((a, b) => {
+            const aDay = a.classProperties.days[0];
+            const bDay = b.classProperties.days[0];
+            return days[aDay].localeCompare(days[bDay]);
+        });
+
+        // Print out each class title in the sorted class
+        // console.log("Sorted classes:");
+        // sortedClasses.forEach(c => console.log(c.classData.title));
+
+        console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
+        // Check for conflicts using two pointers
+
+        const conflicts: ConflictType[] = [];
+
+        // Two-pointer approach
+        for (let i = 0; i < sortedClasses.length - 1; i++) {
+            const class1 = sortedClasses[i];
+
+            for (let j = i + 1; j < sortedClasses.length; j++) {
+                const class2 = sortedClasses[j];
+
+                // If we've moved to a different day, break inner loop
+                if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
+                    break;
+                }
+
+                // Check for time overlap
+                const class1End = class1.classProperties.end_time;
+                const class2Start = class2.classProperties.start_time;
+
+                if (class2Start < class1End) {
+                    // Conflict found
+                    conflicts.push({
+                        class1: class1,
+                        class2: class2
+                    });
+                } else {
+                    // No more possible conflicts with class1
+                    // Since classes are sorted by start time
+                    break;
+                }
+            }
+        }
+
+        // Return conflicts array
+
+        // Console log the classes in conflicts by title only
+        console.log("Conflicts:");
+        conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
+
+        updateConflicts(conflicts);
+    }
+
 
     return (
         <CalendarContext.Provider value={{
             isLoading,
             error,
             currCombinedClass,
-            updateCurrClass,
+            setCurrClass,
+            updateCurrentClass,
             allClasses: combinedClasses,
             updateAllClasses,
             displayClasses,
@@ -173,7 +285,12 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             updateDisplayEvents,
             tagList,
             allTags,
-            updateCurrentClass,
+            unlinkTagFromClass,
+            unlinkAllTagsFromClass,
+            unlinkAllClassesFromTag,
+            unlinkAllTagsFromAllClasses,
+            detectConflicts,
+            conflicts,
         }}>
             {children}
         </CalendarContext.Provider>

@@ -1,12 +1,13 @@
 "use client";
 
 import FullCalendar from "@fullcalendar/react";
-import interactionPlugin from "@fullcalendar/interaction";
+import interactionPlugin, { EventResizeStopArg } from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 
-import { EventClickArg } from "@fullcalendar/core";
+import { EventClickArg, EventDropArg } from "@fullcalendar/core";
 import { useRef } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
+import { createEventFromCombinedClass, emptyCombinedClass, ShortenedDays } from "@/lib/common";
 
 const selectedEvents: HTMLElement[] = [];
 
@@ -22,12 +23,14 @@ const viewFiveDays = {
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { updateCurrClass, displayClasses, displayEvents } = useCalendarContext();
+    const { setCurrClass, updateCurrentClass, displayClasses, displayEvents } = useCalendarContext();
 
     function unselectAll() {
         selectedEvents.forEach(element => {
             if (element) {
                 element.style.borderColor = 'transparent';
+
+                // Remove the ctrl click effect
             }
         });
 
@@ -42,7 +45,53 @@ const Calendar = () => {
         const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
 
         if (foundClass) {
-            updateCurrClass(foundClass);
+            setCurrClass(foundClass);
+        }
+    }
+
+    // This triggers when clicking on any date/time slot that isn't an event
+    const handleDateClick = () => {
+        unselectAll();
+        setCurrClass(emptyCombinedClass);
+    };
+
+    const handleEventDrop = (info: EventDropArg) => {
+        // Update the class in the context
+        const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
+
+        if (foundClass) {
+            // Get the new start and end times and the day if changed
+            const newStart = info.event.start?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+            const newDay = ShortenedDays[(info.event.start?.getDay() ?? 1) - 1];
+            console.log(newStart + "\n", newEnd + "\n", newDay + "\n");
+
+            if (!newStart || !newEnd || !newDay) {
+                return;
+            }
+
+            foundClass.classProperties.start_time = newStart;
+            foundClass.classProperties.end_time = newEnd;
+            foundClass.classProperties.days = [newDay];
+            foundClass.event = createEventFromCombinedClass(foundClass);
+
+            updateCurrentClass(foundClass);
+        }
+    }
+
+    const handleEventResize = (info: EventResizeStopArg) => {
+        const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
+
+        if (foundClass) {
+            const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+            if (!newEnd) {
+                return;
+            }
+
+            foundClass.classProperties.end_time = newEnd;
+            foundClass.event = createEventFromCombinedClass(foundClass);
+            updateCurrentClass(foundClass);
         }
     }
 
@@ -66,6 +115,9 @@ const Calendar = () => {
                 headerToolbar={false}
                 height={'100%'}
                 dayHeaderFormat={{ 'weekday': 'long' }}
+                eventDrop={handleEventDrop}
+                eventResize={handleEventResize}
+                dateClick={handleDateClick}
             />
         </div>
     );

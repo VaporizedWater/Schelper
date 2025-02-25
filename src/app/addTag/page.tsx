@@ -12,7 +12,7 @@ const AddTag = () => {
             const result = await insertTag(inputValue.trim());
             if (result) {
                 setInputValue("");
-                router.push('/tags');
+                router.back();
             } else {
                 console.error("Failed to insert tag");
             }

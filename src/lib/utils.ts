@@ -173,6 +173,19 @@ export async function deleteClass(classID: string) {
     console.log("deleting " + classID);
 }
 
+// Delete tag and return if deleted or not
+export async function deleteTag(tagId: string) {
+    const response = await fetchWithTimeout("api/tags", {
+        method: "DELETE",
+        headers: { "Content-Type": "text/plain" },
+        body: tagId,
+    });
+
+    if (!response.ok) {
+        console.error("Error deleting tag: " + response.statusText);
+    }
+}
+
 // INSERTs/POSTs
 
 // Insert class
@@ -212,12 +225,12 @@ export async function insertClassProperty(classProperties: ClassProperty) {
 }
 
 // Insert combined class
-export async function insertCombinedClass(combinedClass: CombinedClass) {
+export async function insertCombinedClass(combinedClass: CombinedClass): Promise<string | null> {
     const classId = await insertClass(combinedClass.classData);
 
     if (classId == null) {
         console.error("Failed to insert class");
-        return;
+        return null;
     } else {
         console.log(classId + " : Inserted class successfully!\n");
     }
@@ -226,9 +239,12 @@ export async function insertCombinedClass(combinedClass: CombinedClass) {
 
     if (classPropId == null) {
         console.error("Failed to insert class properties. Try again...");
+        return null;
     } else {
         console.log(classPropId + " : Inserted class properties successfully!\n");
     }
+
+    return classId;
 }
 
 // Insert tag
@@ -273,34 +289,4 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
         console.error("Error updating class properties: " + classPropResponse.statusText);
         return;
     }
-}
-
-export function normalizeDayName(day: string): string {
-    const dayMap: { [key: string]: string } = {
-        // Monday variations
-        monday: "Mon",
-        mon: "Mon",
-        m: "Mon",
-        // Tuesday variations
-        tuesday: "Tue",
-        tues: "Tue",
-        tue: "Tue",
-        t: "Tue",
-        // Wednesday variations
-        wednesday: "Wed",
-        wed: "Wed",
-        w: "Wed",
-        // Thursday variations
-        thursday: "Thurs",
-        thur: "Thurs",
-        thu: "Thurs",
-        th: "Thurs",
-        // Friday variations
-        friday: "Fri",
-        fri: "Fri",
-        f: "Fri",
-    };
-
-    const normalized = dayMap[day.toLowerCase().trim()];
-    return normalized || "Mon"; // Default to Monday if no match
 }

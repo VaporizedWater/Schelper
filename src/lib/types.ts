@@ -53,6 +53,7 @@ export type DropDownProps = {
 export type ButtonDropDownProps = {
     title: string;
     items: { link: string; content: string }[];
+    type: string;
 };
 
 export type FullCalendarClassEvent = {
@@ -70,11 +71,17 @@ export type ProviderProps = {
     children: ReactNode;
 };
 
+export type ConflictType = {
+    class1: CombinedClass;
+    class2: CombinedClass;
+};
+
 export type CalendarContextType = {
     isLoading: boolean;
     error: string | null;
     currCombinedClass?: CombinedClass | undefined;
-    updateCurrClass: (newCombinedClass: CombinedClass) => void;
+    setCurrClass: (newCombinedClass: CombinedClass) => void;
+    updateCurrentClass: (newCombinedClass: CombinedClass) => void;
     allClasses: CombinedClass[];
     updateAllClasses: (newClasses: CombinedClass[]) => void;
     displayClasses: CombinedClass[];
@@ -85,5 +92,10 @@ export type CalendarContextType = {
     updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
     tagList: tagListType; // Map of tags to a set of class ids
     allTags: Set<string>;
-    updateCurrentClass: (newClass: CombinedClass) => void;
+    unlinkTagFromClass: (classId: string, tagId: string) => void;
+    unlinkAllTagsFromClass: (classId: string) => void;
+    unlinkAllClassesFromTag: (tagId: string) => void;
+    unlinkAllTagsFromAllClasses: () => void;
+    detectConflicts: () => void;
+    conflicts: ConflictType[];
 };

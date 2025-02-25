@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Class, ClassProperty, CombinedClass, FullCalendarClassEvent } from "@/lib/types";
+import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { insertCombinedClass } from "@/lib/utils";
 import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
+import { EventInput } from "@fullcalendar/core/index.js";
 
 const NewClassForm = () => {
     const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
@@ -41,7 +42,7 @@ const NewClassForm = () => {
         // Blank tags for now by default until we take them as input
         setClassProperties({ ...classProperties, tags: [] } as ClassProperty);
 
-        const newClassEvent: FullCalendarClassEvent = {
+        const newClassEvent: EventInput = {
             title,
             day,
             startTime,
@@ -56,7 +57,10 @@ const NewClassForm = () => {
         defaultCombined.classProperties = classProperties ?? defaultProperties;
         insertCombinedClass(defaultCombined);
 
-        // console.log(JSON.stringify(defaultCombined));
+        // Update the context as well
+
+
+        console.log(JSON.stringify(defaultCombined));
 
         // Clear state
         clearState();
@@ -67,32 +71,32 @@ const NewClassForm = () => {
 
     const defaultClass: Class = {
         _id: "",
-        catalog_num: "1",
-        class_num: "1",
-        session: "1",
-        course_subject: "1",
-        course_num: "1",
-        section: "1",
-        title: "1",
-        location: "1",
-        enrollment_cap: "1",
-        waitlist_cap: "1",
-    }
+        catalog_num: "",
+        class_num: "",
+        session: "",
+        course_subject: "",
+        course_num: "",
+        section: "",
+        title: "",
+        location: "",
+        enrollment_cap: "",
+        waitlist_cap: "",
+    };
 
     const defaultProperties: ClassProperty = {
         _id: "",
-        class_status: "1",
-        start_time: "1",
-        end_time: "1",
-        room: "1",
-        facility_id: "1",
+        class_status: "",
+        start_time: "",
+        end_time: "",
+        room: "",
+        facility_id: "",
         days: ["Mon"],
-        instructor_email: "t",
-        instructor_name: "t",
-        total_enrolled: "0",
-        total_waitlisted: "0",
-        tags: ["Test 1", "Test 2"],
-    }
+        instructor_email: "",
+        instructor_name: "",
+        total_enrolled: "",
+        total_waitlisted: "",
+        tags: [],
+    };
 
     const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };
 
@@ -116,9 +120,9 @@ const NewClassForm = () => {
                         className="p-2 border rounded"
                     >
                         <option value="Mon">Monday</option>
-                        <option value="Tues">Tuesday</option>
+                        <option value="Tue">Tuesday</option>
                         <option value="Wed">Wednesday</option>
-                        <option value="Thurs">Thursday</option>
+                        <option value="Thu">Thursday</option>
                         <option value="Fri">Friday</option>
                     </select>
                     <input
