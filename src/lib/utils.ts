@@ -279,6 +279,12 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
         return;
     }
 
+    const updatedClassData = await classResponse.json();
+    if (updatedClassData._id) {
+        combinedClass.classData._id = updatedClassData._id;
+        combinedClass.classProperties._id = updatedClassData._id;
+    }
+
     const classPropResponse = await fetchWithTimeout("/api/class_properties", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
