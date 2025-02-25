@@ -1,5 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { Class, ClassProperty, CombinedClass } from "./types";
+import { CombinedClass } from "./types";
 
 export const DayDisplayEndings: Map<string, string> = new Map([
     ["Mon", "day"],

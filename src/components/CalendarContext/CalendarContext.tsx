@@ -19,7 +19,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [conflicts, setConflicts] = useState<ConflictType[]>([]);
-    const [reset, RefreshComponent] = useState<string>("");
+    const [reset, refreshComponent] = useState<string>("");
 
     useEffect(() => {
         let mounted = true;
@@ -140,7 +140,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             updateCombinedClass(element)
         });
 
-        RefreshComponent("");
+        refreshComponent("");
     }
 
     const updateCurrentClass = (newClass: CombinedClass) => {
@@ -311,6 +311,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             uploadNewClasses
         }}>
             {children}
+            {reset}
         </CalendarContext.Provider>
     );
 }

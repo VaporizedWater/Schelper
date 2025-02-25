@@ -104,18 +104,40 @@ export async function PUT(request: Request) {
         const { _id, ...updateData } = body;
         const { catalog_num, class_num, session, course_subject, course_num } = body;
 
+        let id
         let result
+
         if (!ObjectId.isValid(body._id) || body._id === "") {
-            console.log('attempting to do the thing');
-            result = await collection.updateOne({ catalog_num: catalog_num, class_num: class_num, session: session, course_subject: course_subject, course_num: course_num }, { $set: updateData }, { upsert: true })
-            console.log(result + 'did the thing');
+            const document = await collection.findOne({ catalog_num: catalog_num, class_num: class_num, session: session, course_subject: course_subject, course_num: course_num });
+            if (document) {
+                const objID = new ObjectId(document._id);
+                result = await collection.updateOne({ _id: objID}, {$set: updateData});
+                id = document._id?.toString();
+            } else {
+                result = await collection.updateOne({ catalog_num: catalog_num, class_num: class_num, session: session, course_subject: course_subject, course_num: course_num }, { $set: updateData }, { upsert: true })
+                id = result.upsertedId?.toString();
+            }
         } else {
-            console.log("we should not reach this");
             const objID = new ObjectId(String(_id));
-            result = await collection.updateOne({ _id: objID }, { $set: updateData });
+            result = await collection.updateOne({ _id: objID}, {$set: updateData});
+            id = _id;
         }
 
-        return NextResponse.json({ modifiedCount: result.modifiedCount, _id: result.upsertedId }, { status: 200 });
+
+        // if (!ObjectId.isValid(body._id) || body._id === "") {
+        //     console.log('attempting to do the thing');
+        //     result = await collection.updateOne({ catalog_num: catalog_num, class_num: class_num, session: session, course_subject: course_subject, course_num: course_num }, { $set: updateData }, { upsert: true })
+        //     if (!result.upsertedId) {
+        //         id = 
+        //     }
+        //     console.log(result + 'did the thing');
+        // } else {
+        //     console.log("we should not reach this");
+        //     const objID = new ObjectId(String(_id));
+        //     result = await collection.updateOne({ _id: objID }, { $set: updateData });
+        // }
+
+        return NextResponse.json({ modifiedCount: result.modifiedCount, _id: id }, { status: 200 });
     } catch (error) {
         return NextResponse.json({ error: `Error updating class in classes: ${error}` }, { status: 500 });
     }
