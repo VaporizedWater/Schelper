@@ -1,5 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CombinedClass } from "./types";
+import { Class, ClassProperty, CombinedClass } from "./types";
 
 export const DayDisplayEndings: Map<string, string> = new Map([
     ["Mon", "day"],
@@ -8,6 +8,18 @@ export const DayDisplayEndings: Map<string, string> = new Map([
     ["Thu", "rsday"],
     ["Fri", "day"],
 ]);
+
+export function newDefaultEmptyClass() {
+    return {
+        classData: {
+            _id: ''
+        } as Class,
+        classProperties: {
+            days: [] as string[],
+            tags: [] as string[]
+        } as ClassProperty
+    } as CombinedClass;
+}
 
 export const ShortenedDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 

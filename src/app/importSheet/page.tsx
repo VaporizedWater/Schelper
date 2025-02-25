@@ -1,7 +1,10 @@
 "use client";
 
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
+import { newDefaultEmptyClass } from '@/lib/common';
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
+import { randomUUID } from 'crypto';
+import { UUID } from 'mongodb';
 import { useRouter } from 'next/navigation';
 import { title } from 'process';
 import { useState } from 'react';
@@ -26,7 +29,7 @@ const convertTime = (excelTimeString: string) => {
 const ImportSheet = () => {
     const [file, setFile] = useState<File | null>(null);
     const router = useRouter();
-    const { allClasses, updateAllClasses, updateDisplayClasses, updateDisplayEvents, updateAllEvents } = useCalendarContext();
+    const { uploadNewClasses } = useCalendarContext();
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
@@ -54,12 +57,13 @@ const ImportSheet = () => {
         const combinedClasses = [] as CombinedClass[];
 
         rows.values().forEach((element: object[]) => {
-            const classData = {
-                _id: ''
-            } as Class;
-            const classProperties = {
-                days: [] as string[]
-            } as ClassProperty;
+            const combinedClass = newDefaultEmptyClass();
+
+            const classData = combinedClass.classData;
+            const temp_id = crypto.randomUUID();
+            classData._id = temp_id;
+            console.log("temp id: "+temp_id);
+            const classProperties = combinedClass.classProperties;
 
             Object.keys(element).forEach(key => {
                 const value = String(element[key as keyof typeof element]);
@@ -79,7 +83,30 @@ const ImportSheet = () => {
                             classData.course_subject = value;
                             break;
                         case "Num":
-                            classData.course_num = value.trim();
+                            const val = value.trim();
+                            const match = val.match(/^\d+/);
+                            if (match) {
+                                const numbers = Number(match);
+                                if (!isNaN(numbers)) {
+                                    switch (Math.floor(numbers / 100)) {
+                                        case 1:
+                                            classProperties.tags.push("100level");
+                                            break;
+                                        case 2:
+                                            classProperties.tags.push("200level");
+                                            break;
+                                        case 3:
+                                            classProperties.tags.push("300level");
+                                            break;
+                                        case 4:
+                                            classProperties.tags.push("400level");
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                }
+                            }
+                            classData.course_num = val;
                             break;
                         case "Section":
                             classData.section = value;
@@ -114,18 +141,33 @@ const ImportSheet = () => {
                             classProperties.facility_id = value;
                             break;
                         case "M":
+                            if (value.trim() === "" || value === undefined) {
+                                break;
+                            }
                             classProperties.days.push("Mon");
                             break;
                         case "T":
+                            if (value.trim() === "" || value === undefined) {
+                                break;
+                            }
                             classProperties.days.push("Tue");
                             break;
                         case "W":
+                            if (value.trim() === "" || value === undefined) {
+                                break;
+                            }
                             classProperties.days.push("Wed");
                             break;
                         case "R":
+                            if (value.trim() === "" || value === undefined) {
+                                break;
+                            }
                             classProperties.days.push("Thu");
                             break;
                         case "F":
+                            if (value.trim() === "" || value === undefined) {
+                                break;
+                            }
                             classProperties.days.push("Fri");
                             break;
                         case "Instructor Email":
@@ -146,14 +188,11 @@ const ImportSheet = () => {
                 }
             });
 
-            const combinedClass = {
-                classData: classData,
-                classProperties: classProperties
-            } as CombinedClass;
+
             combinedClasses.push(combinedClass);
         });
 
-        updateAllClasses(combinedClasses);
+        uploadNewClasses(combinedClasses);
 
         router.back();
     };

@@ -82,9 +82,37 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         }
     }, [combinedClasses]); // Run whenever classes change
 
-    // 
+    
+    const RecomputeClass = (combinedClass: CombinedClass) => {
+        // Recompute event
+        const fullDay = combinedClass.classProperties.days[0];
+        const shortDay = dayMapping[fullDay] || fullDay;
+        const convertedDay = days[shortDay] || '2025-01-06';
+        const dateStringStart = convertedDay + 'T' + combinedClass.classProperties.start_time;
+        const dateStringEnd = convertedDay + 'T' + combinedClass.classProperties.end_time;
+    
+        const newEvent = {
+            title: combinedClass.classData.title,
+            start: dateStringStart,
+            end: dateStringEnd,
+            extendedProps: {
+                combinedClassId: combinedClass.classData._id,
+            }
+        };
+    
+        // Update events arrays
+        setAllEvents(prev => prev.map(ev =>
+            ev.extendedProps?.combinedClassId === combinedClass.classData._id ? newEvent : ev
+        ));
+        setDisplayEvents(prev => prev.map(ev =>
+            ev.extendedProps?.combinedClassId === combinedClass.classData._id ? newEvent : ev
+        ));
+
+        return combinedClass;
+    }
+
+
     const updateAllClasses = (newClasses: CombinedClass[]) => {
-        console.log(newClasses);
         setClasses(newClasses);
     }
 
@@ -106,6 +134,20 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         setConflicts(newConflicts);
     }
 
+    const uploadNewClasses = (uploadedClasses: CombinedClass[]) => {
+        console.log("uploaded classes: ");
+        console.log(uploadedClasses);
+        uploadedClasses.forEach(element => {
+            element = RecomputeClass(element);
+            element.event = createEventFromCombinedClass(element);
+        });
+
+        updateAllClasses(uploadedClasses);
+        updateDisplayClasses(uploadedClasses);
+
+        detectConflicts();
+    }
+
     const updateCurrentClass = (newClass: CombinedClass) => {
         console.log("Updating current class " + newClass.classData._id);
         // Update the class lists
@@ -116,29 +158,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         // Update the database (THIS IS TEMPORARY FOR THE DEMO AND PRESENTATION, MAKE SURE TO DO THE DIFFERENCES TRACKING IN THE FUTURE)
         updateCombinedClass(newClass);
 
-        // Recompute event
-        const fullDay = newClass.classProperties.days[0];
-        const shortDay = dayMapping[fullDay] || fullDay;
-        const convertedDay = days[shortDay] || '2025-01-06';
-        const dateStringStart = convertedDay + 'T' + newClass.classProperties.start_time;
-        const dateStringEnd = convertedDay + 'T' + newClass.classProperties.end_time;
-
-        const newEvent = {
-            title: newClass.classData.title,
-            start: dateStringStart,
-            end: dateStringEnd,
-            extendedProps: {
-                combinedClassId: newClass.classData._id,
-            }
-        };
-
-        // Update events arrays
-        setAllEvents(prev => prev.map(ev =>
-            ev.extendedProps?.combinedClassId === newClass.classData._id ? newEvent : ev
-        ));
-        setDisplayEvents(prev => prev.map(ev =>
-            ev.extendedProps?.combinedClassId === newClass.classData._id ? newEvent : ev
-        ));
+        newClass = RecomputeClass(newClass);
 
         detectConflicts();
     }
@@ -291,6 +311,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             unlinkAllTagsFromAllClasses,
             detectConflicts,
             conflicts,
+            uploadNewClasses
         }}>
             {children}
         </CalendarContext.Provider>
