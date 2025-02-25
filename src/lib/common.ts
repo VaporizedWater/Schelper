@@ -70,6 +70,23 @@ export const emptyCombinedClass: CombinedClass = {
     event: undefined,
 };
 
+const globalTagList: string[] = [
+    "Lecture",
+    "Discussion",
+    "Lab",
+    "Recitation",
+    "Seminar",
+    "Studio",
+    "Workshop",
+    "Independent Study",
+    "Internship",
+    "Practicum",
+    "Field Study",
+];
+
+/// ----
+// Functions
+
 export function normalizeDayName(day: string): string {
     const dayMap: { [key: string]: string } = {
         // Monday variations
@@ -107,7 +124,12 @@ export function createEventFromCombinedClass(combinedClass: CombinedClass): Even
     const dateStringEnd = `${convertedDay}T${combinedClass.classProperties.end_time}`;
 
     return {
-        title: combinedClass.classData.course_subject+combinedClass.classData.course_num,
+        // title: combinedClass.classData.title,
+        title:
+            combinedClass.classData.course_subject +
+            combinedClass.classData.course_num +
+            "\n" +
+            combinedClass.classProperties.instructor_name,
         start: dateStringStart,
         end: dateStringEnd,
         extendedProps: {

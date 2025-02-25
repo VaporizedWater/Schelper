@@ -95,3 +95,4 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: `Error updating class in classes: ${error}` }, { status: 500 });
     }
 }
+

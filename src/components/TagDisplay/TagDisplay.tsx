@@ -61,74 +61,76 @@ const TagDisplay = () => {
 
     return (
         <div>
-            <ul className="flex flex-col gap-3">
+            <ul className="grid grid-cols-3 gap-3">
                 {/* Render linked tags with prefixed key */}
-                {Array.from(tagList).map(([tagId, tagData]) => (
-                    <li
-                        key={`linked-${tagId}`}
-                        onMouseEnter={() => setHoveredTagId(tagId)}
-                        onMouseLeave={() => setHoveredTagId(null)}
-                    >
-                        <DropDown
-                            buttonClassName="w-full"
-                            renderButton={(isOpen) => (
-                                <div className="hover:bg-grayblue flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
-                                    <span>
-                                        {tagId} : {tagData.classIds.size} Class
-                                        {tagData.classIds.size > 1 ? "es" : ""}
-                                    </span>
-                                    <div className="flex items-center gap-2">
-                                        {hoveredTagId === tagId && (
-                                            <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleTagDelete(tagId)
-                                            }}>
-                                                <MdDelete />
-                                            </div>
-                                        )}
-                                        {isOpen ? <MdExpandLess /> : <MdExpandMore />}
-                                    </div>
-
-                                </div>
-                            )}
-
-                            dropdownClassName="w-full mt-1"
-                            renderDropdown={() => (
-                                <div>
-                                    <ul className="flex flex-col gap-1 bg-white border rounded shadow-lg">
-                                        {Array.from(tagData.classIds).map((classId) => {
-                                            const foundClass = allClasses.find(
-                                                (cls) => String(cls.classData._id) === classId
-                                            );
-                                            return (
-                                                <li
-                                                    key={classId} className="p-2 hover:bg-gray-100 flex justify-between items-center"
-                                                    onMouseEnter={() => setHoveredTagClassId([tagId, classId])}
-                                                    onMouseLeave={() => setHoveredTagClassId(null)}
-                                                >
-                                                    {foundClass ? foundClass.classData.title : classId}
-                                                    {hoveredTagClassId && hoveredTagClassId[0] === tagId && hoveredTagClassId[1] === classId && (
-                                                        <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            handleClassUnlink(tagId, classId)
-                                                        }}>
-                                                            <BiUnlink />
-                                                        </div>
-                                                    )}
-                                                </li>
-                                            );
-                                        })}
-                                        <div className="">
-                                            <AddClassToTag tagId={tagId} />
+                {Array.from(tagList)
+                    .sort(([, tagIdA], [, tagIdB]) => tagIdB.classIds.size - tagIdA.classIds.size)
+                    .map(([tagId, tagData]) => (
+                        <li
+                            key={`linked-${tagId}`}
+                            onMouseEnter={() => setHoveredTagId(tagId)}
+                            onMouseLeave={() => setHoveredTagId(null)}
+                        >
+                            <DropDown
+                                buttonClassName="w-full"
+                                renderButton={(isOpen) => (
+                                    <div className="hover:bg-grayblue flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
+                                        <span>
+                                            {tagId} : {tagData.classIds.size} Class
+                                            {tagData.classIds.size > 1 ? "es" : ""}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            {hoveredTagId === tagId && (
+                                                <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleTagDelete(tagId)
+                                                }}>
+                                                    <MdDelete />
+                                                </div>
+                                            )}
+                                            {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                                         </div>
 
-                                    </ul>
-                                </div>
-                            )
-                            }
-                        />
-                    </li >
-                ))}
+                                    </div>
+                                )}
+
+                                dropdownClassName="w-full mt-1"
+                                renderDropdown={() => (
+                                    <div>
+                                        <ul className="flex flex-col gap-1 bg-white border rounded shadow-lg">
+                                            {Array.from(tagData.classIds).map((classId) => {
+                                                const foundClass = allClasses.find(
+                                                    (cls) => String(cls.classData._id) === classId
+                                                );
+                                                return (
+                                                    <li
+                                                        key={classId} className="p-2 hover:bg-gray-100 flex justify-between items-center"
+                                                        onMouseEnter={() => setHoveredTagClassId([tagId, classId])}
+                                                        onMouseLeave={() => setHoveredTagClassId(null)}
+                                                    >
+                                                        {foundClass ? foundClass.classData.title : classId}
+                                                        {hoveredTagClassId && hoveredTagClassId[0] === tagId && hoveredTagClassId[1] === classId && (
+                                                            <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                handleClassUnlink(tagId, classId)
+                                                            }}>
+                                                                <BiUnlink />
+                                                            </div>
+                                                        )}
+                                                    </li>
+                                                );
+                                            })}
+                                            <div className="">
+                                                <AddClassToTag tagId={tagId} />
+                                            </div>
+
+                                        </ul>
+                                    </div>
+                                )
+                                }
+                            />
+                        </li >
+                    ))}
                 {
                     unlinkedTags.map((tag: string | TagObject, index) => {
                         const keyValue =
