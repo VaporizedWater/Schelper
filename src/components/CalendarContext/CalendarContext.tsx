@@ -93,6 +93,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     }, []);
 
     const updateAllClasses = (newClasses: CombinedClass[]) => {
+        console.log(newClasses);
         setClasses(newClasses);
     }
 
