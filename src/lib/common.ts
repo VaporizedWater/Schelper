@@ -10,16 +10,7 @@ export const DayDisplayEndings: Map<string, string> = new Map([
 ]);
 
 export function newDefaultEmptyClass() {
-    return {
-        classData: {
-            _id: ''
-        } as Class,
-        classProperties: {
-            _id: '',
-            days: [] as string[],
-            tags: [] as string[]
-        } as ClassProperty
-    } as CombinedClass;
+    return emptyCombinedClass;
 }
 
 export const ShortenedDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -66,7 +57,7 @@ export const emptyCombinedClass: CombinedClass = {
         instructor_name: "",
         total_enrolled: "",
         total_waitlisted: "",
-        tags: {} as string[],
+        tags: [] as string[],
     },
     event: undefined,
 };
