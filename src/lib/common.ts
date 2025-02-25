@@ -10,7 +10,36 @@ export const DayDisplayEndings: Map<string, string> = new Map([
 ]);
 
 export function newDefaultEmptyClass() {
-    return emptyCombinedClass;
+    return {
+        classData: {
+            _id: "",
+            catalog_num: "",
+            class_num: "",
+            session: "",
+            course_subject: "",
+            course_num: "",
+            section: "",
+            title: "",
+            location: "",
+            enrollment_cap: "",
+            waitlist_cap: "",
+        },
+        classProperties: {
+            _id: "",
+            class_status: "",
+            start_time: "",
+            end_time: "",
+            room: "",
+            facility_id: "",
+            days: [] as string[],
+            instructor_email: "",
+            instructor_name: "",
+            total_enrolled: "",
+            total_waitlisted: "",
+            tags: [] as string[],
+        },
+        event: undefined,
+    } as CombinedClass;
 }
 
 export const ShortenedDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
