@@ -5,7 +5,7 @@ import { useCalendarContext } from "@/components/CalendarContext/CalendarContext
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useEffect, useState } from "react";
-import { ConflictType } from "@/lib/types";
+// import { ConflictType } from "@/lib/types";
 
 
 const ViewConflicts = () => {
@@ -18,7 +18,7 @@ const ViewConflicts = () => {
             setIsLoading(false);
         };
         loadConflicts();
-    }, []);
+    }, [detectConflicts]);
 
     // console.log(JSON.stringify(conflicts));
 

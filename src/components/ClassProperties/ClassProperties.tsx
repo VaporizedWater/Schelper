@@ -4,7 +4,7 @@ import { Class, ClassProperty, CombinedClass } from '@/lib/types';
 import { createEventFromCombinedClass, DayDisplayEndings, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
 
 const ClassProperties = () => {
-    const { currCombinedClass, updateCurrentClass, allTags, tagList } = useCalendarContext();
+    const { currCombinedClass, updateCurrentClass, allTags } = useCalendarContext();
     const initialData: Class = currCombinedClass?.classData || {} as Class;
     const initialProps: ClassProperty = currCombinedClass?.classProperties || {} as ClassProperty;
     // console.log('initialData', JSON.stringify(initialData));

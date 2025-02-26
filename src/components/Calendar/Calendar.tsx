@@ -106,7 +106,7 @@ const Calendar = () => {
                 events={displayEvents}
                 slotDuration={'00:30:00'}
                 slotMinTime={'08:00:00'}
-                slotMaxTime={'17:00:00'}
+                slotMaxTime={'21:00:00'}
                 snapDuration={'00:05:00'}
                 eventClick={handleEventClick}
                 allDaySlot={false}
