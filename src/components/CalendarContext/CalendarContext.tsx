@@ -1,10 +1,10 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { CalendarContextType, CombinedClass, ConflictType, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
-import { createEventFromCombinedClass, days } from '@/lib/common';
+import { createEventFromCombinedClass, dayMapping, days } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -21,129 +21,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     const [conflicts, setConflicts] = useState<ConflictType[]>([]);
     const [reset, refreshComponent] = useState<string>("");
 
-    // const detectConflicts = () => {
-    //     // Check for conflicts
-    //     // Sort by start time
-    //     const sortedClasses = combinedClasses.slice().sort((a, b) => {
-    //         const aStart = a.classProperties.start_time;
-    //         const bStart = b.classProperties.start_time;
-    //         if (!aStart || !bStart) return 0;
-    //         return aStart.localeCompare(bStart);
-    //     });
-
-    //     //Sort sortedClasses by day
-    //     sortedClasses.sort((a, b) => {
-    //         const aDay = a.classProperties.days[0];
-    //         const bDay = b.classProperties.days[0];
-    //         if (!aDay || !bDay) return 0;
-    //         return days[aDay].localeCompare(days[bDay]);
-    //     });
-
-    //     // Print out each class title in the sorted class
-    //     // console.log("Sorted classes:");
-    //     // sortedClasses.forEach(c => console.log(c.classData.title));
-
-    //     console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
-    //     // Check for conflicts using two pointers
-
-    //     const conflicts: ConflictType[] = [];
-
-    //     // Two-pointer approach
-    //     for (let i = 0; i < sortedClasses.length - 1; i++) {
-    //         const class1 = sortedClasses[i];
-
-    //         for (let j = i + 1; j < sortedClasses.length; j++) {
-    //             const class2 = sortedClasses[j];
-
-    //             // If we've moved to a different day, break inner loop
-    //             if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
-    //                 break;
-    //             }
-
-    //             // Check for time overlap
-    //             const class1End = class1.classProperties.end_time;
-    //             const class2Start = class2.classProperties.start_time;
-
-    //             if (class2Start < class1End) {
-    //                 // Conflict found
-    //                 conflicts.push({
-    //                     class1: class1,
-    //                     class2: class2
-    //                 });
-    //             } else {
-    //                 // No more possible conflicts with class1
-    //                 // Since classes are sorted by start time
-    //                 break;
-    //             }
-    //         }
-    //     }
-
-    //     // Return conflicts array
-
-    //     // Console log the classes in conflicts by title only
-    //     console.log("Conflicts:");
-    //     conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
-
-    //     updateConflicts(conflicts);
-    // }
-
-    useEffect(() => {
-        let mounted = true;
-
-        const loadClasses = async () => {
-            try {
-                setIsLoading(true);
-                setError(null);
-
-                const allClasses = await loadAllCombinedClasses();
-                // console.log(JSON.stringify(allClasses));
-                if (!mounted) return;
-
-                const newTagMap = new Map<string, { classIds: Set<string> }>();
-                const newEvents: EventInput[] = [];
-
-                allClasses.forEach(classItem => {
-                    if (!classItem.classProperties.days?.[0]) return;
-
-                    classItem.event = createEventFromCombinedClass(classItem);
-                    newEvents.push(classItem.event);
-
-                    // Process tags
-                    classItem.classProperties.tags?.forEach(tag => {
-                        if (!newTagMap.has(tag)) {
-                            newTagMap.set(tag, { classIds: new Set() });
-                        }
-                        newTagMap.get(tag)?.classIds.add(classItem.classData._id);
-                    });
-                });
-
-                if (mounted) {
-                    setAllEvents(newEvents);
-                    setDisplayEvents(newEvents);
-                    setClasses(allClasses);
-                    setDisplayClasses(allClasses);
-                    setTagList(newTagMap);
-
-                    const tags = await loadAllTags();
-                    setAllTags(tags);
-                }
-            } catch (err) {
-                if (mounted) {
-                    console.error('Error loading classes:', err);
-                    setError(err instanceof Error ? err.message : 'Failed to load classes');
-                }
-            } finally {
-                if (mounted) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        loadClasses();
-        return () => { mounted = false; };
-    }, []);
-
-    const detectConflicts = useCallback(() => {
+    const detectConflicts = () => {
         // Check for conflicts
         // Sort by start time
         const sortedClasses = combinedClasses.slice().sort((a, b) => {
@@ -207,84 +85,87 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
 
         updateConflicts(conflicts);
-    }, [combinedClasses]);
+    }
 
-    // const detectConflicts = () => {
-    //     // Check for conflicts
-    //     // Sort by start time
-    //     const sortedClasses = combinedClasses.slice().sort((a, b) => {
-    //         const aStart = a.classProperties.start_time;
-    //         const bStart = b.classProperties.start_time;
-    //         if (!aStart || !bStart) return 0;
-    //         return aStart.localeCompare(bStart);
-    //     });
+    useEffect(() => {
+        let mounted = true;
 
-    //     //Sort sortedClasses by day
-    //     sortedClasses.sort((a, b) => {
-    //         const aDay = a.classProperties.days[0];
-    //         const bDay = b.classProperties.days[0];
-    //         if (!aDay || !bDay) return 0;
-    //         return days[aDay].localeCompare(days[bDay]);
-    //     });
+        const loadClasses = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
 
-    //     // Print out each class title in the sorted class
-    //     // console.log("Sorted classes:");
-    //     // sortedClasses.forEach(c => console.log(c.classData.title));
+                const allClasses = await loadAllCombinedClasses();
+                // console.log(JSON.stringify(allClasses));
+                if (!mounted) return;
 
-    //     console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
-    //     // Check for conflicts using two pointers
+                const newTagMap = new Map<string, { classIds: Set<string> }>();
+                const newEvents: EventInput[] = [];
 
-    //     const conflicts: ConflictType[] = [];
+                allClasses.forEach(classItem => {
+                    if (!classItem.classProperties.days?.[0]) return;
 
-    //     // Two-pointer approach
-    //     for (let i = 0; i < sortedClasses.length - 1; i++) {
-    //         const class1 = sortedClasses[i];
+                    classItem.event = createEventFromCombinedClass(classItem);
+                    newEvents.push(classItem.event);
 
-    //         for (let j = i + 1; j < sortedClasses.length; j++) {
-    //             const class2 = sortedClasses[j];
+                    // Process tags
+                    classItem.classProperties.tags?.forEach(tag => {
+                        if (!newTagMap.has(tag)) {
+                            newTagMap.set(tag, { classIds: new Set() });
+                        }
+                        newTagMap.get(tag)?.classIds.add(classItem.classData._id);
+                    });
+                });
 
-    //             // If we've moved to a different day, break inner loop
-    //             if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
-    //                 break;
-    //             }
+                if (mounted) {
+                    setAllEvents(newEvents);
+                    setDisplayEvents(newEvents);
+                    setClasses(allClasses);
+                    setDisplayClasses(allClasses);
+                    setTagList(newTagMap);
 
-    //             // Check for time overlap
-    //             const class1End = class1.classProperties.end_time;
-    //             const class2Start = class2.classProperties.start_time;
+                    const tags = await loadAllTags();
+                    setAllTags(tags);
+                }
+            } catch (err) {
+                if (mounted) {
+                    console.error('Error loading classes:', err);
+                    setError(err instanceof Error ? err.message : 'Failed to load classes');
+                }
+            } finally {
+                if (mounted) {
+                    setIsLoading(false);
+                }
+            }
+        };
 
-    //             if (class2Start < class1End) {
-    //                 // Conflict found
-    //                 conflicts.push({
-    //                     class1: class1,
-    //                     class2: class2
-    //                 });
-    //             } else {
-    //                 // No more possible conflicts with class1
-    //                 // Since classes are sorted by start time
-    //                 break;
-    //             }
-    //         }
-    //     }
-
-    //     // Return conflicts array
-
-    //     // Console log the classes in conflicts by title only
-    //     console.log("Conflicts:");
-    //     conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
-
-    //     updateConflicts(conflicts);
-    // }
+        loadClasses();
+        return () => { mounted = false; };
+    }, []);
 
     useEffect(() => {
         if (combinedClasses.length > 0) {
             detectConflicts();
         }
-    }, [detectConflicts, combinedClasses]); // Run whenever classes change
+    }, [combinedClasses]); // Run whenever classes change
 
 
     const recomputeClass = (combinedClass: CombinedClass) => {
         // Recompute event
-        const newEvent = createEventFromCombinedClass(combinedClass);
+        const fullDay = combinedClass.classProperties.days[0];
+        const shortDay = dayMapping[fullDay] || fullDay;
+        const convertedDay = days[shortDay] || '2025-01-06';
+        const dateStringStart = convertedDay + 'T' + combinedClass.classProperties.start_time;
+        const dateStringEnd = convertedDay + 'T' + combinedClass.classProperties.end_time;
+
+        const newEvent = {
+            title: combinedClass.classData.title,
+            start: dateStringStart,
+            end: dateStringEnd,
+            extendedProps: {
+                combinedClassId: combinedClass.classData._id,
+            }
+        };
 
         // Update events arrays
         setAllEvents(prev => prev.map(ev =>
