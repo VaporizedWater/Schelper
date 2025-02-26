@@ -419,6 +419,8 @@ const ImportSheet = () => {
                                     <th className="p-2 border">Days</th>
                                     <th className="p-2 border">Time</th>
                                     <th className="p-2 border">Instructor</th>
+                                    <th className="p-2 border">Room</th>
+                                    <th className="p-2 border">Location</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -452,6 +454,8 @@ const ImportSheet = () => {
                                             {cls.classProperties.start_time} - {cls.classProperties.end_time}
                                         </td>
                                         <td className="p-2 border">{cls.classProperties.instructor_name}</td>
+                                        <td className="p-2 border">{cls.classProperties.room}</td>
+                                        <td className="p-2 border">{cls.classData.location}</td>
                                     </tr>
                                 ))}
                             </tbody>
