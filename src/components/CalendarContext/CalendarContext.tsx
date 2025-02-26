@@ -78,384 +78,384 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     //         }
     //     }
 
-    // Return conflicts array
+    //     // Return conflicts array
 
-    // Console log the classes in conflicts by title only
-    console.log("Conflicts:");
-    conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
+    //     // Console log the classes in conflicts by title only
+    //     console.log("Conflicts:");
+    //     conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
 
-    updateConflicts(conflicts);
-}
+    //     updateConflicts(conflicts);
+    // }
 
-useEffect(() => {
-    let mounted = true;
+    useEffect(() => {
+        let mounted = true;
 
-    const loadClasses = async () => {
-        try {
-            setIsLoading(true);
-            setError(null);
+        const loadClasses = async () => {
+            try {
+                setIsLoading(true);
+                setError(null);
 
-            const allClasses = await loadAllCombinedClasses();
-            // console.log(JSON.stringify(allClasses));
-            if (!mounted) return;
+                const allClasses = await loadAllCombinedClasses();
+                // console.log(JSON.stringify(allClasses));
+                if (!mounted) return;
 
-            const newTagMap = new Map<string, { classIds: Set<string> }>();
-            const newEvents: EventInput[] = [];
+                const newTagMap = new Map<string, { classIds: Set<string> }>();
+                const newEvents: EventInput[] = [];
 
-            allClasses.forEach(classItem => {
-                if (!classItem.classProperties.days?.[0]) return;
+                allClasses.forEach(classItem => {
+                    if (!classItem.classProperties.days?.[0]) return;
 
-                classItem.event = createEventFromCombinedClass(classItem);
-                newEvents.push(classItem.event);
+                    classItem.event = createEventFromCombinedClass(classItem);
+                    newEvents.push(classItem.event);
 
-                // Process tags
-                classItem.classProperties.tags?.forEach(tag => {
-                    if (!newTagMap.has(tag)) {
-                        newTagMap.set(tag, { classIds: new Set() });
-                    }
-                    newTagMap.get(tag)?.classIds.add(classItem.classData._id);
+                    // Process tags
+                    classItem.classProperties.tags?.forEach(tag => {
+                        if (!newTagMap.has(tag)) {
+                            newTagMap.set(tag, { classIds: new Set() });
+                        }
+                        newTagMap.get(tag)?.classIds.add(classItem.classData._id);
+                    });
                 });
-            });
 
-            if (mounted) {
-                setAllEvents(newEvents);
-                setDisplayEvents(newEvents);
-                setClasses(allClasses);
-                setDisplayClasses(allClasses);
-                setTagList(newTagMap);
+                if (mounted) {
+                    setAllEvents(newEvents);
+                    setDisplayEvents(newEvents);
+                    setClasses(allClasses);
+                    setDisplayClasses(allClasses);
+                    setTagList(newTagMap);
 
-                const tags = await loadAllTags();
-                setAllTags(tags);
+                    const tags = await loadAllTags();
+                    setAllTags(tags);
+                }
+            } catch (err) {
+                if (mounted) {
+                    console.error('Error loading classes:', err);
+                    setError(err instanceof Error ? err.message : 'Failed to load classes');
+                }
+            } finally {
+                if (mounted) {
+                    setIsLoading(false);
+                }
             }
-        } catch (err) {
-            if (mounted) {
-                console.error('Error loading classes:', err);
-                setError(err instanceof Error ? err.message : 'Failed to load classes');
-            }
-        } finally {
-            if (mounted) {
-                setIsLoading(false);
+        };
+
+        loadClasses();
+        return () => { mounted = false; };
+    }, []);
+
+    const detectConflicts = useCallback(() => {
+        // Check for conflicts
+        // Sort by start time
+        const sortedClasses = combinedClasses.slice().sort((a, b) => {
+            const aStart = a.classProperties.start_time;
+            const bStart = b.classProperties.start_time;
+            if (!aStart || !bStart) return 0;
+            return aStart.localeCompare(bStart);
+        });
+
+        //Sort sortedClasses by day
+        sortedClasses.sort((a, b) => {
+            const aDay = a.classProperties.days[0];
+            const bDay = b.classProperties.days[0];
+            if (!aDay || !bDay) return 0;
+            return days[aDay].localeCompare(days[bDay]);
+        });
+
+        // Print out each class title in the sorted class
+        // console.log("Sorted classes:");
+        // sortedClasses.forEach(c => console.log(c.classData.title));
+
+        console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
+        // Check for conflicts using two pointers
+
+        const conflicts: ConflictType[] = [];
+
+        // Two-pointer approach
+        for (let i = 0; i < sortedClasses.length - 1; i++) {
+            const class1 = sortedClasses[i];
+
+            for (let j = i + 1; j < sortedClasses.length; j++) {
+                const class2 = sortedClasses[j];
+
+                // If we've moved to a different day, break inner loop
+                if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
+                    break;
+                }
+
+                // Check for time overlap
+                const class1End = class1.classProperties.end_time;
+                const class2Start = class2.classProperties.start_time;
+
+                if (class2Start < class1End) {
+                    // Conflict found
+                    conflicts.push({
+                        class1: class1,
+                        class2: class2
+                    });
+                } else {
+                    // No more possible conflicts with class1
+                    // Since classes are sorted by start time
+                    break;
+                }
             }
         }
-    };
 
-    loadClasses();
-    return () => { mounted = false; };
-}, []);
+        // Return conflicts array
 
-const detectConflicts = useCallback(() => {
-    // Check for conflicts
-    // Sort by start time
-    const sortedClasses = combinedClasses.slice().sort((a, b) => {
-        const aStart = a.classProperties.start_time;
-        const bStart = b.classProperties.start_time;
-        if (!aStart || !bStart) return 0;
-        return aStart.localeCompare(bStart);
-    });
+        // Console log the classes in conflicts by title only
+        console.log("Conflicts:");
+        conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
 
-    //Sort sortedClasses by day
-    sortedClasses.sort((a, b) => {
-        const aDay = a.classProperties.days[0];
-        const bDay = b.classProperties.days[0];
-        if (!aDay || !bDay) return 0;
-        return days[aDay].localeCompare(days[bDay]);
-    });
+        updateConflicts(conflicts);
+    }, [combinedClasses]);
 
-    // Print out each class title in the sorted class
-    // console.log("Sorted classes:");
-    // sortedClasses.forEach(c => console.log(c.classData.title));
+    // const detectConflicts = () => {
+    //     // Check for conflicts
+    //     // Sort by start time
+    //     const sortedClasses = combinedClasses.slice().sort((a, b) => {
+    //         const aStart = a.classProperties.start_time;
+    //         const bStart = b.classProperties.start_time;
+    //         if (!aStart || !bStart) return 0;
+    //         return aStart.localeCompare(bStart);
+    //     });
 
-    console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
-    // Check for conflicts using two pointers
+    //     //Sort sortedClasses by day
+    //     sortedClasses.sort((a, b) => {
+    //         const aDay = a.classProperties.days[0];
+    //         const bDay = b.classProperties.days[0];
+    //         if (!aDay || !bDay) return 0;
+    //         return days[aDay].localeCompare(days[bDay]);
+    //     });
 
-    const conflicts: ConflictType[] = [];
+    //     // Print out each class title in the sorted class
+    //     // console.log("Sorted classes:");
+    //     // sortedClasses.forEach(c => console.log(c.classData.title));
 
-    // Two-pointer approach
-    for (let i = 0; i < sortedClasses.length - 1; i++) {
-        const class1 = sortedClasses[i];
+    //     console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
+    //     // Check for conflicts using two pointers
 
-        for (let j = i + 1; j < sortedClasses.length; j++) {
-            const class2 = sortedClasses[j];
+    //     const conflicts: ConflictType[] = [];
 
-            // If we've moved to a different day, break inner loop
-            if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
-                break;
-            }
+    //     // Two-pointer approach
+    //     for (let i = 0; i < sortedClasses.length - 1; i++) {
+    //         const class1 = sortedClasses[i];
 
-            // Check for time overlap
-            const class1End = class1.classProperties.end_time;
-            const class2Start = class2.classProperties.start_time;
+    //         for (let j = i + 1; j < sortedClasses.length; j++) {
+    //             const class2 = sortedClasses[j];
 
-            if (class2Start < class1End) {
-                // Conflict found
-                conflicts.push({
-                    class1: class1,
-                    class2: class2
-                });
-            } else {
-                // No more possible conflicts with class1
-                // Since classes are sorted by start time
-                break;
-            }
+    //             // If we've moved to a different day, break inner loop
+    //             if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
+    //                 break;
+    //             }
+
+    //             // Check for time overlap
+    //             const class1End = class1.classProperties.end_time;
+    //             const class2Start = class2.classProperties.start_time;
+
+    //             if (class2Start < class1End) {
+    //                 // Conflict found
+    //                 conflicts.push({
+    //                     class1: class1,
+    //                     class2: class2
+    //                 });
+    //             } else {
+    //                 // No more possible conflicts with class1
+    //                 // Since classes are sorted by start time
+    //                 break;
+    //             }
+    //         }
+    //     }
+
+    //     // Return conflicts array
+
+    //     // Console log the classes in conflicts by title only
+    //     console.log("Conflicts:");
+    //     conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
+
+    //     updateConflicts(conflicts);
+    // }
+
+    useEffect(() => {
+        if (combinedClasses.length > 0) {
+            detectConflicts();
         }
+    }, [detectConflicts, combinedClasses]); // Run whenever classes change
+
+
+    const recomputeClass = (combinedClass: CombinedClass) => {
+        // Recompute event
+        const newEvent = createEventFromCombinedClass(combinedClass);
+
+        // Update events arrays
+        setAllEvents(prev => prev.map(ev =>
+            ev.extendedProps?.combinedClassId === combinedClass.classData._id ? newEvent : ev
+        ));
+        setDisplayEvents(prev => prev.map(ev =>
+            ev.extendedProps?.combinedClassId === combinedClass.classData._id ? newEvent : ev
+        ));
+
+        return combinedClass;
     }
 
-    // Return conflicts array
 
-    // Console log the classes in conflicts by title only
-    console.log("Conflicts:");
-    conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
+    const updateAllClasses = (newClasses: CombinedClass[]) => {
+        setClasses(newClasses);
+    }
 
-    updateConflicts(conflicts);
-}, [combinedClasses]);
+    const updateDisplayClasses = (newDisplayClasses: CombinedClass[]) => {
+        setDisplayClasses(newDisplayClasses);
 
-// const detectConflicts = () => {
-//     // Check for conflicts
-//     // Sort by start time
-//     const sortedClasses = combinedClasses.slice().sort((a, b) => {
-//         const aStart = a.classProperties.start_time;
-//         const bStart = b.classProperties.start_time;
-//         if (!aStart || !bStart) return 0;
-//         return aStart.localeCompare(bStart);
-//     });
+        // Convert classes to valid event objects
+        const newEvents = newDisplayClasses.map(classItem => ({
+            title: classItem.classData.title,
+            start: classItem.event?.start || '',
+            end: classItem.event?.end || '',
+            display: 'auto',
+            extendedProps: {
+                combinedClassId: classItem.classData._id
+            }
+        }));
 
-//     //Sort sortedClasses by day
-//     sortedClasses.sort((a, b) => {
-//         const aDay = a.classProperties.days[0];
-//         const bDay = b.classProperties.days[0];
-//         if (!aDay || !bDay) return 0;
-//         return days[aDay].localeCompare(days[bDay]);
-//     });
-
-//     // Print out each class title in the sorted class
-//     // console.log("Sorted classes:");
-//     // sortedClasses.forEach(c => console.log(c.classData.title));
-
-//     console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
-//     // Check for conflicts using two pointers
-
-//     const conflicts: ConflictType[] = [];
-
-//     // Two-pointer approach
-//     for (let i = 0; i < sortedClasses.length - 1; i++) {
-//         const class1 = sortedClasses[i];
-
-//         for (let j = i + 1; j < sortedClasses.length; j++) {
-//             const class2 = sortedClasses[j];
-
-//             // If we've moved to a different day, break inner loop
-//             if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
-//                 break;
-//             }
-
-//             // Check for time overlap
-//             const class1End = class1.classProperties.end_time;
-//             const class2Start = class2.classProperties.start_time;
-
-//             if (class2Start < class1End) {
-//                 // Conflict found
-//                 conflicts.push({
-//                     class1: class1,
-//                     class2: class2
-//                 });
-//             } else {
-//                 // No more possible conflicts with class1
-//                 // Since classes are sorted by start time
-//                 break;
-//             }
-//         }
-//     }
-
-//     // Return conflicts array
-
-//     // Console log the classes in conflicts by title only
-//     console.log("Conflicts:");
-//     conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
-
-//     updateConflicts(conflicts);
-// }
-
-useEffect(() => {
-    if (combinedClasses.length > 0) {
+        updateDisplayEvents(newEvents);
         detectConflicts();
     }
-}, [detectConflicts, combinedClasses]); // Run whenever classes change
 
+    const updateDisplayEvents = (newDisplayEvents: EventInput[]) => {
+        const validEvents = newDisplayEvents.map(event => ({
+            ...event,
+            display: 'auto', // Add default display property
+            title: event.title || '',
+            start: event.start || '',
+            end: event.end || ''
+        }));
 
-const recomputeClass = (combinedClass: CombinedClass) => {
-    // Recompute event
-    const newEvent = createEventFromCombinedClass(combinedClass);
-
-    // Update events arrays
-    setAllEvents(prev => prev.map(ev =>
-        ev.extendedProps?.combinedClassId === combinedClass.classData._id ? newEvent : ev
-    ));
-    setDisplayEvents(prev => prev.map(ev =>
-        ev.extendedProps?.combinedClassId === combinedClass.classData._id ? newEvent : ev
-    ));
-
-    return combinedClass;
-}
-
-
-const updateAllClasses = (newClasses: CombinedClass[]) => {
-    setClasses(newClasses);
-}
-
-const updateDisplayClasses = (newDisplayClasses: CombinedClass[]) => {
-    setDisplayClasses(newDisplayClasses);
-
-    // Convert classes to valid event objects
-    const newEvents = newDisplayClasses.map(classItem => ({
-        title: classItem.classData.title,
-        start: classItem.event?.start || '',
-        end: classItem.event?.end || '',
-        display: 'auto',
-        extendedProps: {
-            combinedClassId: classItem.classData._id
-        }
-    }));
-
-    updateDisplayEvents(newEvents);
-    detectConflicts();
-}
-
-const updateDisplayEvents = (newDisplayEvents: EventInput[]) => {
-    const validEvents = newDisplayEvents.map(event => ({
-        ...event,
-        display: 'auto', // Add default display property
-        title: event.title || '',
-        start: event.start || '',
-        end: event.end || ''
-    }));
-
-    setDisplayEvents(validEvents);
-    console.log("Display events updated" + JSON.stringify(newDisplayEvents));
-}
-
-const updateAllEvents = (newEvents: EventInput[]) => {
-    setAllEvents(newEvents);
-}
-
-const updateConflicts = (newConflicts: ConflictType[]) => {
-    setConflicts(newConflicts);
-}
-
-const uploadNewClasses = (uploadedClasses: CombinedClass[]) => {
-    uploadedClasses.forEach(element => {
-        updateCombinedClass(element)
-    });
-
-    refreshComponent("");
-}
-
-const updateCurrentClass = (newClass: CombinedClass) => {
-    console.log("Updating current class " + newClass.classData._id);
-    // Update the class lists
-    setCurrClass(newClass);
-    setClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
-    setDisplayClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
-
-    // Update the database (THIS IS TEMPORARY FOR THE DEMO AND PRESENTATION, MAKE SURE TO DO THE DIFFERENCES TRACKING IN THE FUTURE)
-    updateCombinedClass(newClass);
-
-    newClass = recomputeClass(newClass);
-
-    detectConflicts();
-}
-
-const unlinkTagFromClass = (tagId: string, classId: string) => {
-    // Unlink tag from class
-    const newTagList = new Map(tagList);
-    const tagData = newTagList.get(tagId);
-    if (tagData) {
-        tagData.classIds.delete(classId);
-        if (tagData.classIds.size === 0) {
-            newTagList.delete(tagId);
-        } else {
-            newTagList.set(tagId, tagData);
-        }
-        setTagList(newTagList);
+        setDisplayEvents(validEvents);
+        console.log("Display events updated" + JSON.stringify(newDisplayEvents));
     }
 
-    // Remove tag from class
-    const newClasses = combinedClasses.map(c => {
-        if (c.classData._id === classId) {
+    const updateAllEvents = (newEvents: EventInput[]) => {
+        setAllEvents(newEvents);
+    }
+
+    const updateConflicts = (newConflicts: ConflictType[]) => {
+        setConflicts(newConflicts);
+    }
+
+    const uploadNewClasses = (uploadedClasses: CombinedClass[]) => {
+        uploadedClasses.forEach(element => {
+            updateCombinedClass(element)
+        });
+
+        refreshComponent("");
+    }
+
+    const updateCurrentClass = (newClass: CombinedClass) => {
+        console.log("Updating current class " + newClass.classData._id);
+        // Update the class lists
+        setCurrClass(newClass);
+        setClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
+        setDisplayClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
+
+        // Update the database (THIS IS TEMPORARY FOR THE DEMO AND PRESENTATION, MAKE SURE TO DO THE DIFFERENCES TRACKING IN THE FUTURE)
+        updateCombinedClass(newClass);
+
+        newClass = recomputeClass(newClass);
+
+        detectConflicts();
+    }
+
+    const unlinkTagFromClass = (tagId: string, classId: string) => {
+        // Unlink tag from class
+        const newTagList = new Map(tagList);
+        const tagData = newTagList.get(tagId);
+        if (tagData) {
+            tagData.classIds.delete(classId);
+            if (tagData.classIds.size === 0) {
+                newTagList.delete(tagId);
+            } else {
+                newTagList.set(tagId, tagData);
+            }
+            setTagList(newTagList);
+        }
+
+        // Remove tag from class
+        const newClasses = combinedClasses.map(c => {
+            if (c.classData._id === classId) {
+                c.classProperties.tags = c.classProperties.tags.filter(t => t !== tagId);
+                updateCombinedClass(c);
+            }
+            return c;
+        });
+        setClasses(newClasses);
+    }
+
+    const unlinkAllTagsFromClass = (classId: string) => {
+        const newClasses = combinedClasses.map(c => {
+            if (c.classData._id === classId) {
+                c.classProperties.tags = [];
+                updateCombinedClass(c);
+            }
+            return c;
+        });
+        setClasses(newClasses);
+    }
+
+    const unlinkAllClassesFromTag = (tagId: string) => {
+        const newTagList = new Map(tagList);
+        newTagList.delete(tagId);
+        setTagList(newTagList);
+
+        const newClasses = combinedClasses.map(c => {
             c.classProperties.tags = c.classProperties.tags.filter(t => t !== tagId);
             updateCombinedClass(c);
-        }
-        return c;
-    });
-    setClasses(newClasses);
-}
+            return c;
+        });
+        setClasses(newClasses);
+    }
 
-const unlinkAllTagsFromClass = (classId: string) => {
-    const newClasses = combinedClasses.map(c => {
-        if (c.classData._id === classId) {
+    const unlinkAllTagsFromAllClasses = () => {
+        const newClasses = combinedClasses.map(c => {
             c.classProperties.tags = [];
             updateCombinedClass(c);
-        }
-        return c;
-    });
-    setClasses(newClasses);
-}
+            return c;
+        });
+        setClasses(newClasses);
 
-const unlinkAllClassesFromTag = (tagId: string) => {
-    const newTagList = new Map(tagList);
-    newTagList.delete(tagId);
-    setTagList(newTagList);
-
-    const newClasses = combinedClasses.map(c => {
-        c.classProperties.tags = c.classProperties.tags.filter(t => t !== tagId);
-        updateCombinedClass(c);
-        return c;
-    });
-    setClasses(newClasses);
-}
-
-const unlinkAllTagsFromAllClasses = () => {
-    const newClasses = combinedClasses.map(c => {
-        c.classProperties.tags = [];
-        updateCombinedClass(c);
-        return c;
-    });
-    setClasses(newClasses);
-
-    setTagList(new Map());
-}
+        setTagList(new Map());
+    }
 
 
 
 
-return (
-    <CalendarContext.Provider value={{
-        isLoading,
-        error,
-        currCombinedClass,
-        setCurrClass,
-        updateCurrentClass,
-        allClasses: combinedClasses,
-        updateAllClasses,
-        displayClasses,
-        updateDisplayClasses,
-        allEvents,
-        updateAllEvents,
-        displayEvents,
-        updateDisplayEvents,
-        tagList,
-        allTags,
-        unlinkTagFromClass,
-        unlinkAllTagsFromClass,
-        unlinkAllClassesFromTag,
-        unlinkAllTagsFromAllClasses,
-        detectConflicts,
-        conflicts,
-        uploadNewClasses
-    }}>
-        {children}
-        {reset}
-    </CalendarContext.Provider>
-);
+    return (
+        <CalendarContext.Provider value={{
+            isLoading,
+            error,
+            currCombinedClass,
+            setCurrClass,
+            updateCurrentClass,
+            allClasses: combinedClasses,
+            updateAllClasses,
+            displayClasses,
+            updateDisplayClasses,
+            allEvents,
+            updateAllEvents,
+            displayEvents,
+            updateDisplayEvents,
+            tagList,
+            allTags,
+            unlinkTagFromClass,
+            unlinkAllTagsFromClass,
+            unlinkAllClassesFromTag,
+            unlinkAllTagsFromAllClasses,
+            detectConflicts,
+            conflicts,
+            uploadNewClasses
+        }}>
+            {children}
+            {reset}
+        </CalendarContext.Provider>
+    );
 }
 
 export const useCalendarContext = () => {
