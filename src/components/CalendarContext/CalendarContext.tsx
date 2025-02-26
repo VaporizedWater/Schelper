@@ -21,72 +21,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
     const [conflicts, setConflicts] = useState<ConflictType[]>([]);
     const [reset, refreshComponent] = useState<string>("");
 
-    // const detectConflicts = () => {
-    //     // Check for conflicts
-    //     // Sort by start time
-    //     const sortedClasses = combinedClasses.slice().sort((a, b) => {
-    //         const aStart = a.classProperties.start_time;
-    //         const bStart = b.classProperties.start_time;
-    //         if (!aStart || !bStart) return 0;
-    //         return aStart.localeCompare(bStart);
-    //     });
-
-    //     //Sort sortedClasses by day
-    //     sortedClasses.sort((a, b) => {
-    //         const aDay = a.classProperties.days[0];
-    //         const bDay = b.classProperties.days[0];
-    //         if (!aDay || !bDay) return 0;
-    //         return days[aDay].localeCompare(days[bDay]);
-    //     });
-
-    //     // Print out each class title in the sorted class
-    //     // console.log("Sorted classes:");
-    //     // sortedClasses.forEach(c => console.log(c.classData.title));
-
-    //     console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
-    //     // Check for conflicts using two pointers
-
-    //     const conflicts: ConflictType[] = [];
-
-    //     // Two-pointer approach
-    //     for (let i = 0; i < sortedClasses.length - 1; i++) {
-    //         const class1 = sortedClasses[i];
-
-    //         for (let j = i + 1; j < sortedClasses.length; j++) {
-    //             const class2 = sortedClasses[j];
-
-    //             // If we've moved to a different day, break inner loop
-    //             if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
-    //                 break;
-    //             }
-
-    //             // Check for time overlap
-    //             const class1End = class1.classProperties.end_time;
-    //             const class2Start = class2.classProperties.start_time;
-
-    //             if (class2Start < class1End) {
-    //                 // Conflict found
-    //                 conflicts.push({
-    //                     class1: class1,
-    //                     class2: class2
-    //                 });
-    //             } else {
-    //                 // No more possible conflicts with class1
-    //                 // Since classes are sorted by start time
-    //                 break;
-    //             }
-    //         }
-    //     }
-
-    //     // Return conflicts array
-
-    //     // Console log the classes in conflicts by title only
-    //     console.log("Conflicts:");
-    //     conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
-
-    //     updateConflicts(conflicts);
-    // }
-
     useEffect(() => {
         let mounted = true;
 
@@ -186,7 +120,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 const class1End = class1.classProperties.end_time;
                 const class2Start = class2.classProperties.start_time;
 
-                if (class2Start < class1End) {
+                if (class2Start < class1End && (class1.classProperties.room === class2.classProperties.room || class1.classProperties.instructor_email === class2.classProperties.instructor_email)) {
                     // Conflict found
                     conflicts.push({
                         class1: class1,
