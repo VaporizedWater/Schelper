@@ -92,8 +92,6 @@ export async function PUT(request: Request) {
     try {
         const body = await request.json();
 
-        console.log(body._id === "");
-
         if (body._id === undefined || body.id === null) {
             console.log("Received blank or invalid _id in class update:", body._id);
             return NextResponse.json({ error: "Invalid class ID" }, { status: 400 });
@@ -122,20 +120,6 @@ export async function PUT(request: Request) {
             result = await collection.updateOne({ _id: objID}, {$set: updateData});
             id = _id;
         }
-
-
-        // if (!ObjectId.isValid(body._id) || body._id === "") {
-        //     console.log('attempting to do the thing');
-        //     result = await collection.updateOne({ catalog_num: catalog_num, class_num: class_num, session: session, course_subject: course_subject, course_num: course_num }, { $set: updateData }, { upsert: true })
-        //     if (!result.upsertedId) {
-        //         id = 
-        //     }
-        //     console.log(result + 'did the thing');
-        // } else {
-        //     console.log("we should not reach this");
-        //     const objID = new ObjectId(String(_id));
-        //     result = await collection.updateOne({ _id: objID }, { $set: updateData });
-        // }
 
         return NextResponse.json({ modifiedCount: result.modifiedCount, _id: id }, { status: 200 });
     } catch (error) {

@@ -282,9 +282,9 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
 
     const updatedClassData = await classResponse.json();
 
-    console.log("AAA");
+    // console.log("AAA");
     console.log(updatedClassData);
-    console.log(combinedClass.classProperties);
+    // console.log(combinedClass.classProperties);
 
     if (updatedClassData._id) {
         combinedClass.classData._id = updatedClassData._id;

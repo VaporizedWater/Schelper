@@ -12,14 +12,12 @@ const convertTime = (excelTimeString: string) => {
     const numberComponent = timeComponents[0];
     const ampm = timeComponents[1];
 
-    if (ampm.toLowerCase() === 'am') {
+    if (ampm.trim().toLowerCase() === 'am') {
         return numberComponent;
     } else {
         const t = numberComponent.split(':');
-        let hour = parseInt(t[0]);
-        const minute = parseInt(t[1]);
-        hour += 12;
-        return hour + ':' + minute;
+        const hour = parseInt(t[0]) + 12;
+        return hour + ':' + t[1];
     }
 }
 
@@ -58,10 +56,20 @@ const ImportSheet = () => {
 
             const classData = combinedClass.classData;
             const classProperties = combinedClass.classProperties;
+            let isCancelled = false;
+
+            const cancelClassCreation = () => {
+                isCancelled = true;
+            };
 
             Object.keys(element).forEach(key => {
                 const value = String(element[key as keyof typeof element]);
                 if (value) {
+                    if (key === "Class Stat" && value === "Cancelled Section") {
+                        cancelClassCreation();
+                        return;
+                    }
+
                     switch (key) {
                         // Class
                         case "Catalog #":
@@ -123,6 +131,8 @@ const ImportSheet = () => {
                             classProperties.class_status = value;
                             break;
                         case "Start":
+                            console.log("start time");
+                            console.log(value + ", converted: " + convertTime(value));
                             classProperties.start_time = convertTime(value);
                             break;
                         case "End":
@@ -182,8 +192,9 @@ const ImportSheet = () => {
                 }
             });
 
-
-            combinedClasses.push(combinedClass);
+            if (!isCancelled) {
+                combinedClasses.push(combinedClass);
+            }
         });
 
         uploadNewClasses(combinedClasses);
