@@ -91,19 +91,19 @@ export const emptyCombinedClass: CombinedClass = {
     event: undefined,
 };
 
-const globalTagList: string[] = [
-    "Lecture",
-    "Discussion",
-    "Lab",
-    "Recitation",
-    "Seminar",
-    "Studio",
-    "Workshop",
-    "Independent Study",
-    "Internship",
-    "Practicum",
-    "Field Study",
-];
+// const globalTagList: string[] = [
+//     "Lecture",
+//     "Discussion",
+//     "Lab",
+//     "Recitation",
+//     "Seminar",
+//     "Studio",
+//     "Workshop",
+//     "Independent Study",
+//     "Internship",
+//     "Practicum",
+//     "Field Study",
+// ];
 
 /// ----
 // Functions

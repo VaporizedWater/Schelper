@@ -239,7 +239,7 @@ export async function insertCombinedClass(combinedClass: CombinedClass): Promise
 
     if (classPropId == null) {
         console.error("Failed to insert class properties. Try again...");
-        return null;document
+        return null;
     } else {
         console.log(classPropId + " : Inserted class properties successfully!\n");
     }
@@ -285,7 +285,6 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
     console.log("AAA");
     console.log(updatedClassData);
     console.log(combinedClass.classProperties);
-
 
     if (updatedClassData._id) {
         combinedClass.classData._id = updatedClassData._id;

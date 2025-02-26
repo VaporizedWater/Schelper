@@ -8,9 +8,7 @@ import { EventInput } from "@fullcalendar/core/index.js";
 
 const Filters = () => {
     const { tagList, allClasses, updateDisplayClasses, updateDisplayEvents } = useCalendarContext();
-    const [selectedTags, setSelectedTags] = useState<Set<string>>(
-        new Set(Array.from(tagList.keys()))
-    );
+    const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         if (tagList.size > 0) {
@@ -39,9 +37,11 @@ const Filters = () => {
 
         setSelectedTags(newSelectedTags);
 
-        const newDisplayClasses = allClasses.filter((classItem) =>
-            Array.from(classItem.classProperties.tags).some((tag) => newSelectedTags.has(tag))
-        );
+        const newDisplayClasses = newSelectedTags.size > 0
+            ? allClasses.filter((classItem) =>
+                classItem.classProperties.tags?.some((tag) => newSelectedTags.has(tag))
+            )
+            : []; // Return empty array when no tags selected
         updateDisplayClasses(newDisplayClasses);
         updateDisplayEvents(newDisplayClasses.map((item) => item.event as EventInput));
     };

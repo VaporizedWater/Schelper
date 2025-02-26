@@ -4,12 +4,12 @@ import React, { useState, useEffect } from "react";
 import Footer from '@/components/Footer/Footer';
 import Image from 'next/image';
 import logo from '../lib/icons';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import Link from "next/link";
 
 const Home = () => {
     const [backgroundUrl, setBackgroundUrl] = useState("/wcispsu.jpg");
-    const router = useRouter();
+    // const router = useRouter();
 
     useEffect(() => {
         const images = ["/wcispsu.jpg", "/NittanyLionShrine.jpg", "/PSU_Light_Dark.jpg"];

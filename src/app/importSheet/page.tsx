@@ -2,11 +2,8 @@
 
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
 import { newDefaultEmptyClass } from '@/lib/common';
-import { Class, ClassProperty, CombinedClass } from '@/lib/types';
-import { randomUUID } from 'crypto';
-import { UUID } from 'mongodb';
+import { CombinedClass } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { title } from 'process';
 import { useState } from 'react';
 import xlsx from 'xlsx';
 
@@ -18,9 +15,9 @@ const convertTime = (excelTimeString: string) => {
     if (ampm.toLowerCase() === 'am') {
         return numberComponent;
     } else {
-        let t = numberComponent.split(':');
+        const t = numberComponent.split(':');
         let hour = parseInt(t[0]);
-        let minute = parseInt(t[1]);
+        const minute = parseInt(t[1]);
         hour += 12;
         return hour + ':' + minute;
     }
