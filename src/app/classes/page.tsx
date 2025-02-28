@@ -1,13 +1,14 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Class, ClassProperty, CombinedClass } from "@/lib/types";
+import { Class, ClassProperty } from "@/lib/types";
 import { insertCombinedClass } from "@/lib/utils";
 import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import { EventInput } from "@fullcalendar/core/index.js";
+import { newDefaultEmptyClass } from "@/lib/common";
 
 const NewClassForm = () => {
     const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
@@ -52,15 +53,38 @@ const NewClassForm = () => {
         setClassEvent(JSON.stringify(newClassEvent));
         console.log(classEvent);
 
+        const defaultCombined = newDefaultEmptyClass();
+
         // Testing POST Request
-        defaultCombined.classData = classInfo ?? defaultClass;
-        defaultCombined.classProperties = classProperties ?? defaultProperties;
+        if (classInfo) {
+            defaultCombined.classData._id = classInfo._id;
+            defaultCombined.classData.catalog_num = classInfo.catalog_num;
+            defaultCombined.classData.class_num = classInfo.class_num;
+            defaultCombined.classData.session = classInfo.session;
+            defaultCombined.classData.course_subject = classInfo.course_subject;
+            defaultCombined.classData.course_num = classInfo.course_num;
+            defaultCombined.classData.section = classInfo.section;
+            defaultCombined.classData.location = classInfo.location;
+            defaultCombined.classData.enrollment_cap = classInfo.enrollment_cap;
+            defaultCombined.classData.waitlist_cap = classInfo.waitlist_cap;
+        }
+        if (classProperties) {
+            defaultCombined.classProperties._id = classProperties._id;
+            defaultCombined.classProperties.class_status = classProperties.class_status;
+            defaultCombined.classProperties.facility_id = classProperties.facility_id;
+            defaultCombined.classProperties.room = classProperties.room;
+            defaultCombined.classProperties.instructor_email = classProperties.instructor_email;
+            defaultCombined.classProperties.instructor_name = classProperties.instructor_name;
+            defaultCombined.classProperties.total_enrolled = classProperties.total_enrolled;
+            defaultCombined.classProperties.total_waitlisted = classProperties.total_waitlisted;
+            defaultCombined.classProperties.days = classProperties.days.length > 0 ? classProperties.days : defaultCombined.classProperties.days;
+            defaultCombined.classProperties.start_time = classProperties.start_time;
+            defaultCombined.classProperties.end_time = classProperties.end_time;
+            defaultCombined.classProperties.tags = classProperties.tags.length > 0 ? classProperties.tags : defaultCombined.classProperties.tags;
+        }
         insertCombinedClass(defaultCombined);
 
         // Update the context as well
-
-
-        console.log(JSON.stringify(defaultCombined));
 
         // Clear state
         clearState();
@@ -69,38 +93,6 @@ const NewClassForm = () => {
         router.back();
     };
 
-    const defaultClass: Class = {
-        _id: "",
-        catalog_num: "",
-        class_num: "",
-        session: "",
-        course_subject: "",
-        course_num: "",
-        section: "",
-        title: "",
-        location: "",
-        enrollment_cap: "",
-        waitlist_cap: "",
-    };
-
-    const defaultProperties: ClassProperty = {
-        _id: "",
-        class_status: "",
-        start_time: "",
-        end_time: "",
-        room: "",
-        facility_id: "",
-        days: ["Mon"],
-        instructor_email: "",
-        instructor_name: "",
-        total_enrolled: "",
-        total_waitlisted: "",
-        tags: [],
-    };
-
-    const defaultCombined: CombinedClass = { classData: defaultClass, classProperties: defaultProperties, event: undefined };
-
-    console.log(JSON.stringify(allTags));
     return (
         <div className="p-8 mx-auto">
             <h2 className="text-2xl font-semibold mb-6">Create New Class</h2>

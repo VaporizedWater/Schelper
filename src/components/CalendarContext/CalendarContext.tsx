@@ -89,6 +89,11 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
 
         //Sort sortedClasses by day
         sortedClasses.sort((a, b) => {
+            console.log(a);
+            console.log(b);
+            if (a.classProperties.days === undefined && b.classProperties.days === undefined) {
+                return 0;
+            }
             const aDay = a.classProperties.days[0];
             const bDay = b.classProperties.days[0];
             if (!aDay || !bDay) return 0;
