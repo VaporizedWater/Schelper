@@ -48,7 +48,7 @@ const Home = () => {
                             </span>
                         </Link>
                         <Link className="relative group"
-                            href='/calendar'>
+                            href='/tags'>
                             <Image
                                 src="/tag.png"
                                 alt="Manage Tags"
