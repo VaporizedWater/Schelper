@@ -7,7 +7,6 @@ import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
-import { EventInput } from "@fullcalendar/core/index.js";
 import { newDefaultEmptyClass } from "@/lib/common";
 
 const NewClassForm = () => {
@@ -17,7 +16,6 @@ const NewClassForm = () => {
     const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "", { initializeWithValue: false });
     const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
     const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty, { initializeWithValue: false });
-    const [classEvent, setClassEvent] = useLocalStorage("newEvent", "", { initializeWithValue: false });
     const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<string[]>("selectedTags", [], { initializeWithValue: false });
     const { allTags } = useCalendarContext();
 
@@ -42,16 +40,6 @@ const NewClassForm = () => {
 
         // Blank tags for now by default until we take them as input
         setClassProperties({ ...classProperties, tags: [] } as ClassProperty);
-
-        const newClassEvent: EventInput = {
-            title,
-            day,
-            startTime,
-            endTime,
-        };
-
-        // setClassEvent(JSON.stringify(newClassEvent));
-        // console.log(classEvent);
 
         const defaultCombined = newDefaultEmptyClass();
 

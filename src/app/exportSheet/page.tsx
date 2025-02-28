@@ -23,7 +23,6 @@ const ExportSheet = () => {
             'Days': classItem.classProperties.days.join(', '),
             'Start Time': classItem.classProperties.start_time,
             'End Time': classItem.classProperties.end_time,
-            'Tags': classItem.classProperties.tags.join(', ')
         }));
 
         const ws = XLSX.utils.json_to_sheet(wsData);

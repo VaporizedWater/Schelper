@@ -4,14 +4,12 @@ import DropDown from "../DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 // import AddClassToTag from "../AddClassToTag/AddClassToTag";
 import { useState } from "react";
-// import { deleteTag } from "@/lib/utils";
 import { BiUnlink } from "react-icons/bi";
 import AddClassToTag from "../AddClassToTag/AddClassToTag";
 
 const TagDisplay = () => {
-    const { tagList, allTags, allClasses, unlinkTagFromClass } = useCalendarContext();
-    // const [hoveredTagId, setHoveredTagId] = useState<string | null>(null);
-    const [, setHoveredTagId] = useState<string | null>(null);
+    const { tagList, allTags, allClasses, unlinkTagFromClass, unlinkAllClassesFromTag } = useCalendarContext();
+    const [hoveredTagId, setHoveredTagId] = useState<string | null>(null);
     const [hoveredTagClassId, setHoveredTagClassId] = useState<string[] | null>(null);
 
     // Get the IDs of tags that are linked to classes.
@@ -27,26 +25,14 @@ const TagDisplay = () => {
         return typeof tag === "object" ? !linkedTagIds.has(tag._id) : !linkedTagIds.has(tag);
     });
 
-    // const handleTagDelete = (tagName: string) => {
-    //     console.log("Delete tag");
-    //     const isConfirmed = window.confirm(`Are you sure you want to delete the tag "${tagName}"?`);
+    const handleTagUnlink = (tagName: string) => {
+        const isConfirmed = window.confirm(`unlink tag "${tagName}" from all its classes?`);
 
-    //     if (isConfirmed) {
-    //         unlinkAllClassesFromTag(tagName);
-    //         deleteTag(tagName);
-    //         tagList.delete(tagName);
-    //     }
-    // }
-
-    // const handleEmptyTagDelete = (tagName: string) => {
-    //     console.log("Delete empty tag");
-    //     const isConfirmed = window.confirm(`Delete the empty tag "${tagName}"?`);
-
-    //     if (isConfirmed) {
-    //         deleteTag(tagName);
-    //         tagList.delete(tagName);
-    //     }
-    // }
+        if (isConfirmed) {
+            unlinkAllClassesFromTag(tagName);
+            tagList.delete(tagName);
+        }
+    }
 
     const handleClassUnlink = (tagId: string, classId: string) => {
         // Get class name from id
@@ -82,14 +68,14 @@ const TagDisplay = () => {
                                                 {tagData.classIds.size > 1 ? "es" : ""}
                                             </span>
                                             <div className="flex items-center gap-2">
-                                                {/* {hoveredTagId === tagId && (
-                                                <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleTagDelete(tagId)
-                                                }}>
-                                                    <MdDelete />
-                                                </div>
-                                            )} */}
+                                                {hoveredTagId === tagId && (
+                                                    <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleTagUnlink(tagId)
+                                                    }}>
+                                                        <BiUnlink />
+                                                    </div>
+                                                )}
                                                 {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                                             </div>
 
@@ -148,14 +134,6 @@ const TagDisplay = () => {
                             >
                                 <div className="flex justify-between items-center p-2 bg-gray-100 rounded">
                                     <span>{displayValue} : 0 Classes</span>
-                                    {/* {hoveredTagId === keyValue && (
-                                        <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleEmptyTagDelete(keyValue)
-                                        }}>
-                                            <MdDelete />
-                                        </div>
-                                    )} */}
                                 </div>
                             </li>
                         );
