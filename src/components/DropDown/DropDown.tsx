@@ -18,12 +18,23 @@ const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClass
 
     return (
         <div ref={dropdownRef} className="relative">
-            <button type="button" onClick={() => setIsOpen((prev) => !prev)} className={buttonClassName}>
+            <button
+                type="button"
+                onClick={() => setIsOpen((prev) => !prev)}
+                className={buttonClassName}
+                data-testid="dropdown-button"
+                aria-expanded={isOpen}
+                aria-haspopup="true"
+            >
                 {renderButton(isOpen)}
             </button>
 
             {isOpen && (
-                <div className={`absolute w-full rounded-md mt-2 bg-white shadow-md z-10 ${dropdownClassName}`}>
+                <div
+                    className={`absolute w-full rounded-md mt-2 bg-white shadow-md z-10 ${dropdownClassName}`}
+                    data-testid="dropdown-content"
+                    role="listbox"
+                >
                     {renderDropdown()}
                 </div>
             )}

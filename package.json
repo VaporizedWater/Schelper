@@ -29,7 +29,7 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "^1.50.1",
     "@testing-library/dom": "^10.4.0",
     "@types/node": "^22.9.0",
     "@types/react": "^18",

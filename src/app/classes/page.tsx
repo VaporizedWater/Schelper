@@ -49,8 +49,8 @@ const NewClassForm = () => {
             endTime,
         };
 
-        setClassEvent(JSON.stringify(newClassEvent));
-        console.log(classEvent);
+        // setClassEvent(JSON.stringify(newClassEvent));
+        // console.log(classEvent);
 
         // Testing POST Request
         defaultCombined.classData = classInfo ?? defaultClass;
