@@ -4,7 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useState } from 'rea
 import { CalendarContextType, CombinedClass, ConflictType, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
-import { createEventFromCombinedClass, days } from '@/lib/common';
+import { createEventFromCombinedClass, dayToDate } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -97,7 +97,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             const aDay = a.classProperties.days[0];
             const bDay = b.classProperties.days[0];
             if (!aDay || !bDay) return 0;
-            return days[aDay].localeCompare(days[bDay]);
+            return dayToDate[aDay].localeCompare(dayToDate[bDay]);
         });
 
         // Print out each class title in the sorted class
@@ -117,7 +117,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 const class2 = sortedClasses[j];
 
                 // If we've moved to a different day, break inner loop
-                if (days[class1.classProperties.days[0]] !== days[class2.classProperties.days[0]]) {
+                if (dayToDate[class1.classProperties.days[0]] !== dayToDate[class2.classProperties.days[0]]) {
                     break;
                 }
 

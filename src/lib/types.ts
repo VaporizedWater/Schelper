@@ -100,3 +100,9 @@ export type CalendarContextType = {
     conflicts: ConflictType[];
     uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
 };
+
+export type ExcelMappingEntry = {
+    target: string;
+    property: string;
+    convert?: string;
+};

@@ -119,7 +119,7 @@ export default function CalendarSheet() {
                 }
 
                 // Make sure events are properly formatted with the correct day
-                const dayMapping: { [key: string]: string } = {
+                const dayToDate: { [key: string]: string } = {
                     'Mon': '2025-01-06',
                     'Tue': '2025-01-07',
                     'Wed': '2025-01-08',
@@ -127,7 +127,7 @@ export default function CalendarSheet() {
                     'Fri': '2025-01-10',
                 };
                 const days = newProperties.days[0];
-                const convertedDay = dayMapping[days] || '2025-01-06';
+                const convertedDay = dayToDate[days] || '2025-01-06';
                 const newEvent: EventInput = {
                     title: newData.title,
                     start: convertedDay + 'T' + newProperties.start_time,

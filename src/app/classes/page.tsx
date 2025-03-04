@@ -45,30 +45,24 @@ const NewClassForm = () => {
 
         // Testing POST Request
         if (classInfo) {
-            defaultCombined.classData._id = classInfo._id;
-            defaultCombined.classData.catalog_num = classInfo.catalog_num;
-            defaultCombined.classData.class_num = classInfo.class_num;
-            defaultCombined.classData.session = classInfo.session;
-            defaultCombined.classData.course_subject = classInfo.course_subject;
-            defaultCombined.classData.course_num = classInfo.course_num;
-            defaultCombined.classData.section = classInfo.section;
-            defaultCombined.classData.location = classInfo.location;
-            defaultCombined.classData.enrollment_cap = classInfo.enrollment_cap;
-            defaultCombined.classData.waitlist_cap = classInfo.waitlist_cap;
+            defaultCombined.classData = {
+                ...defaultCombined.classData,
+                ...classInfo
+            };
         }
+
         if (classProperties) {
-            defaultCombined.classProperties._id = classProperties._id;
-            defaultCombined.classProperties.class_status = classProperties.class_status;
-            defaultCombined.classProperties.facility_id = classProperties.facility_id;
-            defaultCombined.classProperties.room = classProperties.room;
-            defaultCombined.classProperties.instructor_email = classProperties.instructor_email;
-            defaultCombined.classProperties.instructor_name = classProperties.instructor_name;
-            defaultCombined.classProperties.total_enrolled = classProperties.total_enrolled;
-            defaultCombined.classProperties.total_waitlisted = classProperties.total_waitlisted;
-            defaultCombined.classProperties.days = classProperties.days.length > 0 ? classProperties.days : defaultCombined.classProperties.days;
-            defaultCombined.classProperties.start_time = classProperties.start_time;
-            defaultCombined.classProperties.end_time = classProperties.end_time;
-            defaultCombined.classProperties.tags = classProperties.tags.length > 0 ? classProperties.tags : defaultCombined.classProperties.tags;
+            defaultCombined.classProperties = {
+                ...defaultCombined.classProperties,
+                ...classProperties,
+                // Preserve special handling for arrays
+                days: classProperties.days?.length > 0
+                    ? classProperties.days
+                    : defaultCombined.classProperties.days,
+                tags: classProperties.tags?.length > 0
+                    ? classProperties.tags
+                    : defaultCombined.classProperties.tags
+            };
         }
         insertCombinedClass(defaultCombined);
 

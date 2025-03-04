@@ -182,12 +182,6 @@ const ImportSheet = () => {
             });
 
             if (!isCancelled) {
-                const levelTag = extractCourseLevel(combinedClass.classData.course_num);
-
-                if (levelTag) {
-                    combinedClass.classProperties.tags.push(levelTag);
-                }
-
                 combinedClasses.push(combinedClass);
             }
         });
