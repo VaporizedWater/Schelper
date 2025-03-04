@@ -1,3 +1,4 @@
+import { newDefaultEmptyClass } from "./common";
 import { Class, ClassProperty, CombinedClass } from "./types";
 
 // FETCH
@@ -31,7 +32,7 @@ async function retry<T>(fn: () => Promise<T>, attempts: number = 3, delay: numbe
         return await fn();
     } catch (error) {
         if (attempts <= 1) throw error;
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise((ignored) => setTimeout(ignored, delay));
         return retry(fn, attempts - 1, delay);
     }
 }
@@ -134,38 +135,64 @@ export async function loadCombinedClasses(classIds: string[]): Promise<CombinedC
 }
 
 export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
-    return retry(async () => {
-        const response = await fetch("/api/classes", {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        });
+    const classes = [] as CombinedClass[];
 
-        if (!response.ok) throw new Error(`Failed to fetch classes: ${response.statusText}`);
 
-        const classes = await response.json();
-        const combined = await Promise.all(
-            classes.map(async (classItem: Class) => {
-                const propsResponse = await fetch("/api/class_properties", {
-                    method: "GET",
-                    headers: {
-                        "Content-Type": "application/json",
-                        id: classItem._id,
-                    },
-                });
-
-                if (!propsResponse.ok) throw new Error(`Failed to fetch properties for class ${classItem._id}`);
-
-                const props = await propsResponse.json();
-                return {
-                    classData: classItem,
-                    classProperties: props,
-                    event: undefined,
-                };
-            })
-        );
-
-        return combined;
+    const response = await fetch("/api/classes", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
     });
+
+    if (!response.ok) throw new Error(`Failed to fetch classes: ${response.statusText}`);
+
+    // An array of all the classes in the collection
+    response.json().then((data: any[]) => {
+        data.forEach((classItem: Class) => {
+            const combinedClass = newDefaultEmptyClass();
+            
+
+        });
+    });
+
+
+
+    
+    return classes;
+
+
+
+    // return retry(async () => {
+    //     const response = await fetch("/api/classes", {
+    //         method: "GET",
+    //         headers: { "Content-Type": "application/json" },
+    //     });
+
+    //     if (!response.ok) throw new Error(`Failed to fetch classes: ${response.statusText}`);
+
+    //     const classes = await response.json();
+    //     const combined = await Promise.all(
+    //         classes.map(async (classItem: Class) => {
+    //             const propsResponse = await fetch("/api/class_properties", {
+    //                 method: "GET",
+    //                 headers: {
+    //                     "Content-Type": "application/json",
+    //                     id: classItem._id,
+    //                 },
+    //             });
+
+    //             if (!propsResponse.ok) throw new Error(`Failed to fetch properties for class ${classItem._id}`);
+
+    //             const props = await propsResponse.json();
+    //             return {
+    //                 classData: classItem,
+    //                 classProperties: props,
+    //                 event: undefined,
+    //             };
+    //         })
+    //     );
+
+    //     return combined;
+    // });
 }
 
 // DELETES

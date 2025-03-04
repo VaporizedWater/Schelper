@@ -7,6 +7,8 @@ import { NextResponse } from "next/server";
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("class_properties");
 
+const VisitedEmails = new Map<string, string>();
+
 export async function GET(request: Request) {
     const headerId = request.headers.get("id");
     const classID = headerId ? headerId : "";
@@ -26,14 +28,20 @@ export async function GET(request: Request) {
         if (email.length) {
             const emailID = email.substring(0, email.search("@"));
             if (emailID) {
-                const response = await fetchWithTimeout(
-                    "https://search-service.k8s.psu.edu/search-service/resources/people?text=" + emailID + "&size=1"
-                );
-
-                if (response.status == 200 && response.body) {
-                    const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-                    const userJSON = JSON.parse(responseText);
-                    name = userJSON[0].displayName;
+                const displayName = VisitedEmails.get(emailID);
+                if (displayName) {
+                    name = displayName;
+                } else {
+                    const response = await fetchWithTimeout(
+                        "https://search-service.k8s.psu.edu/search-service/resources/people?text=" + emailID + "&size=1"
+                    );
+    
+                    if (response.status == 200 && response.body) {
+                        const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
+                        const userJSON = JSON.parse(responseText);
+                        name = userJSON[0].displayName;
+                        VisitedEmails.set(emailID, name);
+                    }
                 }
             }
         }
