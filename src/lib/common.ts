@@ -20,6 +20,16 @@ export function documentToClass(doc: Document): Class {
 }
 
 export function documentToClassProperty(doc: Document): ClassProperty {
+    let displayName = String(doc.instructor_name);
+    if (displayName.length > 0) {
+        const split = displayName.split(',');
+        if (split.length == 2) {
+            const first = split[1].trim();
+            const last = split[0].trim();
+            displayName = first + " " + last;
+        }
+    }
+
     return {
         _id: doc._id.toString(), // Ensure _id is converted to string
         class_status: doc.class_status,
@@ -29,7 +39,7 @@ export function documentToClassProperty(doc: Document): ClassProperty {
         facility_id: doc.facility_id,
         days: doc.days,
         instructor_email: doc.instructor_email,
-        instructor_name: doc.instructor_name,
+        instructor_name: displayName,
         total_enrolled: doc.total_enrolled,
         total_waitlisted: doc.total_waitlisted,
         tags: doc.tags,

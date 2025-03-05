@@ -10,16 +10,16 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 export const CalendarProvider = ({ children }: ProviderProps) => {
     const [combinedClasses, setClasses] = useState<CombinedClass[]>([]); // All the classes in the context
-    const [allEvents, setAllEvents] = useState<EventInput[]>([]); // All the events in the context
     const [currentCombinedClass, setCurrentClass] = useState<CombinedClass>(); // The currently selected class(es).
+    const [isLoading, setIsLoading] = useState(true);
+    const [conflicts, setConflicts] = useState<ConflictType[]>([]);
+    const [reset, refreshComponent] = useState<string>("");
+
+    const [allEvents, setAllEvents] = useState<EventInput[]>([]); // All the events in the context
     const [displayClasses, setDisplayClasses] = useState<CombinedClass[]>([]); // The classes to display on the calendar based on tags
     const [displayEvents, setDisplayEvents] = useState<EventInput[]>([]); // The events to display on the calendar based on tags
     const [tagList, setTagList] = useState<tagListType>(new Map<string, { classIds: Set<string> }>()); // Map of tags to a set of class ids
     const [allTags, setAllTags] = useState<Set<string>>(new Set()); // All the tags in the context
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [conflicts, setConflicts] = useState<ConflictType[]>([]);
-    const [reset, refreshComponent] = useState<string>("");
 
     useEffect(() => {
         let mounted = true;
@@ -27,9 +27,9 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         const loadClasses = async () => {
             try {
                 setIsLoading(true);
-                setError(null);
 
                 const allClasses = await loadAllCombinedClasses();
+
                 if (!mounted) return;
 
                 const newTagMap = new Map<string, { classIds: Set<string> }>();
@@ -63,7 +63,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             } catch (err) {
                 if (mounted) {
                     console.error('Error loading classes:', err);
-                    setError(err instanceof Error ? err.message : 'Failed to load classes');
                 }
             } finally {
                 if (mounted) {
@@ -257,28 +256,37 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         setTagList(new Map());
     }
 
+    if (isLoading) {
+        console.log("loading");
+    }
+
     return (
         <CalendarContext.Provider value={{
             isLoading,
-            error,
-            currentCombinedClass,
-            setCurrentClass,
-            updateOneClass,
-            allClasses: combinedClasses,
-            updateAllClasses,
-            displayClasses,
-            updateDisplayClasses,
-            allEvents,
-            displayEvents,
-            tagList,
-            allTags,
             unlinkTagFromClass,
             unlinkAllTagsFromClass,
             unlinkAllClassesFromTag,
             unlinkAllTagsFromAllClasses,
+
             detectConflicts,
+
+            uploadNewClasses,
+
+            setCurrentClass,
+            updateOneClass,
+
+            updateDisplayClasses,
+
+            updateAllClasses,
+
+            currentCombinedClass,
+            allClasses: combinedClasses,
+            displayClasses,
+            allEvents,
+            displayEvents,
+            tagList,
+            allTags,
             conflicts,
-            uploadNewClasses
         }}>
             {children}
             {reset}

@@ -78,7 +78,6 @@ export type ConflictType = {
 
 export type CalendarContextType = {
     isLoading: boolean;
-    error: string | null;
     currentCombinedClass?: CombinedClass | undefined;
     setCurrentClass: (newCombinedClass: CombinedClass) => void;
     updateOneClass: (combinedClassToUpdate: CombinedClass) => void;

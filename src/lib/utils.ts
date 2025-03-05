@@ -39,7 +39,7 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
                 signal: controller.signal,
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             response = new Response(null, { status: 408 });
         }
     }
@@ -53,7 +53,7 @@ async function retry<T>(fn: () => Promise<T>, attempts: number = 3, delay: numbe
         return await fn();
     } catch (error) {
         if (attempts <= 1) throw error;
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise((ignored) => setTimeout(ignored, delay));
         return retry(fn, attempts - 1, delay);
     }
 }
