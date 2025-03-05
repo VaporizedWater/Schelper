@@ -29,7 +29,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 setIsLoading(true);
 
                 const allClasses = await loadAllCombinedClasses();
-                console.log(allClasses);
                 
                 if (!mounted) return;
 

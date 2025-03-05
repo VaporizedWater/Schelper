@@ -1,40 +1,10 @@
 import clientPromise from "@/lib/mongodb";
 import { Document, ObjectId } from "mongodb";
-import fetchWithTimeout from "@/lib/utils";
 import { ClassProperty } from "@/lib/types";
 import { documentToClassProperty } from "@/lib/common";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("class_properties");
-
-// const DisplayNameCache = new Map<string, string>();
-// const fetchInstructorName = async (email: string): Promise<string> => {
-//     try {
-//         if (!email) return "";
-
-//         const emailID = email.substring(0, email.indexOf("@"));
-//         if (!emailID) return "";
-
-//         const displayName = DisplayNameCache.get(emailID);
-//         if (displayName && displayName !== "") {
-//             return displayName;
-//         }
-
-//         const response = await fetchWithTimeout(
-//             `https://directory-service.k8s.psu.edu/directory-service-web/resources/mailroute/${emailID}`
-//         );
-
-//         if (!response.ok) return "";
-
-//         const userJSON = await response.json();
-//         const name = userJSON[0]?.displayName;
-//         DisplayNameCache.set(emailID, name);
-//         return name || "";
-//     } catch (error) {
-//         console.warn("Error fetching instructor name:", error);
-//         return "";
-//     }
-// };
 
 export async function GET(request: Request) {
     try {
@@ -53,10 +23,6 @@ export async function GET(request: Request) {
         }
 
         const classProperty: ClassProperty = documentToClassProperty(data as Document);
-
-        // if (classProperty.instructor_email) {
-        //     classProperty.instructor_name = await fetchInstructorName(classProperty.instructor_email);
-        // }
 
         return Response.json(classProperty);
     } catch (error) {

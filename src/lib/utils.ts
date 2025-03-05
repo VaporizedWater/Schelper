@@ -1,4 +1,3 @@
-import { newDefaultEmptyClass } from "./common";
 import { Class, ClassProperty, CombinedClass } from "./types";
 
 /**
@@ -40,7 +39,7 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
                 signal: controller.signal,
             });
         } catch (error) {
-            console.log(error);
+            console.error(error);
             response = new Response(null, { status: 408 });
         }
     }
