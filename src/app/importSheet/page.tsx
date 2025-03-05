@@ -7,22 +7,30 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import xlsx from 'xlsx';
 
-const convertTime = (excelTimeString: string) => {
-    const timeComponents = excelTimeString.split(' ');
-    const numberComponent = timeComponents[0];
-    const ampm = timeComponents[1];
+const convertTime = (excelTime: string): string => {
+    const [time, period] = excelTime.split(' ');
+    const [hours, minutes] = time.split(':').map(num => parseInt(num, 10));
 
-    if (ampm.trim().toLowerCase() === 'am') {
-        return numberComponent;
-    } else {
-        const t = numberComponent.split(':');
-        const hour = parseInt(t[0]) + 12;
-        return hour + ':' + t[1];
+    let adjustedHours = hours;
+    if (period?.toLowerCase() === 'pm' && hours < 12) {
+        adjustedHours += 12;
+    } else if (period?.toLowerCase() === 'am' && hours === 12) {
+        adjustedHours = 0;
     }
-}
+
+    return `${adjustedHours}:${minutes?.toString().padStart(2, '0') || '00'}`;
+};
+
+// Extract course level for tagging (e.g., "300" from "300W" becomes "300level")
+const extractCourseLevel = (courseNum: string): string | null => {
+    const match = courseNum.trim().match(/^(\d+)/);
+    if (!match) return null;
+
+    const level = Math.floor(parseInt(match[1], 10) / 100);
+    return level >= 1 && level <= 4 ? `${level}00level` : null;
+};
 
 const ImportSheet = () => {
-    // const [file, setFile] = useState<File | null>(null);
     const router = useRouter();
     const { uploadNewClasses } = useCalendarContext();
     const [parsedClasses, setParsedClasses] = useState<CombinedClass[]>([]);
@@ -31,8 +39,6 @@ const ImportSheet = () => {
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (!selectedFile) return;
-
-        // setFile(selectedFile);
 
         // Process the file immediately
         const data = await selectedFile.arrayBuffer();
@@ -176,6 +182,12 @@ const ImportSheet = () => {
             });
 
             if (!isCancelled) {
+                const levelTag = extractCourseLevel(combinedClass.classData.course_num);
+
+                if (levelTag) {
+                    combinedClass.classProperties.tags.push(levelTag);
+                }
+
                 combinedClasses.push(combinedClass);
             }
         });

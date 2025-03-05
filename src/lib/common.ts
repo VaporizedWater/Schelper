@@ -1,7 +1,8 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { Class, ClassProperty, CombinedClass } from "./types";
+import { Class, ClassProperty, CombinedClass, ExcelMappingEntry } from "./types";
 import { Document } from "mongodb";
 
+/// FUNCTIONS
 export function documentToClass(doc: Document): Class {
     return {
         _id: doc._id.toString(), // Ensure _id is converted to string
@@ -19,6 +20,16 @@ export function documentToClass(doc: Document): Class {
 }
 
 export function documentToClassProperty(doc: Document): ClassProperty {
+    let displayName = String(doc.instructor_name);
+    if (displayName.length > 0) {
+        const split = displayName.split(',');
+        if (split.length == 2) {
+            const first = split[1].trim();
+            const last = split[0].trim();
+            displayName = first + " " + last;
+        }
+    }
+
     return {
         _id: doc._id.toString(), // Ensure _id is converted to string
         class_status: doc.class_status,
@@ -28,20 +39,12 @@ export function documentToClassProperty(doc: Document): ClassProperty {
         facility_id: doc.facility_id,
         days: doc.days,
         instructor_email: doc.instructor_email,
-        instructor_name: doc.instructor_name,
+        instructor_name: displayName,
         total_enrolled: doc.total_enrolled,
         total_waitlisted: doc.total_waitlisted,
         tags: doc.tags,
     };
 }
-
-export const DayDisplayEndings: Map<string, string> = new Map([
-    ["Mon", "day"],
-    ["Tue", "sday"],
-    ["Wed", "nesday"],
-    ["Thu", "rsday"],
-    ["Fri", "day"],
-]);
 
 export function newDefaultEmptyClass() {
     return {
@@ -76,22 +79,42 @@ export function newDefaultEmptyClass() {
     } as CombinedClass;
 }
 
+export function createEventFromCombinedClass(combinedClass: CombinedClass): EventInput {
+    const convertedDay = dayToDate[combinedClass.classProperties.days[0]];
+    const dateStringStart = `${convertedDay}T${combinedClass.classProperties.start_time}`;
+    const dateStringEnd = `${convertedDay}T${combinedClass.classProperties.end_time}`;
+
+    return {
+        title:
+            combinedClass.classData.course_subject +
+            combinedClass.classData.course_num +
+            "\n" +
+            combinedClass.classProperties.instructor_name,
+        start: dateStringStart,
+        end: dateStringEnd,
+        extendedProps: {
+            combinedClassId: combinedClass.classData._id,
+        },
+    };
+}
+
+/// CONSTANTS
+export const DayDisplayEndings: Map<string, string> = new Map([
+    ["Mon", "day"],
+    ["Tue", "sday"],
+    ["Wed", "nesday"],
+    ["Thu", "rsday"],
+    ["Fri", "day"],
+]);
+
 export const ShortenedDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
-export const days: { [key: string]: string } = {
+export const dayToDate: { [key: string]: string } = {
     Mon: "2025-01-06",
     Tue: "2025-01-07",
     Wed: "2025-01-08",
     Thu: "2025-01-09",
     Fri: "2025-01-10",
-};
-
-export const dayMapping: { [full: string]: string } = {
-    Monday: "Mon",
-    Tuesday: "Tue",
-    Wednesday: "Wed",
-    Thursday: "Thu",
-    Friday: "Fri",
 };
 
 export const emptyCombinedClass: CombinedClass = {
@@ -125,53 +148,35 @@ export const emptyCombinedClass: CombinedClass = {
     event: undefined,
 };
 
-export function normalizeDayName(day: string): string {
-    const dayMap: { [key: string]: string } = {
-        // Monday variations
-        monday: "Mon",
-        mon: "Mon",
-        m: "Mon",
-        // Tuesday variations
-        tuesday: "Tue",
-        tues: "Tue",
-        tue: "Tue",
-        t: "Tue",
-        // Wednesday variations
-        wednesday: "Wed",
-        wed: "Wed",
-        w: "Wed",
-        // Thursday variations
-        thursday: "Thurs",
-        thur: "Thurs",
-        thu: "Thurs",
-        th: "Thurs",
-        // Friday variations
-        friday: "Fri",
-        fri: "Fri",
-        f: "Fri",
-    };
+// Map Excel column names to our data model properties
+export const EXCEL_MAPPING: Record<string, ExcelMappingEntry> = {
+    // Class data mappings
+    "Catalog #": { target: "classData", property: "catalog_num" },
+    "Class #": { target: "classData", property: "class_num" },
+    Session: { target: "classData", property: "session" },
+    Course: { target: "classData", property: "course_subject" },
+    Title: { target: "classData", property: "title" },
+    Location: { target: "classData", property: "location" },
+    "Enr Cpcty": { target: "classData", property: "enrollment_cap" },
+    "Wait Cap": { target: "classData", property: "waitlist_cap" },
+    Section: { target: "classData", property: "section" },
 
-    const normalized = dayMap[day.toLowerCase().trim()];
-    return normalized || "Mon"; // Default to Monday if no match
-}
+    // Class properties mappings
+    "Class Stat": { target: "classProperties", property: "class_status" },
+    Start: { target: "classProperties", property: "start_time", convert: "time" },
+    End: { target: "classProperties", property: "end_time", convert: "time" },
+    Room: { target: "classProperties", property: "room" },
+    "Facility ID": { target: "classProperties", property: "facility_id" },
+    "Instructor Email": { target: "classProperties", property: "instructor_email" },
+    "Instructor Name": { target: "classProperties", property: "instructor_name" },
+    "Tot Enrl": { target: "classProperties", property: "total_enrolled" },
+    "Wait Tot": { target: "classProperties", property: "total_waitlisted" },
 
-// Create event from combined class
-export function createEventFromCombinedClass(combinedClass: CombinedClass): EventInput {
-    const convertedDay = days[combinedClass.classProperties.days[0]];
-    const dateStringStart = `${convertedDay}T${combinedClass.classProperties.start_time}`;
-    const dateStringEnd = `${convertedDay}T${combinedClass.classProperties.end_time}`;
-
-    return {
-        // title: combinedClass.classData.title,
-        title:
-            combinedClass.classData.course_subject +
-            combinedClass.classData.course_num +
-            "\n" +
-            combinedClass.classProperties.instructor_name,
-        start: dateStringStart,
-        end: dateStringEnd,
-        extendedProps: {
-            combinedClassId: combinedClass.classData._id,
-        },
-    };
-}
+    // Special handling columns
+    Num: { target: "special", property: "course_num" },
+    M: { target: "day", property: "Mon" },
+    T: { target: "day", property: "Tue" },
+    W: { target: "day", property: "Wed" },
+    R: { target: "day", property: "Thu" },
+    F: { target: "day", property: "Fri" },
+};

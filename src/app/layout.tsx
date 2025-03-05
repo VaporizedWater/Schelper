@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import TopNav from "@/components/TopNav/TopNav";
 import { CalendarProvider } from "@/components/CalendarContext/CalendarContext";
+import NavWrapper from "@/components/NavWrapper/NavWrapper";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -28,7 +28,7 @@ export default function RootLayout({
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-graybg flex flex-col h-screen`}>
-                <TopNav></TopNav>
+                <NavWrapper />
                 <div className="bg-graybg flex-1">
                     <CalendarProvider>
                         {children}

@@ -1,6 +1,28 @@
 import { newDefaultEmptyClass } from "./common";
 import { Class, ClassProperty, CombinedClass } from "./types";
 
+/**
+ * Helper to parse JSON response from a fetch request
+ */
+async function parseJsonResponse<T>(response: Response): Promise<T> {
+    if (!response.ok) {
+        throw new Error(`Request failed with status: ${response.status}`);
+    }
+
+    const text = await response.text();
+
+    if (!text) {
+        return {} as T; // Return empty object for empty responses
+    }
+
+    try {
+        return JSON.parse(text) as T;
+    } catch (e) {
+        console.error("JSON parse error:", e);
+        throw new Error("Invalid JSON response");
+    }
+}
+
 // FETCH
 export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
     const controller = new AbortController();
@@ -40,91 +62,65 @@ async function retry<T>(fn: () => Promise<T>, attempts: number = 3, delay: numbe
 // LOADS/GETs
 // Get all tags
 export async function loadAllTags(): Promise<Set<string>> {
-    const response = await fetchWithTimeout("./api/tags", { headers: {} });
-
-    if (!response.ok || response.status !== 200 || !response.body) {
-        console.error("Could not find tags!");
+    try {
+        const response = await fetchWithTimeout("./api/tags");
+        const tags = await parseJsonResponse<{ _id: string }[]>(response);
+        return new Set(tags.map((tag) => tag._id));
+    } catch (error) {
+        console.error("Failed to load tags:", error);
         return new Set<string>();
     }
-
-    const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-    const tagsJSON = JSON.parse(responseText);
-
-    // tagsJSON is an array of objects like { id: "tag1" }.
-    const tagIds = (tagsJSON as { _id: string }[]).map((tag) => tag._id);
-    // console.log(JSON.stringify(tagIds));
-    return new Set(tagIds);
 }
 
 // Get one tag by id
 export async function getTag(tagId: string): Promise<string | null> {
-    const response = await fetchWithTimeout(`./api/tags?id=${tagId}`, { headers: {} });
-    if (!response.ok) {
-        console.error("Error fetching tag:", response.statusText);
+    try {
+        const response = await fetchWithTimeout(`./api/tags?id=${tagId}`);
+        return await parseJsonResponse<string>(response);
+    } catch (error) {
+        console.error("Error fetching tag:", error);
         return null;
     }
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
 }
 
 // Editable Class Properties.
 export async function loadClassProperties(classId: string): Promise<ClassProperty> {
-    const propertiesResponse = await fetchWithTimeout("./api/class_properties", {
-        headers: {
-            id: classId,
-        },
-    });
-
-    if (!propertiesResponse.ok || propertiesResponse.status != 200 || !propertiesResponse.body) {
-        console.error("Couldn't find class property!");
-        return new Object() as ClassProperty;
+    try {
+        const response = await fetchWithTimeout("./api/class_properties", {
+            headers: { id: classId },
+        });
+        return await parseJsonResponse<ClassProperty>(response);
+    } catch (error) {
+        console.error("Failed to load class properties:", error);
+        return {} as ClassProperty;
     }
-
-    const propertiesResponseText = new TextDecoder().decode((await propertiesResponse.body.getReader().read()).value);
-
-    if (propertiesResponseText === "" || typeof propertiesResponseText === undefined) {
-        console.warn("Invalid JSON response from class_properties, returning empty properties");
-        return new Object() as ClassProperty;
-    }
-
-    return JSON.parse(propertiesResponseText) as ClassProperty;
 }
 
 // Load from two collections
 export async function loadCombinedClass(classId: string): Promise<CombinedClass> {
-    const classResponse = await fetchWithTimeout("./api/classes", {
-        headers: {
-            id: classId,
-        },
-    });
+    try {
+        // Load class data
+        const classResponse = await fetchWithTimeout("./api/classes", {
+            headers: { id: classId },
+        });
+        const classData = await parseJsonResponse<Class>(classResponse);
 
-    const combinedClass = {} as CombinedClass;
+        // Load properties
+        const properties = await loadClassProperties(classId);
 
-    if (!classResponse.ok || classResponse.status != 200 || !classResponse.body) {
-        console.error("Could not find class!");
+        return { classData, classProperties: properties, event: undefined };
+    } catch (error) {
+        console.error(`Failed to load combined class ${classId}:`, error);
         return {} as CombinedClass;
     }
-
-    const classResponseText = new TextDecoder().decode((await classResponse.body.getReader().read()).value);
-    const classJSON = JSON.parse(classResponseText);
-    const newClass = classJSON as Class;
-    combinedClass.classData = newClass;
-
-    // Getting the class property
-    const newProperties: ClassProperty = await loadClassProperties(classId);
-
-    // Combining the class property
-    combinedClass.classProperties = newProperties;
-
-    return combinedClass;
 }
 
 //
 export async function loadCombinedClasses(classIds: string[]): Promise<CombinedClass[]> {
     const classData: CombinedClass[] = [];
 
-    for (let i = 0; i < classIds.length; i++) {
-        const newClass: CombinedClass | null = await loadCombinedClass(classIds[i]);
+    for (const id of classIds) {
+        const newClass: CombinedClass | null = await loadCombinedClass(id);
 
         if (newClass) {
             classData.push(newClass);
@@ -135,74 +131,26 @@ export async function loadCombinedClasses(classIds: string[]): Promise<CombinedC
 }
 
 export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
-    const classes = [] as CombinedClass[];
+    return retry(async () => {
+        const response = await fetch("/api/classes");
+        const classes = await parseJsonResponse<Class[]>(response);
 
-    const response = await fetch("/api/classes", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
+        return Promise.all(
+            classes.map(async (classItem) => {
+                const propsResponse = await fetch("/api/class_properties", {
+                    headers: { id: classItem._id },
+                });
+
+                const props = await parseJsonResponse<ClassProperty>(propsResponse);
+
+                return {
+                    classData: classItem,
+                    classProperties: props,
+                    event: undefined,
+                };
+            })
+        );
     });
-
-    if (!response.ok) throw new Error(`Failed to fetch classes: ${response.statusText}`);
-
-    // An array of all the classes in the collection
-    response.json().then(async (data: any[]) => {
-        console.log(data);
-        data.forEach(async (classItem: Class) => {
-            const combinedClass = {} as CombinedClass;
-            combinedClass.classData = classItem;
-
-            const propsResponse = await fetch("/api/class_properties", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    id: classItem._id,
-                },
-            });
-
-            if (response.ok)  {
-                const props = await propsResponse.json();
-                combinedClass.classProperties = props;
-                classes.push(combinedClass);
-            }
-        });
-    });
-    
-    return classes;
-
-
-
-    // return retry(async () => {
-    //     const response = await fetch("/api/classes", {
-    //         method: "GET",
-    //         headers: { "Content-Type": "application/json" },
-    //     });
-
-    //     if (!response.ok) throw new Error(`Failed to fetch classes: ${response.statusText}`);
-
-    //     const classes = await response.json();
-    //     const combined = await Promise.all(
-    //         classes.map(async (classItem: Class) => {
-    //             const propsResponse = await fetch("/api/class_properties", {
-    //                 method: "GET",
-    //                 headers: {
-    //                     "Content-Type": "application/json",
-    //                     id: classItem._id,
-    //                 },
-    //             });
-
-    //             if (!propsResponse.ok) throw new Error(`Failed to fetch properties for class ${classItem._id}`);
-
-    //             const props = await propsResponse.json();
-    //             return {
-    //                 classData: classItem,
-    //                 classProperties: props,
-    //                 event: undefined,
-    //             };
-    //         })
-    //     );
-
-    //     return combined;
-    // });
 }
 
 // DELETES
@@ -228,57 +176,54 @@ export async function deleteTag(tagId: string) {
 // Insert class
 // Include try catch maybe
 export async function insertClass(classData: Class): Promise<string | null> {
-    const response = await fetchWithTimeout("api/classes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(classData),
-    });
+    try {
+        const response = await fetchWithTimeout("api/classes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(classData),
+        });
 
-    if (!response.ok) {
-        console.error("Error inserting class: " + response.statusText);
+        const result = await parseJsonResponse<{ insertedId: string }>(response);
+        return result.insertedId;
+    } catch (error) {
+        console.error("Failed to insert class:", error);
         return null;
     }
-
-    const result = await response.json();
-    return result.insertedId ?? null;
 }
 
 // Insert class_property
 // Include try catch maybe
 export async function insertClassProperty(classProperties: ClassProperty) {
-    const response = await fetchWithTimeout("api/class_properties", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(classProperties),
-    });
+    try {
+        const response = await fetchWithTimeout("api/class_properties", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(classProperties),
+        });
 
-    if (!response.ok) {
-        console.error("Error inserting class: " + response.statusText);
+        const result = await parseJsonResponse<{ insertedId: string }>(response);
+        return result.insertedId;
+    } catch (error) {
+        console.error("Failed to insert class properties:", error);
         return null;
     }
-
-    const result = await response.json();
-    return result.insertedId ?? null;
 }
 
 // Insert combined class
 export async function insertCombinedClass(combinedClass: CombinedClass): Promise<string | null> {
     const classId = await insertClass(combinedClass.classData);
 
-    if (classId == null) {
+    if (!classId) {
         console.error("Failed to insert class");
         return null;
-    } else {
-        console.log(classId + " : Inserted class successfully!\n");
     }
+
     combinedClass.classProperties._id = classId;
     const classPropId = await insertClassProperty(combinedClass.classProperties);
 
     if (classPropId == null) {
         console.error("Failed to insert class properties. Try again...");
         return null;
-    } else {
-        console.log(classPropId + " : Inserted class properties successfully!\n");
     }
 
     return classId;
@@ -286,56 +231,61 @@ export async function insertCombinedClass(combinedClass: CombinedClass): Promise
 
 // Insert tag
 export async function insertTag(tagName: string): Promise<string | null> {
-    // Process tagName: convert to lowercase and remove spaces
-    const processedTag = tagName.toLowerCase().replace(/\s+/g, "");
-    const response = await fetchWithTimeout("api/tags", {
-        method: "POST",
-        headers: { "Content-Type": "text/plain" },
-        body: processedTag,
-    });
-    if (!response.ok) {
-        console.error("Error inserting tag: " + response.statusText);
+    try {
+        const processedTag = tagName.toLowerCase().replace(/\s+/g, "");
+
+        const response = await fetchWithTimeout("api/tags", {
+            method: "POST",
+            headers: { "Content-Type": "text/plain" },
+            body: processedTag,
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        return processedTag;
+    } catch (error) {
+        console.error("Failed to insert tag:", error);
         return null;
     }
-    return processedTag;
 }
 
 // --------
 // PUTS/UPDATES
 
 export async function updateCombinedClass(combinedClass: CombinedClass) {
-    console.log(combinedClass);
-    console.log("Updating class: " + combinedClass.classData._id);
-    const classResponse = await fetchWithTimeout("/api/classes", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(combinedClass.classData),
-    });
+    try {
+        const classResponse = await fetchWithTimeout("/api/classes", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(combinedClass.classData),
+        });
 
-    if (!classResponse.ok) {
-        console.error("Error updating class: " + classResponse.statusText);
-        return;
-    }
+        if (!classResponse.ok) {
+            console.error("Error updating class: " + classResponse.statusText);
+            return;
+        }
 
-    const updatedClassData = await classResponse.json();
+        const updatedClassData = await classResponse.json();
 
-    // console.log("AAA");
-    console.log(updatedClassData);
-    // console.log(combinedClass.classProperties);
+        if (updatedClassData._id) {
+            combinedClass.classData._id = updatedClassData._id;
+            combinedClass.classProperties._id = updatedClassData._id;
+        }
 
-    if (updatedClassData._id) {
-        combinedClass.classData._id = updatedClassData._id;
-        combinedClass.classProperties._id = updatedClassData._id;
-    }
+        const classPropResponse = await fetchWithTimeout("/api/class_properties", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(combinedClass.classProperties),
+        });
 
-    const classPropResponse = await fetchWithTimeout("/api/class_properties", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(combinedClass.classProperties),
-    });
-
-    if (!classPropResponse.ok) {
-        console.error("Error updating class properties: " + classPropResponse.statusText);
-        return;
+        if (!classPropResponse.ok) {
+            console.error("Error updating class properties: " + classPropResponse.statusText);
+            return;
+        }
+    } catch (error) {
+        console.error("Failed to update combined class:", error);
+        return false;
     }
 }
