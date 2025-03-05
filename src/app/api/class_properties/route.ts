@@ -7,6 +7,8 @@ import { documentToClassProperty } from "@/lib/common";
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("class_properties");
 
+const DisplayNameCache = new Map<string, string>();
+
 const fetchInstructorName = async (email: string): Promise<string> => {
     try {
         if (!email) return "";
@@ -14,21 +16,26 @@ const fetchInstructorName = async (email: string): Promise<string> => {
         const emailID = email.substring(0, email.indexOf("@"));
         if (!emailID) return "";
 
+        const displayName = DisplayNameCache.get(emailID);
+        if (displayName && displayName !== "") {
+            return displayName;
+        }
+
         const response = await fetchWithTimeout(
-            `https://search-service.k8s.psu.edu/search-service/resources/people?text=${emailID}&size=1`
+            `https://directory-service.k8s.psu.edu/directory-service-web/resources/mailroute/${emailID}`
         );
 
         if (!response.ok) return "";
 
         const userJSON = await response.json();
-        return userJSON[0]?.displayName || "";
+        const name = userJSON[0]?.displayName;
+        DisplayNameCache.set(emailID, name);
+        return name || "";
     } catch (error) {
         console.warn("Error fetching instructor name:", error);
         return "";
     }
 };
-
-const VisitedEmails = new Map<string, string>();
 
 export async function GET(request: Request) {
     try {
@@ -42,30 +49,6 @@ export async function GET(request: Request) {
         const objID = new ObjectId(classID);
         const data = await collection.findOne({ _id: objID });
 
-    if (data) {
-        const dataDoc: Document = data;
-        const email = dataDoc.instructor_email as string;
-        let name = "";
-
-        if (email.length) {
-            const emailID = email.substring(0, email.search("@"));
-            if (emailID) {
-                const displayName = VisitedEmails.get(emailID);
-                if (displayName) {
-                    name = displayName;
-                } else {
-                    const response = await fetchWithTimeout(
-                        "https://search-service.k8s.psu.edu/search-service/resources/people?text=" + emailID + "&size=1"
-                    );
-    
-                    if (response.status == 200 && response.body) {
-                        const responseText = new TextDecoder().decode((await response.body.getReader().read()).value);
-                        const userJSON = JSON.parse(responseText);
-                        name = userJSON[0].displayName;
-                        VisitedEmails.set(emailID, name);
-                    }
-                }
-            }
         if (!data) {
             return Response.json(null, { status: 200 });
         }

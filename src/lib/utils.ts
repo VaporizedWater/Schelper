@@ -137,7 +137,6 @@ export async function loadCombinedClasses(classIds: string[]): Promise<CombinedC
 export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
     const classes = [] as CombinedClass[];
 
-
     const response = await fetch("/api/classes", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
@@ -146,16 +145,27 @@ export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
     if (!response.ok) throw new Error(`Failed to fetch classes: ${response.statusText}`);
 
     // An array of all the classes in the collection
-    response.json().then((data: any[]) => {
-        data.forEach((classItem: Class) => {
-            const combinedClass = newDefaultEmptyClass();
-            
+    response.json().then(async (data: any[]) => {
+        console.log(data);
+        data.forEach(async (classItem: Class) => {
+            const combinedClass = {} as CombinedClass;
+            combinedClass.classData = classItem;
 
+            const propsResponse = await fetch("/api/class_properties", {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    id: classItem._id,
+                },
+            });
+
+            if (response.ok)  {
+                const props = await propsResponse.json();
+                combinedClass.classProperties = props;
+                classes.push(combinedClass);
+            }
         });
     });
-
-
-
     
     return classes;
 
