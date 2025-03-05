@@ -11,7 +11,7 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 export const CalendarProvider = ({ children }: ProviderProps) => {
     const [combinedClasses, setClasses] = useState<CombinedClass[]>([]); // All the classes in the context
     const [allEvents, setAllEvents] = useState<EventInput[]>([]); // All the events in the context
-    const [currCombinedClass, setCurrClass] = useState<CombinedClass>(); // The currently selected class(es).
+    const [currentCombinedClass, setCurrentClass] = useState<CombinedClass>(); // The currently selected class(es).
     const [displayClasses, setDisplayClasses] = useState<CombinedClass[]>([]); // The classes to display on the calendar based on tags
     const [displayEvents, setDisplayEvents] = useState<EventInput[]>([]); // The events to display on the calendar based on tags
     const [tagList, setTagList] = useState<tagListType>(new Map<string, { classIds: Set<string> }>()); // Map of tags to a set of class ids
@@ -30,7 +30,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 setError(null);
 
                 const allClasses = await loadAllCombinedClasses();
-                // console.log(JSON.stringify(allClasses));
                 if (!mounted) return;
 
                 const newTagMap = new Map<string, { classIds: Set<string> }>();
@@ -100,13 +99,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             return dayToDate[aDay].localeCompare(dayToDate[bDay]);
         });
 
-        // Print out each class title in the sorted class
-        // console.log("Sorted classes:");
-        // sortedClasses.forEach(c => console.log(c.classData.title));
-
-        // console.log("Sorted classes:", sortedClasses.map(c => c.classData.title).join(", "));
-        // Check for conflicts using two pointers
-
         const conflicts: ConflictType[] = [];
 
         // Two-pointer approach
@@ -132,18 +124,11 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                         class2: class2
                     });
                 } else {
-                    // No more possible conflicts with class1
-                    // Since classes are sorted by start time
+                    // No conflicts with class1 (classes sorted by start time)
                     break;
                 }
             }
         }
-
-        // Return conflicts array
-
-        // Console log the classes in conflicts by title only
-        // console.log("Conflicts:");
-        // conflicts.forEach(c => console.log(JSON.stringify(c.class1.classData.title), JSON.stringify(c.class2.classData.title)));
 
         updateConflicts(conflicts);
     }, [combinedClasses]);
@@ -170,44 +155,39 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         return combinedClass;
     }
 
+    const updateOneClass = (newClass: CombinedClass) => {
+        console.log("Updating class " + newClass.classData._id);
+        // Update the class lists
+        setCurrentClass(newClass);
+        setClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
+        setDisplayClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
 
-    const updateAllClasses = (newClasses: CombinedClass[]) => {
-        setClasses(newClasses);
-    }
+        // Update the database (THIS IS TEMPORARY FOR THE DEMO AND PRESENTATION, MAKE SURE TO DO THE DIFFERENCES TRACKING IN THE FUTURE)
+        updateCombinedClass(newClass);
 
-    const updateDisplayClasses = (newDisplayClasses: CombinedClass[]) => {
-        setDisplayClasses(newDisplayClasses);
+        newClass = recomputeClass(newClass);
 
-        // Convert classes to valid event objects
-        const newEvents = newDisplayClasses.map(classItem => ({
-            title: classItem.classData.title,
-            start: classItem.event?.start || '',
-            end: classItem.event?.end || '',
-            display: 'auto',
-            extendedProps: {
-                combinedClassId: classItem.classData._id
-            }
-        }));
-
-        updateDisplayEvents(newEvents);
         detectConflicts();
     }
 
-    const updateDisplayEvents = (newDisplayEvents: EventInput[]) => {
-        const validEvents = newDisplayEvents.map(event => ({
-            ...event,
-            display: 'auto', // Add default display property
-            title: event.title || '',
-            start: event.start || '',
-            end: event.end || ''
-        }));
+    const updateAllClasses = (newClasses: CombinedClass[], updateEvents: boolean = true) => {
+        setClasses(newClasses);
 
-        setDisplayEvents(validEvents);
-        console.log("Display events updated" + JSON.stringify(newDisplayEvents));
+        if (updateEvents) {
+            const newEvents = newClasses.map(c => createEventFromCombinedClass(c));
+            setAllEvents(newEvents);
+        }
     }
 
-    const updateAllEvents = (newEvents: EventInput[]) => {
-        setAllEvents(newEvents);
+    const updateDisplayClasses = (newDisplayClasses: CombinedClass[], updateEvents: boolean = true) => {
+        setDisplayClasses(newDisplayClasses);
+
+        if (updateEvents) {
+            const newEvents = newDisplayClasses.map(c => createEventFromCombinedClass(c));
+            setDisplayEvents(newEvents);
+        }
+
+        detectConflicts();
     }
 
     const updateConflicts = (newConflicts: ConflictType[]) => {
@@ -220,21 +200,6 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         });
 
         refreshComponent("");
-    }
-
-    const updateCurrentClass = (newClass: CombinedClass) => {
-        console.log("Updating current class " + newClass.classData._id);
-        // Update the class lists
-        setCurrClass(newClass);
-        setClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
-        setDisplayClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
-
-        // Update the database (THIS IS TEMPORARY FOR THE DEMO AND PRESENTATION, MAKE SURE TO DO THE DIFFERENCES TRACKING IN THE FUTURE)
-        updateCombinedClass(newClass);
-
-        newClass = recomputeClass(newClass);
-
-        detectConflicts();
     }
 
     const unlinkTagFromClass = (tagId: string, classId: string) => {
@@ -296,17 +261,15 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         <CalendarContext.Provider value={{
             isLoading,
             error,
-            currCombinedClass,
-            setCurrClass,
-            updateCurrentClass,
+            currentCombinedClass,
+            setCurrentClass,
+            updateOneClass,
             allClasses: combinedClasses,
             updateAllClasses,
             displayClasses,
             updateDisplayClasses,
             allEvents,
-            updateAllEvents,
             displayEvents,
-            updateDisplayEvents,
             tagList,
             allTags,
             unlinkTagFromClass,
@@ -332,8 +295,8 @@ export const useCalendarContext = () => {
 }
 
 // A method for iterating over the contents of a custom type without manually specifying the property names
-// if (currCombinedClass) {
-//     Object.keys(currCombinedClass.classData).forEach(key => {
-//         console.log(key, currCombinedClass.classData[key as keyof typeof currCombinedClass.classData]);
+// if (currentCombinedClass) {
+//     Object.keys(currentCombinedClass.classData).forEach(key => {
+//         console.log(key, currentCombinedClass.classData[key as keyof typeof currentCombinedClass.classData]);
 //     });
 // }

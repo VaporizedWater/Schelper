@@ -5,12 +5,13 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import Spreadsheet, { Matrix } from "react-spreadsheet";
 // import { updateCombinedClass } from "@/lib/utils";
 import { EventInput } from "@fullcalendar/core/index.js";
-import { Class, ClassProperty } from "@/lib/types";
+import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { updateCombinedClass } from "@/lib/utils";
+import { createEventFromCombinedClass } from "@/lib/common";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
-    const { allClasses, updateAllClasses, updateDisplayClasses, updateDisplayEvents, updateAllEvents } = useCalendarContext();
+    const { allClasses, updateAllClasses, updateDisplayClasses } = useCalendarContext();
 
     // Compute a hidden mapping of row index (starting at 0 for first data row) to class id.
     const classIds = allClasses.map((item) => item.classData._id);
@@ -81,11 +82,10 @@ export default function CalendarSheet() {
     // Move the update logic to a separate function
     const processUpdates = (newData: Matrix<{ value: string }>) => {
         if (newData.length > 1) {
-            const newClassesData = newData.slice(1).map((row, idx) => {
+            const newClassesData: CombinedClass[] = newData.slice(1).map((row, idx) => {
                 const id = classIds[idx]; // Get the id from the mapping
                 console.log("id " + id);
                 const existing = allClasses.find((item) => item.classData._id === id);
-                // console.log("existing ", JSON.stringify(existing));
 
                 const newData: Class = {
                     _id: id,
@@ -115,44 +115,25 @@ export default function CalendarSheet() {
                     total_waitlisted: String(existing?.classProperties.total_waitlisted ?? 0),
                     // Tags but list is sorted and trimmed
                     tags: row[18]?.value ? row[18].value.split(",").map((t) => t.trim()).sort() : [],
-
                 }
 
-                // Make sure events are properly formatted with the correct day
-                const dayToDate: { [key: string]: string } = {
-                    'Mon': '2025-01-06',
-                    'Tue': '2025-01-07',
-                    'Wed': '2025-01-08',
-                    'Thu': '2025-01-09',
-                    'Fri': '2025-01-10',
-                };
-                const days = newProperties.days[0];
-                const convertedDay = dayToDate[days] || '2025-01-06';
-                const newEvent: EventInput = {
-                    title: newData.title,
-                    start: convertedDay + 'T' + newProperties.start_time,
-                    end: convertedDay + 'T' + newProperties.end_time,
-                    extendedProps: {
-                        combinedClassId: newData._id,
-                    }
-                };
+                const newEvent: EventInput = createEventFromCombinedClass({
+                    classData: newData, classProperties: newProperties, event: undefined
+                } as CombinedClass);
 
                 return {
                     classData: newData,
                     classProperties: newProperties,
                     event: newEvent
-                };
+                } as CombinedClass;
             });
 
             newClassesData.forEach(async (combinedClass) => {
                 await updateCombinedClass(combinedClass);
             });
 
-            // Update everything in the right order
-            updateAllClasses(newClassesData);
-            updateAllEvents(newClassesData.map(c => c.event as EventInput));
-            updateDisplayClasses(newClassesData);
-            updateDisplayEvents(newClassesData.map(c => c.event as EventInput));
+            updateAllClasses(newClassesData, false);
+            updateDisplayClasses(newClassesData, false);
         }
     };
 

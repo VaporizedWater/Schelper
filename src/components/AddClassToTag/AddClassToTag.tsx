@@ -11,7 +11,7 @@ interface AddClassToTagProps {
 }
 
 const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
-    const { allClasses, tagList, updateCurrentClass } = useCalendarContext();
+    const { allClasses, tagList, updateOneClass } = useCalendarContext();
     const [error, setError] = useState<string | null>(null);
 
     // Filter classes that don't already have the tag
@@ -42,7 +42,7 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
         }
 
         // Update the class in the CalendarContext
-        await updateCurrentClass(classToUpdate);
+        await updateOneClass(classToUpdate);
     };
 
     return (

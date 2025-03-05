@@ -23,7 +23,7 @@ const viewFiveDays = {
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { setCurrClass, updateCurrentClass, displayClasses, displayEvents } = useCalendarContext();
+    const { setCurrentClass, updateOneClass, displayClasses, displayEvents } = useCalendarContext();
 
     function unselectAll() {
         selectedEvents.forEach(element => {
@@ -45,14 +45,14 @@ const Calendar = () => {
         const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
 
         if (foundClass) {
-            setCurrClass(foundClass);
+            setCurrentClass(foundClass);
         }
     }
 
     // This triggers when clicking on any date/time slot that isn't an event
     const handleDateClick = () => {
         unselectAll();
-        setCurrClass(emptyCombinedClass);
+        setCurrentClass(emptyCombinedClass);
     };
 
     const handleEventDrop = (info: EventDropArg) => {
@@ -75,7 +75,7 @@ const Calendar = () => {
             foundClass.classProperties.days = [newDay];
             foundClass.event = createEventFromCombinedClass(foundClass);
 
-            updateCurrentClass(foundClass);
+            updateOneClass(foundClass);
         }
     }
 
@@ -91,7 +91,7 @@ const Calendar = () => {
 
             foundClass.classProperties.end_time = newEnd;
             foundClass.event = createEventFromCombinedClass(foundClass);
-            updateCurrentClass(foundClass);
+            updateOneClass(foundClass);
         }
     }
 

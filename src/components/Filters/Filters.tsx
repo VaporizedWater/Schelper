@@ -4,10 +4,9 @@ import { MdModeEdit } from "react-icons/md";
 import Link from "next/link";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useEffect, useState } from "react";
-import { EventInput } from "@fullcalendar/core/index.js";
 
 const Filters = () => {
-    const { tagList, allClasses, updateDisplayClasses, updateDisplayEvents } = useCalendarContext();
+    const { tagList, allClasses, updateDisplayClasses } = useCalendarContext();
     const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
 
     useEffect(() => {
@@ -43,7 +42,6 @@ const Filters = () => {
             )
             : []; // Return empty array when no tags selected
         updateDisplayClasses(newDisplayClasses);
-        updateDisplayEvents(newDisplayClasses.map((item) => item.event as EventInput));
     };
 
     return (

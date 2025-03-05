@@ -1,5 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { Class, ClassProperty, CombinedClass, ExcelMappingEntry } from "./types";
+import { Class, ClassProperty, CombinedClass } from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
@@ -75,13 +75,14 @@ export function createEventFromCombinedClass(combinedClass: CombinedClass): Even
     const dateStringEnd = `${convertedDay}T${combinedClass.classProperties.end_time}`;
 
     return {
+        display: "auto",
         title:
             combinedClass.classData.course_subject +
-            combinedClass.classData.course_num +
-            "\n" +
-            combinedClass.classProperties.instructor_name,
-        start: dateStringStart,
-        end: dateStringEnd,
+                combinedClass.classData.course_num +
+                "\n" +
+                combinedClass.classProperties.instructor_name || "",
+        start: dateStringStart || "",
+        end: dateStringEnd || "",
         extendedProps: {
             combinedClassId: combinedClass.classData._id,
         },
@@ -136,37 +137,4 @@ export const emptyCombinedClass: CombinedClass = {
         tags: [] as string[],
     },
     event: undefined,
-};
-
-// Map Excel column names to our data model properties
-export const EXCEL_MAPPING: Record<string, ExcelMappingEntry> = {
-    // Class data mappings
-    "Catalog #": { target: "classData", property: "catalog_num" },
-    "Class #": { target: "classData", property: "class_num" },
-    Session: { target: "classData", property: "session" },
-    Course: { target: "classData", property: "course_subject" },
-    Title: { target: "classData", property: "title" },
-    Location: { target: "classData", property: "location" },
-    "Enr Cpcty": { target: "classData", property: "enrollment_cap" },
-    "Wait Cap": { target: "classData", property: "waitlist_cap" },
-    Section: { target: "classData", property: "section" },
-
-    // Class properties mappings
-    "Class Stat": { target: "classProperties", property: "class_status" },
-    Start: { target: "classProperties", property: "start_time", convert: "time" },
-    End: { target: "classProperties", property: "end_time", convert: "time" },
-    Room: { target: "classProperties", property: "room" },
-    "Facility ID": { target: "classProperties", property: "facility_id" },
-    "Instructor Email": { target: "classProperties", property: "instructor_email" },
-    "Instructor Name": { target: "classProperties", property: "instructor_name" },
-    "Tot Enrl": { target: "classProperties", property: "total_enrolled" },
-    "Wait Tot": { target: "classProperties", property: "total_waitlisted" },
-
-    // Special handling columns
-    Num: { target: "special", property: "course_num" },
-    M: { target: "day", property: "Mon" },
-    T: { target: "day", property: "Tue" },
-    W: { target: "day", property: "Wed" },
-    R: { target: "day", property: "Thu" },
-    F: { target: "day", property: "Fri" },
 };

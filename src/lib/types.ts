@@ -79,17 +79,15 @@ export type ConflictType = {
 export type CalendarContextType = {
     isLoading: boolean;
     error: string | null;
-    currCombinedClass?: CombinedClass | undefined;
-    setCurrClass: (newCombinedClass: CombinedClass) => void;
-    updateCurrentClass: (newCombinedClass: CombinedClass) => void;
+    currentCombinedClass?: CombinedClass | undefined;
+    setCurrentClass: (newCombinedClass: CombinedClass) => void;
+    updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
     allClasses: CombinedClass[];
-    updateAllClasses: (newClasses: CombinedClass[]) => void;
+    updateAllClasses: (newClasses: CombinedClass[], updateEvents?: boolean) => void;
     displayClasses: CombinedClass[];
-    updateDisplayClasses: (newDisplayClasses: CombinedClass[]) => void;
+    updateDisplayClasses: (newDisplayClasses: CombinedClass[], updateEvents?: boolean) => void;
     allEvents: EventInput[];
-    updateAllEvents: (newEvents: EventInput[]) => void;
     displayEvents: EventInput[];
-    updateDisplayEvents: (newDisplayEvents: EventInput[]) => void;
     tagList: tagListType; // Map of tags to a set of class ids
     allTags: Set<string>;
     unlinkTagFromClass: (classId: string, tagId: string) => void;
@@ -101,8 +99,23 @@ export type CalendarContextType = {
     uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
 };
 
-export type ExcelMappingEntry = {
-    target: string;
-    property: string;
-    convert?: string;
+export type CalendarState = {
+    classes: {
+        all: CombinedClass[];
+        display: CombinedClass[];
+        current: CombinedClass | undefined;
+    };
+    events: {
+        all: EventInput[];
+        display: EventInput[];
+    };
+    tags: {
+        all: Set<string>;
+        mapping: tagListType;
+    };
+    status: {
+        loading: boolean;
+        error: string | null;
+    };
+    conflicts: ConflictType[];
 };

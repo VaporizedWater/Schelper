@@ -4,11 +4,9 @@ import { Class, ClassProperty, CombinedClass } from '@/lib/types';
 import { createEventFromCombinedClass, DayDisplayEndings, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
 
 const ClassProperties = () => {
-    const { currCombinedClass, updateCurrentClass, allTags } = useCalendarContext();
-    const initialData: Class = currCombinedClass?.classData || {} as Class;
-    const initialProps: ClassProperty = currCombinedClass?.classProperties || {} as ClassProperty;
-    // console.log('initialData', JSON.stringify(initialData));
-    // console.log('initialProps', JSON.stringify(initialProps));
+    const { currentCombinedClass, updateOneClass, allTags } = useCalendarContext();
+    const initialData: Class = currentCombinedClass?.classData || {} as Class;
+    const initialProps: ClassProperty = currentCombinedClass?.classProperties || {} as ClassProperty;
 
     const [courseSubject, setCourseSubject] = useState(initialData.course_subject || '');
     const [courseNum, setCourseNum] = useState(initialData.course_num || '');
@@ -22,9 +20,9 @@ const ClassProperties = () => {
     const [endTime, setEndTime] = useState(initialProps.end_time || '');
 
     useEffect(() => {
-        if (currCombinedClass) {
-            const newData = currCombinedClass.classData;
-            const newProps = currCombinedClass.classProperties;
+        if (currentCombinedClass) {
+            const newData = currentCombinedClass.classData;
+            const newProps = currentCombinedClass.classProperties;
             setCourseSubject(newData.course_subject || '');
             setCourseNum(newData.course_num || '');
             setTitle(newData.title || '');
@@ -36,62 +34,62 @@ const ClassProperties = () => {
             setStartTime(newProps.start_time || '');
             setEndTime(newProps.end_time || '');
         }
-    }, [currCombinedClass]);
+    }, [currentCombinedClass]);
 
     const handleCourseSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setCourseSubject(newVal);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classData.course_subject = newVal;
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     const handleCourseNumChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setCourseNum(newVal);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classData.course_num = newVal;
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setTitle(newVal);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classData.title = newVal;
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     const handleInstructorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setInstructor(newVal);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classProperties.instructor_name = newVal;
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     const handleRoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setRoom(newVal);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classProperties.room = newVal;
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setLocation(newVal);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classData.location = newVal;
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     const handleDaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selected = Array.from(e.target.selectedOptions, option => option.value);
         setDays(selected);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classProperties.days = selected;
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     const handleTagCheck = (tag: string, isChecked: boolean) => {
@@ -100,27 +98,27 @@ const ClassProperties = () => {
             : tags.filter(t => t !== tag);
 
         setTags(updatedTags);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classProperties.tags = updatedTags;
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setStartTime(newVal);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classProperties.start_time = newVal;
         modifiedClass.event = createEventFromCombinedClass(modifiedClass);
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setEndTime(newVal);
-        const modifiedClass: CombinedClass = currCombinedClass || newDefaultEmptyClass();
+        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classProperties.end_time = newVal;
         modifiedClass.event = createEventFromCombinedClass(modifiedClass);
-        updateCurrentClass(modifiedClass);
+        updateOneClass(modifiedClass);
     };
 
     return (
