@@ -78,23 +78,38 @@ export type ConflictType = {
 
 export type CalendarContextType = {
     isLoading: boolean;
-    currentCombinedClass?: CombinedClass | undefined;
-    setCurrentClass: (newCombinedClass: CombinedClass) => void;
-    updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
+    error: string | null;
+
     allClasses: CombinedClass[];
-    updateAllClasses: (newClasses: CombinedClass[], updateEvents?: boolean) => void;
     displayClasses: CombinedClass[];
-    updateDisplayClasses: (newDisplayClasses: CombinedClass[], updateEvents?: boolean) => void;
+    currentCombinedClass?: CombinedClass | undefined;
+
     allEvents: EventInput[];
     displayEvents: EventInput[];
-    tagList: tagListType; // Map of tags to a set of class ids
+
     allTags: Set<string>;
-    unlinkTagFromClass: (classId: string, tagId: string) => void;
-    unlinkAllTagsFromClass: (classId: string) => void;
-    unlinkAllClassesFromTag: (tagId: string) => void;
-    unlinkAllTagsFromAllClasses: () => void;
-    detectConflicts: () => void;
+    tagList: tagListType; // Map of tags to a set of class ids
+
     conflicts: ConflictType[];
+
+    setCurrentClass: (newCombinedClass: CombinedClass) => void;
+
+    updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
+
+    updateAllClasses: (newClasses: CombinedClass[], updateEvents?: boolean) => void;
+
+    updateDisplayClasses: (newDisplayClasses: CombinedClass[], updateEvents?: boolean) => void;
+
+    detectConflicts: () => void;
+
+    unlinkTagFromClass: (classId: string, tagId: string) => void;
+
+    unlinkAllTagsFromClass: (classId: string) => void;
+
+    unlinkAllClassesFromTag: (tagId: string) => void;
+
+    unlinkAllTagsFromAllClasses: () => void;
+
     uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
 };
 
@@ -118,3 +133,17 @@ export type CalendarState = {
     };
     conflicts: ConflictType[];
 };
+
+export type CalendarAction =
+    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: Set<string> } }
+    | { type: "SET_DISPLAY_CLASSES"; payload: CombinedClass[] }
+    | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
+    | { type: "UPDATE_CLASS"; payload: CombinedClass }
+    | { type: "SET_CONFLICTS"; payload: ConflictType[] }
+    | { type: "SET_LOADING"; payload: boolean }
+    | { type: "SET_ERROR"; payload: string | null }
+    | { type: "UNLINK_TAG_FROM_CLASS"; payload: { tagId: string; classId: string } }
+    | { type: "UNLINK_ALL_TAGS_FROM_CLASS"; payload: string }
+    | { type: "UNLINK_ALL_CLASSES_FROM_TAG"; payload: string }
+    | { type: "UNLINK_ALL_TAGS_FROM_ALL_CLASSES" }
+    | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] };

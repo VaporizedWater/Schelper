@@ -1,5 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { Class, ClassProperty, CombinedClass } from "./types";
+import { CalendarState, Class, ClassProperty, CombinedClass } from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
@@ -22,7 +22,7 @@ export function documentToClass(doc: Document): Class {
 export function documentToClassProperty(doc: Document): ClassProperty {
     let displayName = String(doc.instructor_name);
     if (displayName.length > 0) {
-        const split = displayName.split(',');
+        const split = displayName.split(",");
         if (split.length == 2) {
             const first = split[1].trim();
             const last = split[0].trim();
@@ -147,4 +147,26 @@ export const emptyCombinedClass: CombinedClass = {
         tags: [] as string[],
     },
     event: undefined,
+};
+
+// Initial Calendar state
+export const initialCalendarState: CalendarState = {
+    classes: {
+        all: [],
+        display: [],
+        current: undefined,
+    },
+    events: {
+        all: [],
+        display: [],
+    },
+    tags: {
+        all: new Set(),
+        mapping: new Map(),
+    },
+    status: {
+        loading: true,
+        error: null,
+    },
+    conflicts: [],
 };

@@ -1,295 +1,583 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { CalendarContextType, CombinedClass, ConflictType, ProviderProps, tagListType } from '@/lib/types';
+import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
+import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
-import { createEventFromCombinedClass, dayToDate } from '@/lib/common';
+import { createEventFromCombinedClass, dayToDate, initialCalendarState } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
+// Helper functions
+const createEventsFromClasses = (classes: CombinedClass[]): EventInput[] => {
+    return classes
+        .filter(cls => cls.classProperties.days?.[0]) // Filter classes with days
+        .map(cls => {
+            cls.event = createEventFromCombinedClass(cls);
+            return cls.event;
+        });
+};
+
+const buildTagMapping = (classes: CombinedClass[]): tagListType => {
+    const mapping: tagListType = new Map();
+
+    classes.forEach(cls => {
+        cls.classProperties.tags?.forEach(tag => {
+            if (!mapping.has(tag)) {
+                mapping.set(tag, { classIds: new Set() });
+            }
+            mapping.get(tag)?.classIds.add(cls.classData._id);
+        });
+    });
+
+    return mapping;
+};
+
+const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
+    // Check for conflicts
+    // Sort by start time
+    const sortedClasses = classes.slice().sort((a, b) => {
+        const aStart = a.classProperties.start_time;
+        const bStart = b.classProperties.start_time;
+        if (!aStart || !bStart) return 0;
+        return aStart.localeCompare(bStart);
+    });
+
+    //Sort sortedClasses by day
+    sortedClasses.sort((a, b) => {
+        // console.log(a);
+        // console.log(b);
+        if (a.classProperties.days === undefined && b.classProperties.days === undefined) {
+            return 0;
+        }
+        const aDay = a.classProperties.days[0];
+        const bDay = b.classProperties.days[0];
+        if (!aDay || !bDay) return 0;
+        return dayToDate[aDay].localeCompare(dayToDate[bDay]);
+    });
+
+    const conflicts: ConflictType[] = [];
+
+    // Two-pointer approach
+    for (let i = 0; i < sortedClasses.length - 1; i++) {
+        const class1 = sortedClasses[i];
+
+        for (let j = i + 1; j < sortedClasses.length; j++) {
+            const class2 = sortedClasses[j];
+
+            // If we've moved to a different day, break inner loop
+            if (dayToDate[class1.classProperties.days[0]] !== dayToDate[class2.classProperties.days[0]]) {
+                break;
+            }
+
+            // Check for time overlap
+            const class1End = class1.classProperties.end_time;
+            const class2Start = class2.classProperties.start_time;
+
+            if (class2Start < class1End && (class1.classProperties.room === class2.classProperties.room || class1.classProperties.instructor_email === class2.classProperties.instructor_email)) {
+                // Conflict found
+                conflicts.push({
+                    class1: class1,
+                    class2: class2
+                });
+            } else {
+                // No conflicts with class1 (classes sorted by start time)
+                break;
+            }
+        }
+    }
+
+    return conflicts;
+};
+
+// Reducer Function
+function calendarReducer(state: CalendarState, action: CalendarAction): CalendarState {
+    switch (action.type) {
+        case 'INITIALIZE_DATA': {
+            const classes = action.payload.classes;
+            const events = createEventsFromClasses(classes);
+            const tagMapping = buildTagMapping(classes);
+
+            return {
+                ...state,
+                classes: {
+                    all: classes,
+                    display: classes,
+                    current: state.classes.current
+                },
+                events: {
+                    all: events,
+                    display: events
+                },
+                tags: {
+                    all: action.payload.tags,
+                    mapping: tagMapping
+                },
+                status: {
+                    loading: false,
+                    error: null
+                }
+            };
+        }
+
+        case 'SET_DISPLAY_CLASSES': {
+            const displayClasses = action.payload;
+            const displayEvents = createEventsFromClasses(displayClasses);
+
+            return {
+                ...state,
+                classes: {
+                    ...state.classes,
+                    display: displayClasses
+                },
+                events: {
+                    ...state.events,
+                    display: displayEvents
+                }
+            };
+        }
+
+        case 'SET_CURRENT_CLASS': {
+            return {
+                ...state,
+                classes: {
+                    ...state.classes,
+                    current: action.payload
+                }
+            };
+        }
+
+        case 'UPDATE_CLASS': {
+            const updatedClass = action.payload;
+            const updatedEvent = createEventFromCombinedClass(updatedClass);
+
+            // Update the class in all collections
+            const updateClassById = (classes: CombinedClass[]) =>
+                classes.map(c => c.classData._id === updatedClass.classData._id ? updatedClass : c);
+
+            // Update the event in all collections
+            const updateEventById = (events: EventInput[]) =>
+                events.map(e =>
+                    e.extendedProps?.combinedClassId === updatedClass.classData._id ? updatedEvent : e
+                );
+
+            return {
+                ...state,
+                classes: {
+                    all: updateClassById(state.classes.all),
+                    display: updateClassById(state.classes.display),
+                    current: updatedClass
+                },
+                events: {
+                    all: updateEventById(state.events.all),
+                    display: updateEventById(state.events.display)
+                }
+            };
+        }
+
+        case 'SET_CONFLICTS': {
+            return {
+                ...state,
+                conflicts: action.payload
+            };
+        }
+
+        case 'SET_LOADING': {
+            return {
+                ...state,
+                status: {
+                    ...state.status,
+                    loading: action.payload
+                }
+            };
+        }
+
+        case 'SET_ERROR': {
+            return {
+                ...state,
+                status: {
+                    ...state.status,
+                    error: action.payload
+                }
+            };
+        }
+
+        case 'UNLINK_TAG_FROM_CLASS': {
+            const { tagId, classId } = action.payload;
+
+            // Update tag mapping
+            const newMapping = new Map(state.tags.mapping);
+            const tagData = newMapping.get(tagId);
+
+            if (tagData) {
+                tagData.classIds.delete(classId);
+                if (tagData.classIds.size === 0) {
+                    newMapping.delete(tagId);
+                } else {
+                    newMapping.set(tagId, tagData);
+                }
+            }
+
+            // Update classes
+            const updatedClasses = state.classes.all.map(c => {
+                if (c.classData._id === classId) {
+                    return {
+                        ...c,
+                        classProperties: {
+                            ...c.classProperties,
+                            tags: c.classProperties.tags.filter(t => t !== tagId)
+                        }
+                    };
+                }
+                return c;
+            });
+
+            return {
+                ...state,
+                classes: {
+                    all: updatedClasses,
+                    display: state.classes.display.map(c =>
+                        c.classData._id === classId ?
+                            updatedClasses.find(uc => uc.classData._id === classId)! :
+                            c
+                    ),
+                    current: state.classes.current?.classData._id === classId ?
+                        updatedClasses.find(c => c.classData._id === classId) :
+                        state.classes.current
+                },
+                tags: {
+                    ...state.tags,
+                    mapping: newMapping
+                }
+            };
+        }
+
+        case 'UNLINK_ALL_TAGS_FROM_CLASS': {
+            const classId = action.payload;
+
+            // Update classes
+            const updatedClasses = state.classes.all.map(c => {
+                if (c.classData._id === classId) {
+                    return {
+                        ...c,
+                        classProperties: {
+                            ...c.classProperties,
+                            tags: []
+                        }
+                    };
+                }
+                return c;
+            });
+
+            // Update tag mapping
+            const newMapping = new Map(state.tags.mapping);
+            for (const [tagId, tagData] of newMapping.entries()) {
+                tagData.classIds.delete(classId);
+                if (tagData.classIds.size === 0) {
+                    newMapping.delete(tagId);
+                }
+            }
+
+            return {
+                ...state,
+                classes: {
+                    all: updatedClasses,
+                    display: state.classes.display.map(c =>
+                        c.classData._id === classId ?
+                            updatedClasses.find(uc => uc.classData._id === classId)! :
+                            c
+                    ),
+                    current: state.classes.current?.classData._id === classId ?
+                        updatedClasses.find(c => c.classData._id === classId) :
+                        state.classes.current
+                },
+                tags: {
+                    ...state.tags,
+                    mapping: newMapping
+                }
+            };
+        }
+
+        case 'UNLINK_ALL_CLASSES_FROM_TAG': {
+            const tagId = action.payload;
+            const tagData = state.tags.mapping.get(tagId);
+            const affectedClassIds = tagData ? Array.from(tagData.classIds) : [];
+
+            // Update classes
+            const updatedClasses = state.classes.all.map(c => {
+                if (affectedClassIds.includes(c.classData._id)) {
+                    return {
+                        ...c,
+                        classProperties: {
+                            ...c.classProperties,
+                            tags: c.classProperties.tags.filter(t => t !== tagId)
+                        }
+                    };
+                }
+                return c;
+            });
+
+            // Update tag mapping
+            const newMapping = new Map(state.tags.mapping);
+            newMapping.delete(tagId);
+
+            return {
+                ...state,
+                classes: {
+                    all: updatedClasses,
+                    display: state.classes.display.map(c =>
+                        affectedClassIds.includes(c.classData._id) ?
+                            updatedClasses.find(uc => uc.classData._id === c.classData._id)! :
+                            c
+                    ),
+                    current: state.classes.current && affectedClassIds.includes(state.classes.current.classData._id) ?
+                        updatedClasses.find(c => c.classData._id === state.classes.current?.classData._id) :
+                        state.classes.current
+                },
+                tags: {
+                    ...state.tags,
+                    mapping: newMapping
+                }
+            };
+        }
+
+        case 'UNLINK_ALL_TAGS_FROM_ALL_CLASSES': {
+            // Update all classes to have empty tags
+            const updatedClasses = state.classes.all.map(c => ({
+                ...c,
+                classProperties: {
+                    ...c.classProperties,
+                    tags: []
+                }
+            }));
+
+            return {
+                ...state,
+                classes: {
+                    all: updatedClasses,
+                    display: updatedClasses,
+                    current: state.classes.current ? {
+                        ...state.classes.current,
+                        classProperties: {
+                            ...state.classes.current.classProperties,
+                            tags: []
+                        }
+                    } : undefined
+                },
+                tags: {
+                    ...state.tags,
+                    mapping: new Map()
+                }
+            };
+        }
+
+        case 'UPLOAD_CLASSES': {
+            const newClasses = [...state.classes.all, ...action.payload];
+            const events = createEventsFromClasses(newClasses);
+            const tagMapping = buildTagMapping(newClasses);
+
+            return {
+                ...state,
+                classes: {
+                    all: newClasses,
+                    display: newClasses,
+                    current: state.classes.current
+                },
+                events: {
+                    all: events,
+                    display: events
+                },
+                tags: {
+                    ...state.tags,
+                    mapping: tagMapping
+                }
+            };
+        }
+
+        default:
+            return state;
+    }
+}
+
 export const CalendarProvider = ({ children }: ProviderProps) => {
-    const [combinedClasses, setClasses] = useState<CombinedClass[]>([]); // All the classes in the context
-    const [currentCombinedClass, setCurrentClass] = useState<CombinedClass>(); // The currently selected class(es).
-    const [isLoading, setIsLoading] = useState(true);
-    const [conflicts, setConflicts] = useState<ConflictType[]>([]);
-    const [reset, refreshComponent] = useState<string>("");
+    const [state, dispatch] = useReducer(calendarReducer, initialCalendarState);
+    const [forceUpdate, setForceUpdate] = useState('');
 
-    const [allEvents, setAllEvents] = useState<EventInput[]>([]); // All the events in the context
-    const [displayClasses, setDisplayClasses] = useState<CombinedClass[]>([]); // The classes to display on the calendar based on tags
-    const [displayEvents, setDisplayEvents] = useState<EventInput[]>([]); // The events to display on the calendar based on tags
-    const [tagList, setTagList] = useState<tagListType>(new Map<string, { classIds: Set<string> }>()); // Map of tags to a set of class ids
-    const [allTags, setAllTags] = useState<Set<string>>(new Set()); // All the tags in the context
-
+    // Load initial data
     useEffect(() => {
         let mounted = true;
 
-        const loadClasses = async () => {
+        const loadData = async () => {
             try {
-                setIsLoading(true);
+                dispatch({ type: 'SET_LOADING', payload: true });
 
-                const allClasses = await loadAllCombinedClasses();
-
-                if (!mounted) return;
-
-                const newTagMap = new Map<string, { classIds: Set<string> }>();
-                const newEvents: EventInput[] = [];
-
-                allClasses.forEach(classItem => {
-                    if (!classItem.classProperties.days?.[0]) return;
-
-                    classItem.event = createEventFromCombinedClass(classItem);
-                    newEvents.push(classItem.event);
-
-                    // Process tags
-                    classItem.classProperties.tags?.forEach(tag => {
-                        if (!newTagMap.has(tag)) {
-                            newTagMap.set(tag, { classIds: new Set() });
-                        }
-                        newTagMap.get(tag)?.classIds.add(classItem.classData._id);
-                    });
-                });
+                const [allClasses, allTags] = await Promise.all([
+                    loadAllCombinedClasses(),
+                    loadAllTags()
+                ]);
 
                 if (mounted) {
-                    setAllEvents(newEvents);
-                    setDisplayEvents(newEvents);
-                    setClasses(allClasses);
-                    setDisplayClasses(allClasses);
-                    setTagList(newTagMap);
-
-                    const tags = await loadAllTags();
-                    setAllTags(tags);
+                    dispatch({
+                        type: 'INITIALIZE_DATA',
+                        payload: { classes: allClasses, tags: allTags }
+                    });
                 }
             } catch (err) {
                 if (mounted) {
-                    console.error('Error loading classes:', err);
-                }
-            } finally {
-                if (mounted) {
-                    setIsLoading(false);
+                    console.error('Error loading data:', err);
+                    dispatch({
+                        type: 'SET_ERROR',
+                        payload: err instanceof Error ? err.message : 'Failed to load data'
+                    });
+                    dispatch({ type: 'SET_LOADING', payload: false });
                 }
             }
         };
 
-        loadClasses();
+        loadData();
         return () => { mounted = false; };
-    }, []);
+    }, [forceUpdate]);
 
-    const detectConflicts = useCallback(() => {
-        // Check for conflicts
-        // Sort by start time
-        const sortedClasses = combinedClasses.slice().sort((a, b) => {
-            const aStart = a.classProperties.start_time;
-            const bStart = b.classProperties.start_time;
-            if (!aStart || !bStart) return 0;
-            return aStart.localeCompare(bStart);
-        });
-
-        //Sort sortedClasses by day
-        sortedClasses.sort((a, b) => {
-            // console.log(a);
-            // console.log(b);
-            if (a.classProperties.days === undefined && b.classProperties.days === undefined) {
-                return 0;
-            }
-            const aDay = a.classProperties.days[0];
-            const bDay = b.classProperties.days[0];
-            if (!aDay || !bDay) return 0;
-            return dayToDate[aDay].localeCompare(dayToDate[bDay]);
-        });
-
-        const conflicts: ConflictType[] = [];
-
-        // Two-pointer approach
-        for (let i = 0; i < sortedClasses.length - 1; i++) {
-            const class1 = sortedClasses[i];
-
-            for (let j = i + 1; j < sortedClasses.length; j++) {
-                const class2 = sortedClasses[j];
-
-                // If we've moved to a different day, break inner loop
-                if (dayToDate[class1.classProperties.days[0]] !== dayToDate[class2.classProperties.days[0]]) {
-                    break;
-                }
-
-                // Check for time overlap
-                const class1End = class1.classProperties.end_time;
-                const class2Start = class2.classProperties.start_time;
-
-                if (class2Start < class1End && (class1.classProperties.room === class2.classProperties.room || class1.classProperties.instructor_email === class2.classProperties.instructor_email)) {
-                    // Conflict found
-                    conflicts.push({
-                        class1: class1,
-                        class2: class2
-                    });
-                } else {
-                    // No conflicts with class1 (classes sorted by start time)
-                    break;
-                }
-            }
-        }
-
-        updateConflicts(conflicts);
-    }, [combinedClasses]);
-
+    // Detect conflicts whenever classes change
     useEffect(() => {
-        if (combinedClasses.length > 0) {
-            detectConflicts();
+        if (state.classes.all.length > 0) {
+            const conflicts = detectClassConflicts(state.classes.all);
+            dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
         }
-    }, [detectConflicts, combinedClasses]); // Run whenever classes change
+    }, [state.classes.all]);
 
+    // Memoize context value to prevent unnecessary re-renders
+    const contextValue = useMemo(() => ({
+        // Status
+        isLoading: state.status.loading,
+        error: state.status.error,
 
-    const recomputeClass = (combinedClass: CombinedClass) => {
-        // Recompute event
-        const newEvent = createEventFromCombinedClass(combinedClass);
+        // Classes
+        allClasses: state.classes.all,
+        displayClasses: state.classes.display,
+        currentCombinedClass: state.classes.current,
 
-        // Update events arrays
-        setAllEvents(prev => prev.map(ev =>
-            ev.extendedProps?.combinedClassId === combinedClass.classData._id ? newEvent : ev
-        ));
-        setDisplayEvents(prev => prev.map(ev =>
-            ev.extendedProps?.combinedClassId === combinedClass.classData._id ? newEvent : ev
-        ));
+        // Events
+        allEvents: state.events.all,
+        displayEvents: state.events.display,
 
-        return combinedClass;
-    }
+        // Tags
+        allTags: state.tags.all,
+        tagList: state.tags.mapping,
 
-    const updateOneClass = (newClass: CombinedClass) => {
-        console.log("Updating class " + newClass.classData._id);
-        // Update the class lists
-        setCurrentClass(newClass);
-        setClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
-        setDisplayClasses(prev => prev.map(c => c.classData._id === newClass.classData._id ? newClass : c));
+        // Conflicts
+        conflicts: state.conflicts,
 
-        // Update the database (THIS IS TEMPORARY FOR THE DEMO AND PRESENTATION, MAKE SURE TO DO THE DIFFERENCES TRACKING IN THE FUTURE)
-        updateCombinedClass(newClass);
+        // Actions
+        setCurrentClass: (cls: CombinedClass) => {
+            dispatch({ type: 'SET_CURRENT_CLASS', payload: cls });
+        },
 
-        newClass = recomputeClass(newClass);
+        updateOneClass: (cls: CombinedClass) => {
+            updateCombinedClass(cls); // Update in database
+            dispatch({ type: 'UPDATE_CLASS', payload: cls });
+        },
 
-        detectConflicts();
-    }
+        updateAllClasses: (classes: CombinedClass[]) => {
+            const payload = { classes, tags: state.tags.all };
+            dispatch({ type: 'INITIALIZE_DATA', payload });
+        },
 
-    const updateAllClasses = (newClasses: CombinedClass[], updateEvents: boolean = true) => {
-        setClasses(newClasses);
+        updateDisplayClasses: (classes: CombinedClass[]) => {
+            dispatch({ type: 'SET_DISPLAY_CLASSES', payload: classes });
+        },
 
-        if (updateEvents) {
-            const newEvents = newClasses.map(c => createEventFromCombinedClass(c));
-            setAllEvents(newEvents);
-        }
-    }
+        detectConflicts: () => {
+            const conflicts = detectClassConflicts(state.classes.all); // Changed this from state.classes.display to state.classes.all
+            dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
+        },
 
-    const updateDisplayClasses = (newDisplayClasses: CombinedClass[], updateEvents: boolean = true) => {
-        setDisplayClasses(newDisplayClasses);
+        unlinkTagFromClass: (tagId: string, classId: string) => {
+            dispatch({ type: 'UNLINK_TAG_FROM_CLASS', payload: { tagId, classId } });
 
-        if (updateEvents) {
-            const newEvents = newDisplayClasses.map(c => createEventFromCombinedClass(c));
-            setDisplayEvents(newEvents);
-        }
-
-        detectConflicts();
-    }
-
-    const updateConflicts = (newConflicts: ConflictType[]) => {
-        setConflicts(newConflicts);
-    }
-
-    const uploadNewClasses = (uploadedClasses: CombinedClass[]) => {
-        uploadedClasses.forEach(element => {
-            updateCombinedClass(element)
-        });
-
-        refreshComponent("");
-    }
-
-    const unlinkTagFromClass = (tagId: string, classId: string) => {
-        // Unlink tag from class
-        const newTagList = new Map(tagList);
-        const tagData = newTagList.get(tagId);
-        if (tagData) {
-            tagData.classIds.delete(classId);
-            if (tagData.classIds.size === 0) {
-                newTagList.delete(tagId);
-            } else {
-                newTagList.set(tagId, tagData);
+            // Find and update the class in the database
+            const classToUpdate = state.classes.all.find(c => c.classData._id === classId);
+            if (classToUpdate) {
+                const updatedClass = {
+                    ...classToUpdate,
+                    classProperties: {
+                        ...classToUpdate.classProperties,
+                        tags: classToUpdate.classProperties.tags.filter(t => t !== tagId)
+                    }
+                };
+                updateCombinedClass(updatedClass);
             }
-            setTagList(newTagList);
-        }
+        },
 
-        // Remove tag from class
-        const newClasses = combinedClasses.map(c => {
-            if (c.classData._id === classId) {
-                c.classProperties.tags = c.classProperties.tags.filter(t => t !== tagId);
-                updateCombinedClass(c);
+        unlinkAllTagsFromClass: (classId: string) => {
+            dispatch({ type: 'UNLINK_ALL_TAGS_FROM_CLASS', payload: classId });
+
+            // Find and update the class in the database
+            const classToUpdate = state.classes.all.find(c => c.classData._id === classId);
+            if (classToUpdate) {
+                const updatedClass = {
+                    ...classToUpdate,
+                    classProperties: {
+                        ...classToUpdate.classProperties,
+                        tags: []
+                    }
+                };
+                updateCombinedClass(updatedClass);
             }
-            return c;
-        });
-        setClasses(newClasses);
-    }
+        },
 
-    const unlinkAllTagsFromClass = (classId: string) => {
-        const newClasses = combinedClasses.map(c => {
-            if (c.classData._id === classId) {
-                c.classProperties.tags = [];
-                updateCombinedClass(c);
+        unlinkAllClassesFromTag: (tagId: string) => {
+            dispatch({ type: 'UNLINK_ALL_CLASSES_FROM_TAG', payload: tagId });
+
+            // Update all affected classes in the database
+            const tagData = state.tags.mapping.get(tagId);
+            if (tagData) {
+                state.classes.all
+                    .filter(c => tagData.classIds.has(c.classData._id))
+                    .forEach(c => {
+                        const updatedClass = {
+                            ...c,
+                            classProperties: {
+                                ...c.classProperties,
+                                tags: c.classProperties.tags.filter(t => t !== tagId)
+                            }
+                        };
+                        updateCombinedClass(updatedClass);
+                    });
             }
-            return c;
-        });
-        setClasses(newClasses);
-    }
+        },
 
-    const unlinkAllClassesFromTag = (tagId: string) => {
-        // For each class in the tag, use unlinkTagFromClass to unlink
-        const tagData = tagList.get(tagId);
-        if (tagData) {
-            tagData.classIds.forEach(classId => unlinkTagFromClass(tagId, classId));
+        unlinkAllTagsFromAllClasses: () => {
+            dispatch({ type: 'UNLINK_ALL_TAGS_FROM_ALL_CLASSES' });
+
+            // Update all classes in the database
+            state.classes.all.forEach(c => {
+                const updatedClass = {
+                    ...c,
+                    classProperties: {
+                        ...c.classProperties,
+                        tags: []
+                    }
+                };
+                updateCombinedClass(updatedClass);
+            });
+        },
+
+        uploadNewClasses: (classes: CombinedClass[]) => {
+            // First update in the database
+            classes.forEach(cls => updateCombinedClass(cls));
+
+            // Then update local state
+            dispatch({ type: 'UPLOAD_CLASSES', payload: classes });
+
+            // Force refresh data from server
+            setForceUpdate(Date.now().toString());
         }
-    }
-
-    const unlinkAllTagsFromAllClasses = () => {
-        const newClasses = combinedClasses.map(c => {
-            c.classProperties.tags = [];
-            updateCombinedClass(c);
-            return c;
-        });
-        setClasses(newClasses);
-
-        setTagList(new Map());
-    }
-
-    if (isLoading) {
-        console.log("loading");
-    }
+    }), [state]);
 
     return (
-        <CalendarContext.Provider value={{
-            isLoading,
-            unlinkTagFromClass,
-            unlinkAllTagsFromClass,
-            unlinkAllClassesFromTag,
-            unlinkAllTagsFromAllClasses,
-
-            detectConflicts,
-
-            uploadNewClasses,
-
-            setCurrentClass,
-            updateOneClass,
-
-            updateDisplayClasses,
-
-            updateAllClasses,
-
-            currentCombinedClass,
-            allClasses: combinedClasses,
-            displayClasses,
-            allEvents,
-            displayEvents,
-            tagList,
-            allTags,
-            conflicts,
-        }}>
+        <CalendarContext.Provider value={contextValue}>
             {children}
-            {reset}
         </CalendarContext.Provider>
     );
 }
@@ -301,10 +589,3 @@ export const useCalendarContext = () => {
     }
     return context;
 }
-
-// A method for iterating over the contents of a custom type without manually specifying the property names
-// if (currentCombinedClass) {
-//     Object.keys(currentCombinedClass.classData).forEach(key => {
-//         console.log(key, currentCombinedClass.classData[key as keyof typeof currentCombinedClass.classData]);
-//     });
-// }
