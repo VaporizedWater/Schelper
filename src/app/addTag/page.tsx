@@ -1,43 +1,51 @@
 'use client';
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { insertTag } from "@/lib/utils";
 
 const AddTag = () => {
-    const [inputValue, setInputValue] = useState("");
+    const [tag, setTag] = useState("");
     const router = useRouter();
 
-    const handleAddTag = async () => {
-        if (inputValue.trim() !== "") {
-            const result = await insertTag(inputValue.trim());
-            if (result) {
-                setInputValue("");
-                router.back();
-            } else {
-                console.error("Failed to insert tag");
-            }
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        const trimmedTag = tag.trim();
+
+        if (!trimmedTag) return;
+
+        const success = await insertTag(trimmedTag);
+        if (success) {
+            router.back();
         }
     };
 
     return (
-        <div className="p-8 max-w-xl mx-auto">
-            <h2 className="text-lg font-semibold mb-4">Add New Tag</h2>
+        <form
+            onSubmit={handleSubmit}
+            className="p-4 max-w-md mx-auto space-y-4"
+        >
+            <h2 className="text-xl font-semibold">Add New Tag</h2>
+
             <input
                 type="text"
-                className="border px-2 py-1 rounded-md w-full"
+                value={tag}
+                onChange={(e) => setTag(e.target.value)}
                 placeholder="Enter tag name"
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={(e) => {
-                    if (e.key === "Enter") handleAddTag();
-                }}
+                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
             />
-            <div className="flex justify-end mt-4">
-                <button className="bg-blue-500 text-white px-4 py-2 rounded-md" onClick={handleAddTag}>
-                    Add Tag
-                </button>
-            </div>
-        </div>
+
+            <button
+                type="submit"
+                disabled={!tag.trim()}
+                className="w-full p-2 text-white bg-blue-500 rounded 
+                         hover:bg-blue-600 disabled:bg-gray-300 
+                         disabled:cursor-not-allowed transition-colors"
+            >
+                Add Tag
+            </button>
+        </form>
     );
 };
 
