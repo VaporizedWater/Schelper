@@ -11,20 +11,31 @@ export async function GET(request: Request) {
         const headerId = request.headers.get("id");
         const classID = headerId ? headerId : "";
 
-        if (!classID.length || !ObjectId.isValid(classID)) {
-            return Response.json({ error: "Invalid class ID" }, { status: 400 });
+        if (classID.length) {
+            if (!ObjectId.isValid(classID)) {
+                return Response.json({ error: "Invalid class ID" }, { status: 400 });
+            }
+
+            const objID = new ObjectId(classID);
+            const data = await collection.findOne({ _id: objID });
+
+            if (data) {
+                const classProperty: ClassProperty = documentToClassProperty(data as Document);
+                return Response.json(classProperty);
+            } else {
+                return Response.json(null, { status: 200 });
+            }
         }
 
-        const objID = new ObjectId(classID);
-        const data = await collection.findOne({ _id: objID });
+        // No ID provided - return all classes
+        const data = await collection.find({}).toArray();
 
-        if (!data) {
-            return Response.json(null, { status: 200 });
+        if (!data || !Array.isArray(data)) {
+            return Response.json({ error: "No classes found" }, { status: 404 });
         }
 
-        const classProperty: ClassProperty = documentToClassProperty(data as Document);
-
-        return Response.json(classProperty);
+        const properties: ClassProperty[] = data.map((doc: Document) => documentToClassProperty(doc));
+        return Response.json(properties);
     } catch (error) {
         console.error("Error fetching class properties:", error);
         return Response.json({ error: "Internal server error" }, { status: 500 });

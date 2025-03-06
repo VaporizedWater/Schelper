@@ -47,17 +47,6 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
     return response;
 }
 
-// Retry helper
-async function retry<T>(fn: () => Promise<T>, attempts: number = 3, delay: number = 1000): Promise<T> {
-    try {
-        return await fn();
-    } catch (error) {
-        if (attempts <= 1) throw error;
-        await new Promise((ignored) => setTimeout(ignored, delay));
-        return retry(fn, attempts - 1, delay);
-    }
-}
-
 // LOADS/GETs
 // Get all tags
 export async function loadAllTags(): Promise<Set<string>> {
@@ -130,26 +119,33 @@ export async function loadCombinedClasses(classIds: string[]): Promise<CombinedC
 }
 
 export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
-    return retry(async () => {
-        const response = await fetch("/api/classes");
-        const classes = await parseJsonResponse<Class[]>(response);
+    try {
+        const [classesResponse, propertiesResponse] = await Promise.all([
+            fetchWithTimeout("/api/classes"),
+            fetchWithTimeout("/api/class_properties"),
+        ]);
 
-        return Promise.all(
-            classes.map(async (classItem) => {
-                const propsResponse = await fetch("/api/class_properties", {
-                    headers: { id: classItem._id },
-                });
+        const [classes, allProperties] = await Promise.all([
+            parseJsonResponse<Class[]>(classesResponse),
+            parseJsonResponse<ClassProperty[]>(propertiesResponse),
+        ]);
 
-                const props = await parseJsonResponse<ClassProperty>(propsResponse);
+        const propertiesMap = new Map(allProperties.map((prop) => [prop._id, prop]));
 
-                return {
-                    classData: classItem,
-                    classProperties: props,
-                    event: undefined,
-                };
-            })
-        );
-    });
+        const combinedClasses: CombinedClass[] = classes.map((classItem) => {
+            const props = propertiesMap.get(classItem._id) || ({} as ClassProperty);
+            return {
+                classData: classItem,
+                classProperties: props,
+                event: undefined,
+            };
+        });
+
+        return combinedClasses;
+    } catch (error) {
+        console.error("Failed to load combined classes:", error);
+        return [] as CombinedClass[];
+    }
 }
 
 // DELETES
