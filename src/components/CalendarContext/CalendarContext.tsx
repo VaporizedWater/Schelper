@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
-import { loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
+import { bulkUpdateClasses, loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
 import { createEventFromCombinedClass, dayToDate, initialCalendarState } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -33,55 +33,62 @@ const buildTagMapping = (classes: CombinedClass[]): tagListType => {
     return mapping;
 };
 
+// Rebuilt for efficiency - single sort with compound comparator
 const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
-    // Check for conflicts
-    // Sort by start time
-    const sortedClasses = classes.slice().sort((a, b) => {
-        const aStart = a.classProperties.start_time;
-        const bStart = b.classProperties.start_time;
-        if (!aStart || !bStart) return 0;
+    // Single sort with compound key (day, start_time)
+    const sortedClasses = [...classes].sort((a, b) => {
+        // First by day
+        const aDay = a.classProperties.days?.[0];
+        const bDay = b.classProperties.days?.[0];
+
+        if (!aDay || !bDay) return 0;
+
+        const dayCompare = dayToDate[aDay].localeCompare(dayToDate[bDay]);
+        if (dayCompare !== 0) return dayCompare;
+
+        // Then by start time
+        const aStart = a.classProperties.start_time || '';
+        const bStart = b.classProperties.start_time || '';
         return aStart.localeCompare(bStart);
     });
 
-    //Sort sortedClasses by day
-    sortedClasses.sort((a, b) => {
-        // console.log(a);
-        // console.log(b);
-        if (a.classProperties.days === undefined && b.classProperties.days === undefined) {
-            return 0;
-        }
-        const aDay = a.classProperties.days[0];
-        const bDay = b.classProperties.days[0];
-        if (!aDay || !bDay) return 0;
-        return dayToDate[aDay].localeCompare(dayToDate[bDay]);
-    });
-
     const conflicts: ConflictType[] = [];
+    const dayConflictCache = new Map(); // Cache conflicts by day to avoid redundant checks
 
-    // Two-pointer approach
+    // More efficient conflict detection
     for (let i = 0; i < sortedClasses.length - 1; i++) {
         const class1 = sortedClasses[i];
+        const class1Day = class1.classProperties.days?.[0];
+        const class1End = class1.classProperties.end_time;
 
+        if (!class1Day || !class1End) continue;
+
+        // Cache key includes room and instructor to check specific conflicts
+        const cacheKey = class1Day + class1.classProperties.room + class1.classProperties.instructor_email;
+        if (!dayConflictCache.has(cacheKey)) {
+            dayConflictCache.set(cacheKey, []);
+        }
+
+        // Only check against classes with same day
         for (let j = i + 1; j < sortedClasses.length; j++) {
             const class2 = sortedClasses[j];
-
-            // If we've moved to a different day, break inner loop
-            if (dayToDate[class1.classProperties.days[0]] !== dayToDate[class2.classProperties.days[0]]) {
-                break;
-            }
-
-            // Check for time overlap
-            const class1End = class1.classProperties.end_time;
+            const class2Day = class2.classProperties.days?.[0];
             const class2Start = class2.classProperties.start_time;
 
-            if (class2Start < class1End && (class1.classProperties.room === class2.classProperties.room || class1.classProperties.instructor_email === class2.classProperties.instructor_email)) {
-                // Conflict found
-                conflicts.push({
-                    class1: class1,
-                    class2: class2
-                });
-            } else {
-                // No conflicts with class1 (classes sorted by start time)
+            if (!class2Day || !class2Start) continue;
+
+            // If we've moved to a different day, break
+            if (class1Day !== class2Day) break;
+
+            // Check for time overlap and conflict condition
+            if (class2Start < class1End &&
+                (class1.classProperties.room === class2.classProperties.room ||
+                    class1.classProperties.instructor_email === class2.classProperties.instructor_email)) {
+
+                conflicts.push({ class1, class2 });
+                dayConflictCache.get(cacheKey).push(class2.classData._id);
+            } else if (class2Start >= class1End) {
+                // No more possible conflicts with class1
                 break;
             }
         }
@@ -564,14 +571,22 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         },
 
         uploadNewClasses: (classes: CombinedClass[]) => {
-            // First update in the database
-            classes.forEach(cls => updateCombinedClass(cls));
+            // Use bulk update instead of individual updates
+            bulkUpdateClasses(classes)
+                .then(() => {
+                    // Update local state
+                    dispatch({ type: 'UPLOAD_CLASSES', payload: classes });
 
-            // Then update local state
-            dispatch({ type: 'UPLOAD_CLASSES', payload: classes });
-
-            // Force refresh data from server
-            setForceUpdate(Date.now().toString());
+                    // Force refresh data from server
+                    setForceUpdate(Date.now().toString());
+                })
+                .catch(error => {
+                    console.error("Error uploading classes:", error);
+                    dispatch({
+                        type: 'SET_ERROR',
+                        payload: 'Failed to upload classes. Please try again.'
+                    });
+                });
         }
     }), [state]);
 

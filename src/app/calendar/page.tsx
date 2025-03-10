@@ -10,15 +10,15 @@ const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
 
     return (
-        <div className='h-full grid grid-cols-[15%_84%]'>
+        <div className='h-full grid grid-cols-[15%_85%]'>
             <div className='min-w-24'>
                 <LeftMenu />
             </div>
-            <div className='grid grid-rows-[10%_88%]'>
-                <div className='w-full h-full content-center'>
+            <div className='grid grid-rows-[auto_1fr] h-full'>
+                <div className='w-full content-center'>
                     <CalendarNav toggleCalendar={(status: boolean) => setCalendarOpen(status)} />
                 </div>
-                <div className='w-full h-full overflow-x-hidden'>
+                <div className='w-full h-full overflow-hidden px-2'>
                     {isCalendarOpen ?
                         <Calendar /> :
                         <CalendarSheet />

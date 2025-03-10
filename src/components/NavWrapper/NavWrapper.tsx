@@ -5,7 +5,7 @@ import TopNav from '@/components/TopNav/TopNav';
 
 const NavWrapper = () => {
     const pathname = usePathname();
-    const hideNavRoutes = ['/login', '/calendar', '/viewConflicts', '/exportSheet', '/importSheet', '/classes', '/addTag'];
+    const hideNavRoutes: string[] = [];
     const showNav = !hideNavRoutes.includes(pathname);
 
     return showNav ? <TopNav /> : null;

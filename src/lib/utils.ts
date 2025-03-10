@@ -23,7 +23,7 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 }
 
 // FETCH
-export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 5000) {
+export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 10000) {
     const controller = new AbortController();
     let response: Response;
 
@@ -249,7 +249,7 @@ export async function insertTag(tagName: string): Promise<string | null> {
 // --------
 // PUTS/UPDATES
 
-export async function updateCombinedClass(combinedClass: CombinedClass) {
+export async function updateCombinedClass(combinedClass: CombinedClass): Promise<boolean> {
     try {
         const classResponse = await fetchWithTimeout("/api/classes", {
             method: "PUT",
@@ -259,7 +259,7 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
 
         if (!classResponse.ok) {
             console.error("Error updating class: " + classResponse.statusText);
-            return;
+            return false;
         }
 
         const updatedClassData = await classResponse.json();
@@ -277,10 +277,77 @@ export async function updateCombinedClass(combinedClass: CombinedClass) {
 
         if (!classPropResponse.ok) {
             console.error("Error updating class properties: " + classPropResponse.statusText);
-            return;
+            return false;
         }
+
+        return true;
     } catch (error) {
         console.error("Failed to update combined class:", error);
+        return false;
+    }
+}
+
+// Add this function after updateCombinedClass
+
+export async function bulkUpdateClasses(combinedClasses: CombinedClass[]): Promise<boolean> {
+    try {
+        // Extract class data and properties into separate arrays for batch processing
+        const classDataArray = combinedClasses.map((cls) => cls.classData);
+        const classPropertiesArray = combinedClasses.map((cls) => cls.classProperties);
+
+        // First bulk update all class data
+        const classResponse = await fetchWithTimeout("/api/classes/bulk", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(classDataArray),
+        });
+
+        if (!classResponse.ok) {
+            console.error("Error bulk updating classes: " + classResponse.statusText);
+            return false;
+        }
+
+        const updatedClassData = await classResponse.json();
+        console.log("Class insertion results:", updatedClassData);
+
+        // Update IDs for any new classes
+        if (updatedClassData.insertedIds) {
+            // Apply new IDs to both the class data and properties
+            Object.entries(updatedClassData.insertedIds).forEach(([index, id]) => {
+                const i = parseInt(index);
+                combinedClasses[i].classData._id = id as string;
+                classPropertiesArray[i]._id = id as string;
+            });
+        }
+
+        // Log and validate properties before sending
+        console.log(`Sending ${classPropertiesArray.length} properties`);
+        classPropertiesArray.forEach((prop, i) => {
+            if (!prop._id) {
+                console.error(`Missing _id for property at index ${i}`);
+            }
+        });
+
+        // Then bulk update all properties
+        const classPropResponse = await fetchWithTimeout("/api/class_properties/bulk", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(classPropertiesArray),
+        });
+
+        if (!classPropResponse.ok) {
+            console.error("Error bulk updating class properties: " + classPropResponse.statusText);
+            const errorText = await classPropResponse.text();
+            console.error("Error details:", errorText);
+            return false;
+        }
+
+        const propertyResult = await classPropResponse.json();
+        console.log("Property insertion results:", propertyResult);
+
+        return true;
+    } catch (error) {
+        console.error("Failed to bulk update classes:", error);
         return false;
     }
 }

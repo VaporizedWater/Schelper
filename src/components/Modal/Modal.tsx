@@ -21,7 +21,7 @@ export default function Modal({ children }: ModalProps) {
         >
             {/* Modal Content */}
             <div
-                className="bg-white min-w-fit w-[80%] md:w-[50%] min-h-80 rounded-lg relative overflow-y-auto scrollbar-thin"
+                className="bg-white min-w-fit w-[80%] md:w-[50%] rounded-lg relative overflow-y-auto scrollbar-thin"
                 onClick={(e) => e.stopPropagation()} // Prevent click propagation
             >
                 <button
@@ -32,7 +32,7 @@ export default function Modal({ children }: ModalProps) {
                 </button>
 
                 {/* Modal Content */}
-                <div className="max-h-[75vh]">
+                <div className="max-h-[75vh] min-h-fit p-2">
                     {children}
                 </div>
             </div>

@@ -4,7 +4,7 @@ import { useCalendarContext } from '@/components/CalendarContext/CalendarContext
 import { newDefaultEmptyClass } from '@/lib/common';
 import { CombinedClass } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import xlsx from 'xlsx';
 
 const convertTime = (excelTime: string): string => {
@@ -35,6 +35,11 @@ const ImportSheet = () => {
     const { uploadNewClasses } = useCalendarContext();
     const [parsedClasses, setParsedClasses] = useState<CombinedClass[]>([]);
     const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set());
+
+    // Create a unique identifier for each class
+    const getUniqueClassId = useCallback((cls: CombinedClass): string => {
+        return `${cls.classData.class_num}-${cls.classData.section}-${cls.classProperties.room}-${cls.classProperties.instructor_name}-${cls.classProperties.days.join(',')}-${cls.classProperties.start_time}`;
+    }, []);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
@@ -194,12 +199,12 @@ const ImportSheet = () => {
 
         setParsedClasses(combinedClasses);
         // Initially select all classes
-        setSelectedClasses(new Set(combinedClasses.map(c => c.classData.class_num)));
+        setSelectedClasses(new Set(combinedClasses.map(c => getUniqueClassId(c))));
     };
 
     const handleImport = () => {
         const classesToImport = parsedClasses.filter(c =>
-            selectedClasses.has(c.classData.class_num)
+            selectedClasses.has(getUniqueClassId(c))
         );
         uploadNewClasses(classesToImport);
         router.back();
@@ -220,9 +225,9 @@ const ImportSheet = () => {
             </div>
 
             {parsedClasses.length > 0 && (
-                <div className="mt-8">
+                <div className="mt-4">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Classes to Import ({parsedClasses.length})</h2>
+                        <h2 className="text-xl font-semibold">Classes to Import ({selectedClasses.size})</h2>
                         <button
                             onClick={handleImport}
                             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
@@ -231,20 +236,21 @@ const ImportSheet = () => {
                             Import Selected Classes ({selectedClasses.size})
                         </button>
                     </div>
-                    <div className="overflow-auto max-h-[60vh]">
+                    <div className="overflow-auto max-h-[50vh]">
                         <table className="min-w-full border">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="p-2 border">
+                                    <th className="p-2 border text-center">
                                         <input
                                             type="checkbox"
-                                            checked={selectedClasses.size === parsedClasses.length}
+                                            checked={selectedClasses.size === parsedClasses.length && parsedClasses.length > 0}
                                             onChange={(e) => {
                                                 if (e.target.checked) {
-                                                    setSelectedClasses(new Set(parsedClasses.map(c => c.classData.class_num)));
+                                                    setSelectedClasses(new Set(parsedClasses.map(c => getUniqueClassId(c))));
                                                 } else {
                                                     setSelectedClasses(new Set());
                                                 }
+                                                console.log(selectedClasses.size);
                                             }}
                                         />
                                     </th>
@@ -259,40 +265,44 @@ const ImportSheet = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {parsedClasses.map((cls) => (
-                                    <tr
-                                        key={`${cls.classData.class_num}-${cls.classData.course_subject + cls.classData.course_num}-${cls.classData.section}-${cls.classProperties.instructor_email}-${cls.classProperties.room}-${cls.classProperties.start_time + "-" + cls.classProperties.end_time}-${cls.classProperties.days.join(",")}-${cls.classProperties.class_status}`}
-                                        className="hover:bg-gray-50"
-                                    >
-                                        <td className="p-2 border">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedClasses.has(cls.classData.class_num)}
-                                                onChange={(e) => {
-                                                    const newSelected = new Set(selectedClasses);
-                                                    if (e.target.checked) {
-                                                        newSelected.add(cls.classData.class_num);
-                                                    } else {
-                                                        newSelected.delete(cls.classData.class_num);
-                                                    }
-                                                    setSelectedClasses(newSelected);
-                                                }}
-                                            />
-                                        </td>
-                                        <td className="p-2 border">{cls.classData.class_num}</td>
-                                        <td className="p-2 border">
-                                            {cls.classData.course_subject} {cls.classData.course_num}
-                                        </td>
-                                        <td className="p-2 border">{cls.classData.title}</td>
-                                        <td className="p-2 border">{cls.classProperties.days.join(', ')}</td>
-                                        <td className="p-2 border">
-                                            {cls.classProperties.start_time} - {cls.classProperties.end_time}
-                                        </td>
-                                        <td className="p-2 border">{cls.classProperties.instructor_name}</td>
-                                        <td className="p-2 border">{cls.classProperties.room}</td>
-                                        <td className="p-2 border">{cls.classData.location}</td>
-                                    </tr>
-                                ))}
+                                {parsedClasses.map((cls) => {
+                                    const uniqueId = getUniqueClassId(cls);
+                                    return (
+                                        <tr
+                                            key={uniqueId}
+                                            className="hover:bg-gray-50"
+                                        >
+                                            <td className="p-2 border text-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedClasses.has(uniqueId)}
+                                                    onChange={(e) => {
+                                                        const newSelected = new Set(selectedClasses);
+                                                        if (e.target.checked) {
+                                                            newSelected.add(uniqueId);
+                                                        } else {
+                                                            newSelected.delete(uniqueId);
+                                                        }
+                                                        setSelectedClasses(newSelected);
+                                                        console.log(selectedClasses.size);
+                                                    }}
+                                                />
+                                            </td>
+                                            <td className="p-2 border">{cls.classData.class_num}</td>
+                                            <td className="p-2 border">
+                                                {cls.classData.course_subject} {cls.classData.course_num}
+                                            </td>
+                                            <td className="p-2 border">{cls.classData.title}</td>
+                                            <td className="p-2 border">{cls.classProperties.days.join(', ')}</td>
+                                            <td className="p-2 border">
+                                                {cls.classProperties.start_time} - {cls.classProperties.end_time}
+                                            </td>
+                                            <td className="p-2 border">{cls.classProperties.instructor_name}</td>
+                                            <td className="p-2 border">{cls.classProperties.room}</td>
+                                            <td className="p-2 border">{cls.classData.location}</td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </table>
                     </div>
