@@ -132,9 +132,25 @@ const TagDisplay = () => {
                                 onMouseEnter={() => setHoveredTagId(keyValue)}
                                 onMouseLeave={() => setHoveredTagId(null)}
                             >
-                                <div className="flex justify-between items-center p-2 bg-gray-100 rounded">
-                                    <span>{displayValue} : 0 Classes</span>
-                                </div>
+                                <DropDown
+                                    buttonClassName="w-full"
+                                    renderButton={(isOpen) => (
+                                        <div className="flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
+                                            <span>{displayValue} : 0 Classes</span>
+                                            {isOpen ? <MdExpandLess /> : <MdExpandMore />}
+                                        </div>
+                                    )}
+                                    dropdownClassName="w-full mt-1"
+                                    renderDropdown={() => (
+                                        <div>
+                                            <ul className="flex flex-col gap-1 bg-white border rounded shadow-lg">
+                                                <div className="">
+                                                    <AddClassToTag tagId={keyValue} />
+                                                </div>
+                                            </ul>
+                                        </div>
+                                    )}
+                                />
                             </li>
                         );
                     })
