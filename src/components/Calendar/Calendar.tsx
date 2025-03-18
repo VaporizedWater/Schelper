@@ -5,7 +5,7 @@ import interactionPlugin, { EventResizeStopArg } from "@fullcalendar/interaction
 import timeGridPlugin from "@fullcalendar/timegrid";
 
 import { EventClickArg, EventDropArg } from "@fullcalendar/core";
-import { useRef } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { createEventFromCombinedClass, emptyCombinedClass, ShortenedDays } from "@/lib/common";
 
@@ -23,7 +23,12 @@ const viewFiveDays = {
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { setCurrentClass, updateOneClass, displayClasses, displayEvents } = useCalendarContext();
+    const { setCurrentClass, updateOneClass, detectConflicts, displayClasses, displayEvents, conflicts } = useCalendarContext();
+
+    // Detect conflicts when the calendar renders or updates
+    useEffect(() => {
+        detectConflicts();
+    }, [displayClasses]); // Re-detect conflicts when classes change
 
     function unselectAll() {
         selectedEvents.forEach(element => {
@@ -95,6 +100,25 @@ const Calendar = () => {
         }
     }
 
+    // Highlight conflicting events
+    const eventContent = (eventInfo: any) => {
+        const conflictClassIds = new Set(conflicts.flatMap(({ class1, class2 }) => [
+            class1.classData._id,
+            class2.classData._id
+        ]));
+
+        const isConflict = conflictClassIds.has(eventInfo.event.extendedProps.combinedClassId);
+
+        return {
+            html: `<div style="
+                             background-color: ${isConflict ? 'red' : '#3788d8'}; 
+                             color: white;
+                    ">
+                        ${eventInfo.event.title}
+                   </div>`
+        };
+    };
+
     return (
         <div className="h-full">
             <FullCalendar
@@ -118,6 +142,7 @@ const Calendar = () => {
                 eventDrop={handleEventDrop}
                 eventResize={handleEventResize}
                 dateClick={handleDateClick}
+                eventContent={eventContent}
             />
         </div>
     );
