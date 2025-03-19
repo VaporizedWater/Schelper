@@ -43,8 +43,7 @@ export default function CalendarSheet() {
         { value: "Tags" },
     ]], []);
 
-    // Convert allClasses data to our expected spreadsheet matrix.
-    const initialData: Matrix<{ value: string }> = [
+    const spreadsheetData = useMemo(() => [
         ...headers,
         ...allClasses.map((item) => [
             { value: String(item.classData.catalog_num) },
@@ -67,58 +66,40 @@ export default function CalendarSheet() {
             { value: String(item.classData.waitlist_cap) },
             { value: String(item.classProperties.tags.join(', ')) },
         ]),
-    ];
+    ], [allClasses, headers]);
 
-    const [pendingData, setPendingData] = useState<Matrix<{ value: string }>>(initialData);
+    const [pendingData, setPendingData] = useState<Matrix<{ value: string }>>(spreadsheetData);
 
-    // Reset pending data when allClasses changes
     useEffect(() => {
-        // Convert allClasses data to our expected spreadsheet matrix.
-        const newInitialData: Matrix<{ value: string }> = [
-            ...headers,
-            ...allClasses.map((item) => [
-                { value: String(item.classData.catalog_num) },
-                { value: String(item.classData.class_num) },
-                { value: String(item.classData.session) },
-                { value: String(item.classData.course_subject) },
-                { value: String(item.classData.course_num) },
-                { value: String(item.classData.section) },
-                { value: String(item.classData.title) },
-                { value: String(item.classData.location) },
-                { value: String(item.classProperties.class_status) },
-                { value: String(item.classProperties.start_time) },
-                { value: String(item.classProperties.end_time) },
-                { value: String(item.classProperties.facility_id) },
-                { value: String(item.classProperties.room) },
-                { value: String(item.classProperties.days.join(', ')) },
-                { value: String(item.classProperties.instructor_name) },
-                { value: String(item.classProperties.instructor_email) },
-                { value: String(item.classData.enrollment_cap) },
-                { value: String(item.classData.waitlist_cap) },
-                { value: String(item.classProperties.tags.join(', ')) },
-            ]),
-        ];
-
-        setPendingData(newInitialData);
+        setPendingData(spreadsheetData);
         setModifiedRows(new Set());
         setUpdateStatus(null);
-    }, [allClasses, headers]);
+    }, [spreadsheetData]);
 
     // Handle changes and track modified rows
-    const handleSpreadsheetChange = (newData: Matrix<{ value: string }>, cell?: { row: number, column: number }) => {
-        setPendingData(newData);
+    const handleSpreadsheetChange = (newData: Matrix<{ value: string }>) => {
+        // Find which rows were modified by comparing with current pendingData
+        // Skip the header row (index 0)
+        for (let rowIdx = 1; rowIdx < newData.length; rowIdx++) {
+            const newRow = newData[rowIdx];
+            const oldRow = pendingData[rowIdx];
 
-        // Track which row was modified (if cell info is available)
-        if (cell && cell.row > 0) {
-            setModifiedRows(prev => {
-                const newSet = new Set(prev);
-                newSet.add(cell.row - 1); // Subtract 1 to account for header row
-                return newSet;
-            });
+            // Check if any cell in this row changed
+            let rowChanged = false;
+            for (let cellIdx = 0; cellIdx < newRow.length; cellIdx++) {
+                if (newRow[cellIdx]?.value !== oldRow[cellIdx]?.value) {
+                    rowChanged = true;
+                    break;
+                }
+            }
+
+            // If the row changed, add its index (adjusted for data rows only) to modifiedRows
+            if (rowChanged) {
+                setModifiedRows(prev => new Set([...prev, rowIdx - 1]));
+            }
         }
 
-        // Clear any previous status message when changes are made
-        setUpdateStatus(null);
+        setPendingData(newData);
     };
 
     // Process updates when Enter is pressed
@@ -131,8 +112,6 @@ export default function CalendarSheet() {
     // Move the update logic to a separate async function
     const processUpdates = async () => {
         // If no rows were modified, no need to process updates
-        if (modifiedRows.size === 0) return;
-
         setIsUpdating(true);
         setUpdateStatus(null);
 
@@ -248,21 +227,31 @@ export default function CalendarSheet() {
             {/* Status and notification area */}
             <div className="flex-none">
                 {updateStatus && (
-                    <div className={`mb-4 p-2 rounded ${updateStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    <div className={`mx-auto mb-4 p-2 rounded ${updateStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
                         {updateStatus.message}
                     </div>
                 )}
-
+                {/* 
                 {isUpdating && (
                     <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded">
                         Updating classes... Please wait.
                     </div>
-                )}
+                )} */}
 
                 {modifiedRows.size > 0 && (
-                    <div className="mb-2 text-sm text-gray-600">
-                        {modifiedRows.size} row(s) modified. Press Enter to save changes.
+                    <div className="mb-4 p-2 bg-yellow-100 text-yellow-800 rounded">
+                        <p><strong>{modifiedRows.size}</strong> row(s) modified. Press Enter to save changes.</p>
+                        <p className="text-sm mt-1">
+                            Modified rows: {Array.from(modifiedRows)
+                                .sort((a, b) => a - b)
+                                .map(idx => {
+                                    const rowData = pendingData[idx + 1]; // +1 for header
+                                    const courseInfo = `${rowData[3]?.value || ''} ${rowData[4]?.value || ''}-${rowData[5]?.value || ''}`;
+                                    return `Row ${idx + 1} (${courseInfo})`;
+                                })
+                                .join(', ')}
+                        </p>
                     </div>
                 )}
             </div>
@@ -271,7 +260,7 @@ export default function CalendarSheet() {
             <div className="flex-grow overflow-auto h-[calc(100vh-220px)]">
                 <Spreadsheet
                     data={pendingData}
-                    onChange={isUpdating ? undefined : handleSpreadsheetChange}
+                    onChange={handleSpreadsheetChange}
                     onKeyDown={handleKeyDown}
                     className="w-full"
                 />
