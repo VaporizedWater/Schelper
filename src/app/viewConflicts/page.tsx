@@ -60,7 +60,7 @@ const ViewConflicts = () => {
                         <DropDown
                             buttonClassName="w-full"
                             renderButton={(isOpen) => (
-                                <div className="hover:bg-red-50 flex justify-between items-center p-2 bg-red-100 rounded cursor-pointer">
+                                <div className="hover:bg-red-50 flex justify-between items-center p-2 bg-red-100 rounded-sm cursor-pointer">
                                     <span className="text-red-800">
                                         Conflict {index + 1}: {conflict.class1.classData.title} ⚡ {conflict.class2.classData.title}
                                     </span>
@@ -71,7 +71,7 @@ const ViewConflicts = () => {
                             )}
                             dropdownClassName="w-full mt-1"
                             renderDropdown={() => (
-                                <div className="bg-white border rounded shadow-lg p-4">
+                                <div className="bg-white border rounded-sm shadow-lg p-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <h3 className="font-semibold">{conflict.class1.classData.title}</h3>

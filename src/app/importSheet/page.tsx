@@ -230,7 +230,7 @@ const ImportSheet = () => {
                         <h2 className="text-xl font-semibold">Classes to Import ({selectedClasses.size})</h2>
                         <button
                             onClick={handleImport}
-                            className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+                            className="px-4 py-2 bg-green-500 text-white rounded-sm hover:bg-green-600"
                             data-testid="import-selected-classes"
                         >
                             Import Selected Classes ({selectedClasses.size})

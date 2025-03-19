@@ -62,14 +62,14 @@ const TagDisplay = () => {
                                 <DropDown
                                     buttonClassName="w-full"
                                     renderButton={(isOpen) => (
-                                        <div className="hover:bg-grayblue flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
+                                        <div className="hover:bg-grayblue flex justify-between items-center p-2 bg-gray-100 rounded-sm cursor-pointer">
                                             <span>
                                                 {tagId} : {tagData.classIds.size} Class
                                                 {tagData.classIds.size > 1 ? "es" : ""}
                                             </span>
                                             <div className="flex items-center gap-2">
                                                 {hoveredTagId === tagId && (
-                                                    <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
+                                                    <div className="hover:bg-gray-300 p-1 rounded-sm cursor-pointer" onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleTagUnlink(tagId)
                                                     }}>
@@ -85,7 +85,7 @@ const TagDisplay = () => {
                                     dropdownClassName="w-full mt-1"
                                     renderDropdown={() => (
                                         <div>
-                                            <ul className="flex flex-col gap-1 bg-white border rounded shadow-lg">
+                                            <ul className="flex flex-col gap-1 bg-white border rounded-sm shadow-lg">
                                                 {Array.from(tagData.classIds).map((classId) => {
                                                     const foundClass = allClasses.find(
                                                         (cls) => String(cls.classData._id) === classId
@@ -98,7 +98,7 @@ const TagDisplay = () => {
                                                         >
                                                             {foundClass ? foundClass.classData.title : classId}
                                                             {hoveredTagClassId && hoveredTagClassId[0] === tagId && hoveredTagClassId[1] === classId && (
-                                                                <div className="hover:bg-gray-300 p-1 rounded cursor-pointer" onClick={(e) => {
+                                                                <div className="hover:bg-gray-300 p-1 rounded-sm cursor-pointer" onClick={(e) => {
                                                                     e.stopPropagation();
                                                                     handleClassUnlink(tagId, classId)
                                                                 }}>
@@ -135,7 +135,7 @@ const TagDisplay = () => {
                                 <DropDown
                                     buttonClassName="w-full"
                                     renderButton={(isOpen) => (
-                                        <div className="flex justify-between items-center p-2 bg-gray-100 rounded cursor-pointer">
+                                        <div className="flex justify-between items-center p-2 bg-gray-100 rounded-sm cursor-pointer">
                                             <span>{displayValue} : 0 Classes</span>
                                             {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                                         </div>
@@ -143,7 +143,7 @@ const TagDisplay = () => {
                                     dropdownClassName="w-full mt-1"
                                     renderDropdown={() => (
                                         <div>
-                                            <ul className="flex flex-col gap-1 bg-white border rounded shadow-lg">
+                                            <ul className="flex flex-col gap-1 bg-white border rounded-sm shadow-lg">
                                                 <div className="">
                                                     <AddClassToTag tagId={keyValue} />
                                                 </div>

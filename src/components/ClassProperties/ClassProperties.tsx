@@ -209,7 +209,7 @@ const ClassProperties = () => {
                                         type="checkbox"
                                         checked={tags.includes(tag)}
                                         onChange={(e) => handleTagCheck(tag, e.target.checked)}
-                                        className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded shadow hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                                        className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
                                     />
                                     <span>{tag}</span>
                                 </label>
