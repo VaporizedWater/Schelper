@@ -48,7 +48,7 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
     return (
         <DropDown
             renderButton={(isOpen) => (
-                <div className="flex flex-row items-center bg-blue-500 text-white rounded px-2 py-1 ">
+                <div className="flex flex-row items-center bg-blue-500 text-white rounded-sm px-2 py-1 ">
                     <BiLink className="text-xl" />
                     <p>
                         Link Class
@@ -57,7 +57,7 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
                 </div>
             )}
             renderDropdown={() => (
-                <ul className="bg-white border rounded shadow-lg">
+                <ul className="bg-white border rounded-sm shadow-lg">
                     {availableClasses.length ? (
                         availableClasses.map((c) => (
                             <li

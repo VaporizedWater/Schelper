@@ -32,7 +32,7 @@ const AddTag = () => {
                 value={tag}
                 onChange={(e) => setTag(e.target.value)}
                 placeholder="Enter tag name"
-                className="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 border rounded-sm focus:outline-hidden focus:ring-2 focus:ring-blue-500"
                 autoFocus
             />
 

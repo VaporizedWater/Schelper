@@ -227,14 +227,14 @@ export default function CalendarSheet() {
             {/* Status and notification area */}
             <div className="flex-none">
                 {updateStatus && (
-                    <div className={`mx-auto mb-4 p-2 rounded ${updateStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                    <div className={`mb-4 p-2 rounded-sm ${updateStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                         }`}>
                         {updateStatus.message}
                     </div>
                 )}
                 {/* 
                 {isUpdating && (
-                    <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded">
+                    <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded-sm">
                         Updating classes... Please wait.
                     </div>
                 )} */}
@@ -257,7 +257,7 @@ export default function CalendarSheet() {
             </div>
 
             {/* Spreadsheet container with explicit height */}
-            <div className="flex-grow overflow-auto h-[calc(100vh-220px)]">
+            <div className="grow overflow-auto h-[calc(100vh-220px)]">
                 <Spreadsheet
                     data={pendingData}
                     onChange={handleSpreadsheetChange}
