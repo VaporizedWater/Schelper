@@ -95,9 +95,23 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
                     class2.classProperties.instructor_name &&
                     class1.classProperties.instructor_name === class2.classProperties.instructor_name;
 
+                // Determine conflict type
+                let conflictType = null;
+                if (roomConflict && instructorConflict) {
+                    conflictType = "both";
+                } else if (roomConflict) {
+                    conflictType = "room";
+                } else if (instructorConflict) {
+                    conflictType = "instructor";
+                }
+
                 // Register conflict only if time overlaps AND there's either a room or instructor conflict
-                if (roomConflict || instructorConflict) {
-                    conflicts.push({ class1, class2 });
+                if (conflictType) {
+                    conflicts.push({
+                        class1,
+                        class2,
+                        conflictType
+                    });
                     dayConflictCache.get(cacheKey).push(class2.classData._id);
                 }
             } else if (class2Start >= class1End) {

@@ -74,6 +74,7 @@ export type ProviderProps = {
 export type ConflictType = {
     class1: CombinedClass;
     class2: CombinedClass;
+    conflictType: string;
 };
 
 export type CalendarContextType = {

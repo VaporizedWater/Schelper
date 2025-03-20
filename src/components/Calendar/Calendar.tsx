@@ -100,22 +100,43 @@ const Calendar = () => {
         }
     }
 
-    // Highlight conflicting events
+    // Highlight conflicting events with appropriate colors based on conflict type
     const eventContent = (eventInfo: EventInput) => {
-        const conflictClassIds = new Set(conflicts.flatMap(({ class1, class2 }) => [
-            class1.classData._id,
-            class2.classData._id
-        ]));
+        const classId = eventInfo.event.extendedProps.combinedClassId;
 
-        const isConflict = conflictClassIds.has(eventInfo.event.extendedProps.combinedClassId);
+        // Find conflicts involving this class
+        const classConflicts = conflicts.filter(conflict =>
+            conflict.class1.classData._id === classId ||
+            conflict.class2.classData._id === classId
+        );
+
+        // Default color if no conflict
+        let backgroundColor = '#3788d8';
+
+        if (classConflicts.length > 0) {
+            // Determine most severe conflict type (both > room > instructor)
+            const hasBothConflict = classConflicts.some(c => c.conflictType === "both");
+            const hasRoomConflict = classConflicts.some(c => c.conflictType === "room");
+            const hasInstructorConflict = classConflicts.some(c => c.conflictType === "instructor");
+
+            if (hasBothConflict) {
+                backgroundColor = 'red'; // Room + Instructor conflict
+            } else if (hasRoomConflict) {
+                backgroundColor = '#f59e0b'; // Amber for room conflicts
+            } else if (hasInstructorConflict) {
+                backgroundColor = '#f97316'; // Orange for instructor conflicts
+            }
+        }
 
         return {
             html: `<div style="
-                             background-color: ${isConflict ? 'red' : '#3788d8'}; 
-                             color: white;
-                    ">
-                        ${eventInfo.event.title}
-                   </div>`
+                    background-color: ${backgroundColor}; 
+                    color: white;
+                    padding: 2px 4px;
+                    border-radius: 2px;
+                ">
+                    ${eventInfo.event.title}
+                </div>`
         };
     };
 
