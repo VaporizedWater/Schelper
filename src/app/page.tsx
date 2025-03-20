@@ -4,30 +4,43 @@ import React, { useState, useEffect } from "react";
 import Footer from '@/components/Footer/Footer';
 import Image from 'next/image';
 import logo from '../lib/icons';
-// import { useRouter } from 'next/navigation';
 import Link from "next/link";
 
 const Home = () => {
-    const [backgroundUrl, setBackgroundUrl] = useState("/wcispsu.jpg");
-    // const router = useRouter();
+    const images = ["/wcispsu.jpg", "/NittanyLionShrine.jpg", "/PSU_Light_Dark.jpg"];
+    const [currentImage, setCurrentImage] = useState(images[0]);
+    const [nextImage, setNextImage] = useState(images[1]);
+    const [opacity, setOpacity] = useState(1);
 
     useEffect(() => {
-        const images = ["/wcispsu.jpg", "/NittanyLionShrine.jpg", "/PSU_Light_Dark.jpg"];
         let index = 0;
+        const cycleImages = () => {
+            setNextImage(images[(index + 1) % images.length]);
+            setOpacity(0);
 
-        const interval = setInterval(() => {
-            index = (index + 1) % images.length;
-            setBackgroundUrl(images[index]);
-        }, 5000);
+            setTimeout(() => {
+                setCurrentImage(images[(index + 1) % images.length]);
+                setOpacity(1);
+                index = (index + 1) % images.length;
+            }, 5000);
+        };
 
+        const interval = setInterval(cycleImages, 5000);
         return () => clearInterval(interval);
     }, []);
 
     return (
-        <div className='flex flex-col'>
-            <div className="bg-center bg-cover h-screen max-w-screen flex flex-col items-center justify-center transition-all duration-500 ease-in-out"
-                style={{ backgroundImage: `url(${backgroundUrl})` }}>
-                <div className='text-center backdrop-blur-[1px] p-8'>
+        <div className='flex flex-col h-screen'>
+            <div className="h-full w-full">
+                {/* Current image */}
+                <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
+                     style={{ backgroundImage: `url(${currentImage})`, opacity }}>
+                </div>
+                {/* Next image */}
+                <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
+                     style={{ backgroundImage: `url(${nextImage})`, opacity: 1 - opacity }}>
+                </div>
+                <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
                     <h1 className='text-lightblue text-8xl font-bold flex items-center justify-center gap-4'>
                         <Image src={logo} height={55} alt="Schelper Icon" />
                         Schelper
