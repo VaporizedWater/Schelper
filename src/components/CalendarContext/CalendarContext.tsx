@@ -4,18 +4,21 @@ import { createContext, useContext, useEffect, useMemo, useReducer, useState } f
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ProviderProps, tagListType } from '@/lib/types';
 import { EventInput } from '@fullcalendar/core/index.js';
 import { bulkUpdateClasses, loadAllCombinedClasses, loadAllTags, updateCombinedClass } from '@/lib/utils';
-import { createEventFromCombinedClass, dayToDate, initialCalendarState } from '@/lib/common';
+import { createEventsFromCombinedClass, dayToDate, initialCalendarState } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
 // Helper functions
 const createEventsFromClasses = (classes: CombinedClass[]): EventInput[] => {
-    return classes
-        .filter(cls => cls.classProperties.days?.[0]) // Filter classes with days
-        .map(cls => {
-            cls.event = createEventFromCombinedClass(cls);
-            return cls.event;
-        });
+    const events: EventInput[] = [];
+
+    classes.forEach(cls => {
+        const classEvents: EventInput[] = createEventsFromCombinedClass(cls);
+        cls.events = classEvents;
+        events.push(...classEvents);
+    });
+
+    return events;
 };
 
 const buildTagMapping = (classes: CombinedClass[]): tagListType => {
@@ -32,6 +35,12 @@ const buildTagMapping = (classes: CombinedClass[]): tagListType => {
 
     return mapping;
 };
+
+const detectClassConflicts2 = (classes: CombinedClass[]): ConflictType[] => {
+    const conflicts: ConflictType[] = [];
+
+    return conflicts;
+}
 
 // Rebuilt for efficiency - single sort with compound comparator
 const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
@@ -103,6 +112,10 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         case 'INITIALIZE_DATA': {
             const classes = action.payload.classes;
             const events = createEventsFromClasses(classes);
+
+            console.log('Classes:');
+            console.log(classes);
+
             const tagMapping = buildTagMapping(classes);
 
             return {
@@ -156,7 +169,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
         case 'UPDATE_CLASS': {
             const updatedClass = action.payload;
-            const updatedEvent = createEventFromCombinedClass(updatedClass);
+            const updatedEvent = createEventsFromCombinedClass(updatedClass);
 
             // Update the class in all collections
             const updateClassById = (classes: CombinedClass[]) =>
@@ -477,29 +490,35 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
 
         // Actions
         setCurrentClass: (cls: CombinedClass) => {
+            console.log('SET_CURRENT_CLASS');
             dispatch({ type: 'SET_CURRENT_CLASS', payload: cls });
         },
 
         updateOneClass: (cls: CombinedClass) => {
             updateCombinedClass(cls); // Update in database
+            console.log('UPDATE_CLASS');
             dispatch({ type: 'UPDATE_CLASS', payload: cls });
         },
 
         updateAllClasses: (classes: CombinedClass[]) => {
             const payload = { classes, tags: state.tags.all };
+            console.log('INITIALIZE_DATA');
             dispatch({ type: 'INITIALIZE_DATA', payload });
         },
 
         updateDisplayClasses: (classes: CombinedClass[]) => {
+            console.log('SET_DISPLAY_CLASSES');
             dispatch({ type: 'SET_DISPLAY_CLASSES', payload: classes });
         },
 
         detectConflicts: () => {
             const conflicts = detectClassConflicts(state.classes.all); // Changed this from state.classes.display to state.classes.all
+            console.log('SET_CONFLICTS');
             dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
         },
 
         unlinkTagFromClass: (tagId: string, classId: string) => {
+            console.log('UNLINK_TAG_FROM_CLASS');
             dispatch({ type: 'UNLINK_TAG_FROM_CLASS', payload: { tagId, classId } });
 
             // Find and update the class in the database
@@ -517,6 +536,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         },
 
         unlinkAllTagsFromClass: (classId: string) => {
+            console.log('UNLINK_ALL_TAGS_FROM_CLASS');
             dispatch({ type: 'UNLINK_ALL_TAGS_FROM_CLASS', payload: classId });
 
             // Find and update the class in the database
@@ -534,6 +554,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         },
 
         unlinkAllClassesFromTag: (tagId: string) => {
+            console.log('UNLINK_ALL_CLASSES_FROM_TAG');
             dispatch({ type: 'UNLINK_ALL_CLASSES_FROM_TAG', payload: tagId });
 
             // Update all affected classes in the database
@@ -555,6 +576,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
         },
 
         unlinkAllTagsFromAllClasses: () => {
+            console.log('UNLINK_ALL_TAGS_FROM_ALL_CLASSES');
             dispatch({ type: 'UNLINK_ALL_TAGS_FROM_ALL_CLASSES' });
 
             // Update all classes in the database
@@ -575,6 +597,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
             bulkUpdateClasses(classes)
                 .then(() => {
                     // Update local state
+                    console.log('UPLOAD_CLASSES');
                     dispatch({ type: 'UPLOAD_CLASSES', payload: classes });
 
                     // Force refresh data from server
@@ -582,6 +605,7 @@ export const CalendarProvider = ({ children }: ProviderProps) => {
                 })
                 .catch(error => {
                     console.error("Error uploading classes:", error);
+                    console.log('SET_ERROR');
                     dispatch({
                         type: 'SET_ERROR',
                         payload: 'Failed to upload classes. Please try again.'

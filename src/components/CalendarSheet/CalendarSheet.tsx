@@ -6,7 +6,7 @@ import Spreadsheet, { Matrix } from "react-spreadsheet";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { updateCombinedClass, bulkUpdateClasses } from "@/lib/utils";
-import { createEventFromCombinedClass } from "@/lib/common";
+import { createEventsFromCombinedClass } from "@/lib/common";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
@@ -177,16 +177,16 @@ export default function CalendarSheet() {
                     tags: row[18]?.value ? row[18].value.split(",").map((t) => t.trim()).sort() : [],
                 };
 
-                const newEvent: EventInput = createEventFromCombinedClass({
+                const newEvent: EventInput = createEventsFromCombinedClass({
                     classData: newData,
                     classProperties: newProperties,
-                    event: undefined
+                    events: undefined
                 } as CombinedClass);
 
                 return {
                     classData: newData,
                     classProperties: newProperties,
-                    event: newEvent
+                    events: newEvent
                 } as CombinedClass;
             }).filter(Boolean) as CombinedClass[];
 

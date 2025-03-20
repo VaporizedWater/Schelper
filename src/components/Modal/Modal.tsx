@@ -16,7 +16,7 @@ export default function Modal({ children }: ModalProps) {
 
     return (
         <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center"
             onClick={closeModal}
         >
             {/* Modal Content */}
@@ -25,7 +25,7 @@ export default function Modal({ children }: ModalProps) {
                 onClick={(e) => e.stopPropagation()} // Prevent click propagation
             >
                 <button
-                    className="absolute top-3 right-4 text-gray-500 hover:text-gray-700"
+                    className="absolute top-2 right-4 text-gray-500 hover:text-gray-700"
                     onClick={closeModal}
                 >
                     &#x2715;

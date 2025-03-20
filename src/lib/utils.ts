@@ -96,7 +96,7 @@ export async function loadCombinedClass(classId: string): Promise<CombinedClass>
         // Load properties
         const properties = await loadClassProperties(classId);
 
-        return { classData, classProperties: properties, event: undefined };
+        return { classData, classProperties: properties, events: undefined };
     } catch (error) {
         console.error(`Failed to load combined class ${classId}:`, error);
         return {} as CombinedClass;
@@ -137,7 +137,7 @@ export async function loadAllCombinedClasses(): Promise<CombinedClass[]> {
             return {
                 classData: classItem,
                 classProperties: props,
-                event: undefined,
+                events: undefined,
             };
         });
 

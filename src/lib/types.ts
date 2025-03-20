@@ -37,7 +37,7 @@ export type ClassProperty = {
 export type CombinedClass = {
     classData: Class;
     classProperties: ClassProperty;
-    event: EventInput | undefined;
+    events: EventInput | undefined;
 };
 
 export type DropDownProps = {
