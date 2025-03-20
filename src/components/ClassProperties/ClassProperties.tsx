@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
-import { createEventFromCombinedClass, DayDisplayEndings, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
+import { createEventFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
 
 const ClassProperties = () => {
     const { currentCombinedClass, updateOneClass, allTags } = useCalendarContext();
