@@ -81,12 +81,25 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
             if (class1Day !== class2Day) break;
 
             // Check for time overlap and conflict condition
-            if (class2Start < class1End &&
-                (class1.classProperties.room === class2.classProperties.room ||
-                    class1.classProperties.instructor_email === class2.classProperties.instructor_email)) {
+            if (class2Start < class1End) {
+                // Only check room conflict if both rooms exist and are non-empty
+                const roomConflict = class1.classProperties.room &&
+                    class2.classProperties.room &&
+                    class1.classProperties.room === class2.classProperties.room;
 
-                conflicts.push({ class1, class2 });
-                dayConflictCache.get(cacheKey).push(class2.classData._id);
+                // Only check instructor conflict if both instructor emails exist and are non-empty
+                const instructorConflict = class1.classProperties.instructor_email &&
+                    class2.classProperties.instructor_email &&
+                    class1.classProperties.instructor_email === class2.classProperties.instructor_email ||
+                    class1.classProperties.instructor_name &&
+                    class2.classProperties.instructor_name &&
+                    class1.classProperties.instructor_name === class2.classProperties.instructor_name;
+
+                // Register conflict only if time overlaps AND there's either a room or instructor conflict
+                if (roomConflict || instructorConflict) {
+                    conflicts.push({ class1, class2 });
+                    dayConflictCache.get(cacheKey).push(class2.classData._id);
+                }
             } else if (class2Start >= class1End) {
                 // No more possible conflicts with class1
                 break;
@@ -94,6 +107,7 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
         }
     }
 
+    console.log('Conflicts:', JSON.stringify(conflicts));
     return conflicts;
 };
 

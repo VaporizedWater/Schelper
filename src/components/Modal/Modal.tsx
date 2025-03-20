@@ -16,23 +16,23 @@ export default function Modal({ children }: ModalProps) {
 
     return (
         <div
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
             onClick={closeModal}
         >
             {/* Modal Content */}
             <div
-                className="bg-white min-w-fit w-[80%] md:w-[50%] rounded-lg relative overflow-y-auto scrollbar-thin"
+                className="bg-white min-w-fit w-[85%] md:w-[60%] rounded-lg relative max-h-[85vh] min-h-[50vh] flex flex-col pb-8 pt-4"
                 onClick={(e) => e.stopPropagation()} // Prevent click propagation
             >
                 <button
-                    className="absolute top-3 right-4 text-gray-500 hover:text-gray-700"
+                    className="absolute top-3 right-4 text-gray-500 hover:text-gray-700 z-10 cursor-pointer"
                     onClick={closeModal}
                 >
                     &#x2715;
                 </button>
 
                 {/* Modal Content */}
-                <div className="max-h-[75vh] min-h-fit p-2">
+                <div className="px-8 overflow-y-auto flex-1 mt-8">
                     {children}
                 </div>
             </div>

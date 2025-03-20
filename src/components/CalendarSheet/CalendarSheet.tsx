@@ -14,7 +14,7 @@ export default function CalendarSheet() {
 
     // Track modified rows for efficient updates
     const [modifiedRows, setModifiedRows] = useState<Set<number>>(new Set());
-    const [isUpdating, setIsUpdating] = useState(false);
+    const [, setIsUpdating] = useState(false);
     const [updateStatus, setUpdateStatus] = useState<{ success: boolean; message: string } | null>(null);
 
     // Compute a hidden mapping of row index (starting at 0 for first data row) to class id.

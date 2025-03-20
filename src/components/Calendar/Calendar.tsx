@@ -4,8 +4,8 @@ import FullCalendar from "@fullcalendar/react";
 import interactionPlugin, { EventResizeStopArg } from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 
-import { EventClickArg, EventDropArg } from "@fullcalendar/core";
-import { useRef, useMemo, useEffect } from "react";
+import { EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
+import { useRef, useEffect } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { createEventFromCombinedClass, emptyCombinedClass, ShortenedDays } from "@/lib/common";
 
@@ -101,7 +101,7 @@ const Calendar = () => {
     }
 
     // Highlight conflicting events
-    const eventContent = (eventInfo: any) => {
+    const eventContent = (eventInfo: EventInput) => {
         const conflictClassIds = new Set(conflicts.flatMap(({ class1, class2 }) => [
             class1.classData._id,
             class2.classData._id

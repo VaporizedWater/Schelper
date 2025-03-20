@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@atlaskit/pragmatic-drag-and-drop':
-        specifier: ^1.4.0
+        specifier: ^1.5.2
         version: 1.5.2
       '@fullcalendar/core':
         specifier: ^6.1.15
@@ -30,16 +30,16 @@ importers:
         specifier: ^16.4.7
         version: 16.4.7
       jspdf:
-        specifier: ^3.0.0
+        specifier: ^3.0.1
         version: 3.0.1
       jspdf-autotable:
         specifier: ^5.0.2
         version: 5.0.2(jspdf@3.0.1)
       mongodb:
-        specifier: ^6.10.0
+        specifier: ^6.15.0
         version: 6.15.0
       next:
-        specifier: ^15.1.7
+        specifier: ^15.2.3
         version: 15.2.3(@playwright/test@1.51.1)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react:
         specifier: 18.3.1
@@ -48,7 +48,7 @@ importers:
         specifier: 18.3.1
         version: 18.3.1(react@18.3.1)
       react-icons:
-        specifier: ^5.3.0
+        specifier: ^5.5.0
         version: 5.5.0(react@18.3.1)
       react-spreadsheet:
         specifier: ^0.9.5
@@ -60,14 +60,14 @@ importers:
         specifier: ^0.33.5
         version: 0.33.5
       usehooks-ts:
-        specifier: ^3.1.0
+        specifier: ^3.1.1
         version: 3.1.1(react@18.3.1)
       xlsx:
         specifier: https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz
         version: https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz
     devDependencies:
       '@playwright/test':
-        specifier: ^1.50.1
+        specifier: ^1.51.1
         version: 1.51.1
       '@tailwindcss/postcss':
         specifier: ^4.0.14
@@ -76,22 +76,22 @@ importers:
         specifier: ^10.4.0
         version: 10.4.0
       '@types/node':
-        specifier: ^22.9.0
+        specifier: ^22.13.10
         version: 22.13.10
       '@types/react':
-        specifier: ^18
+        specifier: ^18.3.19
         version: 18.3.19
       '@types/react-dom':
-        specifier: ^18
+        specifier: ^18.3.5
         version: 18.3.5(@types/react@18.3.19)
       eslint:
-        specifier: ^9
+        specifier: ^9.22.0
         version: 9.22.0(jiti@2.4.2)
       eslint-config-next:
         specifier: 15.0.3
         version: 15.0.3(eslint@9.22.0(jiti@2.4.2))(typescript@5.8.2)
       postcss:
-        specifier: ^8
+        specifier: ^8.5.3
         version: 8.5.3
       tailwindcss:
         specifier: ^4.0.14
@@ -100,7 +100,7 @@ importers:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.13.10)(typescript@5.8.2)
       typescript:
-        specifier: ^5
+        specifier: ^5.8.2
         version: 5.8.2
 
 packages:

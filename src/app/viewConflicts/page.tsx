@@ -19,10 +19,10 @@ const ViewConflicts = () => {
         };
         loadConflicts();
     }, []); // because useReducer is the same as a complex useState, calling detectConflicts() 
-            // while also depending on detectConflicts in an async function will cause the calendar
-            // behind the modal to re-render in an infinite loop, which will spam the console with 
-            // errors and slow down the browser, with enough delay that it doesn't outright crash.
-            // By removing all dependencies, useEffect will only run once.
+    // while also depending on detectConflicts in an async function will cause the calendar
+    // behind the modal to re-render in an infinite loop, which will spam the console with 
+    // errors and slow down the browser, with enough delay that it doesn't outright crash.
+    // By removing all dependencies, useEffect will only run once. - THANKS, `JAMES`!
 
     // console.log(JSON.stringify(conflicts));
 
