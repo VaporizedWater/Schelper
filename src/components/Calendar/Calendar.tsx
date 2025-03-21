@@ -25,7 +25,8 @@ const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
     const { setCurrentClass, updateOneClass, detectConflicts, displayClasses, displayEvents, conflicts } = useCalendarContext();
 
-    
+    // Add this to maintain event source reference
+    const eventsRef = useRef(displayEvents);
 
     // Detect conflicts when the calendar renders or updates
     useEffect(() => {
@@ -71,6 +72,8 @@ const Calendar = () => {
         if (foundClass) {
             console.log("Class found");
             setCurrentClass(foundClass);
+
+            console.log("Current class: ", foundClass);
         } else {
             console.log("Class not found");
         }
@@ -91,9 +94,10 @@ const Calendar = () => {
             const newStart = info.event.start?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
             const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
             const newDay = ShortenedDays[(info.event.start?.getDay() ?? 1) - 1];
-            console.log(newStart + "\n", newEnd + "\n", newDay + "\n");
+            console.log("newStart: " + newStart + "\n", "newEnd: " + newEnd + "\n", "newDay: " + newDay + "\n");
 
             if (!newStart || !newEnd || !newDay) {
+                info.revert();
                 return;
             }
 
@@ -102,7 +106,10 @@ const Calendar = () => {
             foundClass.properties.days = [newDay];
             foundClass.events = createEventsFromCombinedClass(foundClass);
 
+            console.log("LOOK HERE!", foundClass.events);
+
             updateOneClass(foundClass);
+
         }
     }
 
@@ -118,6 +125,8 @@ const Calendar = () => {
 
             foundClass.properties.end_time = newEnd;
             foundClass.events = createEventsFromCombinedClass(foundClass);
+
+            console.log("LOOK HERE22!", foundClass.events);
             updateOneClass(foundClass);
         }
     }

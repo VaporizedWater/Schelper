@@ -71,10 +71,9 @@ export async function getTag(tagId: string): Promise<string | null> {
     }
 }
 
-
 export async function loadCombinedClasses(classIds: string[] | null): Promise<CombinedClass[]> {
     try {
-        const headers = {ids: ""};
+        const headers = { ids: "" };
         if (classIds !== null && classIds.length > 0) {
             headers.ids = classIds.join(",");
         }
@@ -92,7 +91,7 @@ export async function loadCombinedClasses(classIds: string[] | null): Promise<Co
 
         return [] as CombinedClass[];
     } catch (error) {
-        console.error('Failed to load combined classes:', error);
+        console.error("Failed to load combined classes:", error);
         return [] as CombinedClass[];
     }
 }
@@ -102,11 +101,16 @@ export async function loadCombinedClasses(classIds: string[] | null): Promise<Co
 // Insert combined class
 export async function insertCombinedClasses(combinedClasses: CombinedClass[]): Promise<boolean> {
     try {
-        combinedClasses.map(cls => cls.events = undefined);
+        // Create a deep copy to avoid mutating the original objects
+        const classesToSend = combinedClasses.map((cls) => ({
+            ...cls,
+            events: undefined, // Only set events to undefined in the copy
+        }));
+
         const response = await fetchWithTimeout("api/combined_classes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(combinedClasses),
+            body: JSON.stringify(classesToSend),
         });
 
         const result = await parseJsonResponse<{ success: boolean }>(response);
@@ -146,11 +150,16 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[]): P
     console.log(combinedClasses);
 
     try {
-        combinedClasses.map(cls => cls.events = undefined);
+        // Create a deep copy to avoid mutating the original objects
+        const classesToSend = combinedClasses.map((cls) => ({
+            ...cls,
+            events: undefined, // Only set events to undefined in the copy
+        }));
+
         const response = await fetchWithTimeout("api/combined_classes", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(combinedClasses),
+            body: JSON.stringify(classesToSend),
         });
 
         const result = await parseJsonResponse<{ success: boolean }>(response);

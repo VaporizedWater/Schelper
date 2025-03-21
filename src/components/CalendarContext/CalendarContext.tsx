@@ -12,7 +12,10 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 const createEventsFromClasses = (classes: CombinedClass[]): EventInput[] => {
     const events: EventInput[] = [];
 
-    if (classes.length === 0 || classes === undefined) return events;
+    if (classes.length === 0 || classes === undefined) {
+        console.log("No classes found. Now undef");
+        return events;
+    }
 
     console.log(typeof classes);
     console.log(classes);
@@ -191,16 +194,17 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
         case 'UPDATE_CLASS': {
             const updatedClass = action.payload;
-            const updatedEvent = createEventsFromCombinedClass(updatedClass);
+            const updatedEvents = createEventsFromCombinedClass(updatedClass);
 
             // Update the class in all collections
             const updateClassById = (classes: CombinedClass[]) =>
                 classes.map(c => c._id === updatedClass._id ? updatedClass : c);
 
-            // Update the event in all collections
-            const updateEventById = (events: EventInput[]) =>
-                events.map(e =>
-                    e.extendedProps?.combinedClassId === updatedClass._id ? updatedEvent : e
+            const updateEventsById = (events: EventInput[]) =>
+                events.flatMap(e =>
+                    e.extendedProps?.combinedClassId === updatedClass._id
+                        ? updatedEvents
+                        : [e]
                 );
 
             return {
@@ -211,8 +215,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     current: updatedClass
                 },
                 events: {
-                    all: updateEventById(state.events.all),
-                    display: updateEventById(state.events.display)
+                    all: updateEventsById(state.events.all),
+                    display: updateEventsById(state.events.display)
                 }
             };
         }
@@ -387,7 +391,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             // Update all classes to have empty tags
             const updatedClasses = state.classes.all.map(c => ({
                 ...c,
-                classProperties: {
+                properties: {
                     ...c.properties,
                     tags: []
                 }
@@ -514,10 +518,20 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             dispatch({ type: 'SET_CURRENT_CLASS', payload: cls });
         },
 
-        updateOneClass: (cls: CombinedClass) => {
-            updateCombinedClasses([cls]); // Update in database
-            console.log('UPDATE_CLASS');
-            dispatch({ type: 'UPDATE_CLASS', payload: cls });
+        updateOneClass: async (cls: CombinedClass) => {
+            console.log("This is the class: ", cls);
+            try {
+                console.log('UPDATE_CLASS');
+
+                await updateCombinedClasses([cls]);
+
+                dispatch({ type: 'UPDATE_CLASS', payload: cls });
+
+                return true;
+            } catch (error) {
+                console.error("Failed to update class:", error);
+                return false;
+            }
         },
 
         updateAllClasses: (classes: CombinedClass[]) => {
@@ -546,7 +560,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             if (classToUpdate) {
                 const updatedClass = {
                     ...classToUpdate,
-                    classProperties: {
+                    properties: {
                         ...classToUpdate.properties,
                         tags: classToUpdate.properties.tags.filter(t => t !== tagId)
                     }
@@ -564,7 +578,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             if (classToUpdate) {
                 const updatedClass = {
                     ...classToUpdate,
-                    classProperties: {
+                    properties: {
                         ...classToUpdate.properties,
                         tags: []
                     }
@@ -585,7 +599,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     .forEach(c => {
                         const updatedClass = {
                             ...c,
-                            classProperties: {
+                            properties: {
                                 ...c.properties,
                                 tags: c.properties.tags.filter(t => t !== tagId)
                             }
@@ -603,7 +617,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             state.classes.all.forEach(c => {
                 const updatedClass = {
                     ...c,
-                    classProperties: {
+                    properties: {
                         ...c.properties,
                         tags: []
                     }
