@@ -75,6 +75,14 @@ export async function POST(request: Request) {
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
+            let ID = new ObjectId(_id);
+
+            console.log('ID: "' + _id + '"');
+
+            if (_id === "") {
+                ID = new ObjectId();
+            }
+
             bulkOperations.push({
                 insertOne: {
                     document: {
@@ -111,17 +119,20 @@ export async function PUT(request: Request): Promise<Response> {
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
-            if (ObjectId.isValid(_id)) {
-                bulkOperations.push({
-                    updateOne: {
-                        filter: { _id: new ObjectId(_id) },
-                        update: { $set: updateData },
-                        upsert: true,
-                    },
-                });
+            let ID;
+            if (_id === "" || ObjectId.isValid(_id)) {
+                ID = new ObjectId();
             } else {
-                console.log("Invalid ID provided:", _id);
+                ID = new ObjectId(_id);
             }
+
+            bulkOperations.push({
+                updateOne: {
+                    filter: { _id: ID },
+                    update: { $set: updateData },
+                    upsert: true,
+                },
+            });
         });
 
         return doBulkOperation(bulkOperations);
