@@ -103,13 +103,6 @@ export async function PUT(request: Request): Promise<Response> {
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
-            let ID;
-            if (_id === "" || ObjectId.isValid(_id)) {
-                ID = new ObjectId();
-            } else {
-                ID = new ObjectId(_id);
-            }
-
             bulkOperations.push(
                 {
                     updateOne: {
