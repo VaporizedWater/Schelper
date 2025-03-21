@@ -67,13 +67,13 @@ export async function POST(request: Request) {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOps = combinedClasses.map((combinedClass) => ({
+        const bulkOps = combinedClasses.map(combinedClass => ({
             insertOne: {
                 document: {
                     ...combinedClass,
-                    _id: combinedClass._id ? new ObjectId(combinedClass._id) : new ObjectId(),
-                },
-            },
+                    _id: ObjectId.isValid(combinedClass._id) ? new ObjectId(combinedClass._id) : new ObjectId()
+                }
+            }
         }));
 
         return doBulkOperation(bulkOps);
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: { 'Content-Type': 'application/json' }
         });
     }
 }
