@@ -91,7 +91,7 @@ export default function CalendarSheet() {
                 console.log("id " + id);
                 const existing = allClasses.find((item) => item._id === id);
 
-                console.log("existing: ",existing);
+                console.log("existing: ", existing);
 
                 const newData: Class = {
                     catalog_num: row[0]?.value ?? '',
@@ -130,17 +130,14 @@ export default function CalendarSheet() {
                     _id: id,
                     data: newData,
                     properties: newProperties,
-                    events: newEvent
+                    events: undefined,
                 } as CombinedClass;
             }).filter(Boolean) as CombinedClass[];
-
-            if (classesToUpdate.length === 0) {
-                return;
-            }
 
             const success = await updateCombinedClasses(classesToUpdate);
 
             if (success) {
+                console.log("Classes updated successfully");
                 // Only update the context if database update was successful
 
                 // Create a new array with updated classes replacing the originals
