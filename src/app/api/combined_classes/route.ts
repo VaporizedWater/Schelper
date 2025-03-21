@@ -103,15 +103,17 @@ export async function PUT(request: Request): Promise<Response> {
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
-            bulkOperations.push(
-                {
-                    updateOne: {
-                        filter: { _id: new ObjectId(_id) },
-                        update: { $set: updateData },
-                        upsert: true,
+            if (ObjectId.isValid(_id)) {
+                bulkOperations.push(
+                    {
+                        updateOne: {
+                            filter: { _id: new ObjectId(_id) },
+                            update: { $set: updateData },
+                            upsert: true,
+                        }
                     }
-                }
-            )
+                )
+            }
         })
 
         return doBulkOperation(bulkOperations);
