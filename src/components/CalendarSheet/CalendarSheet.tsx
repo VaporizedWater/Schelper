@@ -12,11 +12,6 @@ export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
     const { allClasses, updateAllClasses, updateDisplayClasses } = useCalendarContext();
 
-    // Track modified rows for efficient updates
-    const [modifiedRows, setModifiedRows] = useState<Set<number>>(new Set());
-    const [, setIsUpdating] = useState(false);
-    const [updateStatus, setUpdateStatus] = useState<{ success: boolean; message: string } | null>(null);
-
     // Compute a hidden mapping of row index (starting at 0 for first data row) to class id.
     const classIds = allClasses.map((item) => item._id);
 
@@ -72,60 +67,29 @@ export default function CalendarSheet() {
 
     useEffect(() => {
         setPendingData(spreadsheetData);
-        setModifiedRows(new Set());
-        setUpdateStatus(null);
     }, [spreadsheetData]);
 
     // Handle changes and track modified rows
     const handleSpreadsheetChange = (newData: Matrix<{ value: string }>) => {
-        // Find which rows were modified by comparing with current pendingData
-        // Skip the header row (index 0)
-        for (let rowIdx = 1; rowIdx < newData.length; rowIdx++) {
-            const newRow = newData[rowIdx];
-            const oldRow = pendingData[rowIdx];
-
-            // Check if any cell in this row changed
-            let rowChanged = false;
-            for (let cellIdx = 0; cellIdx < newRow.length; cellIdx++) {
-                if (newRow[cellIdx]?.value !== oldRow[cellIdx]?.value) {
-                    rowChanged = true;
-                    break;
-                }
-            }
-
-            // If the row changed, add its index (adjusted for data rows only) to modifiedRows
-            if (rowChanged) {
-                setModifiedRows(prev => new Set([...prev, rowIdx - 1]));
-            }
-        }
-
         setPendingData(newData);
     };
 
     // Process updates when Enter is pressed
     const handleKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
-            processUpdates();
+            processUpdates(pendingData);
         }
     };
 
     // Move the update logic to a separate async function
-    const processUpdates = async () => {
-        // If no rows were modified, no need to process updates
-        setIsUpdating(true);
-        setUpdateStatus(null);
+    const processUpdates = async (newData: Matrix<{ value: string }>) => {
 
         try {
             // Prepare classes to update (only those that were modified)
-            const classesToUpdate: CombinedClass[] = Array.from(modifiedRows).map(rowIdx => {
-                const row = pendingData[rowIdx + 1]; // +1 because of header row
-                const id = classIds[rowIdx];
+            const classesToUpdate: CombinedClass[] = newData.slice(1).map((row, idx) => {
+                const id = classIds[idx]; // Get the id from the mapping
+                console.log("id " + id);
                 const existing = allClasses.find((item) => item._id === id);
-
-                if (!id || !existing) {
-                    console.warn(`Missing ID or existing class for row ${rowIdx + 1}`);
-                    return null;
-                }
 
                 const newData: Class = {
                     catalog_num: row[0]?.value ?? '',
@@ -161,6 +125,7 @@ export default function CalendarSheet() {
                 } as CombinedClass);
 
                 return {
+                    _id: id,
                     data: newData,
                     properties: newProperties,
                     events: newEvent
@@ -168,7 +133,6 @@ export default function CalendarSheet() {
             }).filter(Boolean) as CombinedClass[];
 
             if (classesToUpdate.length === 0) {
-                setUpdateStatus({ success: false, message: "No valid classes to update" });
                 return;
             }
 
@@ -187,73 +151,20 @@ export default function CalendarSheet() {
                 updateDisplayClasses(updatedAllClasses.filter(cls =>
                     classesToUpdate.some(u => u._id === cls._id)
                 ));
-
-                // Clear modified rows after successful update
-                setModifiedRows(new Set());
-                setUpdateStatus({
-                    success: true,
-                    message: `Successfully updated ${classesToUpdate.length} class(es)`
-                });
-            } else {
-                setUpdateStatus({
-                    success: false,
-                    message: "Failed to update classes. Please try again."
-                });
             }
         } catch (error) {
             console.error("Error updating classes:", error);
-            setUpdateStatus({
-                success: false,
-                message: `Error: ${error instanceof Error ? error.message : "Unknown error occurred"}`
-            });
-        } finally {
-            setIsUpdating(false);
         }
     };
 
     return (
-        <div className="flex flex-col h-full">
-            {/* Status and notification area */}
-            <div className="flex-none">
-                {updateStatus && (
-                    <div className={`mb-4 p-2 rounded-sm ${updateStatus.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}>
-                        {updateStatus.message}
-                    </div>
-                )}
-                {/* 
-                {isUpdating && (
-                    <div className="mb-4 p-2 bg-blue-100 text-blue-800 rounded-sm">
-                        Updating classes... Please wait.
-                    </div>
-                )} */}
-
-                {modifiedRows.size > 0 && (
-                    <div className="mb-4 p-2 bg-yellow-100 text-yellow-800 rounded">
-                        <p><strong>{modifiedRows.size}</strong> row(s) modified. Press Enter to save changes.</p>
-                        <p className="text-sm mt-1">
-                            Modified rows: {Array.from(modifiedRows)
-                                .sort((a, b) => a - b)
-                                .map(idx => {
-                                    const rowData = pendingData[idx + 1]; // +1 for header
-                                    const courseInfo = `${rowData[3]?.value || ''} ${rowData[4]?.value || ''}-${rowData[5]?.value || ''}`;
-                                    return `Row ${idx + 1} (${courseInfo})`;
-                                })
-                                .join(', ')}
-                        </p>
-                    </div>
-                )}
-            </div>
-
-            {/* Spreadsheet container with explicit height */}
-            <div className="grow overflow-auto h-[calc(100vh-220px)]">
-                <Spreadsheet
-                    data={pendingData}
-                    onChange={handleSpreadsheetChange}
-                    onKeyDown={handleKeyDown}
-                    className="w-full"
-                />
-            </div>
+        <div className="grow overflow-auto h-[calc(100vh-220px)]">
+            <Spreadsheet
+                data={pendingData}
+                onChange={handleSpreadsheetChange}
+                onKeyDown={handleKeyDown}
+                className="w-full"
+            />
         </div>
     );
 }
