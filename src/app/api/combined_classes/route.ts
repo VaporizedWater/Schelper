@@ -1,7 +1,8 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
-import { CombinedClass } from "@/lib/types";
+import { Class, ClassProperty, CombinedClass } from "@/lib/types";
+import { EventInput } from "@fullcalendar/core/index.js";
 import { AnyBulkWriteOperation, Collection, Document, ObjectId } from "mongodb";
 
 const client = await clientPromise;
@@ -64,18 +65,23 @@ export async function POST(request: Request) {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOps = combinedClasses.map((cc) => {
-            const { _id, ...updateData } = cc;
-            return {
-                insertOne: {
-                    document: {
-                        ...updateData,
+        const bulkOperations: AnyBulkWriteOperation<Document>[] | { insertOne: { document: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; }[] = [];
+
+        combinedClasses.forEach((cls: CombinedClass) => {
+            const { _id, ...updateData } = cls;
+
+            bulkOperations.push(
+                {
+                    insertOne: {
+                        document: {
+                            ...updateData,
+                        }
                     }
                 }
-            };
-        });
+            )
+        })
 
-        return doBulkOperation(bulkOps);
+        return doBulkOperation(bulkOperations);
     } catch (error) {
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
@@ -89,18 +95,23 @@ export async function PUT(request: Request): Promise<Response> {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOps = combinedClasses.map((cc) => {
-            const { _id, ...updateData } = cc;
-            return {
-                updateOne: {
-                    filter: { _id: new ObjectId(_id) },
-                    update: { $set: updateData },
-                    upsert: true,
-                },
-            };
-        });
+        const bulkOperations: AnyBulkWriteOperation<Document>[] | { updateOne: { filter: { _id: ObjectId; }; update: { $set: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; upsert: boolean; }; }[] = [];
 
-        return doBulkOperation(bulkOps);
+        combinedClasses.forEach((cls: CombinedClass) => {
+            const { _id, ...updateData } = cls;
+
+            bulkOperations.push(
+                {
+                    updateOne: {
+                        filter: { _id: new ObjectId(_id) },
+                        update: { $set: updateData },
+                        upsert: true,
+                    }
+                }
+            )
+        })
+
+        return doBulkOperation(bulkOperations);
     } catch (error) {
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
