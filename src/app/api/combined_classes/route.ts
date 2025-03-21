@@ -1,6 +1,5 @@
 "use server";
 
-import { documentToCombinedClass } from "@/lib/common";
 import clientPromise from "@/lib/mongodb";
 import { CombinedClass } from "@/lib/types";
 import { AnyBulkWriteOperation, Collection, Document, ObjectId } from "mongodb";
@@ -29,7 +28,8 @@ export async function GET(request: Request) {
         const headerId = request.headers.get("ids");
         const pipeline = [];
 
-        if (headerId) {
+        // Check if IDs are provided and are valid
+        if (headerId && headerId !== "") {
             const ids = headerId
                 .split(",")
                 .filter((id) => ObjectId.isValid(id))
@@ -37,7 +37,6 @@ export async function GET(request: Request) {
             if (ids.length === 0) {
                 return new Response(JSON.stringify({ error: "Invalid IDs provided" }), { status: 400 });
             }
-
             // Filter by multiple IDs
             pipeline.push({ $match: { _id: { $in: ids } } }); // $in = https://www.mongodb.com/docs/manual/reference/operator/query/in/
         }
