@@ -192,7 +192,7 @@ const ClassProperties = () => {
                                 key={day} value={day} defaultChecked={days.includes(day)}
                                 className={`${days.includes(day) ? 'bg-lightblue' : 'bg-white'}`}
                             >
-                                {day + DayDisplayEndings.get(day)}
+                                {day === 'Thu' ? 'Th' : day[0]}
                             </option>
                         ))}
                     </select>
