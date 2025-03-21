@@ -105,7 +105,6 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
             backgroundColor: defaultBackgroundColor,
             extendedProps: {
                 combinedClassId: combinedClass._id,
-                linkedClassEvents: events,
             },
         });
     });

@@ -14,8 +14,6 @@ const createEventsFromClasses = (classes: CombinedClass[]): EventInput[] => {
 
     if (classes.length === 0) return events;
 
-    console.log("create events classes: " + JSON.stringify(classes));
-
     classes.forEach(cls => {
         const classEvents: EventInput[] = createEventsFromCombinedClass(cls);
         cls.events = classEvents;
@@ -461,7 +459,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     loadAllTags()
                 ]);
 
-                console.log("ALL CLASSES" + JSON.stringify(allClasses));
+                console.log("ALL CLASSES\n", allClasses);
 
                 if (mounted) {
                     dispatch({
