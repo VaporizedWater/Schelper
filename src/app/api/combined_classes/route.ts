@@ -68,21 +68,21 @@ export async function POST(request: Request) {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOperations: AnyBulkWriteOperation<Document>[] | { insertOne: { document: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; }[] = [];
+        const bulkOperations:
+            | AnyBulkWriteOperation<Document>[]
+            | { insertOne: { document: { data: Class; properties: ClassProperty; events: EventInput | undefined } } }[] = [];
 
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
-            bulkOperations.push(
-                {
-                    insertOne: {
-                        document: {
-                            ...updateData,
-                        }
-                    }
-                }
-            )
-        })
+            bulkOperations.push({
+                insertOne: {
+                    document: {
+                        ...updateData,
+                    },
+                },
+            });
+        });
 
         return doBulkOperation(bulkOperations);
     } catch (error) {
@@ -105,7 +105,7 @@ export async function PUT(request: Request): Promise<Response> {
 
             let ID;
             if (_id === "" || ObjectId.isValid(_id)) {
-                ID = new ObjectId()
+                ID = new ObjectId();
             } else {
                 ID = new ObjectId(_id);
             }
@@ -128,7 +128,6 @@ export async function PUT(request: Request): Promise<Response> {
         })
 
         return doBulkOperation(bulkOperations);
-
     } catch (error) {
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
