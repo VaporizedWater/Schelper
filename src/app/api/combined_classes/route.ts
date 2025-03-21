@@ -98,13 +98,16 @@ export async function PUT(request: Request): Promise<Response> {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOperations: AnyBulkWriteOperation<Document>[] | { updateOne: { filter: { _id: ObjectId; }; update: { $set: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; upsert: boolean; }; }[] = [];
+        const bulkUpdates: AnyBulkWriteOperation<Document>[] | { updateOne: { filter: { _id: ObjectId; }; update: { $set: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; upsert: boolean; }; }[] = [];
+        const bulkPosts: AnyBulkWriteOperation<Document>[] | { insertOne: { document: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; }[] = [];
 
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
+            console.log("ID: "+_id);
+
             if (ObjectId.isValid(_id)) {
-                bulkOperations.push(
+                bulkUpdates.push(
                     {
                         updateOne: {
                             filter: { _id: new ObjectId(_id) },
@@ -113,10 +116,23 @@ export async function PUT(request: Request): Promise<Response> {
                         }
                     }
                 )
+            } else {
+                bulkPosts.push(
+                    {
+                        insertOne: {
+                            document: {
+                                ...updateData,
+                            }
+                        }
+                    }
+                )
             }
         })
 
-        return doBulkOperation(bulkOperations);
+        const updateSuccess = doBulkOperation(bulkUpdates);
+        const postSuccess = doBulkOperation(bulkPosts);
+        return await updateSuccess && await postSuccess;
+
     } catch (error) {
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
