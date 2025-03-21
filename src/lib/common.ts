@@ -79,7 +79,7 @@ export function newDefaultEmptyClass() {
 export function createEventsFromCombinedClass(combinedClass: CombinedClass): EventInput[] {
     const events: EventInput[] = [];
 
-    combinedClass.properties.days.forEach(day => {
+    combinedClass.properties.days.forEach((day) => {
         const convertedDay = dayToDate[day];
 
         let startTime = combinedClass.properties.start_time
@@ -108,7 +108,7 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
             end: dateStringEnd || "",
             backgroundColor: defaultBackgroundColor,
             extendedProps: {
-                combinedClassId: combinedClass._id
+                combinedClassId: combinedClass._id,
             },
         });
     });
