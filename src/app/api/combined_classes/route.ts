@@ -13,12 +13,12 @@ async function doBulkOperation(bulkOps: AnyBulkWriteOperation<Document>[]): Prom
     if (result.ok) {
         return new Response(JSON.stringify({ success: true }), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { "Content-Type": "application/json" },
         });
     } else {
         return new Response(JSON.stringify({ success: false }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { "Content-Type": "application/json" },
         });
     }
 }
@@ -41,10 +41,10 @@ export async function GET(request: Request) {
         // Define the projection to format documents according to the CombinedClass structure
         pipeline.push({
             $project: {
-                _id: "$_id",  // Explicitly project the _id to ensure it's clearly retained
-                classData: "$data",
-                classProperties: "$properties"
-            }
+                _id: "$_id", // Explicitly project the _id to ensure it's clearly retained
+                data: "$data",
+                properties: "$properties",
+            },
         });
 
         const data = await collection.aggregate(pipeline).toArray();
@@ -87,12 +87,12 @@ export async function PUT(request: Request): Promise<Response> {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOps = combinedClasses.map(cc => ({
+        const bulkOps = combinedClasses.map((cc) => ({
             updateOne: {
                 filter: { _id: new ObjectId(cc._id) }, // Ensures the document matches by _id
                 update: { $set: cc },
-                upsert: true // Inserts as a new document if it does not exist
-            }
+                upsert: true, // Inserts as a new document if it does not exist
+            },
         }));
 
         return doBulkOperation(bulkOps);
@@ -100,7 +100,7 @@ export async function PUT(request: Request): Promise<Response> {
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { "Content-Type": "application/json" },
         });
     }
 }

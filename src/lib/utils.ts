@@ -1,6 +1,4 @@
-import { C } from "node_modules/@fullcalendar/core/internal-common";
-import { Class, ClassProperty, CombinedClass } from "./types";
-import { AnyBulkWriteOperation, Collection } from "mongodb";
+import { CombinedClass } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request

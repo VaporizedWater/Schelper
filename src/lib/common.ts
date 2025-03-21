@@ -101,13 +101,13 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
             },
         });
     });
-    
+
     return events;
 }
 
 /// CONSTANTS
-export const defaultBackgroundColor = '#001e443f';
-export const selectedBackgroundColor = '#001e44bd';
+export const defaultBackgroundColor = "#001e443f";
+export const selectedBackgroundColor = "#001e44bd";
 
 export const DayDisplayEndings: Map<string, string> = new Map([
     ["Mon", "day"],

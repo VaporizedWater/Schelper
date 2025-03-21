@@ -12,6 +12,10 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 const createEventsFromClasses = (classes: CombinedClass[]): EventInput[] => {
     const events: EventInput[] = [];
 
+    if (classes.length === 0) return events;
+
+    console.log("create events classes: " + JSON.stringify(classes));
+
     classes.forEach(cls => {
         const classEvents: EventInput[] = createEventsFromCombinedClass(cls);
         cls.events = classEvents;
@@ -452,6 +456,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     loadCombinedClasses(null),
                     loadAllTags()
                 ]);
+
+                console.log("ALL CLASSES" + JSON.stringify(allClasses));
 
                 if (mounted) {
                     dispatch({
