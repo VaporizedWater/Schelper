@@ -185,7 +185,7 @@ const Calendar = () => {
                 eventDrop={handleEventDrop}
                 eventResize={handleEventResize}
                 dateClick={handleDateClick}
-                // eventContent={eventContent}
+                eventContent={eventContent}
             />
         </div>
     );
