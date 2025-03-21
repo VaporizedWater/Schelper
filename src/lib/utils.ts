@@ -142,6 +142,8 @@ export async function insertTag(tagName: string): Promise<string | null> {
 // PUTS/UPDATES
 
 export async function updateCombinedClasses(combinedClasses: CombinedClass[]): Promise<boolean> {
+    console.log(combinedClasses);
+
     try {
         combinedClasses.map(cls => cls.events = undefined);
         const response = await fetchWithTimeout("api/combined_classes", {
