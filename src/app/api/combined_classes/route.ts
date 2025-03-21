@@ -67,14 +67,16 @@ export async function POST(request: Request) {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOps = combinedClasses.map((combinedClass) => ({
-            insertOne: {
-                document: {
-                    ...combinedClass,
-                    _id: ObjectId.isValid(combinedClass._id) ? new ObjectId(combinedClass._id) : new ObjectId(),
+        const bulkOps = combinedClasses.map((cc) => {
+            const { _id, ...updateData } = cc;
+            return {
+                insertOne: {
+                    document: {
+                        ...updateData,
+                    },
                 },
-            },
-        }));
+            };
+        });
 
         return doBulkOperation(bulkOps);
     } catch (error) {
@@ -90,13 +92,16 @@ export async function PUT(request: Request): Promise<Response> {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOps = combinedClasses.map((cc) => ({
-            updateOne: {
-                filter: { _id: new ObjectId(cc._id) }, // Ensures the document matches by _id
-                update: { $set: cc },
-                upsert: true, // Inserts as a new document if it does not exist
-            },
-        }));
+        const bulkOps = combinedClasses.map((cc) => {
+            const { _id, ...updateData } = cc;
+            return {
+                updateOne: {
+                    filter: { _id: new ObjectId(_id) },
+                    update: { $set: updateData },
+                    upsert: true,
+                },
+            };
+        });
 
         return doBulkOperation(bulkOps);
     } catch (error) {

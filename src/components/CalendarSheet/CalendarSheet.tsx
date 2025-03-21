@@ -91,7 +91,7 @@ export default function CalendarSheet() {
                 console.log("id " + id);
                 const existing = allClasses.find((item) => item._id === id);
 
-                console.log("existing ", existing);
+                console.log("existing: ", existing);
 
                 const newData: Class = {
                     catalog_num: row[0]?.value ?? '',
