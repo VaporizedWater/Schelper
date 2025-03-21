@@ -121,7 +121,7 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
         }
     }
 
-    console.log('Conflicts:', JSON.stringify(conflicts));
+    // console.log('Conflicts:', JSON.stringify(conflicts));
     return conflicts;
 };
 
