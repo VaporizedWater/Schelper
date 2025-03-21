@@ -73,14 +73,6 @@ export async function POST(request: Request) {
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
-            let ID = new ObjectId(_id);
-
-            console.log("ID: \""+_id+"\"");
-
-            if (_id === "") {
-                ID = new ObjectId()
-            }
-
             bulkOperations.push(
                 {
                     insertOne: {
@@ -106,8 +98,8 @@ export async function PUT(request: Request): Promise<Response> {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOperations: AnyBulkWriteOperation<Document>[] | { updateOne: { filter: { _id: ObjectId; }; update: { $set: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; upsert: boolean; }; }[] = [];
-        
+        const bulkOperations: AnyBulkWriteOperation<Document>[] | { updateOne: { filter: { "data.catalog_num": string; "data.class_num": string; "data.session": string; "data.course_subject": string; "data.course_num": string; }; update: { $set: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; upsert: boolean; }; }[] = [];
+
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
@@ -121,7 +113,13 @@ export async function PUT(request: Request): Promise<Response> {
             bulkOperations.push(
                 {
                     updateOne: {
-                        filter: { _id: ID },
+                        filter: {
+                            "data.catalog_num": updateData.data.catalog_num,
+                            "data.class_num": updateData.data.class_num,
+                            "data.session": updateData.data.session,
+                            "data.course_subject": updateData.data.course_subject,
+                            "data.course_num": updateData.data.course_num,
+                        },
                         update: { $set: updateData },
                         upsert: true,
                     }
