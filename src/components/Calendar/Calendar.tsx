@@ -25,6 +25,8 @@ const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
     const { setCurrentClass, updateOneClass, detectConflicts, displayClasses, displayEvents, conflicts } = useCalendarContext();
 
+    
+
     // Detect conflicts when the calendar renders or updates
     useEffect(() => {
         detectConflicts();
@@ -160,6 +162,8 @@ const Calendar = () => {
         };
     };
 
+    console.log(displayEvents[0]);
+
     return (
         <div className="h-full">
             <FullCalendar
@@ -168,7 +172,7 @@ const Calendar = () => {
                 editable
                 expandRows
                 selectable={false}
-                events={displayEvents}
+                events={displayEvents[0]}
                 slotDuration={'00:30:00'}
                 slotMinTime={'08:00:00'}
                 slotMaxTime={'21:00:00'}
@@ -183,7 +187,7 @@ const Calendar = () => {
                 eventDrop={handleEventDrop}
                 eventResize={handleEventResize}
                 dateClick={handleDateClick}
-                eventContent={eventContent}
+                // eventContent={eventContent}
             />
         </div>
     );

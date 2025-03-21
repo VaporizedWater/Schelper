@@ -135,10 +135,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         case 'INITIALIZE_DATA': {
             const classes = action.payload.classes;
             const events = createEventsFromClasses(classes);
-
-            console.log('Classes:');
-            console.log(classes);
-
             const tagMapping = buildTagMapping(classes);
 
             return {

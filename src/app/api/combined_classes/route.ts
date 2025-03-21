@@ -30,10 +30,7 @@ export async function GET(request: Request) {
 
         // Check if IDs are provided and are valid
         if (headerId && headerId !== "") {
-            const ids = headerId
-                .split(",")
-                .filter((id) => ObjectId.isValid(id))
-                .map((id) => new ObjectId(id));
+            const ids = headerId.split(",").filter(id => ObjectId.isValid(id)).map(id => new ObjectId(id));
             if (ids.length === 0) {
                 return new Response(JSON.stringify({ error: "Invalid IDs provided" }), { status: 400 });
             }

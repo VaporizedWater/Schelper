@@ -76,15 +76,6 @@ export function newDefaultEmptyClass() {
     } as CombinedClass;
 }
 
-export function documentToCombinedClass(doc: Document): CombinedClass {
-    const combinedClass: CombinedClass = newDefaultEmptyClass();
-    combinedClass._id = doc._id as string;
-    combinedClass.data = doc.Data as Class;
-    combinedClass.properties = doc.Properties as ClassProperty;
-    combinedClass.events = createEventsFromCombinedClass(combinedClass) as EventInput[];
-    return combinedClass;
-}
-
 export function createEventsFromCombinedClass(combinedClass: CombinedClass): EventInput[] {
     const events: EventInput[] = [];
 
@@ -92,6 +83,8 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
         const convertedDay = dayToDate[day];
         const dateStringStart = `${convertedDay}T${combinedClass.properties.start_time}`;
         const dateStringEnd = `${convertedDay}T${combinedClass.properties.end_time}`;
+
+        console.log(combinedClass.properties.start_time);
 
         events.push({
             display: "auto",
