@@ -162,8 +162,6 @@ const Calendar = () => {
         };
     };
 
-    console.log(displayEvents[0]);
-
     return (
         <div className="h-full">
             <FullCalendar
@@ -172,7 +170,7 @@ const Calendar = () => {
                 editable
                 expandRows
                 selectable={false}
-                events={displayEvents[0]}
+                events={displayEvents}
                 slotDuration={'00:30:00'}
                 slotMinTime={'08:00:00'}
                 slotMaxTime={'21:00:00'}
