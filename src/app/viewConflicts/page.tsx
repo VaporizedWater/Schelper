@@ -32,7 +32,6 @@ const ViewConflicts = () => {
                 <div className="text-center text-gray-400 flex flex-row items-center gap-1">
                     <p>Checking for conflicts...</p>
                     {/* add a spinner here*/}
-
                 </div>
             </div>
         );

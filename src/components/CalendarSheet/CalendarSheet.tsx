@@ -5,8 +5,8 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import Spreadsheet, { Matrix } from "react-spreadsheet";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
-import { updateCombinedClass, bulkUpdateClasses } from "@/lib/utils";
-import { createEventFromCombinedClass } from "@/lib/common";
+import { updateCombinedClasses } from "@/lib/utils";
+import { createEventsFromCombinedClass } from "@/lib/common";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
@@ -18,7 +18,7 @@ export default function CalendarSheet() {
     const [updateStatus, setUpdateStatus] = useState<{ success: boolean; message: string } | null>(null);
 
     // Compute a hidden mapping of row index (starting at 0 for first data row) to class id.
-    const classIds = allClasses.map((item) => item.classData._id);
+    const classIds = allClasses.map((item) => item._id);
 
     // Define headers separately so that we can prepend them to the data matrix.
     const headers = useMemo<Matrix<{ value: string }>>(() => [[
@@ -120,7 +120,7 @@ export default function CalendarSheet() {
             const classesToUpdate: CombinedClass[] = Array.from(modifiedRows).map(rowIdx => {
                 const row = pendingData[rowIdx + 1]; // +1 because of header row
                 const id = classIds[rowIdx];
-                const existing = allClasses.find((item) => item.classData._id === id);
+                const existing = allClasses.find((item) => item._id === id);
 
                 if (!id || !existing) {
                     console.warn(`Missing ID or existing class for row ${rowIdx + 1}`);
@@ -128,7 +128,6 @@ export default function CalendarSheet() {
                 }
 
                 const newData: Class = {
-                    _id: id,
                     catalog_num: row[0]?.value ?? '',
                     class_num: row[1]?.value ?? '',
                     session: row[2]?.value ?? '',
@@ -142,7 +141,6 @@ export default function CalendarSheet() {
                 };
 
                 const newProperties: ClassProperty = {
-                    _id: id, // Ensure we use the same ID for class properties
                     class_status: row[8]?.value ?? '',
                     start_time: row[9]?.value ?? '',
                     end_time: row[10]?.value ?? '',
@@ -156,16 +154,16 @@ export default function CalendarSheet() {
                     tags: row[18]?.value ? row[18].value.split(",").map((t) => t.trim()).sort() : [],
                 };
 
-                const newEvent: EventInput = createEventFromCombinedClass({
+                const newEvent: EventInput = createEventsFromCombinedClass({
                     classData: newData,
                     classProperties: newProperties,
-                    event: undefined
+                    events: undefined
                 } as CombinedClass);
 
                 return {
                     classData: newData,
                     classProperties: newProperties,
-                    event: newEvent
+                    events: newEvent
                 } as CombinedClass;
             }).filter(Boolean) as CombinedClass[];
 
@@ -174,30 +172,21 @@ export default function CalendarSheet() {
                 return;
             }
 
-            // Choose update strategy based on number of modified rows
-            let success = false;
-
-            if (classesToUpdate.length === 1) {
-                // For single class update, use individual update for efficiency
-                success = await updateCombinedClass(classesToUpdate[0]);
-            } else {
-                // For multiple classes, use bulk update
-                success = await bulkUpdateClasses(classesToUpdate);
-            }
+            const success = await updateCombinedClasses(classesToUpdate);
 
             if (success) {
                 // Only update the context if database update was successful
 
                 // Create a new array with updated classes replacing the originals
                 const updatedAllClasses = allClasses.map(cls => {
-                    const updated = classesToUpdate.find(u => u.classData._id === cls.classData._id);
+                    const updated = classesToUpdate.find(u => u._id === cls._id);
                     return updated || cls;
                 });
 
-                updateAllClasses(updatedAllClasses, false);
+                updateAllClasses(updatedAllClasses);
                 updateDisplayClasses(updatedAllClasses.filter(cls =>
-                    classesToUpdate.some(u => u.classData._id === cls.classData._id)
-                ), false);
+                    classesToUpdate.some(u => u._id === cls._id)
+                ));
 
                 // Clear modified rows after successful update
                 setModifiedRows(new Set());

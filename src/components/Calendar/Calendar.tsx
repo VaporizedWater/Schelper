@@ -7,7 +7,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
 import { useRef, useEffect } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { createEventFromCombinedClass, emptyCombinedClass, ShortenedDays } from "@/lib/common";
+import { createEventsFromCombinedClass, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays } from "@/lib/common";
 
 const selectedEvents: HTMLElement[] = [];
 
@@ -30,11 +30,28 @@ const Calendar = () => {
         detectConflicts();
     }, [displayClasses]); // Re-detect conflicts when classes change
 
+    function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {
+        return displayClasses.find(
+            (item) => {
+                let found = false;
+                if (item.events) {
+                    item.events.forEach((event: EventInput) => {
+                        if (event.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId) {
+                            found = true;
+                        }
+                    });
+                } else {
+                    console.log("No events found");
+                }
+                return found;
+            }
+        );
+    }
+
     function unselectAll() {
         selectedEvents.forEach(element => {
             if (element) {
-                element.style.borderColor = 'transparent';
-
+                element.style.backgroundColor = defaultBackgroundColor;
                 // Remove the ctrl click effect
             }
         });
@@ -44,25 +61,28 @@ const Calendar = () => {
 
     const handleEventClick = (info: EventClickArg) => {
         unselectAll();
-        info.el.style.borderColor = 'red';
+        info.el.style.backgroundColor = selectedBackgroundColor
         selectedEvents.push(info.el);
 
-        const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
+        const foundClass = findClass(info);
 
         if (foundClass) {
+            console.log("Class found");
             setCurrentClass(foundClass);
+        } else {
+            console.log("Class not found");
         }
     }
 
     // This triggers when clicking on any date/time slot that isn't an event
     const handleDateClick = () => {
         unselectAll();
-        setCurrentClass(emptyCombinedClass);
+        setCurrentClass(newDefaultEmptyClass());
     };
 
     const handleEventDrop = (info: EventDropArg) => {
         // Update the class in the context
-        const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
+        const foundClass = findClass(info);
 
         if (foundClass) {
             // Get the new start and end times and the day if changed
@@ -78,14 +98,14 @@ const Calendar = () => {
             foundClass.classProperties.start_time = newStart;
             foundClass.classProperties.end_time = newEnd;
             foundClass.classProperties.days = [newDay];
-            foundClass.event = createEventFromCombinedClass(foundClass);
+            foundClass.events = createEventsFromCombinedClass(foundClass);
 
             updateOneClass(foundClass);
         }
     }
 
     const handleEventResize = (info: EventResizeStopArg) => {
-        const foundClass = displayClasses.find((item) => item.event?.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId);
+        const foundClass = findClass(info);
 
         if (foundClass) {
             const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
@@ -95,7 +115,7 @@ const Calendar = () => {
             }
 
             foundClass.classProperties.end_time = newEnd;
-            foundClass.event = createEventFromCombinedClass(foundClass);
+            foundClass.events = createEventsFromCombinedClass(foundClass);
             updateOneClass(foundClass);
         }
     }
@@ -106,8 +126,8 @@ const Calendar = () => {
 
         // Find conflicts involving this class
         const classConflicts = conflicts.filter(conflict =>
-            conflict.class1.classData._id === classId ||
-            conflict.class2.classData._id === classId
+            conflict.class1._id === classId ||
+            conflict.class2._id === classId
         );
 
         // Default color if no conflict

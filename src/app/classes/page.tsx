@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Class, ClassProperty } from "@/lib/types";
-import { insertCombinedClass } from "@/lib/utils";
+import { insertCombinedClasses } from "@/lib/utils";
 import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
@@ -64,7 +64,7 @@ const NewClassForm = () => {
                     : defaultCombined.classProperties.tags
             };
         }
-        insertCombinedClass(defaultCombined);
+        insertCombinedClasses([defaultCombined]);
 
         // Update the context as well
 

@@ -22,7 +22,7 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
     const handleSelectClass = async (classId: string) => {
         // Find the class to update
         const classToUpdate = allClasses.find(
-            (c) => c.classData._id === classId
+            (c) => c._id === classId
         );
         if (!classToUpdate) {
             setError("Class not found");
@@ -61,9 +61,9 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
                     {availableClasses.length ? (
                         availableClasses.map((c) => (
                             <li
-                                key={c.classData._id}
+                                key={c._id}
                                 className="p-2 hover:bg-gray-100 cursor-pointer"
-                                onClick={() => handleSelectClass(c.classData._id)}
+                                onClick={() => handleSelectClass(c._id)}
                             >
                                 {c.classData.title}
                             </li>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
-import { createEventFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
+import { createEventsFromCombinedClass, DayDisplayEndings, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
 
 const ClassProperties = () => {
     const { currentCombinedClass, updateOneClass, allTags } = useCalendarContext();
@@ -108,7 +108,7 @@ const ClassProperties = () => {
         setStartTime(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classProperties.start_time = newVal;
-        modifiedClass.event = createEventFromCombinedClass(modifiedClass);
+        modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
         updateOneClass(modifiedClass);
     };
 
@@ -117,7 +117,7 @@ const ClassProperties = () => {
         setEndTime(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
         modifiedClass.classProperties.end_time = newVal;
-        modifiedClass.event = createEventFromCombinedClass(modifiedClass);
+        modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
         updateOneClass(modifiedClass);
     };
 
