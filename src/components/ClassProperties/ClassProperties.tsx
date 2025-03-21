@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
-import { createEventsFromCombinedClass, DayDisplayEndings, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
+import { createEventsFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
 
 const ClassProperties = () => {
     const { currentCombinedClass, updateOneClass, allTags } = useCalendarContext();
@@ -212,7 +212,7 @@ const ClassProperties = () => {
                                 key={day} value={day} defaultChecked={days.includes(day)}
                                 className={`${days.includes(day) ? 'bg-lightblue' : 'bg-white'}`}
                             >
-                                {day + DayDisplayEndings.get(day)}
+                                {day === "Thu" ? "Th" : day[0]}
                             </option>
                         ))}
                     </select>

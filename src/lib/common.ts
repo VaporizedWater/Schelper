@@ -82,14 +82,14 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
     combinedClass.properties.days.forEach((day) => {
         const convertedDay = dayToDate[day];
 
-        let startTime = combinedClass.properties.start_time
+        let startTime = combinedClass.properties.start_time;
         if (startTime.length == 4) {
-            startTime = "0"+startTime
+            startTime = "0" + startTime;
         }
 
-        let endTime = combinedClass.properties.end_time
+        let endTime = combinedClass.properties.end_time;
         if (endTime.length == 4) {
-            endTime = "0"+endTime
+            endTime = "0" + endTime;
         }
 
         const dateStringStart = `${convertedDay}T${startTime}`;
@@ -119,14 +119,6 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
 /// CONSTANTS
 export const defaultBackgroundColor = "#001e443f";
 export const selectedBackgroundColor = "#001e44bd";
-
-export const DayDisplayEndings: Map<string, string> = new Map([
-    ["Mon", "day"],
-    ["Tue", "sday"],
-    ["Wed", "nesday"],
-    ["Thu", "rsday"],
-    ["Fri", "day"],
-]);
 
 export const ShortenedDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
