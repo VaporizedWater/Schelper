@@ -73,7 +73,13 @@ export async function POST(request: Request) {
             | { insertOne: { document: { data: Class; properties: ClassProperty; events: EventInput | undefined } } }[] = [];
 
         combinedClasses.forEach((cls: CombinedClass) => {
+            // const { _id, ...updateData } = cls;
+
             const { _id, ...updateData } = cls;
+
+            // Do some rubbish with id for now
+            if (_id) {
+            }
 
             bulkOperations.push({
                 insertOne: {
@@ -98,27 +104,51 @@ export async function PUT(request: Request): Promise<Response> {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkOperations: AnyBulkWriteOperation<Document>[] | { updateOne: { filter: { "data.catalog_num": string; "data.class_num": string; "data.session": string; "data.course_subject": string; "data.course_num": string; }; update: { $set: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; upsert: boolean; }; }[] = [];
+        const bulkOperations: AnyBulkWriteOperation<Document>[] = [];
 
         combinedClasses.forEach((cls: CombinedClass) => {
-            const { _id, ...updateData } = cls;
+            if (cls._id && cls._id !== "") {
+                // Convert string _id to ObjectId if needed
+                const objectId = new ObjectId(cls._id);
 
-            bulkOperations.push(
-                {
+                // IMPORTANT: Remove _id from the update document
+                const { _id, ...updateData } = cls;
+
+                bulkOperations.push({
                     updateOne: {
-                        filter: {
-                            "data.catalog_num": updateData.data.catalog_num,
-                            "data.class_num": updateData.data.class_num,
-                            "data.session": updateData.data.session,
-                            "data.course_subject": updateData.data.course_subject,
-                            "data.course_num": updateData.data.course_num,
+                        filter: { _id: objectId },
+                        update: {
+                            $set: updateData,
                         },
+                    },
+                });
+            } else {
+                // Create a more specific filter to uniquely identify classes
+                const filter = {
+                    "data.catalog_num": cls.data.catalog_num,
+                    "data.class_num": cls.data.class_num,
+                    "data.session": cls.data.session,
+                    "data.course_subject": cls.data.course_subject,
+                    "data.course_num": cls.data.course_num,
+                    "data.section": cls.data.section,
+                    "properties.room": cls.properties.room,
+                    "properties.instructor_name": cls.properties.instructor_name,
+                    "properties.days": cls.properties.days,
+                    "properties.start_time": cls.properties.start_time,
+                    "properties.end_time": cls.properties.end_time,
+                };
+
+                const { _id, ...updateData } = cls;
+
+                bulkOperations.push({
+                    updateOne: {
+                        filter: filter,
                         update: { $set: updateData },
                         upsert: true,
-                    }
-                }
-            )
-        })
+                    },
+                });
+            }
+        });
 
         return doBulkOperation(bulkOperations);
     } catch (error) {

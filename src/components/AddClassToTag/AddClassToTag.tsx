@@ -20,29 +20,37 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
     );
 
     const handleSelectClass = async (classId: string) => {
-        // Find the class to update
-        const classToUpdate = allClasses.find(
-            (c) => c._id === classId
-        );
-        if (!classToUpdate) {
-            setError("Class not found");
-            console.log(error);
-            return;
+        try {
+
+
+            // Find the class to update
+            const classToUpdate = allClasses.find(
+                (c) => c._id === classId
+            );
+            if (!classToUpdate) {
+                setError("Class not found");
+                console.log(error);
+                return;
+            }
+
+            // Update the class's tags array
+            const updatedTags = [...classToUpdate.properties.tags, tagId];
+            classToUpdate.properties.tags = updatedTags;
+
+            // Optionally update the tagList in your context:
+            if (tagList.has(tagId)) {
+                tagList.get(tagId)?.classIds.add(classId);
+            } else {
+                tagList.set(tagId, { classIds: new Set([classId]) });
+            }
+
+            // Update the class in the CalendarContext
+            await updateOneClass(classToUpdate);
+            console.log("Class updated with new tag", classToUpdate);
+        } catch (error) {
+            setError("Error updating class");
+            console.error(error);
         }
-
-        // Update the class's tags array
-        const updatedTags = [...classToUpdate.properties.tags, tagId];
-        classToUpdate.properties.tags = updatedTags;
-
-        // Optionally update the tagList in your context:
-        if (tagList.has(tagId)) {
-            tagList.get(tagId)?.classIds.add(classId);
-        } else {
-            tagList.set(tagId, { classIds: new Set([classId]) });
-        }
-
-        // Update the class in the CalendarContext
-        await updateOneClass(classToUpdate);
     };
 
     return (

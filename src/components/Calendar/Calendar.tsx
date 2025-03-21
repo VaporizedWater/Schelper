@@ -25,9 +25,6 @@ const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
     const { setCurrentClass, updateOneClass, detectConflicts, displayClasses, displayEvents, conflicts } = useCalendarContext();
 
-    // Add this to maintain event source reference
-    const eventsRef = useRef(displayEvents);
-
     // Detect conflicts when the calendar renders or updates
     useEffect(() => {
         detectConflicts();

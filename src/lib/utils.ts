@@ -147,7 +147,7 @@ export async function insertTag(tagName: string): Promise<string | null> {
 // PUTS/UPDATES
 
 export async function updateCombinedClasses(combinedClasses: CombinedClass[]): Promise<boolean> {
-    console.log(combinedClasses);
+    console.log("updateCombinedClasses: ", combinedClasses);
 
     try {
         // Create a deep copy to avoid mutating the original objects

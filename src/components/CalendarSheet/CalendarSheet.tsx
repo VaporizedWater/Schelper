@@ -3,10 +3,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import Spreadsheet, { Matrix } from "react-spreadsheet";
-import { EventInput } from "@fullcalendar/core/index.js";
+// import { EventInput } from "@fullcalendar/core/index.js";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { updateCombinedClasses } from "@/lib/utils";
-import { createEventsFromCombinedClass } from "@/lib/common";
+// import { createEventsFromCombinedClass } from "@/lib/common";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
@@ -120,11 +120,11 @@ export default function CalendarSheet() {
                     tags: row[18]?.value ? row[18].value.split(",").map((t) => t.trim()).sort() : [],
                 };
 
-                const newEvent: EventInput = createEventsFromCombinedClass({
-                    data: newData,
-                    properties: newProperties,
-                    events: undefined
-                } as CombinedClass);
+                // const newEvent: EventInput = createEventsFromCombinedClass({
+                //     data: newData,
+                //     properties: newProperties,
+                //     events: undefined
+                // } as CombinedClass);
 
                 return {
                     _id: id,
