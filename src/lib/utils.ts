@@ -78,11 +78,7 @@ export async function loadCombinedClasses(classIds: string[] | null): Promise<Co
     try {
         const headers = {ids: ""};
         if (classIds !== null && classIds.length > 0) {
-            if (classIds.length === 1) {
-                headers.ids = classIds[0];
-            } else {
-                headers.ids = classIds.join(",");
-            }
+            headers.ids = classIds.join(",");
         }
 
         // Load class data

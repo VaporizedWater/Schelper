@@ -77,7 +77,7 @@ const ViewConflicts = () => {
                                 renderButton={(isOpen) => (
                                     <div className={`flex justify-between items-center p-2 ${bgColor} rounded-sm cursor-pointer`}>
                                         <span className={textColor}>
-                                            Conflict {index + 1}: {conflict.class1.classData.title} ⚡ {conflict.class2.classData.title}
+                                            Conflict {index + 1}: {conflict.class1.data.title} ⚡ {conflict.class2.data.title}
                                         </span>
                                         <div className="flex items-center">
                                             <span className="mr-2 text-sm font-medium">{conflictLabel}</span>
@@ -90,18 +90,18 @@ const ViewConflicts = () => {
                                     <div className="bg-white border rounded-sm shadow-lg p-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <h3 className="font-semibold">{conflict.class1.classData.title}</h3>
-                                                <p>Days: {conflict.class1.classProperties.days.join(", ")}</p>
-                                                <p>Time: {conflict.class1.classProperties.start_time} - {conflict.class1.classProperties.end_time}</p>
-                                                <p>Instructor: {conflict.class1.classProperties.instructor_name}</p>
-                                                <p>Room: {conflict.class1.classProperties.room}</p>
+                                                <h3 className="font-semibold">{conflict.class1.data.title}</h3>
+                                                <p>Days: {conflict.class1.properties.days.join(", ")}</p>
+                                                <p>Time: {conflict.class1.properties.start_time} - {conflict.class1.properties.end_time}</p>
+                                                <p>Instructor: {conflict.class1.properties.instructor_name}</p>
+                                                <p>Room: {conflict.class1.properties.room}</p>
                                             </div>
                                             <div className="space-y-2">
-                                                <h3 className="font-semibold">{conflict.class2.classData.title}</h3>
-                                                <p>Days: {conflict.class2.classProperties.days.join(", ")}</p>
-                                                <p>Time: {conflict.class2.classProperties.start_time} - {conflict.class2.classProperties.end_time}</p>
-                                                <p>Instructor: {conflict.class2.classProperties.instructor_name}</p>
-                                                <p>Room: {conflict.class2.classProperties.room}</p>
+                                                <h3 className="font-semibold">{conflict.class2.data.title}</h3>
+                                                <p>Days: {conflict.class2.properties.days.join(", ")}</p>
+                                                <p>Time: {conflict.class2.properties.start_time} - {conflict.class2.properties.end_time}</p>
+                                                <p>Instructor: {conflict.class2.properties.instructor_name}</p>
+                                                <p>Room: {conflict.class2.properties.room}</p>
                                             </div>
                                         </div>
                                     </div>

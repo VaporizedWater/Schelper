@@ -45,23 +45,23 @@ const NewClassForm = () => {
 
         // Testing POST Request
         if (classInfo) {
-            defaultCombined.classData = {
-                ...defaultCombined.classData,
+            defaultCombined.data = {
+                ...defaultCombined.data,
                 ...classInfo
             };
         }
 
         if (classProperties) {
-            defaultCombined.classProperties = {
-                ...defaultCombined.classProperties,
+            defaultCombined.properties = {
+                ...defaultCombined.properties,
                 ...classProperties,
                 // Preserve special handling for arrays
                 days: classProperties.days?.length > 0
                     ? classProperties.days
-                    : defaultCombined.classProperties.days,
+                    : defaultCombined.properties.days,
                 tags: classProperties.tags?.length > 0
                     ? classProperties.tags
-                    : defaultCombined.classProperties.tags
+                    : defaultCombined.properties.tags
             };
         }
         insertCombinedClasses([defaultCombined]);

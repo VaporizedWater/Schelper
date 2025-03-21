@@ -36,7 +36,7 @@ const TagDisplay = () => {
 
     const handleClassUnlink = (tagId: string, classId: string) => {
         // Get class name from id
-        const className = allClasses.find((cls) => String(cls._id) === classId)?.classData.title;
+        const className = allClasses.find((cls) => String(cls._id) === classId)?.data.title;
 
         console.log(`Unlink class "${className}" with id "${classId}" from tag "${tagId}"`);
         const isConfirmed = window.confirm(`Unlink class "${className}" from tag "${tagId}"?`);
@@ -96,7 +96,7 @@ const TagDisplay = () => {
                                                             onMouseEnter={() => setHoveredTagClassId([tagId, classId])}
                                                             onMouseLeave={() => setHoveredTagClassId(null)}
                                                         >
-                                                            {foundClass ? foundClass.classData.title : classId}
+                                                            {foundClass ? foundClass.data.title : classId}
                                                             {hoveredTagClassId && hoveredTagClassId[0] === tagId && hoveredTagClassId[1] === classId && (
                                                                 <div className="hover:bg-gray-300 p-1 rounded-sm cursor-pointer" onClick={(e) => {
                                                                     e.stopPropagation();

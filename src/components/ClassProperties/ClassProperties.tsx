@@ -5,8 +5,8 @@ import { createEventsFromCombinedClass, DayDisplayEndings, newDefaultEmptyClass,
 
 const ClassProperties = () => {
     const { currentCombinedClass, updateOneClass, allTags } = useCalendarContext();
-    const initialData: Class = currentCombinedClass?.classData || {} as Class;
-    const initialProps: ClassProperty = currentCombinedClass?.classProperties || {} as ClassProperty;
+    const initialData: Class = currentCombinedClass?.data || {} as Class;
+    const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
     const [courseSubject, setCourseSubject] = useState(initialData.course_subject || '');
     const [courseNum, setCourseNum] = useState(initialData.course_num || '');
@@ -21,8 +21,8 @@ const ClassProperties = () => {
 
     useEffect(() => {
         if (currentCombinedClass) {
-            const newData = currentCombinedClass.classData;
-            const newProps = currentCombinedClass.classProperties;
+            const newData = currentCombinedClass.data;
+            const newProps = currentCombinedClass.properties;
             setCourseSubject(newData.course_subject || '');
             setCourseNum(newData.course_num || '');
             setTitle(newData.title || '');
@@ -39,57 +39,71 @@ const ClassProperties = () => {
     const handleCourseSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setCourseSubject(newVal);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classData.course_subject = newVal;
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.data.course_subject = newVal;
+            updateOneClass(modifiedClass);
+        }
     };
 
     const handleCourseNumChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setCourseNum(newVal);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classData.course_num = newVal;
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.data.course_num = newVal;
+            updateOneClass(modifiedClass);
+        }
     };
 
     const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setTitle(newVal);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classData.title = newVal;
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.data.title = newVal;
+            updateOneClass(modifiedClass);
+        }
     };
 
     const handleInstructorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setInstructor(newVal);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.instructor_name = newVal;
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.properties.instructor_name = newVal;
+            updateOneClass(modifiedClass);
+        }
     };
 
     const handleRoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setRoom(newVal);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.room = newVal;
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.properties.room = newVal;
+            updateOneClass(modifiedClass);
+        }
     };
 
     const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setLocation(newVal);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classData.location = newVal;
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.data.location = newVal;
+            updateOneClass(modifiedClass);
+        }
     };
 
     const handleDaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const selected = Array.from(e.target.selectedOptions, option => option.value);
         setDays(selected);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.days = selected;
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.properties.days = selected;
+            updateOneClass(modifiedClass);
+        }
     };
 
     const handleTagCheck = (tag: string, isChecked: boolean) => {
@@ -98,27 +112,33 @@ const ClassProperties = () => {
             : tags.filter(t => t !== tag);
 
         setTags(updatedTags);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.tags = updatedTags;
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.properties.tags = updatedTags;
+            updateOneClass(modifiedClass);
+        }
     };
 
     const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setStartTime(newVal);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.start_time = newVal;
-        modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.properties.start_time = newVal;
+            modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
+            updateOneClass(modifiedClass);
+        }
     };
 
     const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setEndTime(newVal);
-        const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.end_time = newVal;
-        modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
-        updateOneClass(modifiedClass);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.properties.end_time = newVal;
+            modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
+            updateOneClass(modifiedClass);
+        }
     };
 
     return (
@@ -192,7 +212,7 @@ const ClassProperties = () => {
                                 key={day} value={day} defaultChecked={days.includes(day)}
                                 className={`${days.includes(day) ? 'bg-lightblue' : 'bg-white'}`}
                             >
-                                {day === 'Thu' ? 'Th' : day[0]}
+                                {day + DayDisplayEndings.get(day)}
                             </option>
                         ))}
                     </select>

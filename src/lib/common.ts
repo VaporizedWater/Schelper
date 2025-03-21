@@ -47,7 +47,7 @@ export function documentToClassProperty(doc: Document): ClassProperty {
 export function newDefaultEmptyClass() {
     return {
         _id: "",
-        classData: {
+        data: {
             catalog_num: "",
             class_num: "",
             session: "",
@@ -59,7 +59,7 @@ export function newDefaultEmptyClass() {
             enrollment_cap: "",
             waitlist_cap: "",
         },
-        classProperties: {
+        properties: {
             class_status: "",
             start_time: "",
             end_time: "",
@@ -76,36 +76,28 @@ export function newDefaultEmptyClass() {
     } as CombinedClass;
 }
 
-export function documentToCombinedClass(doc: Document): CombinedClass {
-    const combinedClass: CombinedClass = newDefaultEmptyClass();
-    combinedClass._id = doc._id as string;
-    combinedClass.classData = doc.Data as Class;
-    combinedClass.classProperties = doc.Properties as ClassProperty;
-    combinedClass.events = createEventsFromCombinedClass(combinedClass) as EventInput[];
-    return combinedClass;
-}
-
 export function createEventsFromCombinedClass(combinedClass: CombinedClass): EventInput[] {
     const events: EventInput[] = [];
 
-    combinedClass.classProperties.days.forEach(day => {
+    combinedClass.properties.days.forEach(day => {
         const convertedDay = dayToDate[day];
-        const dateStringStart = `${convertedDay}T${combinedClass.classProperties.start_time}`;
-        const dateStringEnd = `${convertedDay}T${combinedClass.classProperties.end_time}`;
+        const dateStringStart = `${convertedDay}T${combinedClass.properties.start_time}`;
+        const dateStringEnd = `${convertedDay}T${combinedClass.properties.end_time}`;
+
+        console.log(combinedClass.properties.start_time);
 
         events.push({
             display: "auto",
             title:
-                combinedClass.classData.course_subject +
-                    combinedClass.classData.course_num +
+                combinedClass.data.course_subject +
+                    combinedClass.data.course_num +
                     "\n" +
-                    combinedClass.classProperties.instructor_name || "",
+                    combinedClass.properties.instructor_name || "",
             start: dateStringStart || "",
             end: dateStringEnd || "",
             backgroundColor: defaultBackgroundColor,
             extendedProps: {
-                combinedClassId: combinedClass._id,
-                linkedClassEvents: events
+                combinedClassId: combinedClass._id
             },
         });
     });

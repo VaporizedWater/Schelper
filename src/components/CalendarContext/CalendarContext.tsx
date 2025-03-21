@@ -25,7 +25,7 @@ const buildTagMapping = (classes: CombinedClass[]): tagListType => {
     const mapping: tagListType = new Map();
 
     classes.forEach(cls => {
-        cls.classProperties.tags?.forEach(tag => {
+        cls.properties.tags?.forEach(tag => {
             if (!mapping.has(tag)) {
                 mapping.set(tag, { classIds: new Set() });
             }
@@ -41,8 +41,8 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
     // Single sort with compound key (day, start_time)
     const sortedClasses = [...classes].sort((a, b) => {
         // First by day
-        const aDay = a.classProperties.days?.[0];
-        const bDay = b.classProperties.days?.[0];
+        const aDay = a.properties.days?.[0];
+        const bDay = b.properties.days?.[0];
 
         if (!aDay || !bDay) return 0;
 
@@ -50,8 +50,8 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
         if (dayCompare !== 0) return dayCompare;
 
         // Then by start time
-        const aStart = a.classProperties.start_time || '';
-        const bStart = b.classProperties.start_time || '';
+        const aStart = a.properties.start_time || '';
+        const bStart = b.properties.start_time || '';
         return aStart.localeCompare(bStart);
     });
 
@@ -61,13 +61,13 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
     // More efficient conflict detection
     for (let i = 0; i < sortedClasses.length - 1; i++) {
         const class1 = sortedClasses[i];
-        const class1Day = class1.classProperties.days?.[0];
-        const class1End = class1.classProperties.end_time;
+        const class1Day = class1.properties.days?.[0];
+        const class1End = class1.properties.end_time;
 
         if (!class1Day || !class1End) continue;
 
         // Cache key includes room and instructor to check specific conflicts
-        const cacheKey = class1Day + class1.classProperties.room + class1.classProperties.instructor_email;
+        const cacheKey = class1Day + class1.properties.room + class1.properties.instructor_email;
         if (!dayConflictCache.has(cacheKey)) {
             dayConflictCache.set(cacheKey, []);
         }
@@ -75,8 +75,8 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
         // Only check against classes with same day
         for (let j = i + 1; j < sortedClasses.length; j++) {
             const class2 = sortedClasses[j];
-            const class2Day = class2.classProperties.days?.[0];
-            const class2Start = class2.classProperties.start_time;
+            const class2Day = class2.properties.days?.[0];
+            const class2Start = class2.properties.start_time;
 
             if (!class2Day || !class2Start) continue;
 
@@ -86,17 +86,17 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
             // Check for time overlap and conflict condition
             if (class2Start < class1End) {
                 // Only check room conflict if both rooms exist and are non-empty
-                const roomConflict = class1.classProperties.room &&
-                    class2.classProperties.room &&
-                    class1.classProperties.room === class2.classProperties.room;
+                const roomConflict = class1.properties.room &&
+                    class2.properties.room &&
+                    class1.properties.room === class2.properties.room;
 
                 // Only check instructor conflict if both instructor emails exist and are non-empty
-                const instructorConflict = class1.classProperties.instructor_email &&
-                    class2.classProperties.instructor_email &&
-                    class1.classProperties.instructor_email === class2.classProperties.instructor_email ||
-                    class1.classProperties.instructor_name &&
-                    class2.classProperties.instructor_name &&
-                    class1.classProperties.instructor_name === class2.classProperties.instructor_name;
+                const instructorConflict = class1.properties.instructor_email &&
+                    class2.properties.instructor_email &&
+                    class1.properties.instructor_email === class2.properties.instructor_email ||
+                    class1.properties.instructor_name &&
+                    class2.properties.instructor_name &&
+                    class1.properties.instructor_name === class2.properties.instructor_name;
 
                 // Determine conflict type
                 let conflictType = null;
@@ -124,8 +124,6 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
         }
     }
 
-    console.log('Conflicts:');
-    console.log(conflicts);
     return conflicts;
 };
 
@@ -135,10 +133,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         case 'INITIALIZE_DATA': {
             const classes = action.payload.classes;
             const events = createEventsFromClasses(classes);
-
-            console.log('Classes:');
-            console.log(classes);
-
             const tagMapping = buildTagMapping(classes);
 
             return {
@@ -266,9 +260,9 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 if (c._id === classId) {
                     return {
                         ...c,
-                        classProperties: {
-                            ...c.classProperties,
-                            tags: c.classProperties.tags.filter(t => t !== tagId)
+                        properties: {
+                            ...c.properties,
+                            tags: c.properties.tags.filter(t => t !== tagId)
                         }
                     };
                 }
@@ -303,8 +297,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 if (c._id === classId) {
                     return {
                         ...c,
-                        classProperties: {
-                            ...c.classProperties,
+                        properties: {
+                            ...c.properties,
                             tags: []
                         }
                     };
@@ -351,9 +345,9 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 if (affectedClassIds.includes(c._id)) {
                     return {
                         ...c,
-                        classProperties: {
-                            ...c.classProperties,
-                            tags: c.classProperties.tags.filter(t => t !== tagId)
+                        properties: {
+                            ...c.properties,
+                            tags: c.properties.tags.filter(t => t !== tagId)
                         }
                     };
                 }
@@ -389,7 +383,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             const updatedClasses = state.classes.all.map(c => ({
                 ...c,
                 classProperties: {
-                    ...c.classProperties,
+                    ...c.properties,
                     tags: []
                 }
             }));
@@ -401,8 +395,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     display: updatedClasses,
                     current: state.classes.current ? {
                         ...state.classes.current,
-                        classProperties: {
-                            ...state.classes.current.classProperties,
+                        properties: {
+                            ...state.classes.current.properties,
                             tags: []
                         }
                     } : undefined
@@ -546,8 +540,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 const updatedClass = {
                     ...classToUpdate,
                     classProperties: {
-                        ...classToUpdate.classProperties,
-                        tags: classToUpdate.classProperties.tags.filter(t => t !== tagId)
+                        ...classToUpdate.properties,
+                        tags: classToUpdate.properties.tags.filter(t => t !== tagId)
                     }
                 };
                 updateCombinedClasses([updatedClass]);
@@ -564,7 +558,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 const updatedClass = {
                     ...classToUpdate,
                     classProperties: {
-                        ...classToUpdate.classProperties,
+                        ...classToUpdate.properties,
                         tags: []
                     }
                 };
@@ -585,8 +579,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         const updatedClass = {
                             ...c,
                             classProperties: {
-                                ...c.classProperties,
-                                tags: c.classProperties.tags.filter(t => t !== tagId)
+                                ...c.properties,
+                                tags: c.properties.tags.filter(t => t !== tagId)
                             }
                         };
                         updateCombinedClasses([updatedClass]);
@@ -603,7 +597,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 const updatedClass = {
                     ...c,
                     classProperties: {
-                        ...c.classProperties,
+                        ...c.properties,
                         tags: []
                     }
                 };

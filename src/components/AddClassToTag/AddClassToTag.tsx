@@ -16,7 +16,7 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
 
     // Filter classes that don't already have the tag
     const availableClasses = allClasses.filter(
-        (c) => !c.classProperties.tags.includes(tagId)
+        (c) => !c.properties.tags.includes(tagId)
     );
 
     const handleSelectClass = async (classId: string) => {
@@ -31,8 +31,8 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
         }
 
         // Update the class's tags array
-        const updatedTags = [...classToUpdate.classProperties.tags, tagId];
-        classToUpdate.classProperties.tags = updatedTags;
+        const updatedTags = [...classToUpdate.properties.tags, tagId];
+        classToUpdate.properties.tags = updatedTags;
 
         // Optionally update the tagList in your context:
         if (tagList.has(tagId)) {
@@ -65,7 +65,7 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
                                 className="p-2 hover:bg-gray-100 cursor-pointer"
                                 onClick={() => handleSelectClass(c._id)}
                             >
-                                {c.classData.title}
+                                {c.data.title}
                             </li>
                         ))
                     ) : (

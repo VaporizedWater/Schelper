@@ -12,17 +12,17 @@ const ExportSheet = () => {
 
     const exportToXLSX = () => {
         const wsData = allClasses.map(classItem => ({
-            'Course Subject': classItem.classData.course_subject,
-            'Course Number': classItem.classData.course_num,
-            'Catalog Number': classItem.classData.catalog_num || '',
-            'Title': classItem.classData.title,
-            'Instructor': classItem.classProperties.instructor_name,
-            'Instructor Email': classItem.classProperties.instructor_email || '',
-            'Room': classItem.classProperties.room,
-            'Location': classItem.classData.location,
-            'Days': classItem.classProperties.days.join(', '),
-            'Start Time': classItem.classProperties.start_time,
-            'End Time': classItem.classProperties.end_time,
+            'Course Subject': classItem.data.course_subject,
+            'Course Number': classItem.data.course_num,
+            'Catalog Number': classItem.data.catalog_num || '',
+            'Title': classItem.data.title,
+            'Instructor': classItem.properties.instructor_name,
+            'Instructor Email': classItem.properties.instructor_email || '',
+            'Room': classItem.properties.room,
+            'Location': classItem.data.location,
+            'Days': classItem.properties.days.join(', '),
+            'Start Time': classItem.properties.start_time,
+            'End Time': classItem.properties.end_time,
         }));
 
         const ws = XLSX.utils.json_to_sheet(wsData);
@@ -38,16 +38,16 @@ const ExportSheet = () => {
         doc.text("Class Schedule", 14, 15);
 
         const tableData = allClasses.map(classItem => [
-            classItem.classData.course_subject,
-            classItem.classData.course_num,
-            classItem.classData.catalog_num || '',
-            classItem.classData.title,
-            classItem.classProperties.instructor_name,
-            classItem.classProperties.instructor_email || '',
-            classItem.classProperties.room,
-            classItem.classData.location,
-            classItem.classProperties.days.join(', '),
-            `${classItem.classProperties.start_time} - ${classItem.classProperties.end_time}`
+            classItem.data.course_subject,
+            classItem.data.course_num,
+            classItem.data.catalog_num || '',
+            classItem.data.title,
+            classItem.properties.instructor_name,
+            classItem.properties.instructor_email || '',
+            classItem.properties.room,
+            classItem.data.location,
+            classItem.properties.days.join(', '),
+            `${classItem.properties.start_time} - ${classItem.properties.end_time}`
         ]);
 
         autoTable(doc, {

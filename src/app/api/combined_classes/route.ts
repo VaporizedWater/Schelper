@@ -1,6 +1,5 @@
 "use server";
 
-import { documentToCombinedClass } from "@/lib/common";
 import clientPromise from "@/lib/mongodb";
 import { CombinedClass } from "@/lib/types";
 import { AnyBulkWriteOperation, Collection, Document, ObjectId } from "mongodb";
@@ -29,12 +28,12 @@ export async function GET(request: Request) {
         const headerId = request.headers.get("ids");
         const pipeline = [];
 
-        if (headerId) {
+        // Check if IDs are provided and are valid
+        if (headerId && headerId !== "") {
             const ids = headerId.split(",").filter(id => ObjectId.isValid(id)).map(id => new ObjectId(id));
             if (ids.length === 0) {
                 return new Response(JSON.stringify({ error: "Invalid IDs provided" }), { status: 400 });
             }
-
             // Filter by multiple IDs
             pipeline.push({ $match: { _id: { $in: ids } } }); // $in = https://www.mongodb.com/docs/manual/reference/operator/query/in/
         }
@@ -43,8 +42,8 @@ export async function GET(request: Request) {
         pipeline.push({
             $project: {
                 _id: "$_id",  // Explicitly project the _id to ensure it's clearly retained
-                classData: "$Data",
-                classProperties: "$Properties"
+                classData: "$data",
+                classProperties: "$properties"
             }
         });
 
@@ -69,7 +68,7 @@ export async function POST(request: Request) {
             insertOne: {
                 document: {
                     ...combinedClass,
-                    _id: combinedClass._id ? new ObjectId(combinedClass._id) : new ObjectId()
+                    _id: ObjectId.isValid(combinedClass._id) ? new ObjectId(combinedClass._id) : new ObjectId()
                 }
             }
         }));

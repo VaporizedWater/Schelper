@@ -34,8 +34,8 @@ export type ClassProperty = {
 
 export type CombinedClass = {
     _id: string;
-    classData: Class;
-    classProperties: ClassProperty;
+    data: Class;
+    properties: ClassProperty;
     events: EventInput | undefined;
 };
 
