@@ -95,9 +95,9 @@ const Calendar = () => {
                 return;
             }
 
-            foundClass.classProperties.start_time = newStart;
-            foundClass.classProperties.end_time = newEnd;
-            foundClass.classProperties.days = [newDay];
+            foundClass.properties.start_time = newStart;
+            foundClass.properties.end_time = newEnd;
+            foundClass.properties.days = [newDay];
             foundClass.events = createEventsFromCombinedClass(foundClass);
 
             updateOneClass(foundClass);
@@ -114,7 +114,7 @@ const Calendar = () => {
                 return;
             }
 
-            foundClass.classProperties.end_time = newEnd;
+            foundClass.properties.end_time = newEnd;
             foundClass.events = createEventsFromCombinedClass(foundClass);
             updateOneClass(foundClass);
         }

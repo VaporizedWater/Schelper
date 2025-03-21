@@ -5,8 +5,8 @@ import { createEventsFromCombinedClass, DayDisplayEndings, newDefaultEmptyClass,
 
 const ClassProperties = () => {
     const { currentCombinedClass, updateOneClass, allTags } = useCalendarContext();
-    const initialData: Class = currentCombinedClass?.classData || {} as Class;
-    const initialProps: ClassProperty = currentCombinedClass?.classProperties || {} as ClassProperty;
+    const initialData: Class = currentCombinedClass?.data || {} as Class;
+    const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
     const [courseSubject, setCourseSubject] = useState(initialData.course_subject || '');
     const [courseNum, setCourseNum] = useState(initialData.course_num || '');
@@ -21,8 +21,8 @@ const ClassProperties = () => {
 
     useEffect(() => {
         if (currentCombinedClass) {
-            const newData = currentCombinedClass.classData;
-            const newProps = currentCombinedClass.classProperties;
+            const newData = currentCombinedClass.data;
+            const newProps = currentCombinedClass.properties;
             setCourseSubject(newData.course_subject || '');
             setCourseNum(newData.course_num || '');
             setTitle(newData.title || '');
@@ -40,7 +40,7 @@ const ClassProperties = () => {
         const newVal = e.target.value;
         setCourseSubject(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classData.course_subject = newVal;
+        modifiedClass.data.course_subject = newVal;
         updateOneClass(modifiedClass);
     };
 
@@ -48,7 +48,7 @@ const ClassProperties = () => {
         const newVal = e.target.value;
         setCourseNum(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classData.course_num = newVal;
+        modifiedClass.data.course_num = newVal;
         updateOneClass(modifiedClass);
     };
 
@@ -56,7 +56,7 @@ const ClassProperties = () => {
         const newVal = e.target.value;
         setTitle(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classData.title = newVal;
+        modifiedClass.data.title = newVal;
         updateOneClass(modifiedClass);
     };
 
@@ -64,7 +64,7 @@ const ClassProperties = () => {
         const newVal = e.target.value;
         setInstructor(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.instructor_name = newVal;
+        modifiedClass.properties.instructor_name = newVal;
         updateOneClass(modifiedClass);
     };
 
@@ -72,7 +72,7 @@ const ClassProperties = () => {
         const newVal = e.target.value;
         setRoom(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.room = newVal;
+        modifiedClass.properties.room = newVal;
         updateOneClass(modifiedClass);
     };
 
@@ -80,7 +80,7 @@ const ClassProperties = () => {
         const newVal = e.target.value;
         setLocation(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classData.location = newVal;
+        modifiedClass.data.location = newVal;
         updateOneClass(modifiedClass);
     };
 
@@ -88,7 +88,7 @@ const ClassProperties = () => {
         const selected = Array.from(e.target.selectedOptions, option => option.value);
         setDays(selected);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.days = selected;
+        modifiedClass.properties.days = selected;
         updateOneClass(modifiedClass);
     };
 
@@ -99,7 +99,7 @@ const ClassProperties = () => {
 
         setTags(updatedTags);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.tags = updatedTags;
+        modifiedClass.properties.tags = updatedTags;
         updateOneClass(modifiedClass);
     };
 
@@ -107,7 +107,7 @@ const ClassProperties = () => {
         const newVal = e.target.value;
         setStartTime(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.start_time = newVal;
+        modifiedClass.properties.start_time = newVal;
         modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
         updateOneClass(modifiedClass);
     };
@@ -116,7 +116,7 @@ const ClassProperties = () => {
         const newVal = e.target.value;
         setEndTime(newVal);
         const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-        modifiedClass.classProperties.end_time = newVal;
+        modifiedClass.properties.end_time = newVal;
         modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
         updateOneClass(modifiedClass);
     };

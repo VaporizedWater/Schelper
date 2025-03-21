@@ -73,10 +73,9 @@ export async function getTag(tagId: string): Promise<string | null> {
     }
 }
 
-
 export async function loadCombinedClasses(classIds: string[] | null): Promise<CombinedClass[]> {
     try {
-        const headers = {ids: ""};
+        const headers = { ids: "" };
         if (classIds !== null && classIds.length > 0) {
             if (classIds.length === 1) {
                 headers.ids = classIds[0];
@@ -93,10 +92,12 @@ export async function loadCombinedClasses(classIds: string[] | null): Promise<Co
         if (classResponse.ok) {
             const text = await classResponse.text();
             const classes = JSON.parse(text) as CombinedClass[];
+
+            console.log("Classes loaded:", JSON.stringify(classes));
             return classes;
         }
     } catch (error) {
-        console.error('Failed to load combined classes:', error);
+        console.error("Failed to load combined classes:", error);
         return {} as CombinedClass[];
     }
     return {} as CombinedClass[];

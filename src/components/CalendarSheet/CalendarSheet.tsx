@@ -46,25 +46,25 @@ export default function CalendarSheet() {
     const spreadsheetData = useMemo(() => [
         ...headers,
         ...allClasses.map((item) => [
-            { value: String(item.classData.catalog_num) },
-            { value: String(item.classData.class_num) },
-            { value: String(item.classData.session) },
-            { value: String(item.classData.course_subject) },
-            { value: String(item.classData.course_num) },
-            { value: String(item.classData.section) },
-            { value: String(item.classData.title) },
-            { value: String(item.classData.location) },
-            { value: String(item.classProperties.class_status) },
-            { value: String(item.classProperties.start_time) },
-            { value: String(item.classProperties.end_time) },
-            { value: String(item.classProperties.facility_id) },
-            { value: String(item.classProperties.room) },
-            { value: String(item.classProperties.days.join(', ')) },
-            { value: String(item.classProperties.instructor_name) },
-            { value: String(item.classProperties.instructor_email) },
-            { value: String(item.classData.enrollment_cap) },
-            { value: String(item.classData.waitlist_cap) },
-            { value: String(item.classProperties.tags.join(', ')) },
+            { value: String(item.data.catalog_num) },
+            { value: String(item.data.class_num) },
+            { value: String(item.data.session) },
+            { value: String(item.data.course_subject) },
+            { value: String(item.data.course_num) },
+            { value: String(item.data.section) },
+            { value: String(item.data.title) },
+            { value: String(item.data.location) },
+            { value: String(item.properties.class_status) },
+            { value: String(item.properties.start_time) },
+            { value: String(item.properties.end_time) },
+            { value: String(item.properties.facility_id) },
+            { value: String(item.properties.room) },
+            { value: String(item.properties.days.join(', ')) },
+            { value: String(item.properties.instructor_name) },
+            { value: String(item.properties.instructor_email) },
+            { value: String(item.data.enrollment_cap) },
+            { value: String(item.data.waitlist_cap) },
+            { value: String(item.properties.tags.join(', ')) },
         ]),
     ], [allClasses, headers]);
 
@@ -149,20 +149,20 @@ export default function CalendarSheet() {
                     days: row[13]?.value ? row[13].value.split(",").map((d) => d.trim()) : [],
                     instructor_name: row[14]?.value ?? '',
                     instructor_email: row[15]?.value ?? '',
-                    total_enrolled: String(existing?.classProperties.total_enrolled ?? 0),
-                    total_waitlisted: String(existing?.classProperties.total_waitlisted ?? 0),
+                    total_enrolled: String(existing?.properties.total_enrolled ?? 0),
+                    total_waitlisted: String(existing?.properties.total_waitlisted ?? 0),
                     tags: row[18]?.value ? row[18].value.split(",").map((t) => t.trim()).sort() : [],
                 };
 
                 const newEvent: EventInput = createEventsFromCombinedClass({
-                    classData: newData,
-                    classProperties: newProperties,
+                    data: newData,
+                    properties: newProperties,
                     events: undefined
                 } as CombinedClass);
 
                 return {
-                    classData: newData,
-                    classProperties: newProperties,
+                    data: newData,
+                    properties: newProperties,
                     events: newEvent
                 } as CombinedClass;
             }).filter(Boolean) as CombinedClass[];

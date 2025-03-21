@@ -38,7 +38,7 @@ const ImportSheet = () => {
 
     // Create a unique identifier for each class
     const getUniqueClassId = useCallback((cls: CombinedClass): string => {
-        return `${cls.classData.class_num}-${cls.classData.section}-${cls.classProperties.room}-${cls.classProperties.instructor_name}-${cls.classProperties.days.join(',')}-${cls.classProperties.start_time}`;
+        return `${cls.data.class_num}-${cls.data.section}-${cls.properties.room}-${cls.properties.instructor_name}-${cls.properties.days.join(',')}-${cls.properties.start_time}`;
     }, []);
 
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,8 +56,8 @@ const ImportSheet = () => {
 
         rows.values().forEach((element: object[]) => {
             const combinedClass = newDefaultEmptyClass();
-            const classData = combinedClass.classData;
-            const classProperties = combinedClass.classProperties;
+            const classData = combinedClass.data;
+            const classProperties = combinedClass.properties;
             let isCancelled = false;
 
             Object.keys(element).forEach(key => {
@@ -187,10 +187,10 @@ const ImportSheet = () => {
             });
 
             if (!isCancelled) {
-                const levelTag = extractCourseLevel(combinedClass.classData.course_num);
+                const levelTag = extractCourseLevel(combinedClass.data.course_num);
 
                 if (levelTag) {
-                    combinedClass.classProperties.tags.push(levelTag);
+                    combinedClass.properties.tags.push(levelTag);
                 }
 
                 combinedClasses.push(combinedClass);
@@ -288,18 +288,18 @@ const ImportSheet = () => {
                                                     }}
                                                 />
                                             </td>
-                                            <td className="p-2 border">{cls.classData.class_num}</td>
+                                            <td className="p-2 border">{cls.data.class_num}</td>
                                             <td className="p-2 border">
-                                                {cls.classData.course_subject} {cls.classData.course_num}
+                                                {cls.data.course_subject} {cls.data.course_num}
                                             </td>
-                                            <td className="p-2 border">{cls.classData.title}</td>
-                                            <td className="p-2 border">{cls.classProperties.days.join(', ')}</td>
+                                            <td className="p-2 border">{cls.data.title}</td>
+                                            <td className="p-2 border">{cls.properties.days.join(', ')}</td>
                                             <td className="p-2 border">
-                                                {cls.classProperties.start_time} - {cls.classProperties.end_time}
+                                                {cls.properties.start_time} - {cls.properties.end_time}
                                             </td>
-                                            <td className="p-2 border">{cls.classProperties.instructor_name}</td>
-                                            <td className="p-2 border">{cls.classProperties.room}</td>
-                                            <td className="p-2 border">{cls.classData.location}</td>
+                                            <td className="p-2 border">{cls.properties.instructor_name}</td>
+                                            <td className="p-2 border">{cls.properties.room}</td>
+                                            <td className="p-2 border">{cls.data.location}</td>
                                         </tr>
                                     )
                                 })}

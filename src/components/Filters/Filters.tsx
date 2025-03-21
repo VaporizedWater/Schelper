@@ -38,7 +38,7 @@ const Filters = () => {
 
         const newDisplayClasses = newSelectedTags.size > 0
             ? allClasses.filter((classItem) =>
-                classItem.classProperties.tags?.some((tag) => newSelectedTags.has(tag))
+                classItem.properties.tags?.some((tag) => newSelectedTags.has(tag))
             )
             : []; // Return empty array when no tags selected
         updateDisplayClasses(newDisplayClasses);
