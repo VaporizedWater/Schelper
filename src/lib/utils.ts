@@ -101,6 +101,7 @@ export async function loadCombinedClasses(classIds: string[] | null): Promise<Co
 // Insert combined class
 export async function insertCombinedClasses(combinedClasses: CombinedClass[]): Promise<boolean> {
     try {
+        combinedClasses.map(cls => cls.events = undefined);
         const response = await fetchWithTimeout("api/combined_classes", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -142,6 +143,7 @@ export async function insertTag(tagName: string): Promise<string | null> {
 
 export async function updateCombinedClasses(combinedClasses: CombinedClass[]): Promise<boolean> {
     try {
+        combinedClasses.map(cls => cls.events = undefined);
         const response = await fetchWithTimeout("api/combined_classes", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },

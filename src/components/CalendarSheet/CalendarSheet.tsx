@@ -120,6 +120,9 @@ export default function CalendarSheet() {
             const classesToUpdate: CombinedClass[] = Array.from(modifiedRows).map(rowIdx => {
                 const row = pendingData[rowIdx + 1]; // +1 because of header row
                 const id = classIds[rowIdx];
+
+                console.log("ID: "+id);
+
                 const existing = allClasses.find((item) => item._id === id);
 
                 if (!id || !existing) {

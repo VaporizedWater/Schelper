@@ -81,8 +81,19 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
 
     combinedClass.properties.days.forEach(day => {
         const convertedDay = dayToDate[day];
-        const dateStringStart = `${convertedDay}T${combinedClass.properties.start_time}`;
-        const dateStringEnd = `${convertedDay}T${combinedClass.properties.end_time}`;
+
+        let startTime = combinedClass.properties.start_time
+        if (startTime.length == 4) {
+            startTime = "0"+startTime
+        }
+
+        let endTime = combinedClass.properties.end_time
+        if (endTime.length == 4) {
+            endTime = "0"+endTime
+        }
+
+        const dateStringStart = `${convertedDay}T${startTime}`;
+        const dateStringEnd = `${convertedDay}T${endTime}`;
 
         console.log(combinedClass.properties.start_time);
 
