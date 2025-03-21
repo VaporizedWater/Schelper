@@ -89,11 +89,12 @@ export async function loadCombinedClasses(classIds: string[] | null): Promise<Co
             const classes = JSON.parse(text) as CombinedClass[];
             return classes;
         }
+
+        return [] as CombinedClass[];
     } catch (error) {
         console.error('Failed to load combined classes:', error);
-        return {} as CombinedClass[];
+        return [] as CombinedClass[];
     }
-    return {} as CombinedClass[];
 }
 
 // INSERTs/POSTs

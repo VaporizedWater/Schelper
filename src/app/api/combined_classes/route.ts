@@ -73,6 +73,14 @@ export async function POST(request: Request) {
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
+            let ID = new ObjectId(_id);
+
+            console.log("ID: \""+_id+"\"");
+
+            if (_id === "") {
+                ID = new ObjectId()
+            }
+
             bulkOperations.push(
                 {
                     insertOne: {
@@ -98,40 +106,30 @@ export async function PUT(request: Request): Promise<Response> {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
 
-        const bulkUpdates: AnyBulkWriteOperation<Document>[] | { updateOne: { filter: { _id: ObjectId; }; update: { $set: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; upsert: boolean; }; }[] = [];
-        const bulkPosts: AnyBulkWriteOperation<Document>[] | { insertOne: { document: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; }[] = [];
-
+        const bulkOperations: AnyBulkWriteOperation<Document>[] | { updateOne: { filter: { _id: ObjectId; }; update: { $set: { data: Class; properties: ClassProperty; events: EventInput | undefined; }; }; upsert: boolean; }; }[] = [];
+        
         combinedClasses.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls;
 
-            console.log("ID: "+_id);
-
-            if (ObjectId.isValid(_id)) {
-                bulkUpdates.push(
-                    {
-                        updateOne: {
-                            filter: { _id: new ObjectId(_id) },
-                            update: { $set: updateData },
-                            upsert: true,
-                        }
-                    }
-                )
+            let ID;
+            if (_id === "" || ObjectId.isValid(_id)) {
+                ID = new ObjectId()
             } else {
-                bulkPosts.push(
-                    {
-                        insertOne: {
-                            document: {
-                                ...updateData,
-                            }
-                        }
-                    }
-                )
+                ID = new ObjectId(_id);
             }
+
+            bulkOperations.push(
+                {
+                    updateOne: {
+                        filter: { _id: ID },
+                        update: { $set: updateData },
+                        upsert: true,
+                    }
+                }
+            )
         })
 
-        const updateSuccess = doBulkOperation(bulkUpdates);
-        const postSuccess = doBulkOperation(bulkPosts);
-        return await updateSuccess && await postSuccess;
+        return doBulkOperation(bulkOperations);
 
     } catch (error) {
         console.error("Error in PUT /api/combined_classes:", error);

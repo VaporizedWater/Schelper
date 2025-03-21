@@ -12,7 +12,10 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 const createEventsFromClasses = (classes: CombinedClass[]): EventInput[] => {
     const events: EventInput[] = [];
 
-    if (classes.length === 0) return events;
+    if (classes.length === 0 || classes === undefined) return events;
+
+    console.log(typeof classes);
+    console.log(classes);
 
     classes.forEach(cls => {
         const classEvents: EventInput[] = createEventsFromCombinedClass(cls);
