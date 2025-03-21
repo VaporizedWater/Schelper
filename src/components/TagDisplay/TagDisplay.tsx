@@ -36,7 +36,7 @@ const TagDisplay = () => {
 
     const handleClassUnlink = (tagId: string, classId: string) => {
         // Get class name from id
-        const className = allClasses.find((cls) => String(cls.classData._id) === classId)?.classData.title;
+        const className = allClasses.find((cls) => String(cls._id) === classId)?.classData.title;
 
         console.log(`Unlink class "${className}" with id "${classId}" from tag "${tagId}"`);
         const isConfirmed = window.confirm(`Unlink class "${className}" from tag "${tagId}"?`);
@@ -88,7 +88,7 @@ const TagDisplay = () => {
                                             <ul className="flex flex-col gap-1 bg-white border rounded-sm shadow-lg">
                                                 {Array.from(tagData.classIds).map((classId) => {
                                                     const foundClass = allClasses.find(
-                                                        (cls) => String(cls.classData._id) === classId
+                                                        (cls) => String(cls._id) === classId
                                                     );
                                                     return (
                                                         <li

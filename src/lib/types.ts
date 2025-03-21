@@ -5,7 +5,6 @@ export type tagListType = Map<string, { classIds: Set<string> }>;
 
 export type Class = {
     // unchanging identifiers
-    _id: string;
     catalog_num: string;
     class_num: string;
     session: string;
@@ -20,7 +19,6 @@ export type Class = {
 
 export type ClassProperty = {
     // editable properties
-    _id: string;
     class_status: string;
     start_time: string;
     end_time: string;
@@ -35,6 +33,7 @@ export type ClassProperty = {
 };
 
 export type CombinedClass = {
+    _id: string;
     classData: Class;
     classProperties: ClassProperty;
     events: EventInput | undefined;
@@ -56,30 +55,21 @@ export type ButtonDropDownProps = {
     type: string;
 };
 
-export type FullCalendarClassEvent = {
-    title: string;
-    day: string;
-    startTime: string;
-    endTime: string;
-};
-
 export type CalendarOpenProps = {
     toggleCalendar: (isOpen: boolean) => void;
 };
 
-export type ProviderProps = {
+export type ReactNodeChildren = {
     children: ReactNode;
 };
 
 export type ConflictType = {
     class1: CombinedClass;
     class2: CombinedClass;
+    conflictType: string;
 };
 
 export type CalendarContextType = {
-    isLoading: boolean;
-    error: string | null;
-
     allClasses: CombinedClass[];
     displayClasses: CombinedClass[];
     currentCombinedClass?: CombinedClass | undefined;
@@ -92,13 +82,13 @@ export type CalendarContextType = {
 
     conflicts: ConflictType[];
 
-    setCurrentClass: (newCombinedClass: CombinedClass) => void;
+    setCurrentClass: (newClasses: CombinedClass) => void;
 
     updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
 
-    updateAllClasses: (newClasses: CombinedClass[], updateEvents?: boolean) => void;
+    updateAllClasses: (newClasses: CombinedClass[]) => void;
 
-    updateDisplayClasses: (newDisplayClasses: CombinedClass[], updateEvents?: boolean) => void;
+    updateDisplayClasses: (newDisplayClasses: CombinedClass[]) => void;
 
     detectConflicts: () => void;
 

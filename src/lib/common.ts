@@ -5,7 +5,6 @@ import { Document } from "mongodb";
 /// FUNCTIONS
 export function documentToClass(doc: Document): Class {
     return {
-        _id: doc._id.toString(), // Ensure _id is converted to string
         catalog_num: doc.catalog_num,
         class_num: doc.class_num,
         session: doc.session,
@@ -31,7 +30,6 @@ export function documentToClassProperty(doc: Document): ClassProperty {
     }
 
     return {
-        _id: doc._id.toString(), // Ensure _id is converted to string
         class_status: doc.class_status,
         start_time: doc.start_time,
         end_time: doc.end_time,
@@ -48,8 +46,8 @@ export function documentToClassProperty(doc: Document): ClassProperty {
 
 export function newDefaultEmptyClass() {
     return {
+        _id: "",
         classData: {
-            _id: "",
             catalog_num: "",
             class_num: "",
             session: "",
@@ -62,7 +60,6 @@ export function newDefaultEmptyClass() {
             waitlist_cap: "",
         },
         classProperties: {
-            _id: "",
             class_status: "",
             start_time: "",
             end_time: "",
@@ -77,6 +74,15 @@ export function newDefaultEmptyClass() {
         },
         events: undefined,
     } as CombinedClass;
+}
+
+export function documentToCombinedClass(doc: Document): CombinedClass {
+    const combinedClass: CombinedClass = newDefaultEmptyClass();
+    combinedClass._id = doc._id as string;
+    combinedClass.classData = doc.Data as Class;
+    combinedClass.classProperties = doc.Properties as ClassProperty;
+    combinedClass.events = createEventsFromCombinedClass(combinedClass) as EventInput[];
+    return combinedClass;
 }
 
 export function createEventsFromCombinedClass(combinedClass: CombinedClass): EventInput[] {
@@ -98,14 +104,12 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
             end: dateStringEnd || "",
             backgroundColor: defaultBackgroundColor,
             extendedProps: {
-                combinedClassId: combinedClass.classData._id,
+                combinedClassId: combinedClass._id,
                 linkedClassEvents: events
             },
         });
     });
-
-
-
+    
     return events;
 }
 

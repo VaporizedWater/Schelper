@@ -119,14 +119,4 @@ test.describe("Import Sheet Functionality", () => {
         // Just verify we're not on the import page anymore
         await page.waitForURL((url) => !url.pathname.endsWith("/importSheet"));
     });
-
-    // test("handles invalid file upload", async ({ page }) => {
-    //     const invalidFilePath = path.join(__dirname, "../test-data/invalid-file.txt");
-
-    //     // Upload invalid file
-    //     await page.setInputFiles('input[type="file"]', invalidFilePath);
-
-    //     // Verify table is not shown
-    //     await expect(page.locator("table")).not.toBeVisible();
-    // });
 });

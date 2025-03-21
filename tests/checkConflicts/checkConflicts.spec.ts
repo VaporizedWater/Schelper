@@ -1,15 +1,10 @@
 import { test, expect } from "@playwright/test";
-import { CombinedClass } from "@/lib/types";
 import path from "path";
 
 test.describe("Conflict Detection", () => {
     test.beforeEach(async ({ page }) => {
         await page.goto("/viewConflicts");
     });
-
-    // test("shows loading state initially", async ({ page }) => {
-    //     await expect(page.getByText("Checking for conflicts...")).toBeVisible();
-    // });
 
     test("shows no conflicts message when schedule is empty", async ({ page }) => {
         // Wait for loading to complete
