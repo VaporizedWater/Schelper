@@ -23,7 +23,7 @@ async function parseJsonResponse<T>(response: Response): Promise<T> {
 }
 
 // FETCH
-export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 10000) {
+export default async function fetchWithTimeout(requestURL: string, options = {}, timeout = 20000) {
     const controller = new AbortController();
     let response: Response;
 
@@ -72,6 +72,7 @@ export async function getTag(tagId: string): Promise<string | null> {
 }
 
 export async function loadCombinedClasses(classIds: string[] | null): Promise<CombinedClass[]> {
+    console.time("loadCombinedClasses:total");
     try {
         const headers = { ids: "" };
         if (classIds !== null && classIds.length > 0) {
@@ -79,9 +80,13 @@ export async function loadCombinedClasses(classIds: string[] | null): Promise<Co
         }
 
         // Load class data
-        const classResponse = await fetchWithTimeout("./api/combined_classes", {
-            headers: headers,
-        });
+        const classResponse = await fetchWithTimeout(
+            "./api/combined_classes",
+            {
+                headers: headers,
+            },
+            50000
+        );
 
         if (classResponse.ok) {
             const text = await classResponse.text();
@@ -93,6 +98,8 @@ export async function loadCombinedClasses(classIds: string[] | null): Promise<Co
     } catch (error) {
         console.error("Failed to load combined classes:", error);
         return [] as CombinedClass[];
+    } finally {
+        console.timeEnd("loadCombinedClasses:total");
     }
 }
 

@@ -95,8 +95,6 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
         const dateStringStart = `${convertedDay}T${startTime}`;
         const dateStringEnd = `${convertedDay}T${endTime}`;
 
-        console.log(combinedClass.properties.start_time);
-
         events.push({
             display: "auto",
             title:

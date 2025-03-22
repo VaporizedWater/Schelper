@@ -30,6 +30,10 @@ const Calendar = () => {
         detectConflicts();
     }, [displayClasses]); // Re-detect conflicts when classes change
 
+    useEffect(() => {
+        console.log(displayEvents.length);
+    }, [displayEvents]);
+
     function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {
         return displayClasses.find(
             (item) => {

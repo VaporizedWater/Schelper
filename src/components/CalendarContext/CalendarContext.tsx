@@ -10,6 +10,7 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 // Helper functions
 const createEventsFromClasses = (classes: CombinedClass[]): EventInput[] => {
+    console.time("createEventsFromClasses");
     const events: EventInput[] = [];
 
     if (classes.length === 0 || classes === undefined) {
@@ -26,6 +27,7 @@ const createEventsFromClasses = (classes: CombinedClass[]): EventInput[] => {
         events.push(...classEvents);
     });
 
+    console.timeEnd("createEventsFromClasses");
     return events;
 };
 
@@ -46,6 +48,7 @@ const buildTagMapping = (classes: CombinedClass[]): tagListType => {
 
 // Rebuilt for efficiency - single sort with compound comparator
 const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
+    console.time("detectClassConflicts");
     // Single sort with compound key (day, start_time)
     const sortedClasses = [...classes].sort((a, b) => {
         // First by day
@@ -132,6 +135,7 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
         }
     }
 
+    console.timeEnd("detectClassConflicts");
     return conflicts;
 };
 
@@ -139,9 +143,12 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
 function calendarReducer(state: CalendarState, action: CalendarAction): CalendarState {
     switch (action.type) {
         case 'INITIALIZE_DATA': {
+            console.time("INITIALIZE_DATA");
             const classes = action.payload.classes;
             const events = createEventsFromClasses(classes);
             const tagMapping = buildTagMapping(classes);
+
+            console.timeEnd("INITIALIZE_DATA");
 
             return {
                 ...state,
@@ -166,8 +173,10 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         }
 
         case 'SET_DISPLAY_CLASSES': {
+            console.time("SET_DISPLAY_CLASSES");
             const displayClasses = action.payload;
             const displayEvents = createEventsFromClasses(displayClasses);
+            console.timeEnd("SET_DISPLAY_CLASSES");
 
             return {
                 ...state,
@@ -193,6 +202,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         }
 
         case 'UPDATE_CLASS': {
+            console.time("UPDATE_CLASS");
             const updatedClass = action.payload;
             const updatedEvents = createEventsFromCombinedClass(updatedClass);
 
@@ -207,6 +217,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                         : [e]
                 );
 
+            console.timeEnd("UPDATE_CLASS");
             return {
                 ...state,
                 classes: {
@@ -418,9 +429,11 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         }
 
         case 'UPLOAD_CLASSES': {
+            console.time("UPLOAD_CLASSES");
             const newClasses = [...state.classes.all, ...action.payload];
             const events = createEventsFromClasses(newClasses);
             const tagMapping = buildTagMapping(newClasses);
+            console.timeEnd("UPLOAD_CLASSES");
 
             return {
                 ...state,
@@ -451,9 +464,11 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
     // Load initial data
     useEffect(() => {
+        console.time("CalendarProvider:initialLoad");
         let mounted = true;
 
         const loadData = async () => {
+            console.time("loadData");
             try {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
@@ -480,9 +495,11 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     dispatch({ type: 'SET_LOADING', payload: false });
                 }
             }
+            console.timeEnd("loadData");
         };
 
         loadData();
+        console.timeEnd("CalendarProvider:initialLoad");
         return () => { mounted = false; };
     }, [forceUpdate]);
 
@@ -535,9 +552,11 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         },
 
         updateAllClasses: (classes: CombinedClass[]) => {
+            console.time("updateAllClasses");
             const payload = { classes, tags: state.tags.all };
             console.log('INITIALIZE_DATA');
             dispatch({ type: 'INITIALIZE_DATA', payload });
+            console.timeEnd("updateAllClasses");
         },
 
         updateDisplayClasses: (classes: CombinedClass[]) => {
@@ -547,7 +566,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         detectConflicts: () => {
             const conflicts = detectClassConflicts(state.classes.all); // Changed this from state.classes.display to state.classes.all
-            console.log('SET_CONFLICTS');
+
             dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
         },
 
@@ -627,6 +646,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         },
 
         uploadNewClasses: (classes: CombinedClass[]) => {
+            console.time("uploadNewClasses");
             // Use bulk update instead of individual updates
             updateCombinedClasses(classes)
                 .then(() => {
@@ -645,6 +665,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         payload: 'Failed to upload classes. Please try again.'
                     });
                 });
+            console.timeEnd("uploadNewClasses");
         }
     }), [state]);
 

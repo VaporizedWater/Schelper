@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { CalendarProvider } from "@/components/CalendarContext/CalendarContext";
 import NavWrapper from "@/components/NavWrapper/NavWrapper";
+import AppInitializer from "@/components/AppInitializer/AppInitializer";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -31,6 +32,7 @@ export default function RootLayout({
                 <NavWrapper />
                 <div className="bg-graybg flex-1">
                     <CalendarProvider>
+                        <AppInitializer />
                         {children}
                     </CalendarProvider>
                 </div>

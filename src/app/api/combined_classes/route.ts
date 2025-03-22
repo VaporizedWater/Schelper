@@ -25,6 +25,7 @@ async function doBulkOperation(bulkOps: AnyBulkWriteOperation<Document>[]): Prom
 }
 
 export async function GET(request: Request) {
+    console.time("combined_classes_GET:total");
     try {
         const headerId = request.headers.get("ids");
         const pipeline = [];
@@ -57,12 +58,56 @@ export async function GET(request: Request) {
             return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
         }
 
+        console.timeEnd("combined_classes_GET:total");
         return new Response(JSON.stringify(data), { status: 200 });
     } catch (error) {
         console.error("Error in GET /api/classes:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
 }
+
+// export async function GET(request: Request) {
+//     console.time("combined_classes_GET:total");
+//     try {
+//         const headerId = request.headers.get("ids");
+
+//         // Direct query approach instead of aggregation pipeline
+//         let query = {};
+
+//         // Apply ID filter if present
+//         if (headerId && headerId !== "") {
+//             const validIds = headerId
+//                 .split(",")
+//                 .filter((id) => ObjectId.isValid(id))
+//                 .map((id) => new ObjectId(id));
+
+//             if (validIds.length === 0) {
+//                 return new Response(JSON.stringify({ error: "Invalid IDs provided" }), { status: 400 });
+//             }
+
+//             query = { _id: { $in: validIds } };
+//         }
+
+//         // Simple find operation is faster than aggregation for this case
+//         const data = await collection.find(query).toArray();
+
+//         if (!data.length) {
+//             return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
+//         }
+
+//         console.timeEnd("combined_classes_GET:total");
+//         return new Response(JSON.stringify(data), {
+//             status: 200,
+//             headers: {
+//                 "Content-Type": "application/json",
+//                 "Cache-Control": "max-age=60", // Add caching for 60 seconds
+//             },
+//         });
+//     } catch (error) {
+//         console.error("Error in GET /api/classes:", error);
+//         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+//     }
+// }
 
 export async function POST(request: Request) {
     try {
@@ -114,6 +159,10 @@ export async function PUT(request: Request): Promise<Response> {
                 // IMPORTANT: Remove _id from the update document
                 const { _id, ...updateData } = cls;
 
+                if (_id) {
+                    // Do some rubbish with id for now. Just for the build.
+                }
+
                 bulkOperations.push({
                     updateOne: {
                         filter: { _id: objectId },
@@ -139,6 +188,10 @@ export async function PUT(request: Request): Promise<Response> {
                 };
 
                 const { _id, ...updateData } = cls;
+
+                if (_id) {
+                    // Do some rubbish with id for now. Just for the build.
+                }
 
                 bulkOperations.push({
                     updateOne: {
