@@ -2,34 +2,12 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { EventInput } from '@fullcalendar/core/index.js';
 import { updateCombinedClasses, loadCombinedClasses, loadAllTags } from '@/lib/utils';
-import { createEventsFromCombinedClass, dayToDate, initialCalendarState } from '@/lib/common';
+import { dayToDate, initialCalendarState } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
 // Helper functions
-const createEventsFromClasses = (classes: CombinedClass[]): EventInput[] => {
-    console.time("createEventsFromClasses");
-    const events: EventInput[] = [];
-
-    if (classes.length === 0 || classes === undefined) {
-        console.log("No classes found. Now undef");
-        return events;
-    }
-
-    console.log(typeof classes);
-    console.log(classes);
-
-    classes.forEach(cls => {
-        const classEvents: EventInput[] = createEventsFromCombinedClass(cls);
-        cls.events = classEvents;
-        events.push(...classEvents);
-    });
-
-    console.timeEnd("createEventsFromClasses");
-    return events;
-};
 
 const buildTagMapping = (classes: CombinedClass[]): tagListType => {
     const mapping: tagListType = new Map();
@@ -145,7 +123,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         case 'INITIALIZE_DATA': {
             console.time("INITIALIZE_DATA");
             const classes = action.payload.classes;
-            const events = createEventsFromClasses(classes);
+            // const events = createEventsFromClasses(classes);
             const tagMapping = buildTagMapping(classes);
 
             console.timeEnd("INITIALIZE_DATA");
@@ -157,10 +135,10 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     display: classes,
                     current: state.classes.current
                 },
-                events: {
-                    all: events,
-                    display: events
-                },
+                // events: {
+                //     all: events,
+                //     display: events
+                // },
                 tags: {
                     all: action.payload.tags,
                     mapping: tagMapping
@@ -175,7 +153,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         case 'SET_DISPLAY_CLASSES': {
             console.time("SET_DISPLAY_CLASSES");
             const displayClasses = action.payload;
-            const displayEvents = createEventsFromClasses(displayClasses);
+            // const displayEvents = createEventsFromClasses(displayClasses);
             console.timeEnd("SET_DISPLAY_CLASSES");
 
             return {
@@ -184,10 +162,10 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     ...state.classes,
                     display: displayClasses
                 },
-                events: {
-                    ...state.events,
-                    display: displayEvents
-                }
+                // events: {
+                //     ...state.events,
+                //     display: displayEvents
+                // }
             };
         }
 
@@ -204,18 +182,18 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         case 'UPDATE_CLASS': {
             console.time("UPDATE_CLASS");
             const updatedClass = action.payload;
-            const updatedEvents = createEventsFromCombinedClass(updatedClass);
+            // const updatedEvents = createEventsFromCombinedClass(updatedClass);
 
             // Update the class in all collections
             const updateClassById = (classes: CombinedClass[]) =>
                 classes.map(c => c._id === updatedClass._id ? updatedClass : c);
 
-            const updateEventsById = (events: EventInput[]) =>
-                events.flatMap(e =>
-                    e.extendedProps?.combinedClassId === updatedClass._id
-                        ? updatedEvents
-                        : [e]
-                );
+            // const updateEventsById = (events: EventInput[]) =>
+            //     events.flatMap(e =>
+            //         e.extendedProps?.combinedClassId === updatedClass._id
+            //             ? updatedEvents
+            //             : [e]
+            //     );
 
             console.timeEnd("UPDATE_CLASS");
             return {
@@ -225,10 +203,10 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     display: updateClassById(state.classes.display),
                     current: updatedClass
                 },
-                events: {
-                    all: updateEventsById(state.events.all),
-                    display: updateEventsById(state.events.display)
-                }
+                // events: {
+                //     all: updateEventsById(state.events.all),
+                //     display: updateEventsById(state.events.display)
+                // }
             };
         }
 
@@ -431,7 +409,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         case 'UPLOAD_CLASSES': {
             console.time("UPLOAD_CLASSES");
             const newClasses = [...state.classes.all, ...action.payload];
-            const events = createEventsFromClasses(newClasses);
+            // const events = createEventsFromClasses(newClasses);
             const tagMapping = buildTagMapping(newClasses);
             console.timeEnd("UPLOAD_CLASSES");
 
@@ -442,10 +420,10 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     display: newClasses,
                     current: state.classes.current
                 },
-                events: {
-                    all: events,
-                    display: events
-                },
+                // events: {
+                //     all: events,
+                //     display: events
+                // },
                 tags: {
                     ...state.tags,
                     mapping: tagMapping
@@ -519,8 +497,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         currentCombinedClass: state.classes.current,
 
         // Events
-        allEvents: state.events.all,
-        displayEvents: state.events.display,
+        // allEvents: state.events.all,
+        // displayEvents: state.events.display,
 
         // Tags
         allTags: state.tags.all,

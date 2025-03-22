@@ -5,9 +5,10 @@ import interactionPlugin, { EventResizeStopArg } from "@fullcalendar/interaction
 import timeGridPlugin from "@fullcalendar/timegrid";
 
 import { EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState, useCallback } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { createEventsFromCombinedClass, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays } from "@/lib/common";
+import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
 
@@ -23,40 +24,96 @@ const viewFiveDays = {
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { setCurrentClass, updateOneClass, detectConflicts, displayClasses, displayEvents, conflicts } = useCalendarContext();
+    const { setCurrentClass, updateOneClass, detectConflicts, displayClasses, conflicts } = useCalendarContext();
 
-    // Detect conflicts when the calendar renders or updates
+    // Local state for events
+    const [events, setEvents] = useState<EventInput[]>([]);
+
+    // Create events efficiently when displayClasses changes
+    useEffect(() => {
+        console.time("Calendar:createEvents");
+        if (!displayClasses || displayClasses.length === 0) {
+            setEvents([]);
+            console.timeEnd("Calendar:createEvents");
+            return;
+        }
+
+        const newEvents: EventInput[] = [];
+
+        displayClasses.forEach(cls => {
+            if (cls._id) {
+                const classEvents = createEventsFromCombinedClass(cls);
+
+                // Add class reference to each event's extendedProps
+                classEvents.forEach(event => {
+                    if (!event.extendedProps) event.extendedProps = {};
+                    event.extendedProps.combinedClass = cls; // Store the actual class reference
+                });
+
+                // Store for reference
+                cls.events = classEvents;
+
+                // Add to our collections
+                newEvents.push(...classEvents);
+            }
+        });
+
+        setEvents(newEvents);
+        console.timeEnd("Calendar:createEvents");
+    }, [displayClasses]);
+
+    // Update events for a single class (much more efficient)
+    const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {
+        if (!updatedClass._id) return;
+
+        console.time("Calendar:updateEventsForClass");
+        const newClassEvents = createEventsFromCombinedClass(updatedClass);
+
+        // Add class reference to each event's extendedProps
+        newClassEvents.forEach(event => {
+            if (!event.extendedProps) event.extendedProps = {};
+            event.extendedProps.combinedClass = updatedClass; // Store the actual class reference
+        });
+
+        // Update the events array by replacing only events for this class
+        setEvents(prev => {
+            // Remove previous events for this class
+            const filteredEvents = prev.filter(
+                event => event.extendedProps?.combinedClassId !== updatedClass._id
+            );
+
+            // Add the new events
+            return [...filteredEvents, ...newClassEvents];
+        });
+        console.timeEnd("Calendar:updateEventsForClass");
+    }, []);
+
+    // Log events when they change
+    useEffect(() => {
+        console.log(`Events updated: ${events.length} total events`);
+    }, [events]);
+
+    // Detect conflicts when displayClasses changes
     useEffect(() => {
         detectConflicts();
-    }, [displayClasses]); // Re-detect conflicts when classes change
+    }, [displayClasses]);
 
-    useEffect(() => {
-        console.log(displayEvents.length);
-    }, [displayEvents]);
-
+    // Enhanced findClass that uses our eventMap for better performance
     function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {
-        return displayClasses.find(
-            (item) => {
-                let found = false;
-                if (item.events) {
-                    item.events.forEach((event: EventInput) => {
-                        if (event.extendedProps?.combinedClassId === info.event.extendedProps.combinedClassId) {
-                            found = true;
-                        }
-                    });
-                } else {
-                    console.log("No events found");
-                }
-                return found;
-            }
-        );
+        // Get the class directly from the event's extendedProps
+        if (info.event.extendedProps?.combinedClass) {
+            return info.event.extendedProps.combinedClass as CombinedClass;
+        }
+
+        // Fallback to lookup by ID if class reference is not available
+        const classId = info.event.extendedProps.combinedClassId;
+        return displayClasses.find(cls => cls._id === classId);
     }
 
     function unselectAll() {
         selectedEvents.forEach(element => {
             if (element) {
                 element.style.backgroundColor = defaultBackgroundColor;
-                // Remove the ctrl click effect
             }
         });
 
@@ -65,7 +122,7 @@ const Calendar = () => {
 
     const handleEventClick = (info: EventClickArg) => {
         unselectAll();
-        info.el.style.backgroundColor = selectedBackgroundColor
+        info.el.style.backgroundColor = selectedBackgroundColor;
         selectedEvents.push(info.el);
 
         const foundClass = findClass(info);
@@ -73,7 +130,6 @@ const Calendar = () => {
         if (foundClass) {
             console.log("Class found");
             setCurrentClass(foundClass);
-
             console.log("Current class: ", foundClass);
         } else {
             console.log("Class not found");
@@ -95,22 +151,28 @@ const Calendar = () => {
             const newStart = info.event.start?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
             const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
             const newDay = ShortenedDays[(info.event.start?.getDay() ?? 1) - 1];
-            console.log("newStart: " + newStart + "\n", "newEnd: " + newEnd + "\n", "newDay: " + newDay + "\n");
 
             if (!newStart || !newEnd || !newDay) {
                 info.revert();
                 return;
             }
 
-            foundClass.properties.start_time = newStart;
-            foundClass.properties.end_time = newEnd;
-            foundClass.properties.days = [newDay];
-            foundClass.events = createEventsFromCombinedClass(foundClass);
+            // Update class properties
+            const updatedClass = {
+                ...foundClass,
+                properties: {
+                    ...foundClass.properties,
+                    start_time: newStart,
+                    end_time: newEnd,
+                    days: [newDay]
+                }
+            };
 
-            console.log("LOOK HERE!", foundClass.events);
+            // Update locally first for immediate UI feedback
+            updateEventsForClass(updatedClass);
 
-            updateOneClass(foundClass);
-
+            // Then update in context/database
+            updateOneClass(updatedClass);
         }
     }
 
@@ -124,16 +186,25 @@ const Calendar = () => {
                 return;
             }
 
-            foundClass.properties.end_time = newEnd;
-            foundClass.events = createEventsFromCombinedClass(foundClass);
+            // Update class properties
+            const updatedClass = {
+                ...foundClass,
+                properties: {
+                    ...foundClass.properties,
+                    end_time: newEnd
+                }
+            };
 
-            console.log("LOOK HERE22!", foundClass.events);
-            updateOneClass(foundClass);
+            // Update locally first for immediate UI feedback
+            updateEventsForClass(updatedClass);
+
+            // Then update in context/database
+            updateOneClass(updatedClass);
         }
     }
 
-    // Highlight conflicting events with appropriate colors based on conflict type
-    const eventContent = (eventInfo: EventInput) => {
+    // Memoize the event content renderer
+    const eventContent = useCallback((eventInfo: EventInput) => {
         const classId = eventInfo.event.extendedProps.combinedClassId;
 
         // Find conflicts involving this class
@@ -170,7 +241,7 @@ const Calendar = () => {
                     ${eventInfo.event.title}
                 </div>`
         };
-    };
+    }, [conflicts]);
 
     return (
         <div className="h-full">
@@ -180,7 +251,7 @@ const Calendar = () => {
                 editable
                 expandRows
                 selectable={false}
-                events={displayEvents}
+                events={events} // Use local events instead of displayEvents
                 slotDuration={'00:30:00'}
                 slotMinTime={'08:00:00'}
                 slotMaxTime={'21:00:00'}

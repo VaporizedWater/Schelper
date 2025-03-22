@@ -74,8 +74,8 @@ export type CalendarContextType = {
     displayClasses: CombinedClass[];
     currentCombinedClass?: CombinedClass | undefined;
 
-    allEvents: EventInput[];
-    displayEvents: EventInput[];
+    // allEvents: EventInput[];
+    // displayEvents: EventInput[];
 
     allTags: Set<string>;
     tagList: tagListType; // Map of tags to a set of class ids
@@ -108,10 +108,6 @@ export type CalendarState = {
         all: CombinedClass[];
         display: CombinedClass[];
         current: CombinedClass | undefined;
-    };
-    events: {
-        all: EventInput[];
-        display: EventInput[];
     };
     tags: {
         all: Set<string>;
