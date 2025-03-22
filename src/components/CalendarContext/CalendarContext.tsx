@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { updateCombinedClasses, loadCombinedClasses, loadAllTags } from '@/lib/utils';
+import { updateCombinedClasses, loadCombinedClasses, loadAllTags, deleteCombinedClasses } from '@/lib/utils';
 import { dayToDate, initialCalendarState } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -431,6 +431,54 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             };
         }
 
+        case 'DELETE_CLASSES': {
+            const classIdsToDelete = action.payload;
+
+            // Create a Set for O(1) lookups
+            const classIdSet = new Set(classIdsToDelete);
+
+            // Filter out deleted classes in a single pass each
+            const filteredAllClasses = state.classes.all.filter(c => !classIdSet.has(c._id));
+            const filteredDisplayClasses = state.classes.display.filter(c => !classIdSet.has(c._id));
+
+            // Update tag mapping
+            const newMapping = new Map(state.tags.mapping);
+            for (const [tagId, tagData] of newMapping.entries()) {
+                // Process all tag mappings at once
+                let modified = false;
+
+                for (const classId of classIdsToDelete) {
+                    if (tagData.classIds.has(classId)) {
+                        tagData.classIds.delete(classId);
+                        modified = true;
+                    }
+                }
+
+                // Remove empty tag entries
+                if (modified && tagData.classIds.size === 0) {
+                    newMapping.delete(tagId);
+                }
+            }
+
+            // Handle current class (unset if it's one of the deleted classes)
+            const newCurrentClass = state.classes.current && classIdSet.has(state.classes.current._id)
+                ? undefined
+                : state.classes.current;
+
+            return {
+                ...state,
+                classes: {
+                    all: filteredAllClasses,
+                    display: filteredDisplayClasses,
+                    current: newCurrentClass
+                },
+                tags: {
+                    ...state.tags,
+                    mapping: newMapping
+                }
+            };
+        }
+
         default:
             return state;
     }
@@ -644,6 +692,27 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     });
                 });
             console.timeEnd("uploadNewClasses");
+        },
+
+        deleteClasses: async (classIds: string[]) => {
+            try {
+                const success = await deleteCombinedClasses(classIds);
+
+                if (!success) {
+                    // If API call fails, reload data to restore state
+                    console.error("Failed to delete class, reloading data");
+                    setForceUpdate(Date.now().toString());
+                }
+
+                dispatch({ type: 'DELETE_CLASSES', payload: classIds });
+
+                return success;
+            } catch (error) {
+                console.error("Error deleting class:", error);
+                // Reload data to restore state
+                setForceUpdate(Date.now().toString());
+                return false;
+            }
         }
     }), [state]);
 

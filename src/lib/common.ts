@@ -120,6 +120,16 @@ export const selectedBackgroundColor = "#001e44bd";
 
 export const ShortenedDays = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
+export const viewFiveDays = {
+    viewFiveDays: {
+        type: "timeGrid",
+        visibleRange: {
+            start: "2025-01-06",
+            end: "2025-01-11",
+        },
+    },
+};
+
 export const dayToDate: { [key: string]: string } = {
     Mon: "2025-01-06",
     Tue: "2025-01-07",

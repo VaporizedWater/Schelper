@@ -176,3 +176,21 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[]): P
         return false;
     }
 }
+
+// ---
+// DELETEs
+export async function deleteCombinedClasses(classIds: string[]): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/combined_classes", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(classIds),
+        });
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete classes:", error);
+        return false;
+    }
+}

@@ -7,20 +7,10 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { createEventsFromCombinedClass, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays } from "@/lib/common";
+import { createEventsFromCombinedClass, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
 import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
-
-const viewFiveDays = {
-    viewFiveDays: {
-        type: 'timeGrid',
-        visibleRange: {
-            start: '2025-01-06',
-            end: '2025-01-11'
-        }
-    }
-}
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);

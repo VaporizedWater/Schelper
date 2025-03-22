@@ -101,6 +101,8 @@ export type CalendarContextType = {
     unlinkAllTagsFromAllClasses: () => void;
 
     uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
+
+    deleteClasses: (classIds: string[]) => void;
 };
 
 export type CalendarState = {
@@ -132,4 +134,5 @@ export type CalendarAction =
     | { type: "UNLINK_ALL_TAGS_FROM_CLASS"; payload: string }
     | { type: "UNLINK_ALL_CLASSES_FROM_TAG"; payload: string }
     | { type: "UNLINK_ALL_TAGS_FROM_ALL_CLASSES" }
-    | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] };
+    | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] }
+    | { type: "DELETE_CLASSES"; payload: string[] };

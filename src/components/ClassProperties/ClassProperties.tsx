@@ -4,7 +4,7 @@ import { Class, ClassProperty, CombinedClass } from '@/lib/types';
 import { createEventsFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
 
 const ClassProperties = () => {
-    const { currentCombinedClass, updateOneClass, allTags } = useCalendarContext();
+    const { currentCombinedClass, updateOneClass, allTags, deleteClasses, setCurrentClass } = useCalendarContext();
     const initialData: Class = currentCombinedClass?.data || {} as Class;
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
@@ -141,6 +141,26 @@ const ClassProperties = () => {
         }
     };
 
+    const handleDeleteClass = () => {
+        if (!currentCombinedClass || !currentCombinedClass._id) return;
+
+        // Confirmation dialog
+        const isConfirmed = confirm(
+            `Are you sure you want to delete ${currentCombinedClass.data.course_subject} ${currentCombinedClass.data.course_num}?\n\nThis action cannot be undone.`
+        );
+
+        if (isConfirmed) {
+            try {
+                deleteClasses([currentCombinedClass._id]);
+                // Clear current class selection
+                setCurrentClass(newDefaultEmptyClass());
+            } catch (error) {
+                alert("Failed to delete class. Please try again. ");
+                console.log("Error deleting class:", error);
+            }
+        }
+    };
+
     return (
         <div>
             <ul className="flex flex-col w-full">
@@ -260,6 +280,20 @@ const ClassProperties = () => {
                         onChange={handleEndTimeChange}
                     />
                 </li>
+
+                {/* Delete button - only show if we have a valid class with an ID */}
+                {currentCombinedClass && currentCombinedClass._id && (
+                    <li className="flex border-b items-center pt-4">
+                        <button
+                            onClick={handleDeleteClass}
+                            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors cursor-pointer"
+                            aria-label="Delete class"
+                        >
+                            Delete Class
+                        </button>
+                    </li>
+                )}
+
             </ul>
         </div>
     );

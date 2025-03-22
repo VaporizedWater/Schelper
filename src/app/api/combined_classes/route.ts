@@ -212,3 +212,48 @@ export async function PUT(request: Request): Promise<Response> {
         });
     }
 }
+
+export async function DELETE(request: Request): Promise<Response> {
+    try {
+        const classIds: string[] = await request.json();
+
+        if (!Array.isArray(classIds)) {
+            return new Response(
+                JSON.stringify({ success: false, error: "Invalid request format - expected array of IDs" }),
+                {
+                    status: 400,
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+        }
+
+        const bulkOperations: AnyBulkWriteOperation<Document>[] = [];
+
+        classIds.forEach((id: string) => {
+            if (id && id !== "" && ObjectId.isValid(id)) {
+                const objectId = new ObjectId(id);
+
+                bulkOperations.push({
+                    deleteOne: {
+                        filter: { _id: objectId },
+                    },
+                });
+            }
+        });
+
+        if (bulkOperations.length === 0) {
+            return new Response(JSON.stringify({ success: false, error: "No valid IDs provided" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        return doBulkOperation(bulkOperations);
+    } catch (error) {
+        console.error("Error in DELETE /api/combined_classes:", error);
+        return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+}
