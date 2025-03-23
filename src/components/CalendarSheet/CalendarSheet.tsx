@@ -3,17 +3,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import Spreadsheet, { Matrix } from "react-spreadsheet";
-// import { EventInput } from "@fullcalendar/core/index.js";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { updateCombinedClasses } from "@/lib/utils";
-// import { createEventsFromCombinedClass } from "@/lib/common";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
-    const { allClasses, updateAllClasses, updateDisplayClasses } = useCalendarContext();
+    const { allClasses, updateAllClasses, updateDisplayClasses, displayClasses } = useCalendarContext();
 
     // Compute a hidden mapping of row index (starting at 0 for first data row) to class id.
-    const classIds = allClasses.map((item) => item._id);
+    const classIds = displayClasses.map((item) => item._id);
 
     // Define headers separately so that we can prepend them to the data matrix.
     const headers = useMemo<Matrix<{ value: string }>>(() => [[
@@ -40,7 +38,7 @@ export default function CalendarSheet() {
 
     const spreadsheetData = useMemo(() => [
         ...headers,
-        ...allClasses.map((item) => [
+        ...displayClasses.map((item) => [
             { value: String(item.data.catalog_num) },
             { value: String(item.data.class_num) },
             { value: String(item.data.session) },
@@ -61,7 +59,7 @@ export default function CalendarSheet() {
             { value: String(item.data.waitlist_cap) },
             { value: String(item.properties.tags.join(', ')) },
         ]),
-    ], [allClasses, headers]);
+    ], [displayClasses, headers]);
 
     const [pendingData, setPendingData] = useState<Matrix<{ value: string }>>(spreadsheetData);
 
@@ -69,7 +67,7 @@ export default function CalendarSheet() {
         setPendingData(spreadsheetData);
     }, [spreadsheetData]);
 
-    // Handle changes and track modified rows
+    // Handle changes
     const handleSpreadsheetChange = (newData: Matrix<{ value: string }>) => {
         setPendingData(newData);
     };

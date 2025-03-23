@@ -7,15 +7,16 @@ import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
-import { newDefaultEmptyClass } from "@/lib/common";
+import { newDefaultEmptyClass, ShortenedDays } from "@/lib/common";
 
 const NewClassForm = () => {
     const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
-    const [day, setDay] = useLocalStorage("day", "Mon", { initializeWithValue: false });
+    const [, , clearDay] = useLocalStorage("day", "Mon", { initializeWithValue: false });
+    const [selectedDays, setSelectedDays, clearSelectedDays] = useLocalStorage<string[]>("selectedDays", ["Mon"], { initializeWithValue: false });
     const [startTime, setStartTime, clearStartTime] = useLocalStorage("startTime", "", { initializeWithValue: false });
     const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "", { initializeWithValue: false });
     const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
-    const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {} as ClassProperty, { initializeWithValue: false });
+    const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", { days: ["Mon"] } as ClassProperty, { initializeWithValue: false });
     const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<string[]>("selectedTags", [], { initializeWithValue: false });
     const { allTags } = useCalendarContext();
 
@@ -23,17 +24,18 @@ const NewClassForm = () => {
 
     const clearState = () => {
         clearTitle();
-        setDay("Mon");
+        clearDay();
+        clearSelectedDays();
         clearStartTime();
         clearEndTime();
         setClassInfo({} as Class);
-        setClassProperties({} as ClassProperty);
+        setClassProperties({ days: ["Mon"] } as ClassProperty);
         clearSelectedTags();
     }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!title || !day || !startTime || !endTime) {
+        if (!title || !selectedDays.length || !startTime || !endTime) {
             alert("Please fill out all fields");
             return;
         }
@@ -58,7 +60,7 @@ const NewClassForm = () => {
                 // Preserve special handling for arrays
                 days: classProperties.days?.length > 0
                     ? classProperties.days
-                    : defaultCombined.properties.days,
+                    : ["Mon"],
                 tags: classProperties.tags?.length > 0
                     ? classProperties.tags
                     : defaultCombined.properties.tags
@@ -88,17 +90,31 @@ const NewClassForm = () => {
                         onChange={(e) => { setTitle(e.target.value); setClassInfo({ ...classInfo, title: e.target.value } as Class) }}
                         className="p-2 border rounded-sm"
                     />
-                    <select
-                        value={day}
-                        onChange={(e) => { setDay(e.target.value); setClassProperties({ ...classProperties, days: [e.target.value] } as ClassProperty) }}
-                        className="p-2 border rounded-sm"
-                    >
-                        <option value="Mon">Monday</option>
-                        <option value="Tue">Tuesday</option>
-                        <option value="Wed">Wednesday</option>
-                        <option value="Thu">Thursday</option>
-                        <option value="Fri">Friday</option>
-                    </select>
+
+                    <div className="flex flex-row gap-2 justify-around items-center p-2 border rounded-sm">
+                        {ShortenedDays.map((dayOption) => (
+                            <label key={dayOption} className="flex items-center gap-1 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={selectedDays.includes(dayOption)}
+                                    onChange={(e) => {
+                                        const newDays = e.target.checked
+                                            ? [...selectedDays, dayOption]
+                                            : selectedDays.filter(d => d !== dayOption);
+
+                                        setSelectedDays(newDays);
+                                        setClassProperties({
+                                            ...classProperties,
+                                            days: newDays
+                                        } as ClassProperty);
+                                    }}
+                                    className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                                />
+                                <span>{dayOption}</span>
+                            </label>
+                        ))}
+                    </div>
+
                     <input
                         type="time"
                         value={startTime}

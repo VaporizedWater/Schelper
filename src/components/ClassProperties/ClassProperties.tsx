@@ -96,12 +96,15 @@ const ClassProperties = () => {
         }
     };
 
-    const handleDaysChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selected = Array.from(e.target.selectedOptions, option => option.value);
-        setDays(selected);
+    const handleDaysChange = (day: string, isChecked: boolean) => {
+        const updatedDays = isChecked
+            ? [...days, day]
+            : days.filter(d => d !== day);
+
+        setDays(updatedDays);
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-            modifiedClass.properties.days = selected;
+            modifiedClass.properties.days = updatedDays;
             updateOneClass(modifiedClass);
         }
     };
@@ -220,22 +223,19 @@ const ClassProperties = () => {
                 </li>
                 <li className="flex border-b items-center">
                     <span className="font-medium text-gray-700 min-w-20">Days</span>
-                    <select
-                        multiple
-                        className="flex-1 border px-1 w-full overflow-hidden"
-                        size={ShortenedDays.length}
-                        value={days}
-                        onChange={handleDaysChange}
-                    >
+                    <div className="flex-1 flex flex-col">
                         {ShortenedDays.map(day => (
-                            <option
-                                key={day} value={day} defaultChecked={days.includes(day)}
-                                className={`${days.includes(day) ? 'bg-lightblue' : 'bg-white'}`}
-                            >
-                                {day === "Thu" ? "Th" : day[0]}
-                            </option>
+                            <label key={day} className="flex items-center gap-1">
+                                <input
+                                    type="checkbox"
+                                    checked={days.includes(day)}
+                                    onChange={(e) => handleDaysChange(day, e.target.checked)}
+                                    className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                                />
+                                <span>{day === "Thu" ? "Th" : day[0]}</span>
+                            </label>
                         ))}
-                    </select>
+                    </div>
                 </li>
 
                 {/* Tags to be selected from list of checkboxes */}
