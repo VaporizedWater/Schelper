@@ -32,7 +32,7 @@ export default function Modal({ children }: ModalProps) {
                 </button>
 
                 {/* Modal Content */}
-                <div className="px-8 overflow-y-auto flex-1 mt-8">
+                <div className="px-2 overflow-y-auto flex-1 mt-8">
                     {children}
                 </div>
             </div>

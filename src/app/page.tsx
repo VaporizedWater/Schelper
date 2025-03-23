@@ -34,11 +34,11 @@ const Home = () => {
             <div className="h-full w-full">
                 {/* Current image */}
                 <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
-                     style={{ backgroundImage: `url(${currentImage})`, opacity }}>
+                    style={{ backgroundImage: `url(${currentImage})`, opacity }}>
                 </div>
                 {/* Next image */}
                 <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
-                     style={{ backgroundImage: `url(${nextImage})`, opacity: 1 - opacity }}>
+                    style={{ backgroundImage: `url(${nextImage})`, opacity: 1 - opacity }}>
                 </div>
                 <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
                     <h1 className='text-lightblue text-8xl font-bold flex items-center justify-center gap-4'>
@@ -46,6 +46,8 @@ const Home = () => {
                         Schelper
                     </h1>
                     <h2 className='pt-4 text-3xl text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
+
+                    {/* Main navigation options */}
                     <div className='mt-10 flex justify-center gap-6'>
                         <Link className="relative group overflow-hidden"
                             href='/calendar'>
@@ -73,6 +75,22 @@ const Home = () => {
                                 Manage Tags
                             </span>
                         </Link>
+                    </div>
+
+                    {/* Cohort Filter Options */}
+                    <div className="mt-10">
+                        <h3 className="text-2xl text-graybg mb-4 drop-shadow-lg">View Calendar by Cohort</h3>
+                        <div className="flex justify-center gap-4">
+                            {['freshman', 'sophomore', 'junior', 'senior'].map((cohort) => (
+                                <Link
+                                    key={cohort}
+                                    href={`/calendar?cohort=${cohort}`}
+                                    className="px-6 py-3 bg-lightblue2 text-graybg rounded-lg hover:bg-blue-600 transition-colors capitalize font-semibold"
+                                >
+                                    {cohort}
+                                </Link>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
