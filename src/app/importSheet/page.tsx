@@ -30,11 +30,27 @@ const extractCourseLevel = (courseNum: string): string | null => {
     return level >= 1 && level <= 4 ? `${level}00level` : null;
 };
 
+const levelToCohort = (level: string | null): string => {
+    if (!level) return "Freshman";
+    switch (level) {
+        case "100level": return "Freshman";
+        case "200level": return "Sophomore";
+        case "300level": return "Junior";
+        case "400level": return "Senior";
+        default: return "Freshman";
+    }
+};
+
+const cohortToTag = (cohort: string): string => {
+    return cohort.toLowerCase();
+};
+
 const ImportSheet = () => {
     const router = useRouter();
     const { uploadNewClasses } = useCalendarContext();
     const [parsedClasses, setParsedClasses] = useState<CombinedClass[]>([]);
     const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set());
+    const [cohortSelections, setCohortSelections] = useState<Record<string, string>>({});
 
     // Create a unique identifier for each class
     const getUniqueClassId = useCallback((cls: CombinedClass): string => {
@@ -203,9 +219,29 @@ const ImportSheet = () => {
     };
 
     const handleImport = () => {
-        const classesToImport = parsedClasses.filter(c =>
-            selectedClasses.has(getUniqueClassId(c))
-        );
+        const classesToImport = parsedClasses
+            .filter(c => selectedClasses.has(getUniqueClassId(c)))
+            .map(cls => {
+                const uniqueId = getUniqueClassId(cls);
+                const selectedCohort = cohortSelections[uniqueId] ||
+                    levelToCohort(extractCourseLevel(cls.data.course_num));
+
+                // Remove any existing cohort tags
+                const cohortTags = ["freshman", "sophomore", "junior", "senior"];
+                const filteredTags = cls.properties.tags.filter(tag => !cohortTags.includes(tag));
+
+                // Add the new cohort tag
+                const newCohortTag = cohortToTag(selectedCohort);
+
+                return {
+                    ...cls,
+                    properties: {
+                        ...cls.properties,
+                        tags: [...filteredTags, newCohortTag]
+                    }
+                };
+            });
+
         uploadNewClasses(classesToImport);
         router.back();
     };
@@ -262,6 +298,7 @@ const ImportSheet = () => {
                                     <th className="p-2 border">Instructor</th>
                                     <th className="p-2 border">Room</th>
                                     <th className="p-2 border">Location</th>
+                                    <th className="p-2 border">Cohort</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -300,6 +337,25 @@ const ImportSheet = () => {
                                             <td className="p-2 border">{cls.properties.instructor_name}</td>
                                             <td className="p-2 border">{cls.properties.room}</td>
                                             <td className="p-2 border">{cls.data.location}</td>
+                                            {/* Cohort which is based on level for now. 100 => freshman, 200 => sophomore, 300 => junior, 400 => senior*/}
+                                            <td className="p-2 border">
+                                                <select
+                                                    value={cohortSelections[uniqueId] || levelToCohort(extractCourseLevel(cls.data.course_num))}
+                                                    onChange={(e) => {
+                                                        setCohortSelections({
+                                                            ...cohortSelections,
+                                                            [uniqueId]: e.target.value
+                                                        });
+                                                    }}
+                                                    className="w-full p-1 border rounded"
+                                                >
+                                                    <option value="Freshman">Freshman</option>
+                                                    <option value="Sophomore">Sophomore</option>
+                                                    <option value="Junior">Junior</option>
+                                                    <option value="Senior">Senior</option>
+                                                </select>
+                                            </td>
+
                                         </tr>
                                     )
                                 })}

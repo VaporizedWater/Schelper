@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 import { Class, ClassProperty } from "@/lib/types";
-import { insertCombinedClasses } from "@/lib/utils";
 import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
@@ -18,7 +17,7 @@ const NewClassForm = () => {
     const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
     const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", { days: ["Mon"] } as ClassProperty, { initializeWithValue: false });
     const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<string[]>("selectedTags", [], { initializeWithValue: false });
-    const { allTags } = useCalendarContext();
+    const { allTags, uploadNewClasses } = useCalendarContext();
 
     const router = useRouter();
 
@@ -66,9 +65,8 @@ const NewClassForm = () => {
                     : defaultCombined.properties.tags
             };
         }
-        insertCombinedClasses([defaultCombined]);
-
         // Update the context as well
+        uploadNewClasses([defaultCombined]);
 
         // Clear state
         clearState();
