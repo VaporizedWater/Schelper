@@ -1,9 +1,11 @@
 // Child (sub-component) of left menu
 
 import { MdModeEdit } from "react-icons/md";
+import { BiChevronUp, BiChevronDown } from "react-icons/bi";
 import Link from "next/link";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useEffect, useState } from "react";
+import DropDown from "../DropDown/DropDown";
 
 const Filters = () => {
     const { tagList, allClasses, updateDisplayClasses } = useCalendarContext();
@@ -15,7 +17,7 @@ const Filters = () => {
         }
     }, [tagList]);
 
-    // Function to update list of tags based on selected tags. It should add a tag to the set if checked and remove if unchecked.
+    // Function to update list of tags based on selected tags
     const updateTags = (event: React.ChangeEvent<HTMLInputElement>) => {
         let newSelectedTags: Set<string>;
 
@@ -46,49 +48,61 @@ const Filters = () => {
 
     return (
         <div className="flex flex-col">
-            <div className="flex flex-row items-center pb-1">
-                <div className="text-bold">Filters</div>
-                <Link href={'./tags'}>
-                    <button className="rounded-lg px-2"><MdModeEdit className="size-4" /></button>
-                </Link>
-                <div className="ml-auto">
-                    <label className="flex items-center cursor-pointer">
-                        <input
-                            type="checkbox"
-                            id="toggle-all"
-                            className="h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
-                            checked={selectedTags.size === tagList.size}
-                            onChange={updateTags}
-                        />
-                        <span className="ml-2 text-sm">All</span>
-                    </label>
-                </div>
-            </div>
-
-            {/* Use tagList instead of props */}
-            <ul className="pr-3 max-h-[18vh] overflow-y-scroll scrollbar-thin" title="tag-list">
-                {Array.from(tagList.entries())
-                    .sort((a, b) => a[0].localeCompare(b[0], undefined, {
-                        numeric: true,
-                        sensitivity: 'base'
-                    }))
-                    .map(([tag]) => (
-                        <li key={tag} className="flex flex-row items-center" title="tag-item">
+            <DropDown
+                renderButton={(isOpen) => (
+                    <span className="font-bold text-gray-700 flex flex-row items-center justify-between">
+                        <div className="flex flex-row items-center justify-between">
+                            <div className="text-bold">Filters</div>
+                            <Link href={'./tags'}>
+                                <div className="rounded-lg px-2"><MdModeEdit className="size-4" /></div>
+                            </Link>
+                        </div>
+                        {isOpen ? <BiChevronUp /> : <BiChevronDown />}
+                    </span>
+                )}
+                renderDropdown={() => (
+                    <div className="pl-1">
+                        <div className=" flex justify-end">
                             <label className="flex items-center cursor-pointer">
                                 <input
                                     type="checkbox"
-                                    name={tag}
-                                    id={tag}
+                                    id="toggle-all"
                                     className="h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
-                                    checked={selectedTags.has(tag)}
+                                    checked={selectedTags.size === tagList.size}
                                     onChange={updateTags}
                                 />
+                                <span className="p-2 text-sm">Select All</span>
                             </label>
-                            <span className="ml-3 whitespace-nowrap">{tag}</span>
-                        </li>
-                    ))}
-            </ul>
+                        </div>
 
+                        <ul className="pr-3 max-h-[20vh] overflow-y-auto scrollbar-thin" title="tag-list">
+                            {Array.from(tagList.entries())
+                                .sort((a, b) => a[0].localeCompare(b[0], undefined, {
+                                    numeric: true,
+                                    sensitivity: 'base'
+                                }))
+                                .map(([tag]) => (
+                                    <li key={tag} className="flex flex-row items-center" title="tag-item">
+                                        <label className="flex items-center cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                name={tag}
+                                                id={tag}
+                                                className="h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                                                checked={selectedTags.has(tag)}
+                                                onChange={updateTags}
+                                            />
+                                        </label>
+                                        <span className="ml-3 whitespace-nowrap">{tag}</span>
+                                    </li>
+                                ))}
+                        </ul>
+                    </div>
+                )}
+                buttonClassName="w-full text-left mt-1"
+                dropdownClassName="relative shadow-none w-full"
+                alwaysOpen={true}
+            />
         </div>
     );
 }

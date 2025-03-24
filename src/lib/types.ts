@@ -5,7 +5,7 @@ export type tagListType = Map<string, { classIds: Set<string> }>;
 
 export type TagType = {
     _id: string;
-}
+};
 
 export type Class = {
     // unchanging identifiers
@@ -51,6 +51,7 @@ export type DropDownProps = {
     /** Additional class names */
     buttonClassName?: string;
     dropdownClassName?: string;
+    alwaysOpen?: boolean;
 };
 
 export type ButtonDropDownProps = {
