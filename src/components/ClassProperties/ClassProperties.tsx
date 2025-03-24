@@ -180,67 +180,75 @@ const ClassProperties = () => {
                         )}
                         renderDropdown={() => (
                             <ul className='py-2'>
-                                <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Subject</span>
                                     <input
                                         type="text"
                                         placeholder="Subject"
-                                        className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={courseSubject}
                                         onChange={handleCourseSubjectChange}
                                     />
                                 </li>
-                                <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Course Number</span>
                                     <input
                                         type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={courseNum}
                                         onChange={handleCourseNumChange}
                                     />
                                 </li>
-                                <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Title</span>
                                     <input
                                         type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={title}
                                         onChange={handleTitleChange}
                                     />
                                 </li>
-                                <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Instructor</span>
                                     <input
                                         type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={instructor}
                                         onChange={handleInstructorChange}
                                     />
                                 </li>
-                                <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Location</span>
                                     <input
                                         type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={room}
                                         onChange={handleRoomChange}
                                     />
                                 </li>
-                                <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Location</span>
                                     <input
                                         type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={location}
                                         onChange={handleLocationChange}
                                     />
                                 </li>
-                                <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Start Time</span>
                                     <input
                                         type="time"
-                                        className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={startTime}
                                         onChange={handleStartTimeChange}
                                     />
                                 </li>
-                                <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>End Time</span>
                                     <input
                                         type="time"
-                                        className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={endTime}
                                         onChange={handleEndTimeChange}
                                     />
