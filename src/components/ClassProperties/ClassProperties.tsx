@@ -330,7 +330,7 @@ const ClassProperties = () => {
                     )}
                 </ul>
             ) : (
-                <div className="flex items-center justify-center h-full text-gray-400">
+                <div className="flex items-center justify-center h-full text-gray-400 pb-8">
                     Select a class to edit
                 </div>
             )}
