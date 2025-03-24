@@ -90,7 +90,7 @@ export async function POST(request: Request) {
         const documents: OptionalId<Document>[] | { data: Class; properties: ClassProperty; events: EventInput | undefined; }[] = [];
 
         combinedClasses.forEach((cls: CombinedClass) => {
-            const { _id, ...updateData } = cls;
+            const { _id, ...updateData } = cls;  // eslint-disable-line @typescript-eslint/no-unused-vars
             documents.push(updateData);
         });
 
@@ -117,6 +117,7 @@ export async function PUT(request: Request): Promise<Response> {
 
             if (_id && _id !== "") {
                 const objectId = new ObjectId(_id);
+
 
                 bulkOperations.push({
                     updateOne: {

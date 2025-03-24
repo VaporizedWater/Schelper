@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { updateCombinedClasses, loadCombinedClasses, loadAllTags, deleteCombinedClasses } from '@/lib/utils';
+import { updateCombinedClasses, loadCombinedClasses, loadTags, deleteCombinedClasses } from '@/lib/utils';
 import { dayToDate, initialCalendarState } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -500,7 +500,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
                 const [allClasses, allTags] = await Promise.all([
                     loadCombinedClasses(null),
-                    loadAllTags()
+                    loadTags()
                 ]);
 
                 console.log("ALL CLASSES\n", allClasses);
