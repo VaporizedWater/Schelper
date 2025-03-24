@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
 import { createEventsFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
+import { BiChevronUp } from 'react-icons/bi';
 
 const ClassProperties = () => {
     const { currentCombinedClass, updateOneClass, allTags, deleteClasses, setCurrentClass } = useCalendarContext();
@@ -165,136 +166,156 @@ const ClassProperties = () => {
     };
 
     return (
-        <div>
-            <ul className="flex flex-col w-full">
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Subject</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={courseSubject}
-                        onChange={handleCourseSubjectChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Number</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={courseNum}
-                        onChange={handleCourseNumChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Title</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={title}
-                        onChange={handleTitleChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Instructor</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={instructor}
-                        onChange={handleInstructorChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Room</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={room}
-                        onChange={handleRoomChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Location</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={location}
-                        onChange={handleLocationChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Days</span>
-                    <div className="flex-1 flex flex-col">
-                        {ShortenedDays.map(day => (
-                            <label key={day} className="flex items-center gap-1">
-                                <input
-                                    type="checkbox"
-                                    checked={days.includes(day)}
-                                    onChange={(e) => handleDaysChange(day, e.target.checked)}
-                                    className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
-                                />
-                                <span>{day}</span>
-                            </label>
-                        ))}
-                    </div>
-                </li>
+        <div className="h-full w-full overflow-y-auto scrollbar-thin">
+            {/* // hover:overflow-y-auto hover:scrollbar-thin scroll-m-2 pr-3 hover:pr-0 */}
+            {currentCombinedClass?._id ? (
+                <ul className="flex flex-col w-full pb-4">
+                    <ul className='py-2'>
+                        <span className='font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between'>
+                            Properties
+                            <BiChevronUp />
+                        </span>
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                            {/* <span className="font-medium text-gray-700 min-w-20">Subject</span> */}
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                value={courseSubject}
+                                onChange={handleCourseSubjectChange}
+                            />
+                        </li>
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                            {/* <span className="font-medium text-gray-700 min-w-20">Number</span> */}
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                value={courseNum}
+                                onChange={handleCourseNumChange}
+                            />
+                        </li>
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                            {/* <span className="font-medium text-gray-700 min-w-20">Title</span> */}
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                value={title}
+                                onChange={handleTitleChange}
+                            />
+                        </li>
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                            {/* <span className="font-medium text-gray-700 min-w-20">Instructor</span> */}
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                value={instructor}
+                                onChange={handleInstructorChange}
+                            />
+                        </li>
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                            {/* <span className="font-medium text-gray-700 min-w-20">Room</span> */}
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                value={room}
+                                onChange={handleRoomChange}
+                            />
+                        </li>
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                            {/* <span className="font-medium text-gray-700 min-w-20">Location</span> */}
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                value={location}
+                                onChange={handleLocationChange}
+                            />
+                        </li>
+                        {/* Start time */}
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                            {/* <span className="font-medium text-gray-700 min-w-20">Start Time</span> */}
+                            <input
+                                type="time"
+                                className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                value={startTime}
+                                onChange={handleStartTimeChange}
+                            />
+                        </li>
 
-                {/* Tags to be selected from list of checkboxes */}
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Tags</span>
-                    <div className="flex-1 flex-col gap-2 max-h-[18vh] overflow-y-scroll scrollbar-thin">
-                        {Array.from(allTags).map((tag) => {
-                            return (
-                                <label key={tag} className="flex items-center gap-1">
+                        {/* End time */}
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center focus-within:bg-blue-50">
+                            {/* <span className="font-medium text-gray-700 min-w-20">End Time</span> */}
+                            <input
+                                type="time"
+                                className="flex-1 hover:border-gray-200 border-transparent border px-1 w-full"
+                                value={endTime}
+                                onChange={handleEndTimeChange}
+                            />
+                        </li>
+                    </ul>
+                    <li className="flex hover:border-gray-200 border-transparent border-y items-center py-2">
+                        {/* <span className="font-medium text-gray-700 min-w-20">Days</span> */}
+                        <div className="flex-1 flex flex-col">
+                            <span className="font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between">
+                                Days
+                                <BiChevronUp />
+                            </span>
+                            {ShortenedDays.map(day => (
+                                <label key={day} className="flex items-center gap-1">
                                     <input
                                         type="checkbox"
-                                        checked={tags.includes(tag)}
-                                        onChange={(e) => handleTagCheck(tag, e.target.checked)}
-                                        className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                                        checked={days.includes(day)}
+                                        onChange={(e) => handleDaysChange(day, e.target.checked)}
+                                        className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-ylue-600"
                                     />
-                                    <span>{tag}</span>
+                                    <span>{day}</span>
                                 </label>
-                            );
-                        })}
-                    </div>
-
-                </li>
-
-                {/* Start time */}
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Start Time</span>
-                    <input
-                        type="time"
-                        className="flex-1 border px-1 w-full"
-                        value={startTime}
-                        onChange={handleStartTimeChange}
-                    />
-                </li>
-
-                {/* End time */}
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">End Time</span>
-                    <input
-                        type="time"
-                        className="flex-1 border px-1 w-full"
-                        value={endTime}
-                        onChange={handleEndTimeChange}
-                    />
-                </li>
-
-                {/* Delete button - only show if we have a valid class with an ID */}
-                {currentCombinedClass && currentCombinedClass._id && (
-                    <li className="flex border-b items-center pt-4">
-                        <button
-                            onClick={handleDeleteClass}
-                            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors cursor-pointer"
-                            aria-label="Delete class"
-                        >
-                            Delete Class
-                        </button>
+                            ))}
+                        </div>
                     </li>
-                )}
 
-            </ul>
+                    {/* Tags to be selected from list of checkboxes */}
+                    <li className="flex hover:border-gray-200 border-transparent border-y items-center py-2">
+                        {/* <span className="font-medium text-gray-700 min-w-20">Tags</span> */}
+                        <div className="flex-1 flex-col gap-2">
+                            {/* <div className="flex-1 flex-col gap-2 max-h-[18vh] overflow-y-scroll scrollbar-thin"> */}
+                            <span className="font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between">
+                                Tags
+                                <BiChevronUp />
+                            </span>
+                            {Array.from(allTags).sort((a, b) => a.length - b.length).map((tag) => {
+                                return (
+                                    <label key={tag} className="flex items-center gap-1">
+                                        <input
+                                            type="checkbox"
+                                            checked={tags.includes(tag)}
+                                            onChange={(e) => handleTagCheck(tag, e.target.checked)}
+                                            className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-ylue-600"
+                                        />
+                                        <span>{tag}</span>
+                                    </label>
+                                );
+                            })}
+                        </div>
+
+                    </li>
+
+
+                    {/* Delete button - only show if we have a valid class with an ID */}
+                    {currentCombinedClass && currentCombinedClass._id && (
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center pt-4">
+                            <button
+                                onClick={handleDeleteClass}
+                                className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors cursor-pointer"
+                                aria-label="Delete class"
+                            >
+                                Delete Class
+                            </button>
+                        </li>
+                    )}
+
+                </ul>
+            ) : (
+                <div></div> // Empty div when currentCombinedClass is undefined
+            )}
         </div>
     );
 };

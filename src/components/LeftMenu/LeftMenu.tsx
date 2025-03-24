@@ -6,12 +6,14 @@ import ClassProperties from "../ClassProperties/ClassProperties";
 
 const LeftMenu = () => {
     return (
-        <div className="flex flex-col">
-            <div className="p-4 pb-2">
+        <div className="flex flex-col h-full overflow-hidden">
+            {/* Filters section with fixed height */}
+            <div className="p-4 pb-2 flex-shrink-0">
                 <Filters />
             </div>
 
-            <div className="px-4 py-2">
+            {/* ClassProperties section with proper height constraints */}
+            <div className="px-4 py-2 flex-grow h-0 min-h-0 overflow-hidden">
                 <ClassProperties />
             </div>
         </div>

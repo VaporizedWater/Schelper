@@ -260,6 +260,7 @@ const Calendar = () => {
                 eventResize={handleEventResize}
                 dateClick={handleDateClick}
                 eventContent={eventContent}
+            // slotHeight={40}
             />
         </div>
     );
