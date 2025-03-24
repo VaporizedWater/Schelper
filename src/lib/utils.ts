@@ -1,4 +1,5 @@
-import { CombinedClass } from "./types";
+import { headers } from "next/headers";
+import { CombinedClass, TagType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -48,26 +49,15 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 }
 
 // LOADS/GETs
-// Get all tags
-export async function loadAllTags(): Promise<Set<string>> {
+// Get tags by ID or all tags if no ID specified
+export async function loadTags(): Promise<Set<string>> {
     try {
         const response = await fetchWithTimeout("./api/tags");
-        const tags = await parseJsonResponse<{ _id: string }[]>(response);
+        const tags = await parseJsonResponse<TagType[]>(response);
         return new Set(tags.map((tag) => tag._id));
     } catch (error) {
-        console.error("Failed to load tags:", error);
-        return new Set<string>();
-    }
-}
-
-// Get one tag by id
-export async function getTag(tagId: string): Promise<string | null> {
-    try {
-        const response = await fetchWithTimeout(`./api/tags?id=${tagId}`);
-        return await parseJsonResponse<string>(response);
-    } catch (error) {
         console.error("Error fetching tag:", error);
-        return null;
+        return new Set<string>();
     }
 }
 

@@ -3,30 +3,18 @@ import clientPromise from "@/lib/mongodb";
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection<{ _id: string }>("tags");
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
-        // Get tag ID from URL if present
-        const { searchParams } = new URL(request.url);
-        const tagId = searchParams.get("id");
+        const tagsReturned = await collection.find().toArray();
 
-        // Query based on whether an ID was provided
-        if (tagId) {
-            const tag = await collection.findOne({ _id: tagId });
-            if (!tag) {
-                return new Response(JSON.stringify({ error: "Tag not found" }), {
-                    status: 404,
-                    headers: { "Content-Type": "application/json" },
-                });
-            }
-            return new Response(JSON.stringify(tag), {
-                status: 200,
+        if (!tagsReturned) {
+            return new Response(JSON.stringify({ error: "Tag not found" }), {
+                status: 404,
                 headers: { "Content-Type": "application/json" },
             });
         }
 
-        // Get all tags if no ID provided
-        const tags = await collection.find().toArray();
-        return new Response(JSON.stringify(tags), {
+        return new Response(JSON.stringify(tagsReturned), {
             status: 200,
             headers: { "Content-Type": "application/json" },
         });
