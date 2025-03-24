@@ -3,7 +3,7 @@
 import clientPromise from "@/lib/mongodb";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
-import { AnyBulkWriteOperation, Collection, Document, ObjectId } from "mongodb";
+import { AnyBulkWriteOperation, BulkWriteResult, Collection, Document, InsertManyResult, ObjectId, OptionalId } from "mongodb";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("combined_classes") as Collection<Document>;
@@ -11,8 +11,26 @@ const collection = client.db("class-scheduling-app").collection("combined_classe
 async function doBulkOperation(bulkOps: AnyBulkWriteOperation<Document>[]): Promise<Response> {
     const result = await collection.bulkWrite(bulkOps);
 
+    return handleBulkWriteResult(result);
+}
+
+function handleBulkWriteResult(result: BulkWriteResult) {
     if (result.ok) {
         return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } else {
+        return new Response(JSON.stringify({ success: false }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+}
+
+function handleInsertManyResult(result: InsertManyResult) {
+    if (result.insertedCount > 0) {
+        return new Response(JSON.stringify({ success: true, count: result.insertedCount }), {
             status: 200,
             headers: { "Content-Type": "application/json" },
         });
@@ -66,76 +84,19 @@ export async function GET(request: Request) {
     }
 }
 
-// export async function GET(request: Request) {
-//     console.time("combined_classes_GET:total");
-//     try {
-//         const headerId = request.headers.get("ids");
-
-//         // Direct query approach instead of aggregation pipeline
-//         let query = {};
-
-//         // Apply ID filter if present
-//         if (headerId && headerId !== "") {
-//             const validIds = headerId
-//                 .split(",")
-//                 .filter((id) => ObjectId.isValid(id))
-//                 .map((id) => new ObjectId(id));
-
-//             if (validIds.length === 0) {
-//                 return new Response(JSON.stringify({ error: "Invalid IDs provided" }), { status: 400 });
-//             }
-
-//             query = { _id: { $in: validIds } };
-//         }
-
-//         // Simple find operation is faster than aggregation for this case
-//         const data = await collection.find(query).toArray();
-
-//         if (!data.length) {
-//             return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
-//         }
-
-//         console.timeEnd("combined_classes_GET:total");
-//         return new Response(JSON.stringify(data), {
-//             status: 200,
-//             headers: {
-//                 "Content-Type": "application/json",
-//                 "Cache-Control": "max-age=60", // Add caching for 60 seconds
-//             },
-//         });
-//     } catch (error) {
-//         console.error("Error in GET /api/classes:", error);
-//         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
-//     }
-// }
-
 export async function POST(request: Request) {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
-
-        const bulkOperations:
-            | AnyBulkWriteOperation<Document>[]
-            | { insertOne: { document: { data: Class; properties: ClassProperty; events: EventInput | undefined } } }[] = [];
+        const documents: OptionalId<Document>[] | { data: Class; properties: ClassProperty; events: EventInput | undefined; }[] = [];
 
         combinedClasses.forEach((cls: CombinedClass) => {
-            // const { _id, ...updateData } = cls;
-
             const { _id, ...updateData } = cls;
-
-            // Do some rubbish with id for now
-            if (_id) {
-            }
-
-            bulkOperations.push({
-                insertOne: {
-                    document: {
-                        ...updateData,
-                    },
-                },
-            });
+            documents.push(updateData);
         });
 
-        return doBulkOperation(bulkOperations);
+        const result = await collection.insertMany(documents);
+
+        return handleInsertManyResult(result);
     } catch (error) {
         console.error("Error in POST /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
@@ -152,16 +113,10 @@ export async function PUT(request: Request): Promise<Response> {
         const bulkOperations: AnyBulkWriteOperation<Document>[] = [];
 
         combinedClasses.forEach((cls: CombinedClass) => {
-            if (cls._id && cls._id !== "") {
-                // Convert string _id to ObjectId if needed
-                const objectId = new ObjectId(cls._id);
+            const { _id, ...updateData } = cls;
 
-                // IMPORTANT: Remove _id from the update document
-                const { _id, ...updateData } = cls;
-
-                if (_id) {
-                    // Do some rubbish with id for now. Just for the build.
-                }
+            if (_id && _id !== "") {
+                const objectId = new ObjectId(_id);
 
                 bulkOperations.push({
                     updateOne: {
@@ -186,12 +141,6 @@ export async function PUT(request: Request): Promise<Response> {
                     "properties.start_time": cls.properties.start_time,
                     "properties.end_time": cls.properties.end_time,
                 };
-
-                const { _id, ...updateData } = cls;
-
-                if (_id) {
-                    // Do some rubbish with id for now. Just for the build.
-                }
 
                 bulkOperations.push({
                     updateOne: {
