@@ -3,7 +3,15 @@
 import clientPromise from "@/lib/mongodb";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
-import { AnyBulkWriteOperation, BulkWriteResult, Collection, Document, InsertManyResult, ObjectId, OptionalId } from "mongodb";
+import {
+    AnyBulkWriteOperation,
+    BulkWriteResult,
+    Collection,
+    Document,
+    InsertManyResult,
+    ObjectId,
+    OptionalId,
+} from "mongodb";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("combined_classes") as Collection<Document>;
@@ -87,10 +95,12 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const combinedClasses: CombinedClass[] = await request.json();
-        const documents: OptionalId<Document>[] | { data: Class; properties: ClassProperty; events: EventInput | undefined; }[] = [];
+        const documents:
+            | OptionalId<Document>[]
+            | { data: Class; properties: ClassProperty; events: EventInput | undefined }[] = [];
 
         combinedClasses.forEach((cls: CombinedClass) => {
-            const { _id, ...updateData } = cls;
+            const { _id, ...updateData } = cls; // eslint-disable-line @typescript-eslint/no-unused-vars
             documents.push(updateData);
         });
 

@@ -64,10 +64,12 @@ const TagDisplay = () => {
                                     renderButton={(isOpen) => (
                                         <div className="hover:bg-grayblue flex justify-between items-center p-2 bg-gray-100 rounded-sm cursor-pointer">
                                             <span>
-                                                {tagId} : {tagData.classIds.size} Class
-                                                {tagData.classIds.size > 1 ? "es" : ""}
+                                                {tagId}
                                             </span>
                                             <div className="flex items-center gap-2">
+                                                <span>
+                                                    Classes: {tagData.classIds.size}
+                                                </span>
                                                 {hoveredTagId === tagId && (
                                                     <div className="hover:bg-gray-300 p-1 rounded-sm cursor-pointer" onClick={(e) => {
                                                         e.stopPropagation();
@@ -136,7 +138,7 @@ const TagDisplay = () => {
                                     buttonClassName="w-full"
                                     renderButton={(isOpen) => (
                                         <div className="flex justify-between items-center p-2 bg-gray-100 rounded-sm cursor-pointer">
-                                            <span>{displayValue} : 0 Classes</span>
+                                            <span>{displayValue}</span>
                                             {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                                         </div>
                                     )}

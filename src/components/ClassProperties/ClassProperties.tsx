@@ -232,7 +232,7 @@ const ClassProperties = () => {
                                     onChange={(e) => handleDaysChange(day, e.target.checked)}
                                     className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
                                 />
-                                <span>{day === "Thu" ? "Th" : day[0]}</span>
+                                <span>{day}</span>
                             </label>
                         ))}
                     </div>
