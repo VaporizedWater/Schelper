@@ -147,6 +147,8 @@ const Calendar = () => {
                 return;
             }
 
+            const multiDays = foundClass.properties.days.length > 1;
+
             // Update class properties
             const updatedClass = {
                 ...foundClass,
@@ -154,7 +156,8 @@ const Calendar = () => {
                     ...foundClass.properties,
                     start_time: newStart,
                     end_time: newEnd,
-                    days: [newDay]
+                    // Only modify days if it's a single day event
+                    ...(multiDays ? {} : { days: [newDay] })
                 }
             };
 
