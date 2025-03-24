@@ -19,12 +19,6 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
         { content: "Class", link: "/classes" },
         { content: "Tag", link: "/addTag" },
     ];
-    const downloadDropList = [
-        { content: "Sheet", link: "/exportSheet" },
-    ];
-    const uploadDropList = [
-        { content: "Sheet", link: "/importSheet" },
-    ];
 
     return (
         <div className="flex flex-row px-2 ">
