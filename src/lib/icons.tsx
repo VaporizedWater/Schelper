@@ -72,9 +72,9 @@ export const AlertTriangleIcon = ({ width, height, fill_color, stroke_width, str
 export const LogoIcon = ({ width, height, fill_color, stroke_width, stroke_color, className }: SVGProps) => {
     const w = width ? width : "24";
     const h = height ? height : "24";
-    const sw = stroke_width ? stroke_width : "2";
-    const fc = fill_color ? fill_color : "none";
-    const sc = stroke_color ? stroke_color : "RGB(255,255,255)";
+    // const sw = stroke_width ? stroke_width : "2";
+    // const fc = fill_color ? fill_color : "none";
+    // const sc = stroke_color ? stroke_color : "RGB(255,255,255)";
 
     return (
         <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" version="1.1" width={w} height={h} viewBox="0 0 1080 1080" xmlSpace="preserve">
