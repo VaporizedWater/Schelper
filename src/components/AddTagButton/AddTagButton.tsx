@@ -28,7 +28,7 @@ const AddTagButton = ({ onAddTag }: AddTagButtonProps) => {
             renderButton={(isOpen) => (
                 <div className="flex flex-row bg-white gap-2 p-2 items-center shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit">
                     <MdAdd className="size-7 text-lightblack" />
-                    <span>Add Tag</span>
+                    <span>Create Tag</span>
                     <div className="ml-auto">
                         {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                     </div>
@@ -49,7 +49,7 @@ const AddTagButton = ({ onAddTag }: AddTagButtonProps) => {
                 </div>
             )}
             buttonClassName=""
-            dropdownClassName="absolute left-auto right-0 mt-12 bg-white border border-gray-300 rounded-md shadow-md"
+            dropdownClassName="absolute left-auto right-0 mt-2 bg-white border border-gray-300 rounded-md shadow-md"
         />
     );
 };
