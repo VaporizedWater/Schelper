@@ -20,7 +20,6 @@ import logoPSUPath from "public/logo.png";
 import tagPath from "public/tag.png";
 import horizontalTextPSULogoPath from "public/psu_logo_horizontal_text.png";
 import facultyPath from "public/Faculty.svg";
-import fileIconPath from "public/file.svg";
 
 // Home Page Carousel
 import clockTowerPath from "public/HomePageCarousel/ClockTower.jpg";
@@ -61,7 +60,7 @@ export const AlertTriangleIcon = ({ width, height, fill_color, stroke_width, str
     const sc = stroke_color ? stroke_color : "RGB(255,255,255)";
 
     return (
-        <svg className={className} xmlns="http://www.w3.org/2000/svg" width={w} height={h} viewBox="0 0 24 24" fill={fc} stroke="currentColor" stroke-width={sw} stroke-linecap="round" stroke-linejoin="round" style={{ color: sc }} >
+        <svg className={className} xmlns="http://www.w3.org/2000/svg" width={w} height={h} viewBox="0 0 24 24" fill={fc} stroke="currentColor" strokeWidth={sw} strokeLinecap="round" strokeLinejoin="round" style={{ color: sc }} >
             <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" ></path>
             <line x1="12" y1="9" x2="12" y2="13"></line >
             <line x1="12" y1="17" x2="12.01" y2="17" ></line>
@@ -69,12 +68,12 @@ export const AlertTriangleIcon = ({ width, height, fill_color, stroke_width, str
     );
 };
 
-export const LogoIcon = ({ width, height, fill_color, stroke_width, stroke_color, className }: SVGProps) => {
+export const LogoIcon = ({ width, height }: SVGProps) => {
     const w = width ? width : "24";
     const h = height ? height : "24";
-    const sw = stroke_width ? stroke_width : "2";
-    const fc = fill_color ? fill_color : "none";
-    const sc = stroke_color ? stroke_color : "RGB(255,255,255)";
+    // const sw = stroke_width ? stroke_width : "2";
+    // const fc = fill_color ? fill_color : "none";
+    // const sc = stroke_color ? stroke_color : "RGB(255,255,255)";
 
     return (
         <svg xmlns="http://www.w3.org/2000/svg" xmlnsXlink="http://www.w3.org/1999/xlink" version="1.1" width={w} height={h} viewBox="0 0 1080 1080" xmlSpace="preserve">
