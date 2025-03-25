@@ -14,6 +14,7 @@ const ClassProperties = () => {
     const [courseNum, setCourseNum] = useState(initialData.course_num || '');
     const [title, setTitle] = useState(initialData.title || '');
     const [instructor, setInstructor] = useState(initialProps.instructor_name || '');
+    const [email, setEmail] = useState(initialProps.instructor_email || '');
     const [room, setRoom] = useState(initialProps.room || '');
     const [location, setLocation] = useState(initialData.location || '');
     const [days, setDays] = useState<string[]>(initialProps.days || []);
@@ -29,6 +30,7 @@ const ClassProperties = () => {
             setCourseNum(newData.course_num || '');
             setTitle(newData.title || '');
             setInstructor(newProps.instructor_name || '');
+            setEmail(newProps.instructor_email || '');
             setRoom(newProps.room || '');
             setLocation(newData.location || '');
             setDays(newProps.days || []);
@@ -74,6 +76,16 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.instructor_name = newVal;
+            updateOneClass(modifiedClass);
+        }
+    };
+
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newVal = e.target.value;
+        setEmail(newVal);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.properties.instructor_email = newVal;
             updateOneClass(modifiedClass);
         }
     };
@@ -215,6 +227,15 @@ const ClassProperties = () => {
                                         className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={instructor}
                                         onChange={handleInstructorChange}
+                                    />
+                                </li>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Email</span>
+                                    <input
+                                        type="email"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={email}
+                                        onChange={handleEmailChange}
                                     />
                                 </li>
                                 <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">

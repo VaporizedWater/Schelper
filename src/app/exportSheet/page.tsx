@@ -1,14 +1,14 @@
 'use client';
 
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import * as XLSX from 'xlsx';
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
 import { CombinedClass } from "@/lib/types";
 
 const ExportSheet = () => {
-    const { allClasses } = useCalendarContext();
+    const { allClasses, conflicts } = useCalendarContext();
     const [filename, setFilename] = useState('schedule');
 
     // Create a unique identifier for each class
@@ -18,27 +18,89 @@ const ExportSheet = () => {
 
     const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set(allClasses.map(c => getUniqueClassId(c))));
 
+    // Get conflict color information for each class (used for UI only)
+    const classConflictColors = useMemo(() => {
+        const conflictMap = new Map<string, { color: string, textColor: string, conflictType: string, conflictLabel: string }>();
+
+        allClasses.forEach(cls => {
+            // Find conflicts involving this class
+            const classConflicts = conflicts.filter(conflict =>
+                conflict.class1._id === cls._id ||
+                conflict.class2._id === cls._id
+            );
+
+            // Default is no conflict
+            let color = 'transparent';
+            let textColor = 'inherit';
+            let conflictType = '';
+            let conflictLabel = '';
+
+            if (classConflicts.length > 0) {
+                // Determine most severe conflict type (both > room > instructor)
+                const hasBothConflict = classConflicts.some(c => c.conflictType === "both");
+                const hasRoomConflict = classConflicts.some(c => c.conflictType === "room");
+                const hasInstructorConflict = classConflicts.some(c => c.conflictType === "instructor");
+
+                if (hasBothConflict) {
+                    color = '#FF0000'; // Red for both conflicts
+                    textColor = 'white';
+                    conflictType = 'both';
+                    conflictLabel = 'Room + Instructor';
+                } else if (hasRoomConflict) {
+                    color = '#f59e0b'; // Amber for room conflicts
+                    textColor = 'white';
+                    conflictType = 'room';
+                    conflictLabel = 'Room';
+                } else if (hasInstructorConflict) {
+                    color = '#f97316'; // Orange for instructor conflicts
+                    textColor = 'white';
+                    conflictType = 'instructor';
+                    conflictLabel = 'Instructor';
+                }
+            }
+
+            conflictMap.set(cls._id, { color, textColor, conflictType, conflictLabel });
+        });
+
+        return conflictMap;
+    }, [allClasses, conflicts]);
 
     const exportToXLSX = () => {
         // Filter classes based on selection
         const classesToExport = allClasses.filter(cls => selectedClasses.has(getUniqueClassId(cls)));
 
-        const wsData = classesToExport.map(classItem => ({
-            'Course Subject': classItem.data.course_subject,
-            'Course Number': classItem.data.course_num,
-            'Catalog Number': classItem.data.catalog_num || '',
-            'Title': classItem.data.title,
-            'Instructor': classItem.properties.instructor_name,
-            'Instructor Email': classItem.properties.instructor_email || '',
-            'Room': classItem.properties.room,
-            'Location': classItem.data.location,
-            'Days': classItem.properties.days.join(', '),
-            'Start Time': classItem.properties.start_time,
-            'End Time': classItem.properties.end_time,
-        }));
+        const wsData = classesToExport.map(classItem => {
+            const { conflictLabel } = classConflictColors.get(classItem._id) || { conflictLabel: '' };
 
-        const ws = XLSX.utils.json_to_sheet(wsData);
+            return {
+                'Course Subject': classItem.data.course_subject,
+                'Course Number': classItem.data.course_num,
+                'Catalog Number': classItem.data.catalog_num || '',
+                'Title': classItem.data.title,
+                'Instructor': classItem.properties.instructor_name,
+                'Instructor Email': classItem.properties.instructor_email || '',
+                'Room': classItem.properties.room,
+                'Location': classItem.data.location,
+                'Days': classItem.properties.days.join(', '),
+                'Start Time': classItem.properties.start_time,
+                'End Time': classItem.properties.end_time,
+                'Conflicts': conflictLabel
+            };
+        });
+
+        // Create the workbook and worksheet
         const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(wsData);
+
+        // Get the range of the worksheet
+        const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:L1');
+        const lastCol = XLSX.utils.encode_col(range.e.c);
+
+        // Add auto filter
+        ws['!autofilter'] = { ref: `A1:${lastCol}${range.e.r + 1}` };
+
+        // Remove color formatting from export
+
         XLSX.utils.book_append_sheet(wb, ws, "Schedule");
         XLSX.writeFile(wb, `${filename}.xlsx`);
     };
@@ -52,25 +114,38 @@ const ExportSheet = () => {
         doc.setFontSize(16);
         doc.text("Class Schedule", 14, 15);
 
-        const tableData = classesToExport.map(classItem => [
-            classItem.data.course_subject,
-            classItem.data.course_num,
-            classItem.data.catalog_num || '',
-            classItem.data.title,
-            classItem.properties.instructor_name,
-            classItem.properties.instructor_email || '',
-            classItem.properties.room,
-            classItem.data.location,
-            classItem.properties.days.join(', '),
-            `${classItem.properties.start_time} - ${classItem.properties.end_time}`
-        ]);
+        const tableData = classesToExport.map(classItem => {
+            const { conflictLabel } = classConflictColors.get(classItem._id) || { conflictLabel: '' };
 
+            return [
+                classItem.data.course_subject,
+                classItem.data.course_num,
+                classItem.data.catalog_num || '',
+                classItem.data.title,
+                classItem.properties.instructor_name,
+                classItem.properties.instructor_email || '',
+                classItem.properties.room,
+                classItem.data.location,
+                classItem.properties.days.join(', '),
+                `${classItem.properties.start_time} - ${classItem.properties.end_time}`,
+                conflictLabel
+            ];
+        });
+
+        // Remove color styling from PDF export by not applying row styles
         autoTable(doc, {
-            head: [['Subject', 'Number', 'Catalog', 'Title', 'Instructor', 'Email', 'Room', 'Location', 'Days', 'Time']],
+            head: [['Subject', 'Number', 'Catalog', 'Title', 'Instructor', 'Email', 'Room', 'Location', 'Days', 'Time', 'Conflicts']],
             body: tableData,
             startY: 20,
-            styles: { fontSize: 8 },
-            headStyles: { fillColor: [41, 128, 185] }
+            styles: { fontSize: 7 }, // Reduced font size to fit all columns
+            headStyles: { fillColor: [41, 128, 185], fontSize: 8 },
+            columnStyles: {
+                0: { cellWidth: 12 },
+                1: { cellWidth: 12 },
+                2: { cellWidth: 12 },
+                5: { cellWidth: 30 },
+                10: { cellWidth: 30 },
+            }
         });
 
         doc.save(`${filename}.pdf`);
@@ -145,13 +220,24 @@ const ExportSheet = () => {
                                     <th className="p-2 border text-left">Location</th>
                                     <th className="p-2 border text-left">Days</th>
                                     <th className="p-2 border text-left">Time</th>
+                                    <th className="p-2 border text-left">Conflicts</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {allClasses.map((classItem, index) => {
                                     const uniqueId = getUniqueClassId(classItem);
+                                    const { color, textColor, conflictLabel } = classConflictColors.get(classItem._id) ||
+                                        { color: 'transparent', textColor: 'inherit', conflictLabel: '' };
+
                                     return (
-                                        <tr key={index} className="hover:bg-gray-50">
+                                        <tr
+                                            key={index}
+                                            className="hover:bg-gray-50"
+                                            style={{
+                                                backgroundColor: color,
+                                                color: textColor
+                                            }}
+                                        >
                                             <td className="p-2 border text-center">
                                                 <input
                                                     type="checkbox"
@@ -179,6 +265,9 @@ const ExportSheet = () => {
                                             <td className="p-2 border">{classItem.properties.days.join(', ')}</td>
                                             <td className="p-2 border">
                                                 {classItem.properties.start_time} - {classItem.properties.end_time}
+                                            </td>
+                                            <td className="p-2 border font-medium">
+                                                {conflictLabel}
                                             </td>
                                         </tr>
                                     );

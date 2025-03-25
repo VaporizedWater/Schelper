@@ -4,7 +4,6 @@ import { useState } from "react";
 import { CalendarOpenProps } from "@/lib/types";
 import ButtonDropDown from "../ButtonDropDown/ButtonDropDown";
 import Link from "next/link";
-import Image from "next/image";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { AlertTriangleIcon } from "@/lib/icons";
 

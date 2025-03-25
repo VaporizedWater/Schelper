@@ -7,7 +7,7 @@ export type TagType = {
     _id: string;
 };
 
-export type EventInfo = { 
+export type EventInfo = {
     event: EventInput;
     timeText: string;
     isStart: boolean;
@@ -17,9 +17,9 @@ export type EventInfo = {
     isFuture: boolean;
     isToday: boolean;
     el: HTMLElement;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     view: any; // FullCalendar "View Object"
-}
-
+};
 
 export type Class = {
     // unchanging identifiers
