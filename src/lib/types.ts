@@ -7,6 +7,20 @@ export type TagType = {
     _id: string;
 };
 
+export type EventInfo = { 
+    event: EventInput;
+    timeText: string;
+    isStart: boolean;
+    isEnd: boolean;
+    isMirror: boolean;
+    isPast: boolean;
+    isFuture: boolean;
+    isToday: boolean;
+    el: HTMLElement;
+    view: any; // FullCalendar "View Object"
+}
+
+
 export type Class = {
     // unchanging identifiers
     catalog_num: string;

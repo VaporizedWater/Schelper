@@ -3,14 +3,27 @@
 import React, { useState, useEffect } from "react";
 import Footer from '@/components/Footer/Footer';
 import Image from 'next/image';
-import logo from '../lib/icons';
 import Link from "next/link";
 
+import { ClockTower, DayCampus, LionShrine, LogoIcon, NightCampus } from '../lib/icons';
+
+
 const Home = () => {
-    const images = ["/wcispsu.jpg", "/NittanyLionShrine.jpg", "/PSU_Light_Dark.jpg"];
+    const images = [LionShrine, DayCampus, NightCampus, ClockTower];
     const [currentImage, setCurrentImage] = useState(images[0]);
     const [nextImage, setNextImage] = useState(images[1]);
     const [opacity, setOpacity] = useState(1);
+
+    const currentBackground = (
+        <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
+            style={{ backgroundImage: `url(${currentImage.src})`, opacity }}>
+        </div>
+    );
+    const nextBackground = (
+        <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
+            style={{ backgroundImage: `url(${nextImage.src})`, opacity: 1 - opacity }}>
+        </div>
+    );
 
     useEffect(() => {
         let index = 0;
@@ -27,22 +40,16 @@ const Home = () => {
 
         const interval = setInterval(cycleImages, 5000);
         return () => clearInterval(interval);
-    }, []);
+    });
 
     return (
         <div className='flex flex-col h-screen'>
             <div className="h-full w-full">
-                {/* Current image */}
-                <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
-                    style={{ backgroundImage: `url(${currentImage})`, opacity }}>
-                </div>
-                {/* Next image */}
-                <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
-                    style={{ backgroundImage: `url(${nextImage})`, opacity: 1 - opacity }}>
-                </div>
+                {currentBackground}
+                {nextBackground}
                 <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
                     <h1 className='text-lightblue text-8xl font-bold flex items-center justify-center gap-4'>
-                        <Image src={logo} height={55} alt="Schelper Icon" />
+                        <Image src={LogoIcon} height={55} alt="Schelper Icon" />
                         Schelper
                     </h1>
                     <h2 className='pt-4 text-3xl text-graybg drop-shadow-lg'>The Class Scheduling App</h2>

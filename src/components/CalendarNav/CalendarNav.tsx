@@ -6,7 +6,7 @@ import ButtonDropDown from "../ButtonDropDown/ButtonDropDown";
 import Link from "next/link";
 import Image from "next/image";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import alertTriangle from "/public/AlertTriangle.svg";
+import { AlertTriangleIcon } from "@/lib/icons";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const { displayClasses } = useCalendarContext();
@@ -34,13 +34,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                 <li key={2} className={`${listString} hover:bg-gray-200`}>
                     <button>
                         <Link href="/viewConflicts" className="flex items-center p-2 bg-white rounded-full hover:bg-gray-200">
-                            <Image
-                                src={alertTriangle}
-                                alt="alert-triangle"
-                                width={24}
-                                height={24}
-                                className="size-4"
-                            />
+                            <svg xmlns={AlertTriangleIcon} fill="#FFCC00" width="24" height="24" className="size-4" />
                             <div>View Conflicts</div>
                         </Link>
                     </button>
