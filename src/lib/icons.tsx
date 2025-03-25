@@ -19,6 +19,8 @@ import rightTrianglePath from "public/right_triangle.png";
 import logoPSUPath from "public/logo.png";
 import tagPath from "public/tag.png";
 import horizontalTextPSULogoPath from "public/psu_logo_horizontal_text.png";
+import facultyPath from "public/Faculty.svg";
+import fileIconPath from "public/file.svg";
 
 // Home Page Carousel
 import clockTowerPath from "public/HomePageCarousel/ClockTower.jpg";
@@ -39,6 +41,7 @@ export const RightTriangle = rightTrianglePath;
 export const PSU_Logo = logoPSUPath;
 export const TagsImage = tagPath;
 export const HorizontalTextPSULogo = horizontalTextPSULogoPath;
+export const FacultyIcon = facultyPath;
 
 
 // export const LogoIcon = calendarWhiteIconPath;

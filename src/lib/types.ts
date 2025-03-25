@@ -16,7 +16,7 @@ export type SVGProps = {
     stroke_color?: string | undefined;
 }
 
-export type EventInfo = { 
+export type EventInfo = {
     event: EventInput;
     timeText: string;
     isStart: boolean;
@@ -26,9 +26,9 @@ export type EventInfo = {
     isFuture: boolean;
     isToday: boolean;
     el: HTMLElement;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     view: any; // FullCalendar "View Object"
-}
-
+};
 
 export type Class = {
     // unchanging identifiers
@@ -164,3 +164,15 @@ export type CalendarAction =
     | { type: "UNLINK_ALL_TAGS_FROM_ALL_CLASSES" }
     | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] }
     | { type: "DELETE_CLASSES"; payload: string[] };
+
+export type Faculty = {
+    _id?: string;
+    name: string;
+    unavailability: {
+        mon: { start: string; end: string }[];
+        tue: { start: string; end: string }[];
+        wed: { start: string; end: string }[];
+        thu: { start: string; end: string }[];
+        fri: { start: string; end: string }[];
+    };
+};

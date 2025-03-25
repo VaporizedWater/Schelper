@@ -242,10 +242,12 @@ const Calendar = () => {
     }, [conflicts]);
 
     // EventInfo in types defines possibilities, but fullcalendar doesn't support typescript, so dont use it as the type here
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const eventClassNames = (eventInfo: any) => {
         return `event-${eventInfo.event.extendedProps?.combinedClassId}`;
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const eventMounted = (eventInfo: any) => {
         if (eventInfo.event.extendedProps?.combinedClassId === currentCombinedClass?._id) {
             selectEvent(eventInfo.el);
