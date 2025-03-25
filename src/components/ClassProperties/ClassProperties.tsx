@@ -179,7 +179,7 @@ const ClassProperties = () => {
                             </span>
                         )}
                         renderDropdown={() => (
-                            <ul className='py-2'>
+                            <ul className='py-1'>
                                 <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
                                     <span className='w-full text-start font-semibold'>Subject</span>
                                     <input
@@ -255,7 +255,7 @@ const ClassProperties = () => {
                                 </li>
                             </ul>
                         )}
-                        buttonClassName="w-full text-left py-2"
+                        buttonClassName="w-full text-left py-1"
                         dropdownClassName="relative shadow-none w-full"
                         alwaysOpen={true}
                     />
@@ -269,7 +269,7 @@ const ClassProperties = () => {
                             </span>
                         )}
                         renderDropdown={() => (
-                            <div className="flex-1 flex flex-col py-2 pl-1">
+                            <div className="flex-1 flex flex-col py-1 pl-1">
                                 {ShortenedDays.map(day => (
                                     <label key={day} className="flex items-center gap-1">
                                         <input
@@ -283,7 +283,7 @@ const ClassProperties = () => {
                                 ))}
                             </div>
                         )}
-                        buttonClassName="w-full text-left py-2"
+                        buttonClassName="w-full text-left py-1"
                         dropdownClassName="relative shadow-none w-full"
                         alwaysOpen={true}
                     />
@@ -297,7 +297,7 @@ const ClassProperties = () => {
                             </span>
                         )}
                         renderDropdown={() => (
-                            <div className="flex-1 flex-col gap-2 py-2 pl-1">
+                            <div className="flex-1 flex-col gap-2 py-1 pl-1">
                                 {Array.from(allTags).sort((a, b) => a.length - b.length).map((tag) => (
                                     <label key={tag} className="flex items-center gap-1">
                                         <input
@@ -311,7 +311,7 @@ const ClassProperties = () => {
                                 ))}
                             </div>
                         )}
-                        buttonClassName="w-full text-left py-2"
+                        buttonClassName="w-full text-left py-1"
                         dropdownClassName="relative shadow-none w-full"
                         alwaysOpen={true}
                     />

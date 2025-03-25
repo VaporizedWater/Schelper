@@ -13,32 +13,34 @@ const Home = () => {
     const [currentImage, setCurrentImage] = useState(images[0]);
     const [nextImage, setNextImage] = useState(images[1]);
     const [opacity, setOpacity] = useState(1);
+    const [index, setIndex] = useState(0);
 
     const currentBackground = (
-        <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
+        <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-2500 ease-linear"
             style={{ backgroundImage: `url(${currentImage.src})`, opacity }}>
         </div>
     );
     const nextBackground = (
-        <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-5000 ease-in"
+        <div className="absolute inset-0 bg-cover bg-center transition-opacity duration-2500 ease-linear"
             style={{ backgroundImage: `url(${nextImage.src})`, opacity: 1 - opacity }}>
         </div>
     );
 
     useEffect(() => {
-        let index = 0;
         const cycleImages = () => {
-            setNextImage(images[(index + 1) % images.length]);
+            const nextIdx = (index + 1) % images.length;
+            setNextImage(images[nextIdx]);
             setOpacity(0);
 
+            // After the duration, swap images and reset opacity
             setTimeout(() => {
-                setCurrentImage(images[(index + 1) % images.length]);
+                setCurrentImage(nextImage);
+                setIndex(nextIdx);
                 setOpacity(1);
-                index = (index + 1) % images.length;
-            }, 5000);
+            }, 2500);
         };
 
-        const interval = setInterval(cycleImages, 5000);
+        const interval = setInterval(cycleImages, 3000); // Increase interval to wait for full transition
         return () => clearInterval(interval);
     });
 
@@ -49,7 +51,7 @@ const Home = () => {
                 {nextBackground}
                 <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
                     <h1 className='text-lightblue text-8xl font-bold flex items-center justify-center gap-4'>
-                        <Image src={LogoIcon} height={55} alt="Schelper Icon" />
+                        <LogoIcon height="96" width="96"/>
                         Schelper
                     </h1>
                     <h2 className='pt-4 text-3xl text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
@@ -65,7 +67,7 @@ const Home = () => {
                                 height={64}
                                 className="cursor-pointer transition rounded-lg"
                             />
-                            <span className="rounded-b-lg absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                            <span className="rounded-b-lg absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition duration-[16ms] cursor-pointer">
                                 Edit Calendar
                             </span>
                         </Link>
@@ -78,7 +80,7 @@ const Home = () => {
                                 height={64}
                                 className="cursor-pointer transition rounded-lg"
                             />
-                            <span className="rounded-b-lg absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition cursor-pointer">
+                            <span className="rounded-b-lg absolute bottom-0 left-0 right-0 flex items-center justify-center bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-0 group-hover:opacity-100 transition duration-[16ms] cursor-pointer">
                                 Manage Tags
                             </span>
                         </Link>

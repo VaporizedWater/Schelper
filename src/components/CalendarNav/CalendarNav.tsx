@@ -4,7 +4,6 @@ import { useState } from "react";
 import { CalendarOpenProps } from "@/lib/types";
 import ButtonDropDown from "../ButtonDropDown/ButtonDropDown";
 import Link from "next/link";
-import Image from "next/image";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { AlertTriangleIcon } from "@/lib/icons";
 
@@ -34,7 +33,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                 <li key={2} className={`${listString} hover:bg-gray-200`}>
                     <button>
                         <Link href="/viewConflicts" className="flex items-center p-2 bg-white rounded-full hover:bg-gray-200">
-                            <svg xmlns={AlertTriangleIcon} fill="#FFCC00" width="24" height="24" className="size-4" />
+                            <AlertTriangleIcon stroke_color="#FFCC00" width="16" height="16"/>
                             <div>View Conflicts</div>
                         </Link>
                     </button>

@@ -7,6 +7,15 @@ export type TagType = {
     _id: string;
 };
 
+export type SVGProps = {
+    className?: string | undefined;
+    width?: string | undefined;
+    height?: string | undefined;
+    fill_color?: string | undefined;
+    stroke_width?: string | undefined;
+    stroke_color?: string | undefined;
+}
+
 export type EventInfo = { 
     event: EventInput;
     timeText: string;
