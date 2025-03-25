@@ -94,6 +94,7 @@ const ViewConflicts = () => {
                                                 <p>Days: {conflict.class1.properties.days.join(", ")}</p>
                                                 <p>Time: {conflict.class1.properties.start_time} - {conflict.class1.properties.end_time}</p>
                                                 <p>Instructor: {conflict.class1.properties.instructor_name}</p>
+                                                <p>Email: {conflict.class1.properties.instructor_email}</p>
                                                 <p>Room: {conflict.class1.properties.room}</p>
                                             </div>
                                             <div className="space-y-2">
@@ -101,6 +102,7 @@ const ViewConflicts = () => {
                                                 <p>Days: {conflict.class2.properties.days.join(", ")}</p>
                                                 <p>Time: {conflict.class2.properties.start_time} - {conflict.class2.properties.end_time}</p>
                                                 <p>Instructor: {conflict.class2.properties.instructor_name}</p>
+                                                <p>Email: {conflict.class2.properties.instructor_email}</p>
                                                 <p>Room: {conflict.class2.properties.room}</p>
                                             </div>
                                         </div>

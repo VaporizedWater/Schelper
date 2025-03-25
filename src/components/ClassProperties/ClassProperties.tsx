@@ -186,7 +186,7 @@ const ClassProperties = () => {
                     <DropDown
                         renderButton={(isOpen) => (
                             <span className='font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between'>
-                                Properties
+                                Course Info
                                 {isOpen ? <BiChevronUp /> : <BiChevronDown />}
                             </span>
                         )}
