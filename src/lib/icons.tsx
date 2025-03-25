@@ -121,6 +121,7 @@ export const LogoIcon = ({ width, height, fill_color, stroke_width, stroke_color
     );
 };
 
+// Not complete below:
 export const FileIcon = ({ width, height, fill_color, stroke_width, stroke_color, className }: SVGProps) => {
     const w = width ? width : "24";
     const h = height ? height : "24";
