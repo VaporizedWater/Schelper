@@ -72,7 +72,7 @@ const FacultyForm = () => {
 
     return (
         <div className="p-8 mx-auto">
-            <h2 className="text-2xl font-semibold mb-6">Create Faculty</h2>
+            <h2 className="text-2xl font-semibold mb-6">Manage Faculty Availability</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 {/* Faculty Name */}
                 <input
