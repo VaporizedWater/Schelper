@@ -5,6 +5,7 @@
 
 // SVG Icons
 import alertTrianglePath from "public/AlertTriangle.svg";
+import facultyPath from "public/Faculty.svg";
 import fileIconPath from "public/file.svg";
 import calendarWhiteIconPath from "public/calendar-white.svg";
 import calendarIconPath from "public/calendar.svg";
@@ -30,6 +31,7 @@ import dayCampusPath from "public/HomePageCarousel/DayCampus.jpg";
 // Exported Global Variables
 export const LogoIcon = calendarWhiteIconPath;
 export const AlertTriangleIcon = alertTrianglePath;
+export const FacultyIcon = facultyPath;
 export const FileIcon = fileIconPath;
 export const CalendarIcon = calendarIconPath;
 export const GlobeIcon = globeIconPath;

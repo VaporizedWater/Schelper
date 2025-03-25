@@ -155,3 +155,15 @@ export type CalendarAction =
     | { type: "UNLINK_ALL_TAGS_FROM_ALL_CLASSES" }
     | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] }
     | { type: "DELETE_CLASSES"; payload: string[] };
+
+export type Faculty = {
+    _id?: string;
+    name: string;
+    unavailability: {
+        mon: { start: string; end: string }[];
+        tue: { start: string; end: string }[];
+        wed: { start: string; end: string }[];
+        thu: { start: string; end: string }[];
+        fri: { start: string; end: string }[];
+    };
+};
