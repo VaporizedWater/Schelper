@@ -161,7 +161,7 @@ const Calendar = () => {
                     start_time: newStart,
                     end_time: newEnd,
                     // Only modify days if it's a single day event
-                    ...(multiDays ? {} : { days: [newDay] })
+                    days: multiDays ? foundClass.properties.days : [newDay]
                 }
             };
 
@@ -278,7 +278,6 @@ const Calendar = () => {
                 eventContent={eventContent}
                 eventClassNames={eventClassNames}
                 eventDidMount={eventMounted}
-            // className="calendar-container"
             />
 
             {/* Add custom CSS for calendar font sizes */}
