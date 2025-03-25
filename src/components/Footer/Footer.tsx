@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { LogoIcon } from "@/lib/icons";
 
 const Footer = () => {

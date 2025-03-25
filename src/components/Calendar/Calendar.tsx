@@ -51,7 +51,7 @@ const Calendar = () => {
         setEvents(newEvents);
         detectConflicts();
         console.timeEnd("Calendar:createEvents");
-    }, [displayClasses]);
+    }, [displayClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Update events for a single class (much more efficient)
     const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {

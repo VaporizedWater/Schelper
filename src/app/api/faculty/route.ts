@@ -6,7 +6,7 @@ import { Faculty } from "@/lib/types";
 
 const client = await clientPromise;
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
         const collection = client.db("class-scheduling-app").collection("faculty") as Collection<Document>;
 
@@ -27,7 +27,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         const facultyData: Faculty = await request.json();
-        const { _id, ...facultyDataToInsert } = facultyData;
+        const { _id, ...facultyDataToInsert } = facultyData; // eslint-disable-line @typescript-eslint/no-unused-vars
 
         const collection = client.db("class-scheduling-app").collection("faculty");
 

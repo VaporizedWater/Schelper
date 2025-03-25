@@ -29,7 +29,7 @@ const CalendarPage = () => {
             // If no cohort filter or invalid cohort, show all classes
             updateDisplayClasses(allClasses);
         }
-    }, []);
+    });
 
     return (
         <div className='h-full grid grid-cols-[15%_85%]'>
