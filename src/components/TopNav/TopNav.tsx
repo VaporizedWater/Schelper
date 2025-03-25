@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import logo1 from "public/whitebglogo2.png"
+import { HorizontalTextPSULogo } from "@/lib/icons";
 
 const TopNav = () => {
     return (
@@ -8,7 +8,7 @@ const TopNav = () => {
             <Link href="/" className="">
                 <div className='py-2'>
                     <Image
-                        src={logo1}
+                        src={HorizontalTextPSULogo}
                         alt="Logo"
                         height={"40"}
                     />

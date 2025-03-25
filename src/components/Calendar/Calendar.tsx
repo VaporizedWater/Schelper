@@ -14,7 +14,7 @@ const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { setCurrentClass, updateOneClass, detectConflicts, displayClasses, conflicts } = useCalendarContext();
+    const { setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, displayClasses, conflicts } = useCalendarContext();
 
     // Local state for events
     const [events, setEvents] = useState<EventInput[]>([]);
@@ -49,6 +49,7 @@ const Calendar = () => {
         });
 
         setEvents(newEvents);
+        detectConflicts();
         console.timeEnd("Calendar:createEvents");
     }, [displayClasses]);
 
@@ -83,11 +84,6 @@ const Calendar = () => {
         console.log(`Events updated: ${events.length} total events`);
     }, [events]);
 
-    // Detect conflicts when displayClasses changes
-    useEffect(() => {
-        detectConflicts();
-    }, [displayClasses]);
-
     // Enhanced findClass that uses our eventMap for better performance
     function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {
         // Get the class directly from the event's extendedProps
@@ -110,15 +106,23 @@ const Calendar = () => {
         selectedEvents.length = 0;
     }
 
+    function selectEvent(element: HTMLElement) {
+        element.style.backgroundColor = selectedBackgroundColor;
+        selectedEvents.push(element);
+    }
+
     const handleEventClick = (info: EventClickArg) => {
         unselectAll();
-        info.el.style.backgroundColor = selectedBackgroundColor;
-        selectedEvents.push(info.el);
+        selectEvent(info.el);
 
         const foundClass = findClass(info);
 
         if (foundClass) {
-            console.log("Class found");
+            const elements = document.getElementsByClassName(`event-${foundClass?._id}`);
+            for (let i = 0; i < elements.length; i++) {
+                selectEvent(elements[i] as HTMLElement);
+            }
+
             setCurrentClass(foundClass);
             console.log("Current class: ", foundClass);
         } else {
@@ -233,6 +237,17 @@ const Calendar = () => {
         };
     }, [conflicts]);
 
+    // EventInfo in types defines possibilities, but fullcalendar doesn't support typescript, so dont use it as the type here
+    const eventClassNames = (eventInfo: any) => {
+        return `event-${eventInfo.event.extendedProps?.combinedClassId}`;
+    };
+
+    const eventMounted = (eventInfo: any) => {
+        if (eventInfo.event.extendedProps?.combinedClassId === currentCombinedClass?._id) {
+            selectEvent(eventInfo.el);
+        }
+    }
+
     return (
         <div className="h-full">
             <FullCalendar
@@ -257,6 +272,8 @@ const Calendar = () => {
                 eventResize={handleEventResize}
                 dateClick={handleDateClick}
                 eventContent={eventContent}
+                eventClassNames={eventClassNames}
+                eventDidMount={eventMounted}
             />
         </div>
     );
