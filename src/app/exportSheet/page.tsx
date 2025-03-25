@@ -113,8 +113,8 @@ const ExportSheet = () => {
 
             {/* Preview of classes to be exported */}
             {allClasses.length > 0 && (
-                <div className="mt-8">
-                    <div className="flex justify-between items-center mb-4">
+                <div className="mt-4">
+                    <div className="flex justify-between items-center mb-2">
                         <h2 className="text-xl font-semibold">Classes to Export ({selectedClasses.size})</h2>
                     </div>
                     <div className="overflow-auto max-h-[60vh] border rounded-md">
