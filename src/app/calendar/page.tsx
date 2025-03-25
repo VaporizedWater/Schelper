@@ -33,7 +33,7 @@ const CalendarPage = () => {
 
     return (
         <div className='h-full grid grid-cols-[15%_85%]'>
-            <div className='min-w-24'>
+            <div className='min-w-24 h-full overflow-hidden'>
                 <LeftMenu />
             </div>
             <div className='grid grid-rows-[auto_1fr] h-full'>

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { Class, ClassProperty, CombinedClass } from '@/lib/types';
 import { createEventsFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
+import { BiChevronUp, BiChevronDown } from 'react-icons/bi';
+import DropDown from '../DropDown/DropDown';
 
 const ClassProperties = () => {
     const { currentCombinedClass, updateOneClass, allTags, deleteClasses, setCurrentClass } = useCalendarContext();
@@ -165,136 +167,173 @@ const ClassProperties = () => {
     };
 
     return (
-        <div>
-            <ul className="flex flex-col w-full">
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Subject</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={courseSubject}
-                        onChange={handleCourseSubjectChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Number</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={courseNum}
-                        onChange={handleCourseNumChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Title</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={title}
-                        onChange={handleTitleChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Instructor</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={instructor}
-                        onChange={handleInstructorChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Room</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={room}
-                        onChange={handleRoomChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Location</span>
-                    <input
-                        type="text"
-                        className="flex-1 border px-1 w-full"
-                        value={location}
-                        onChange={handleLocationChange}
-                    />
-                </li>
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Days</span>
-                    <div className="flex-1 flex flex-col">
-                        {ShortenedDays.map(day => (
-                            <label key={day} className="flex items-center gap-1">
-                                <input
-                                    type="checkbox"
-                                    checked={days.includes(day)}
-                                    onChange={(e) => handleDaysChange(day, e.target.checked)}
-                                    className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
-                                />
-                                <span>{day}</span>
-                            </label>
-                        ))}
-                    </div>
-                </li>
-
-                {/* Tags to be selected from list of checkboxes */}
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Tags</span>
-                    <div className="flex-1 flex-col gap-2 max-h-[18vh] overflow-y-scroll scrollbar-thin">
-                        {Array.from(allTags).map((tag) => {
-                            return (
-                                <label key={tag} className="flex items-center gap-1">
+        <div className="h-full w-full overflow-y-auto scrollbar-thin">
+            {currentCombinedClass?._id ? (
+                <ul className="flex flex-col w-full pb-4">
+                    {/* Properties Section */}
+                    <DropDown
+                        renderButton={(isOpen) => (
+                            <span className='font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between'>
+                                Properties
+                                {isOpen ? <BiChevronUp /> : <BiChevronDown />}
+                            </span>
+                        )}
+                        renderDropdown={() => (
+                            <ul className='py-2'>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Subject</span>
                                     <input
-                                        type="checkbox"
-                                        checked={tags.includes(tag)}
-                                        onChange={(e) => handleTagCheck(tag, e.target.checked)}
-                                        className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                                        type="text"
+                                        placeholder="Subject"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={courseSubject}
+                                        onChange={handleCourseSubjectChange}
                                     />
-                                    <span>{tag}</span>
-                                </label>
-                            );
-                        })}
-                    </div>
-
-                </li>
-
-                {/* Start time */}
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">Start Time</span>
-                    <input
-                        type="time"
-                        className="flex-1 border px-1 w-full"
-                        value={startTime}
-                        onChange={handleStartTimeChange}
+                                </li>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Course Number</span>
+                                    <input
+                                        type="text"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={courseNum}
+                                        onChange={handleCourseNumChange}
+                                    />
+                                </li>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Title</span>
+                                    <input
+                                        type="text"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={title}
+                                        onChange={handleTitleChange}
+                                    />
+                                </li>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Instructor</span>
+                                    <input
+                                        type="text"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={instructor}
+                                        onChange={handleInstructorChange}
+                                    />
+                                </li>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Location</span>
+                                    <input
+                                        type="text"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={room}
+                                        onChange={handleRoomChange}
+                                    />
+                                </li>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Location</span>
+                                    <input
+                                        type="text"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={location}
+                                        onChange={handleLocationChange}
+                                    />
+                                </li>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Start Time</span>
+                                    <input
+                                        type="time"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={startTime}
+                                        onChange={handleStartTimeChange}
+                                    />
+                                </li>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>End Time</span>
+                                    <input
+                                        type="time"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={endTime}
+                                        onChange={handleEndTimeChange}
+                                    />
+                                </li>
+                            </ul>
+                        )}
+                        buttonClassName="w-full text-left py-2"
+                        dropdownClassName="relative shadow-none w-full"
+                        alwaysOpen={true}
                     />
-                </li>
 
-                {/* End time */}
-                <li className="flex border-b items-center">
-                    <span className="font-medium text-gray-700 min-w-20">End Time</span>
-                    <input
-                        type="time"
-                        className="flex-1 border px-1 w-full"
-                        value={endTime}
-                        onChange={handleEndTimeChange}
+                    {/* Days Section */}
+                    <DropDown
+                        renderButton={(isOpen) => (
+                            <span className="font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between">
+                                Days
+                                {isOpen ? <BiChevronUp /> : <BiChevronDown />}
+                            </span>
+                        )}
+                        renderDropdown={() => (
+                            <div className="flex-1 flex flex-col py-2 pl-1">
+                                {ShortenedDays.map(day => (
+                                    <label key={day} className="flex items-center gap-1">
+                                        <input
+                                            type="checkbox"
+                                            checked={days.includes(day)}
+                                            onChange={(e) => handleDaysChange(day, e.target.checked)}
+                                            className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-ylue-600"
+                                        />
+                                        <span>{day}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        )}
+                        buttonClassName="w-full text-left py-2"
+                        dropdownClassName="relative shadow-none w-full"
+                        alwaysOpen={true}
                     />
-                </li>
 
-                {/* Delete button - only show if we have a valid class with an ID */}
-                {currentCombinedClass && currentCombinedClass._id && (
-                    <li className="flex border-b items-center pt-4">
-                        <button
-                            onClick={handleDeleteClass}
-                            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors cursor-pointer"
-                            aria-label="Delete class"
-                        >
-                            Delete Class
-                        </button>
-                    </li>
-                )}
+                    {/* Tags Section */}
+                    <DropDown
+                        renderButton={(isOpen) => (
+                            <span className="font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between">
+                                Tags
+                                {isOpen ? <BiChevronUp /> : <BiChevronDown />}
+                            </span>
+                        )}
+                        renderDropdown={() => (
+                            <div className="flex-1 flex-col gap-2 py-2 pl-1">
+                                {Array.from(allTags).sort((a, b) => a.length - b.length).map((tag) => (
+                                    <label key={tag} className="flex items-center gap-1">
+                                        <input
+                                            type="checkbox"
+                                            checked={tags.includes(tag)}
+                                            onChange={(e) => handleTagCheck(tag, e.target.checked)}
+                                            className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-ylue-600"
+                                        />
+                                        <span>{tag}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        )}
+                        buttonClassName="w-full text-left py-2"
+                        dropdownClassName="relative shadow-none w-full"
+                        alwaysOpen={true}
+                    />
 
-            </ul>
+                    {/* Delete button - only show if we have a valid class with an ID */}
+                    {currentCombinedClass && currentCombinedClass._id && (
+                        <li className="flex hover:border-gray-200 border-transparent border-y items-center pt-4">
+                            <button
+                                onClick={handleDeleteClass}
+                                className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors cursor-pointer"
+                                aria-label="Delete class"
+                            >
+                                Delete Class
+                            </button>
+                        </li>
+                    )}
+                </ul>
+            ) : (
+                <div className="flex items-center justify-center h-full text-gray-400 pb-8">
+                    Select a class to edit
+                </div>
+            )}
         </div>
     );
 };

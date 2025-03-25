@@ -151,6 +151,8 @@ const Calendar = () => {
                 return;
             }
 
+            const multiDays = foundClass.properties.days.length > 1;
+
             // Update class properties
             const updatedClass = {
                 ...foundClass,
@@ -158,7 +160,8 @@ const Calendar = () => {
                     ...foundClass.properties,
                     start_time: newStart,
                     end_time: newEnd,
-                    days: [newDay]
+                    // Only modify days if it's a single day event
+                    ...(multiDays ? {} : { days: [newDay] })
                 }
             };
 
@@ -231,6 +234,7 @@ const Calendar = () => {
                     color: white;
                     padding: 2px 4px;
                     border-radius: 2px;
+                    font-size: 1rem; /* Medium font size for events */
                 ">
                     ${eventInfo.event.title}
                 </div>`
@@ -249,7 +253,7 @@ const Calendar = () => {
     }
 
     return (
-        <div className="h-full">
+        <div className="h-full text-sm">
             <FullCalendar
                 ref={calendarRef}
                 plugins={[timeGridPlugin, interactionPlugin]}
@@ -274,7 +278,22 @@ const Calendar = () => {
                 eventContent={eventContent}
                 eventClassNames={eventClassNames}
                 eventDidMount={eventMounted}
+            // className="calendar-container"
             />
+
+            {/* Add custom CSS for calendar font sizes */}
+            <style jsx global>{`
+                /* Keep time slots and headers small */
+                .fc .fc-timegrid-slot-label,
+                .fc .fc-col-header-cell {
+                    font-size: 0.875rem; /* text-sm */
+                }
+                
+                /* Make event content medium sized */
+                .fc-event-main {
+                    font-size: 1rem !important; /* text-md */
+                }
+            `}</style>
         </div>
     );
 };

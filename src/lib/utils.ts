@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import { CombinedClass, TagType } from "./types";
 
 /**

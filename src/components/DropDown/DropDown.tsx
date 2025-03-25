@@ -1,26 +1,40 @@
 import { DropDownProps } from "@/lib/types";
 import { useEffect, useRef, useState } from "react";
 
-const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClassName }: DropDownProps) => {
-    const [isOpen, setIsOpen] = useState(false);
+const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClassName, alwaysOpen = false }: DropDownProps) => {
+    // Initialize isOpen based on alwaysOpen prop
+    const [isOpen, setIsOpen] = useState(alwaysOpen);
     const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Set initial state when alwaysOpen changes
+    useEffect(() => {
+        setIsOpen(alwaysOpen);
+    }, [alwaysOpen]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
+                // Only close the dropdown if alwaysOpen is false
+                if (!alwaysOpen) {
+                    setIsOpen(false);
+                }
             }
         };
 
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [alwaysOpen]);
+
+    const toggleDropdown = () => {
+        // Allow toggling regardless of alwaysOpen setting
+        setIsOpen((prev) => !prev);
+    };
 
     return (
         <div ref={dropdownRef} className="relative">
             <button
                 type="button"
-                onClick={() => setIsOpen((prev) => !prev)}
+                onClick={toggleDropdown}
                 className={buttonClassName}
                 data-testid="dropdown-button"
                 aria-expanded={isOpen}
