@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { insertTag } from "@/lib/utils";
+import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 
 const AddTag = () => {
+    const { allTags } = useCalendarContext();
     const [tag, setTag] = useState("");
     const router = useRouter();
 
@@ -16,6 +18,7 @@ const AddTag = () => {
 
         const success = await insertTag(trimmedTag);
         if (success) {
+            allTags.add(trimmedTag);
             router.back();
         }
     };

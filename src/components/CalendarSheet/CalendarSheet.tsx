@@ -2,16 +2,32 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import Spreadsheet, { Matrix } from "react-spreadsheet";
+import Spreadsheet, { Selection, Matrix, RangeSelection, EntireRowsSelection, EntireColumnsSelection } from "react-spreadsheet";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { updateCombinedClasses } from "@/lib/utils";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
-    const { allClasses, updateAllClasses, updateDisplayClasses, displayClasses } = useCalendarContext();
+    const { allClasses, updateAllClasses, updateDisplayClasses, displayClasses, setCurrentClass, currentCombinedClass } = useCalendarContext();
+
+    // Add state to track selected row index
+    const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 
     // Compute a hidden mapping of row index (starting at 0 for first data row) to class id.
-    const classIds = displayClasses.map((item) => item._id);
+    // Use useMemo instead of a regular variable + useEffect
+    const classIds = useMemo(() => {
+        return displayClasses.map((item) => item._id);
+    }, [displayClasses]);
+
+    // Update selected row when currentClass changes in context
+    useEffect(() => {
+        if (currentCombinedClass) {
+            const rowIndex = classIds.findIndex(id => id === currentCombinedClass._id);
+            if (rowIndex !== -1) {
+                setSelectedRowIndex(rowIndex);
+            }
+        }
+    }, [currentCombinedClass, classIds]);
 
     // Define headers separately so that we can prepend them to the data matrix.
     const headers = useMemo<Matrix<{ value: string }>>(() => [[
@@ -38,28 +54,33 @@ export default function CalendarSheet() {
 
     const spreadsheetData = useMemo(() => [
         ...headers,
-        ...displayClasses.map((item) => [
-            { value: String(item.data.catalog_num) },
-            { value: String(item.data.class_num) },
-            { value: String(item.data.session) },
-            { value: String(item.data.course_subject) },
-            { value: String(item.data.course_num) },
-            { value: String(item.data.section) },
-            { value: String(item.data.title) },
-            { value: String(item.data.location) },
-            { value: String(item.properties.class_status) },
-            { value: String(item.properties.start_time) },
-            { value: String(item.properties.end_time) },
-            { value: String(item.properties.facility_id) },
-            { value: String(item.properties.room) },
-            { value: String(item.properties.days.join(', ')) },
-            { value: String(item.properties.instructor_name) },
-            { value: String(item.properties.instructor_email) },
-            { value: String(item.data.enrollment_cap) },
-            { value: String(item.data.waitlist_cap) },
-            { value: String(item.properties.tags.join(', ')) },
-        ]),
-    ], [displayClasses, headers]);
+        ...displayClasses.map((item, index) => {
+            // Style for the selected row (index + 1 because headers are row 0)
+            const isSelected = index === selectedRowIndex;
+
+            return [
+                { value: String(item.data.catalog_num), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.data.class_num), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.data.session), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.data.course_subject), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.data.course_num), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.data.section), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.data.title), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.data.location), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.class_status), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.start_time), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.end_time), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.facility_id), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.room), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.days.join(', ')), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.instructor_name), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.instructor_email), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.data.enrollment_cap), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.data.waitlist_cap), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.tags.join(', ')), className: isSelected ? 'bg-blue-100' : '' },
+            ];
+        }),
+    ], [displayClasses, headers, selectedRowIndex]);
 
     const [pendingData, setPendingData] = useState<Matrix<{ value: string }>>(spreadsheetData);
 
@@ -118,12 +139,6 @@ export default function CalendarSheet() {
                     tags: row[18]?.value ? row[18].value.split(",").map((t) => t.trim()).sort() : [],
                 };
 
-                // const newEvent: EventInput = createEventsFromCombinedClass({
-                //     data: newData,
-                //     properties: newProperties,
-                //     events: undefined
-                // } as CombinedClass);
-
                 return {
                     _id: id,
                     data: newData,
@@ -154,12 +169,70 @@ export default function CalendarSheet() {
         }
     };
 
+    const getIdsFromSelection = (selection: Selection) => {
+        // Set to store unique row indexes (excluding header row)
+        const rowIndexes = new Set<number>();
+
+        // Find the type of selection
+        if (selection instanceof RangeSelection) {
+            // For range selection, get all rows in the range
+            for (let i = selection.range.start.row; i <= selection.range.end.row; i++) {
+                // Skip header row (row 0)
+                if (i > 0) {
+                    rowIndexes.add(i - 1); // Adjust index for header row
+                }
+            }
+        } else if (selection instanceof EntireRowsSelection) {
+            // For entire rows selection
+            for (let i = selection.start; i <= selection.end; i++) {
+                // Skip header row (row 0)
+                if (i > 0) {
+                    rowIndexes.add(i - 1); // Adjust index for header row
+                }
+            }
+        } else if (selection instanceof EntireColumnsSelection) {
+            // For entire columns, include all data rows
+            for (let i = 0; i < classIds.length; i++) {
+                rowIndexes.add(i);
+            }
+        }
+
+        // Convert row indexes to class ids and return
+        return Array.from(rowIndexes)
+            .filter(idx => idx >= 0 && idx < classIds.length)
+            .map(idx => classIds[idx]);
+    };
+
+    const handleSelection = (selection: Selection) => {
+        // console.log("SELECTED: ! ", selection, getIdsFromSelection(selection));
+        const ids = getIdsFromSelection(selection);
+
+        if (ids.length > 0) {
+            const currentClass = allClasses.find(cls => cls._id === ids[0]);
+
+            if (currentClass) {
+                const currentCombined: CombinedClass = currentClass as CombinedClass;
+
+                // console.log("Current Combined: ", currentCombined);
+
+                setCurrentClass(currentCombined);
+
+                // Update the selected row index
+                const rowIndex = classIds.findIndex(id => id === currentCombined._id);
+                if (rowIndex !== -1) {
+                    setSelectedRowIndex(rowIndex);
+                }
+            }
+        }
+    }
+
     return (
         <div className="grow overflow-auto h-[calc(100vh-220px)]">
             <Spreadsheet
                 data={pendingData}
                 onChange={handleSpreadsheetChange}
                 onKeyDown={handleKeyDown}
+                onSelect={handleSelection}
                 className="w-full"
             />
         </div>

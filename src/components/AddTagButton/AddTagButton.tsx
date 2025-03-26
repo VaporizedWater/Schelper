@@ -2,20 +2,19 @@
 import { useState } from "react";
 import { MdAdd, MdExpandLess, MdExpandMore } from "react-icons/md";
 import DropDown from "../DropDown/DropDown";
+import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { insertTag } from "@/lib/utils";
 
-interface AddTagButtonProps {
-    onAddTag: (tagName: string) => void;
-}
-
-const AddTagButton = ({ onAddTag }: AddTagButtonProps) => {
+const AddTagButton = () => {
+    const { allTags } = useCalendarContext();
     const [inputValue, setInputValue] = useState("");
 
     const handleAddTag = async () => {
         if (inputValue.trim() !== "") {
             const result = await insertTag(inputValue.trim());
+            allTags.add(inputValue.trim());
+
             if (result) {
-                onAddTag(result);
                 setInputValue("");
             } else {
                 console.error("Failed to add tag");

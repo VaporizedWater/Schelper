@@ -8,17 +8,13 @@ import { useCalendarContext } from "@/components/CalendarContext/CalendarContext
 const ManageTags = () => {
     const { unlinkAllTagsFromAllClasses } = useCalendarContext();
 
-    const handleAddTag = (newTagName: string) => {
-        insertTag(newTagName);
-    };
-
     return (
         <div className="flex flex-col items-right">
             <h1 className="text-4xl text-bold py-6 text-center">Manage Tags</h1>
 
             {/* Tag Menu */}
             <div className="flex justify-center pb-4 gap-2">
-                <AddTagButton onAddTag={handleAddTag} />
+                <AddTagButton />
 
                 <button
                     className="flex gap-2 items-center justify-center bg-white px-2 shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit"
