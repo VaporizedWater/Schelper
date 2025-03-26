@@ -19,7 +19,13 @@ const AddTag = () => {
         const success = await insertTag(trimmedTag);
         if (success) {
             allTags.add(trimmedTag);
+
+            // Display success message
+            alert("Tag added successfully: " + trimmedTag);
             router.back();
+        } else {
+            alert("Failed to add tag" + trimmedTag);
+            console.error("Failed to add tag");
         }
     };
 

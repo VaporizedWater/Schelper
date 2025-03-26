@@ -4,6 +4,7 @@ import { MdAdd, MdExpandLess, MdExpandMore } from "react-icons/md";
 import DropDown from "../DropDown/DropDown";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { insertTag } from "@/lib/utils";
+import { error } from "console";
 
 const AddTagButton = () => {
     const { allTags } = useCalendarContext();
@@ -11,12 +12,17 @@ const AddTagButton = () => {
 
     const handleAddTag = async () => {
         if (inputValue.trim() !== "") {
-            const result = await insertTag(inputValue.trim());
-            allTags.add(inputValue.trim());
+            const trimmedValue = inputValue.trim();
+            const result = await insertTag(trimmedValue);
 
             if (result) {
+                allTags.add(trimmedValue);
                 setInputValue("");
+
+                // Display success message
+                alert("Tag added successfully: " + trimmedValue);
             } else {
+                alert("Failed to add tag" + trimmedValue);
                 console.error("Failed to add tag");
             }
         }

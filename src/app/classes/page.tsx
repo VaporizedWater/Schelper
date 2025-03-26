@@ -38,6 +38,8 @@ const NewClassForm = () => {
         class_status: '',
         facility_id: '',
         room: '',
+        instructor_email: '',
+        instructor_name: '',
     } as ClassProperty, { initializeWithValue: false });
 
     const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<string[]>("selectedTags", [], { initializeWithValue: false });
@@ -62,6 +64,8 @@ const NewClassForm = () => {
             class_status: '',
             facility_id: '',
             room: '',
+            instructor_email: '',
+            instructor_name: '',
         } as ClassProperty);
         clearSelectedTags();
     }
@@ -104,6 +108,9 @@ const NewClassForm = () => {
 
         // Clear state
         clearState();
+
+        // Display success message
+        alert("Class created successfully: " + defaultCombined.data.title);
 
         // Navigate back (optional)
         router.back();
