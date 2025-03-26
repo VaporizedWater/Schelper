@@ -8,14 +8,38 @@ import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import { newDefaultEmptyClass, ShortenedDays } from "@/lib/common";
 
+// Add this helper function before the component
+const preventWheelChange = (e: React.WheelEvent<HTMLInputElement>) => {
+    e.currentTarget.blur();
+};
+
 const NewClassForm = () => {
     const [title, setTitle, clearTitle] = useLocalStorage("title", "", { initializeWithValue: false });
     const [, , clearDay] = useLocalStorage("day", "Mon", { initializeWithValue: false });
     const [selectedDays, setSelectedDays, clearSelectedDays] = useLocalStorage<string[]>("selectedDays", ["Mon"], { initializeWithValue: false });
     const [startTime, setStartTime, clearStartTime] = useLocalStorage("startTime", "", { initializeWithValue: false });
     const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "", { initializeWithValue: false });
-    const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {} as Class, { initializeWithValue: false });
-    const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", { days: ["Mon"] } as ClassProperty, { initializeWithValue: false });
+
+    const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {
+        // title: '',
+        // catalog_num: '',
+        // class_num: '',
+        // session: '',
+        course_subject: '',
+        course_num: '',
+        section: '',
+        location: '',
+        // enrollment_cap: '',
+        // waitlist_cap: ''
+    } as Class, { initializeWithValue: false });
+
+    const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {
+        days: ["Mon"],
+        class_status: '',
+        facility_id: '',
+        room: '',
+    } as ClassProperty, { initializeWithValue: false });
+
     const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<string[]>("selectedTags", [], { initializeWithValue: false });
     const { allTags, uploadNewClasses } = useCalendarContext();
 
@@ -27,8 +51,18 @@ const NewClassForm = () => {
         clearSelectedDays();
         clearStartTime();
         clearEndTime();
-        setClassInfo({} as Class);
-        setClassProperties({ days: ["Mon"] } as ClassProperty);
+        setClassInfo({
+            course_subject: '',
+            course_num: '',
+            section: '',
+            location: '',
+        } as Class);
+        setClassProperties({
+            days: ["Mon"],
+            class_status: '',
+            facility_id: '',
+            room: '',
+        } as ClassProperty);
         clearSelectedTags();
     }
 
@@ -128,29 +162,33 @@ const NewClassForm = () => {
                     <input
                         type="number"
                         placeholder="Catalog Number"
-                        value={classInfo.catalog_num}
+                        value={classInfo.catalog_num || ''}
                         onChange={(e) => setClassInfo({ ...classInfo, catalog_num: e.target.value } as Class)}
+                        onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
                     <input
                         type="number"
                         placeholder="Class Number"
-                        value={classInfo.class_num}
+                        value={classInfo.class_num || ''}
                         onChange={(e) => setClassInfo({ ...classInfo, class_num: e.target.value } as Class)}
+                        onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
                     <input
                         type="number"
                         placeholder="Session"
-                        value={classInfo.session}
+                        value={classInfo.session || ''}
                         onChange={(e) => setClassInfo({ ...classInfo, session: e.target.value } as Class)}
+                        onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
                     <input
                         type="text"
                         placeholder="Course Subject"
-                        value={classInfo.course_subject}
+                        value={classInfo.course_subject || ''}
                         onChange={(e) => setClassInfo({ ...classInfo, course_subject: e.target.value } as Class)}
+                        onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
                     <input
@@ -177,15 +215,17 @@ const NewClassForm = () => {
                     <input
                         type="number"
                         placeholder="Enrollment Capacity"
-                        value={classInfo.enrollment_cap}
+                        value={classInfo.enrollment_cap || ''}
                         onChange={(e) => setClassInfo({ ...classInfo, enrollment_cap: e.target.value } as Class)}
+                        onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
                     <input
                         type="number"
                         placeholder="Waitlist Capacity"
-                        value={classInfo.waitlist_cap}
+                        value={classInfo.waitlist_cap || ''}
                         onChange={(e) => setClassInfo({ ...classInfo, waitlist_cap: e.target.value } as Class)}
+                        onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
 
@@ -233,16 +273,18 @@ const NewClassForm = () => {
                     <input
                         type="number"
                         placeholder="Total Enrolled"
-                        value={classProperties.total_enrolled}
+                        value={classProperties.total_enrolled || ''}
                         onChange={(e) => setClassProperties({ ...classProperties, total_enrolled: e.target.value } as ClassProperty)}
+                        onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
 
                     <input
                         type="number"
                         placeholder="Total Waitlisted"
-                        value={classProperties.total_waitlisted}
+                        value={classProperties.total_waitlisted || ''}
                         onChange={(e) => setClassProperties({ ...classProperties, total_waitlisted: e.target.value } as ClassProperty)}
+                        onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
 
