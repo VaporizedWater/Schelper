@@ -60,7 +60,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                 <li key={6} className={`${listString} hover:bg-gray-200`}>
                     <button>
                         <Link href="/faculty" className="flex items-center p-2 bg-white rounded-full hover:bg-gray-200">
-                            <svg xmlns={FacultyIcon} fill="#3B82F6" width="24" height="24" className="size-4" />
+                            <FacultyIcon stroke_color="#3B82F6" width="24" height="24" className="size-4" />
                             <div>Faculty</div>
                         </Link>
                     </button>
