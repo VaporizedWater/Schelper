@@ -1,7 +1,6 @@
 'use client';
 import AddTagButton from "@/components/AddTagButton/AddTagButton";
 import TagDisplay from "@/components/TagDisplay/TagDisplay";
-import { insertTag } from "@/lib/utils";
 import { BiUnlink } from "react-icons/bi";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 

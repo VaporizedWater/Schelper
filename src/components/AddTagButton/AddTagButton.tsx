@@ -4,7 +4,6 @@ import { MdAdd, MdExpandLess, MdExpandMore } from "react-icons/md";
 import DropDown from "../DropDown/DropDown";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { insertTag } from "@/lib/utils";
-import { error } from "console";
 
 const AddTagButton = () => {
     const { allTags } = useCalendarContext();
