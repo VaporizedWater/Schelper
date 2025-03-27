@@ -8,7 +8,7 @@ import { updateCombinedClasses } from "@/lib/utils";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
-    const { allClasses, updateAllClasses, updateDisplayClasses, displayClasses, setCurrentClass, currentCombinedClass } = useCalendarContext();
+    const { allClasses, updateAllClasses, updateDisplayClasses, displayClasses, setCurrentClass, currentCombinedClass, isLoading } = useCalendarContext();
 
     // Add state to track selected row index
     const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
@@ -224,6 +224,18 @@ export default function CalendarSheet() {
                 }
             }
         }
+    }
+
+    // Add conditional rendering
+    if (isLoading) {
+        return (
+            <div className="h-full flex items-center justify-center">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                    <p className="mt-4 text-lg font-medium text-gray-700">Loading classes...</p>
+                </div>
+            </div>
+        );
     }
 
     return (

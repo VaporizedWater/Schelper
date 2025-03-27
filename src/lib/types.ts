@@ -105,6 +105,9 @@ export type CalendarContextType = {
     allTags: Set<string>;
     tagList: tagListType; // Map of tags to a set of class ids
 
+    isLoading: boolean;
+    error: string | null;
+
     conflicts: ConflictType[];
 
     setCurrentClass: (newClasses: CombinedClass) => void;

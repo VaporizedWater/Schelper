@@ -135,10 +135,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     display: classes,
                     current: state.classes.current
                 },
-                // events: {
-                //     all: events,
-                //     display: events
-                // },
                 tags: {
                     all: action.payload.tags,
                     mapping: tagMapping
@@ -162,10 +158,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     ...state.classes,
                     display: displayClasses
                 },
-                // events: {
-                //     ...state.events,
-                //     display: displayEvents
-                // }
             };
         }
 
@@ -544,16 +536,16 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         displayClasses: state.classes.display,
         currentCombinedClass: state.classes.current,
 
-        // Events
-        // allEvents: state.events.all,
-        // displayEvents: state.events.display,
-
         // Tags
         allTags: state.tags.all,
         tagList: state.tags.mapping,
 
         // Conflicts
         conflicts: state.conflicts,
+
+        // Status
+        isLoading: state.status.loading,
+        error: state.status.error,
 
         // Actions
         setCurrentClass: (cls: CombinedClass) => {
@@ -673,6 +665,10 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         uploadNewClasses: (classes: CombinedClass[]) => {
             console.time("uploadNewClasses");
+
+            // Set loading state immediately
+            dispatch({ type: 'SET_LOADING', payload: true });
+
             // Use bulk update instead of individual updates
             updateCombinedClasses(classes)
                 .then(() => {
@@ -690,6 +686,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         type: 'SET_ERROR',
                         payload: 'Failed to upload classes. Please try again.'
                     });
+
+                    // Make sure to set loading to false if there's an error
+                    dispatch({ type: 'SET_LOADING', payload: false });
                 });
             console.timeEnd("uploadNewClasses");
         },
