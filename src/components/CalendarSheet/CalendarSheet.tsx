@@ -232,14 +232,14 @@ export default function CalendarSheet() {
             <div className="h-full flex items-center justify-center">
                 <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-                    <p className="mt-4 text-lg font-medium text-gray-700">Loading classes...</p>
+                    <p className="mt-4 text-lg font-medium text-gray-700">Loading classes sheet...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="grow overflow-auto h-[calc(100vh-220px)]">
+        <div className="grow overflow-auto max-h-[80vh]">
             <Spreadsheet
                 data={pendingData}
                 onChange={handleSpreadsheetChange}
