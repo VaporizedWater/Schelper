@@ -6,16 +6,26 @@ import Link from "next/link";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useEffect, useState } from "react";
 import DropDown from "../DropDown/DropDown";
+import { useSearchParams } from "next/navigation";
 
 const Filters = () => {
     const { tagList, allClasses, updateDisplayClasses } = useCalendarContext();
     const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
+    const searchParams = useSearchParams();
+    const cohortParam = searchParams.get('cohort');
 
     useEffect(() => {
         if (tagList.size > 0) {
-            setSelectedTags(new Set(Array.from(tagList.keys())));
+            // If there's a cohort parameter and it exists in tagList
+            if (cohortParam && Array.from(tagList.keys()).includes(cohortParam)) {
+                // Only select the cohort tag in the UI
+                setSelectedTags(new Set([cohortParam]));
+            } else {
+                // Default behavior: select all tags
+                setSelectedTags(new Set(Array.from(tagList.keys())));
+            }
         }
-    }, [tagList]);
+    }, [tagList, cohortParam]);
 
     // Function to update list of tags based on selected tags
     const updateTags = (event: React.ChangeEvent<HTMLInputElement>) => {

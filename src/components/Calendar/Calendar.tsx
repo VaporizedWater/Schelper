@@ -14,7 +14,7 @@ const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, displayClasses, conflicts } = useCalendarContext();
+    const { setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, displayClasses, conflicts, isLoading } = useCalendarContext();
 
     // Local state for events
     const [events, setEvents] = useState<EventInput[]>([]);
@@ -252,6 +252,17 @@ const Calendar = () => {
         if (eventInfo.event.extendedProps?.combinedClassId === currentCombinedClass?._id) {
             selectEvent(eventInfo.el);
         }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="h-full flex items-center justify-center bg-white bg-opacity-80">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                    <p className="mt-4 text-lg font-medium text-gray-700">Loading classes...</p>
+                </div>
+            </div>
+        );
     }
 
     return (

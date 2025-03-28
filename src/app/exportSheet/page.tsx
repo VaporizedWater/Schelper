@@ -109,7 +109,12 @@ const ExportSheet = () => {
         // Filter classes based on selection
         const classesToExport = allClasses.filter(cls => selectedClasses.has(getUniqueClassId(cls)));
 
-        const doc = new jsPDF();
+        // Use landscape orientation for more width
+        const doc = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4'
+        });
 
         doc.setFontSize(16);
         doc.text("Class Schedule", 14, 15);
@@ -127,25 +132,44 @@ const ExportSheet = () => {
                 classItem.properties.room,
                 classItem.data.location,
                 classItem.properties.days.join(', '),
-                `${classItem.properties.start_time} - ${classItem.properties.end_time}`,
+                classItem.properties.start_time,
+                classItem.properties.end_time,
                 conflictLabel
             ];
         });
 
-        // Remove color styling from PDF export by not applying row styles
+        // Optimize column widths based on content type
         autoTable(doc, {
-            head: [['Subject', 'Number', 'Catalog', 'Title', 'Instructor', 'Email', 'Room', 'Location', 'Days', 'Time', 'Conflicts']],
+            head: [['Subject', 'Number', 'Catalog', 'Title', 'Instructor', 'Email', 'Room', 'Loc', 'Days', 'Start', 'End', 'Conflicts']],
             body: tableData,
             startY: 20,
-            styles: { fontSize: 7 }, // Reduced font size to fit all columns
-            headStyles: { fillColor: [41, 128, 185], fontSize: 8 },
+            styles: {
+                fontSize: 7,
+                cellPadding: 2,
+                overflow: 'linebreak'
+            },
+            headStyles: {
+                fillColor: [41, 128, 185],
+                fontSize: 8,
+                halign: 'center',
+                valign: 'middle',
+                lineWidth: 0.25
+            },
             columnStyles: {
-                0: { cellWidth: 12 },
-                1: { cellWidth: 12 },
-                2: { cellWidth: 12 },
-                5: { cellWidth: 30 },
-                10: { cellWidth: 30 },
-            }
+                0: { cellWidth: 15 },    // Subject
+                1: { cellWidth: 15 },    // Number
+                2: { cellWidth: 15 },    // Catalog
+                3: { cellWidth: 35 },    // Title
+                4: { cellWidth: 35 },    // Instructor
+                5: { cellWidth: 30 },    // Email
+                6: { cellWidth: 35 },    // Room
+                7: { cellWidth: 15 },    // Location
+                8: { cellWidth: 25 },    // Days
+                9: { cellWidth: 12 },    // Start
+                10: { cellWidth: 12 },   // End
+                11: { cellWidth: 25 }    // Conflicts
+            },
+            margin: { top: 25 }
         });
 
         doc.save(`${filename}.pdf`);
@@ -219,7 +243,8 @@ const ExportSheet = () => {
                                     <th className="p-2 border text-left">Room</th>
                                     <th className="p-2 border text-left">Location</th>
                                     <th className="p-2 border text-left">Days</th>
-                                    <th className="p-2 border text-left">Time</th>
+                                    <th className="p-2 border text-left">Start</th>
+                                    <th className="p-2 border text-left">End</th>
                                     <th className="p-2 border text-left">Conflicts</th>
                                 </tr>
                             </thead>
@@ -263,12 +288,9 @@ const ExportSheet = () => {
                                             <td className="p-2 border">{classItem.properties.room}</td>
                                             <td className="p-2 border">{classItem.data.location}</td>
                                             <td className="p-2 border">{classItem.properties.days.join(', ')}</td>
-                                            <td className="p-2 border">
-                                                {classItem.properties.start_time} - {classItem.properties.end_time}
-                                            </td>
-                                            <td className="p-2 border font-medium">
-                                                {conflictLabel}
-                                            </td>
+                                            <td className="p-2 border">{classItem.properties.start_time}</td>
+                                            <td className="p-2 border">{classItem.properties.end_time}</td>
+                                            <td className="p-2 border font-medium">{conflictLabel}</td>
                                         </tr>
                                     );
                                 })}

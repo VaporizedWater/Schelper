@@ -294,7 +294,8 @@ const ImportSheet = () => {
                                     <th className="p-2 border">Course</th>
                                     <th className="p-2 border">Title</th>
                                     <th className="p-2 border">Days</th>
-                                    <th className="p-2 border">Time</th>
+                                    <th className="p-2 border">Start</th>
+                                    <th className="p-2 border">End</th>
                                     <th className="p-2 border">Instructor</th>
                                     <th className="p-2 border">Room</th>
                                     <th className="p-2 border">Location</th>
@@ -332,7 +333,10 @@ const ImportSheet = () => {
                                             <td className="p-2 border">{cls.data.title}</td>
                                             <td className="p-2 border">{cls.properties.days.join(', ')}</td>
                                             <td className="p-2 border">
-                                                {cls.properties.start_time} - {cls.properties.end_time}
+                                                {cls.properties.start_time}
+                                            </td>
+                                            <td className="p-2 border">
+                                                {cls.properties.end_time}
                                             </td>
                                             <td className="p-2 border">{cls.properties.instructor_name}</td>
                                             <td className="p-2 border">{cls.properties.room}</td>

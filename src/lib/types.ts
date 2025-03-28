@@ -14,7 +14,7 @@ export type SVGProps = {
     fill_color?: string | undefined;
     stroke_width?: string | undefined;
     stroke_color?: string | undefined;
-}
+};
 
 export type EventInfo = {
     event: EventInput;
@@ -102,11 +102,11 @@ export type CalendarContextType = {
     displayClasses: CombinedClass[];
     currentCombinedClass?: CombinedClass | undefined;
 
-    // allEvents: EventInput[];
-    // displayEvents: EventInput[];
-
     allTags: Set<string>;
     tagList: tagListType; // Map of tags to a set of class ids
+
+    isLoading: boolean;
+    error: string | null;
 
     conflicts: ConflictType[];
 
