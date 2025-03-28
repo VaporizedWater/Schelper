@@ -27,7 +27,7 @@ const Calendar = () => {
             console.timeEnd("Calendar:createEvents");
             return;
         }
-
+        
         const newEvents: EventInput[] = [];
 
         displayClasses.forEach(cls => {
