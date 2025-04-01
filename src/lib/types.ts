@@ -176,3 +176,10 @@ export type Faculty = {
         fri: { start: string; end: string }[];
     };
 };
+
+export type CalendarData = {
+    _id: string;
+    classes: string[];
+    semester: string;
+    year: string;
+};

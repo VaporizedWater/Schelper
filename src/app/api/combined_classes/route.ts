@@ -51,22 +51,50 @@ function handleInsertManyResult(result: InsertManyResult) {
 }
 
 export async function GET(request: Request) {
-    console.time("combined_classes_GET:total");
+    // console.error("GET /api/combined_classes aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", request);
+    // console.error("GET /api/combined_classes aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", request);
+    // console.time("combined_classes_GET:total");
+    const collection = client.db("class-scheduling-app").collection("calendars") as Collection<Document>;
+
     try {
-        const headerId = request.headers.get("ids");
+        // console.log("STARTED!");
+        console.log("request: ", request.headers);
+        const headerId = request.headers.get("calendarId");
+        // console.log("REACHED!");
+
+        // console.log("headerId: ", headerId);
         const pipeline = [];
 
         // Check if IDs are provided and are valid
         if (headerId && headerId !== "") {
-            const ids = headerId
-                .split(",")
-                .filter((id) => ObjectId.isValid(id))
-                .map((id) => new ObjectId(id));
-            if (ids.length === 0) {
-                return new Response(JSON.stringify({ error: "Invalid IDs provided" }), { status: 400 });
-            }
-            // Filter by multiple IDs
-            pipeline.push({ $match: { _id: { $in: ids } } }); // $in = https://www.mongodb.com/docs/manual/reference/operator/query/in/
+            // Get the calendar object using calendar id
+            pipeline.push({ $match: { _id: new ObjectId(headerId) } });
+
+            // Get the classes from the combined_classes using the classes array from the calendar object
+            const lookupClasses = {
+                $lookup: {
+                    from: "combined_classes",
+                    // let: { classIds: { $in: "$classes" } }, // Pass the calendar's classes array
+                    let: { classIds: "$classes" },
+                    pipeline: [
+                        { $match: { $expr: { $in: ["$_id", "$$classIds"] } } }, // Match on _id from combined_classes
+                    ],
+                    as: "classDetails",
+                },
+            };
+
+            console.log("lookupClasses: ", lookupClasses);
+            pipeline.push(lookupClasses);
+
+            // const ids = headerId
+            //     .split(",")
+            //     .filter((id) => ObjectId.isValid(id))
+            //     .map((id) => new ObjectId(id));
+            // if (ids.length === 0) {
+            //     return new Response(JSON.stringify({ error: "Invalid IDs provided" }), { status: 400 });
+            // }
+            // // Filter by multiple IDs
+            // pipeline.push({ $match: { _id:  } }); // $in = https://www.mongodb.com/docs/manual/reference/operator/query/in/
         }
 
         // Define the projection to format documents according to the CombinedClass structure
@@ -84,7 +112,7 @@ export async function GET(request: Request) {
             return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
         }
 
-        console.timeEnd("combined_classes_GET:total");
+        // console.timeEnd("combined_classes_GET:total");
         return new Response(JSON.stringify(data), { status: 200 });
     } catch (error) {
         console.error("Error in GET /api/classes:", error);

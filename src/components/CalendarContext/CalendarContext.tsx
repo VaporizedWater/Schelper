@@ -12,6 +12,8 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 const buildTagMapping = (classes: CombinedClass[]): tagListType => {
     const mapping: tagListType = new Map();
 
+    console.log("Classes", classes)
+
     classes.forEach(cls => {
         cls.properties.tags?.forEach(tag => {
             if (!mapping.has(tag)) {
@@ -491,7 +493,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
                 const [allClasses, allTags] = await Promise.all([
-                    loadCombinedClasses(null),
+                    loadCombinedClasses("674c3a79d38ce78c78bc30ee"),
                     loadTags()
                 ]);
 

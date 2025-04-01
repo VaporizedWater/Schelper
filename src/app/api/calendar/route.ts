@@ -1,11 +1,36 @@
-//the calendar data just needs to store the date of the Monday that the first week starts for a particular semester.
-//This will be the Monday that is the date that the FullCalendar component uses as a "base" date, with subsequent days
-//being Monday +1, +2, +3, +4, till you get to Friday.
+"use server";
 
-//With this, you could technically even go to previous semesters without navigating through a menu, just by using the calendar controls
+import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
+
+const client = await clientPromise;
+const collection = client.db("class-scheduling-app").collection("calendar");
 
 export async function GET(request: Request) {
-    console.log(request);
+    const calendarId = request.headers.get("calendarId");
+
+    if (calendarId && calendarId !== "" && ObjectId.isValid(calendarId)) {
+        const parsedId = new ObjectId(calendarId);
+
+        const calendar = await collection.findOne({ _id: parsedId });
+
+        if (!calendar) {
+            return new Response(JSON.stringify({ success: false, message: "Calendar not found" }), {
+                status: 404,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        return new Response(JSON.stringify({ success: true, calendar }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+
+    return new Response(JSON.stringify({ success: false, message: "Invalid calendar ID" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+    });
 }
 
 export async function POST(request: Request) {
