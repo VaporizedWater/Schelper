@@ -1,4 +1,4 @@
-import { CombinedClass, TagType } from "./types";
+import { CalendarData, CombinedClass, TagType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -60,22 +60,23 @@ export async function loadTags(): Promise<Set<string>> {
     }
 }
 
-export async function loadCombinedClasses(classIds: string[] | null): Promise<CombinedClass[]> {
-    console.time("loadCombinedClasses:total");
+export async function loadCombinedClasses(calendarId: string): Promise<CombinedClass[]> {
+    // console.time("loadCombinedClasses:total");
+    // console
     try {
-        const headers = { ids: "" };
-        if (classIds !== null && classIds.length > 0) {
-            headers.ids = classIds.join(",");
-        }
-
-        // Load class data
+        // console.log("loadCombinedClasses:calendarId: ", calendarId);
+        // Load class data using calendar id
         const classResponse = await fetchWithTimeout(
             "./api/combined_classes",
             {
-                headers: headers,
+                headers: {
+                    calendarId: calendarId,
+                },
             },
             50000
         );
+
+        // console.log("loadCombinedClasses:classResponse: ", classResponse);
 
         if (classResponse.ok) {
             const text = await classResponse.text();
@@ -88,7 +89,25 @@ export async function loadCombinedClasses(classIds: string[] | null): Promise<Co
         console.error("Failed to load combined classes:", error);
         return [] as CombinedClass[];
     } finally {
-        console.timeEnd("loadCombinedClasses:total");
+        // console.timeEnd("loadCombinedClasses:total");
+    }
+}
+
+export async function loadCalendar(calendarId: string): Promise<CalendarData> {
+    try {
+        const response = await fetchWithTimeout(`./api/calendar`, {
+            headers: { calendarId },
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to load calendar data");
+        }
+
+        const data = await parseJsonResponse<CalendarData>(response);
+        return data;
+    } catch (error) {
+        console.error("Error loading calendar:", error);
+        throw error;
     }
 }
 
