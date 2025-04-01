@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { HorizontalTextPSULogo } from "@/lib/icons";
+import SignIn from "../SignIn/SignIn";
 
 const TopNav = () => {
     return (
@@ -16,9 +17,7 @@ const TopNav = () => {
             </Link>
 
             <div className="p-4 ml-auto text-white flex flex-row">
-                {/* <Link href={'/login'}>
-                    <button className="px-5 rounded-md h-full w-full sm:min-w-max text-white hover:opacity-75 duration-100">Login</button>
-                </Link> */}
+                <SignIn></SignIn>
                 <Link href={'/calendar'}>
                     <button className="px-5 rounded-md h-full w-full sm:min-w-max text-white hover:opacity-75 duration-100">Calendar</button>
                 </Link>
