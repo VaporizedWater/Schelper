@@ -51,68 +51,64 @@ function handleInsertManyResult(result: InsertManyResult) {
 }
 
 export async function GET(request: Request) {
-    // console.error("GET /api/combined_classes aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", request);
-    // console.error("GET /api/combined_classes aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", request);
-    // console.time("combined_classes_GET:total");
-    const collection = client.db("class-scheduling-app").collection("calendars") as Collection<Document>;
+    const collection = client.db("class-scheduling-app").collection("calendars");
 
     try {
-        // console.log("STARTED!");
-        console.log("request: ", request.headers);
         const headerId = request.headers.get("calendarId");
-        // console.log("REACHED!");
-
-        // console.log("headerId: ", headerId);
-        const pipeline = [];
-
-        // Check if IDs are provided and are valid
-        if (headerId && headerId !== "") {
-            // Get the calendar object using calendar id
-            pipeline.push({ $match: { _id: new ObjectId(headerId) } });
-
-            // Get the classes from the combined_classes using the classes array from the calendar object
-            const lookupClasses = {
-                $lookup: {
-                    from: "combined_classes",
-                    // let: { classIds: { $in: "$classes" } }, // Pass the calendar's classes array
-                    let: { classIds: "$classes" },
-                    pipeline: [
-                        { $match: { $expr: { $in: ["$_id", "$$classIds"] } } }, // Match on _id from combined_classes
-                    ],
-                    as: "classDetails",
-                },
-            };
-
-            console.log("lookupClasses: ", lookupClasses);
-            pipeline.push(lookupClasses);
-
-            // const ids = headerId
-            //     .split(",")
-            //     .filter((id) => ObjectId.isValid(id))
-            //     .map((id) => new ObjectId(id));
-            // if (ids.length === 0) {
-            //     return new Response(JSON.stringify({ error: "Invalid IDs provided" }), { status: 400 });
-            // }
-            // // Filter by multiple IDs
-            // pipeline.push({ $match: { _id:  } }); // $in = https://www.mongodb.com/docs/manual/reference/operator/query/in/
+        if (!headerId || !ObjectId.isValid(headerId)) {
+            return new Response(JSON.stringify("Header: \'calendarId\' is missing or invalid"), { status: 400 });
         }
 
+        const pipeline = [];
+        const calenderID = new ObjectId(headerId);
+        pipeline.push({
+            $match: {
+                _id: calenderID
+            }
+        });
+
+        pipeline.push({
+            $lookup: {
+                from: "combined_classes",
+                localField: "classes",
+                foreignField: "_id",
+                as: "classDetails"
+            }
+        })
         // Define the projection to format documents according to the CombinedClass structure
         pipeline.push({
             $project: {
-                _id: "$_id", // Explicitly project the _id to ensure it's clearly retained
-                data: "$data",
-                properties: "$properties",
-            },
+                _id: 0,
+                classes: {
+                    $map: {
+                        input: "$classDetails",
+                        as: "class",
+                        in: {
+                            _id: { $toString: "$$class._id" },
+                            data: "$$class.data",
+                            properties: "$$class.properties"
+                        }
+                    }
+                }
+            }
         });
 
+        pipeline.push({
+            $unwind: "$classes"
+        });
+        
+        pipeline.push({
+            $replaceRoot: {
+                newRoot: "$classes"
+            }
+        });
+        
         const data = await collection.aggregate(pipeline).toArray();
 
         if (!data.length) {
             return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
         }
 
-        // console.timeEnd("combined_classes_GET:total");
         return new Response(JSON.stringify(data), { status: 200 });
     } catch (error) {
         console.error("Error in GET /api/classes:", error);
