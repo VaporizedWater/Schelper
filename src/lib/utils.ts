@@ -60,12 +60,13 @@ export async function loadTags(): Promise<Set<string>> {
     }
 }
 
-export async function loadCombinedClasses(calendarId: string): Promise<CombinedClass[]> {
-    // console.time("loadCombinedClasses:total");
-    // console
+export async function loadCombinedClasses(calendarId?: string): Promise<CombinedClass[]> {
+    if (!calendarId) {
+        console.error("Calendar ID is undefined");
+        return [] as CombinedClass[];
+    }
+
     try {
-        // console.log("loadCombinedClasses:calendarId: ", calendarId);
-        // Load class data using calendar id
         const classResponse = await fetchWithTimeout(
             "./api/combined_classes",
             {
@@ -75,8 +76,6 @@ export async function loadCombinedClasses(calendarId: string): Promise<CombinedC
             },
             50000
         );
-
-        // console.log("loadCombinedClasses:classResponse: ", classResponse);
 
         if (classResponse.ok) {
             const text = await classResponse.text();
@@ -88,8 +87,6 @@ export async function loadCombinedClasses(calendarId: string): Promise<CombinedC
     } catch (error) {
         console.error("Failed to load combined classes:", error);
         return [] as CombinedClass[];
-    } finally {
-        // console.timeEnd("loadCombinedClasses:total");
     }
 }
 

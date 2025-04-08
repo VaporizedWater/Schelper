@@ -75,7 +75,7 @@ export async function GET(request: Request) {
                 as: "classDetails"
             }
         })
-        // Define the projection to format documents according to the CombinedClass structure
+        
         pipeline.push({
             $project: {
                 _id: 0,

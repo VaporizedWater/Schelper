@@ -1,5 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CalendarState, Class, ClassProperty, CombinedClass } from "./types";
+import { CalendarState, Class, ClassProperty, CombinedClass, UserType } from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
@@ -99,9 +99,9 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
             display: "auto",
             title:
                 combinedClass.data.course_subject +
-                    combinedClass.data.course_num +
-                    "\n" +
-                    combinedClass.properties.instructor_name || "",
+                combinedClass.data.course_num +
+                "\n" +
+                combinedClass.properties.instructor_name || "",
             start: dateStringStart || "",
             end: dateStringEnd || "",
             backgroundColor: defaultBackgroundColor,
@@ -154,4 +154,5 @@ export const initialCalendarState: CalendarState = {
         error: null,
     },
     conflicts: [],
+    userLoggedIn: { userId: "" } as UserType
 };

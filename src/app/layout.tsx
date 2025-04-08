@@ -4,6 +4,7 @@ import "./globals.css";
 import { CalendarProvider } from "@/components/CalendarContext/CalendarContext";
 import NavWrapper from "@/components/NavWrapper/NavWrapper";
 import AppInitializer from "@/components/AppInitializer/AppInitializer";
+import { SessionProvider } from "next-auth/react"
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -21,21 +22,21 @@ export const metadata: Metadata = {
     description: "Schedule and manage classes",
 };
 
-export default function RootLayout({
-    children,
-}: Readonly<{
-    children: React.ReactNode;
-}>) {
+export default function RootLayout(
+    { children }: Readonly<{ children: React.ReactNode; }>
+) {
     return (
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-graybg flex flex-col h-screen`}>
-                <NavWrapper />
-                <div className="bg-graybg flex-1">
+                <SessionProvider>
                     <CalendarProvider>
-                        <AppInitializer />
-                        {children}
+                        <NavWrapper />
+                        <div className="bg-graybg flex-1">
+                            <AppInitializer />
+                            {children}
+                        </div>
                     </CalendarProvider>
-                </div>
+                </SessionProvider>
             </body>
         </html>
     );

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ReactNodeChildren, tagListType } from '@/lib/types';
 import { updateCombinedClasses, loadCombinedClasses, loadTags, deleteCombinedClasses } from '@/lib/utils';
-import { dayToDate, initialCalendarState } from '@/lib/common';
+import { dayToDate, initialCalendarState, newDefaultEmptyClass } from '@/lib/common';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -493,7 +493,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
                 const [allClasses, allTags] = await Promise.all([
-                    loadCombinedClasses("674c3a79d38ce78c78bc30ee"),
+                    loadCombinedClasses(),
                     loadTags()
                 ]);
 
@@ -550,6 +550,13 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         error: state.status.error,
 
         // Actions
+        resetContextToEmpty: () => {
+            console.log('LOGGING OUT, SETTING CONTEXT TO EMPTY');
+            dispatch({ type: 'INITIALIZE_DATA', payload: { classes: [
+                newDefaultEmptyClass()
+            ], tags: new Set() } });
+        },
+
         setCurrentClass: (cls: CombinedClass) => {
             console.log('SET_CURRENT_CLASS');
             dispatch({ type: 'SET_CURRENT_CLASS', payload: cls });

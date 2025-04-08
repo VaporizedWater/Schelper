@@ -110,6 +110,8 @@ export type CalendarContextType = {
 
     conflicts: ConflictType[];
 
+    resetContextToEmpty: () => void;
+
     setCurrentClass: (newClasses: CombinedClass) => void;
 
     updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
@@ -133,6 +135,10 @@ export type CalendarContextType = {
     deleteClasses: (classIds: string[]) => void;
 };
 
+export type UserType = {
+    userId: string;
+};
+
 export type CalendarState = {
     classes: {
         all: CombinedClass[];
@@ -148,6 +154,7 @@ export type CalendarState = {
         error: string | null;
     };
     conflicts: ConflictType[];
+    userLoggedIn: UserType;
 };
 
 export type CalendarAction =
