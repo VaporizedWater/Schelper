@@ -77,6 +77,7 @@ export default function CalendarSheet() {
                 { value: String(item.properties.instructor_email), className: isSelected ? 'bg-blue-100' : '' },
                 { value: String(item.data.enrollment_cap), className: isSelected ? 'bg-blue-100' : '' },
                 { value: String(item.data.waitlist_cap), className: isSelected ? 'bg-blue-100' : '' },
+                { value: String(item.properties.cohort), className: isSelected ? 'bg-blue-100' : '' },
                 { value: String(item.properties.tags.join(', ')), className: isSelected ? 'bg-blue-100' : '' },
             ];
         }),
@@ -136,7 +137,8 @@ export default function CalendarSheet() {
                     instructor_email: row[15]?.value ?? '',
                     total_enrolled: String(existing?.properties.total_enrolled ?? 0),
                     total_waitlisted: String(existing?.properties.total_waitlisted ?? 0),
-                    tags: row[18]?.value ? row[18].value.split(",").map((t) => t.trim()).sort() : [],
+                    cohort: row[18]?.value ?? '',
+                    tags: row[19]?.value ? row[19].value.split(",").map((t) => t.trim()).sort() : [],
                 };
 
                 return {

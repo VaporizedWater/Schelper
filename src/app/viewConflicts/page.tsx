@@ -58,16 +58,32 @@ const ViewConflicts = () => {
                     // Determine background and text colors based on conflict type
                     let bgColor = "bg-red-100 hover:bg-red-50";
                     let textColor = "text-red-800";
-                    let conflictLabel = "Room + Instructor";
+                    let conflictLabel = "Room + Instructor + Cohort";
 
-                    if (conflict.conflictType === "room") {
+                    if (conflict.conflictType === "room + instructor") {
+                        bgColor = "bg-orange-100 hover:bg-orange-50";
+                        textColor = "text-orange-800";
+                        conflictLabel = "Room + Instructor";
+                    } else if (conflict.conflictType === "room + cohort") {
+                        bgColor = "bg-orange-100 hover:bg-orange-50";
+                        textColor = "text-orange-800";
+                        conflictLabel = "Room + Cohort";
+                    } else if (conflict.conflictType === "instructor + cohort") {
+                        bgColor = "bg-orange-100 hover:bg-orange-50";
+                        textColor = "text-orange-800";
+                        conflictLabel = "Instructor + Cohort";
+                    } else if (conflict.conflictType === "room") {
                         bgColor = "bg-amber-100 hover:bg-amber-50";
                         textColor = "text-amber-800";
                         conflictLabel = "Room";
                     } else if (conflict.conflictType === "instructor") {
-                        bgColor = "bg-orange-100 hover:bg-orange-50";
-                        textColor = "text-orange-800";
+                        bgColor = "bg-amber-100 hover:bg-amber-50";
+                        textColor = "text-amber-800";
                         conflictLabel = "Instructor";
+                    } else if (conflict.conflictType === "cohort") {
+                        bgColor = "bg-amber-100 hover:bg-amber-50";
+                        textColor = "text-amber-800";
+                        conflictLabel = "Cohort";
                     }
 
                     return (
@@ -96,6 +112,7 @@ const ViewConflicts = () => {
                                                 <p>Instructor: {conflict.class1.properties.instructor_name}</p>
                                                 <p>Email: {conflict.class1.properties.instructor_email}</p>
                                                 <p>Room: {conflict.class1.properties.room}</p>
+                                                <p>Cohort: {conflict.class1.properties.cohort}</p>
                                             </div>
                                             <div className="space-y-2">
                                                 <h3 className="font-semibold">{conflict.class2.data.title}</h3>
@@ -104,6 +121,7 @@ const ViewConflicts = () => {
                                                 <p>Instructor: {conflict.class2.properties.instructor_name}</p>
                                                 <p>Email: {conflict.class2.properties.instructor_email}</p>
                                                 <p>Room: {conflict.class2.properties.room}</p>
+                                                <p>Cohort: {conflict.class2.properties.cohort}</p>
                                             </div>
                                         </div>
                                     </div>

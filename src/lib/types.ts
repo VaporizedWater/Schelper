@@ -56,6 +56,7 @@ export type ClassProperty = {
     instructor_name: string;
     total_enrolled: string;
     total_waitlisted: string;
+    cohort: string;
     tags: string[];
 };
 

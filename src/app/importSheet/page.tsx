@@ -237,6 +237,7 @@ const ImportSheet = () => {
                     ...cls,
                     properties: {
                         ...cls.properties,
+                        cohort: selectedCohort,
                         tags: [...filteredTags, newCohortTag]
                     }
                 };
@@ -341,6 +342,7 @@ const ImportSheet = () => {
                                             <td className="p-2 border">{cls.properties.instructor_name}</td>
                                             <td className="p-2 border">{cls.properties.room}</td>
                                             <td className="p-2 border">{cls.data.location}</td>
+
                                             {/* Cohort which is based on level for now. 100 => freshman, 200 => sophomore, 300 => junior, 400 => senior*/}
                                             <td className="p-2 border min-w-32">
                                                 <select

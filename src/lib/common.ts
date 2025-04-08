@@ -40,6 +40,7 @@ export function documentToClassProperty(doc: Document): ClassProperty {
         instructor_name: displayName,
         total_enrolled: doc.total_enrolled,
         total_waitlisted: doc.total_waitlisted,
+        cohort: doc.cohort,
         tags: doc.tags,
     };
 }
@@ -70,6 +71,7 @@ export function newDefaultEmptyClass() {
             instructor_name: "",
             total_enrolled: "",
             total_waitlisted: "",
+            cohort: "",
             tags: [] as string[],
         },
         events: undefined,

@@ -27,7 +27,7 @@ const Calendar = () => {
             console.timeEnd("Calendar:createEvents");
             return;
         }
-        
+
         const newEvents: EventInput[] = [];
 
         displayClasses.forEach(cls => {
@@ -214,17 +214,21 @@ const Calendar = () => {
         let backgroundColor = '#3788d8';
 
         if (classConflicts.length > 0) {
-            // Determine most severe conflict type (both > room > instructor)
-            const hasBothConflict = classConflicts.some(c => c.conflictType === "both");
+            // Determine most severe conflict type (all > room + instructor > room + cohort > instructor + cohort > room > instructor > cohort)
+            const hasAllConflict = classConflicts.some(c => c.conflictType === "all");
+            const hasRoomInstructorConflict = classConflicts.some(c => c.conflictType === "room + instructor");
+            const hasRoomCohortConflict = classConflicts.some(c => c.conflictType === "room + cohort");
+            const hasInstructorCohortConflict = classConflicts.some(c => c.conflictType === "instructor + cohort");
             const hasRoomConflict = classConflicts.some(c => c.conflictType === "room");
             const hasInstructorConflict = classConflicts.some(c => c.conflictType === "instructor");
+            const hasCohortConflict = classConflicts.some(c => c.conflictType === "cohort");
 
-            if (hasBothConflict) {
-                backgroundColor = 'red'; // Room + Instructor conflict
-            } else if (hasRoomConflict) {
-                backgroundColor = '#f59e0b'; // Amber for room conflicts
-            } else if (hasInstructorConflict) {
-                backgroundColor = '#f97316'; // Orange for instructor conflicts
+            if (hasAllConflict) {
+                backgroundColor = 'red'; // Room + Instructor + Cohort conflict
+            } else if (hasRoomInstructorConflict || hasRoomCohortConflict || hasInstructorCohortConflict) {
+                backgroundColor = '#f97316'; // Orange for room + instructor or room + cohort or instructor + cohort conflicts
+            } else if (hasRoomConflict || hasInstructorConflict || hasCohortConflict) {
+                backgroundColor = '#f59e0b'; // Amber for room or instructor or cohort conflicts
             }
         }
 

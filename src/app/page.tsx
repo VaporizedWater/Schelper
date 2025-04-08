@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import Footer from '@/components/Footer/Footer';
 import Image from 'next/image';
 import Link from "next/link";
-import { signIn } from "next-auth/react"
 import { ClockTower, DayCampus, LionShrine, LogoIcon, NightCampus } from '../lib/icons';
 import { useSession } from "next-auth/react"
 import SignIn from "@/components/SignIn/SignIn";
