@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Footer from '@/components/Footer/Footer';
 import Image from 'next/image';
 import Link from "next/link";
-
+import { signIn, SignInOptions, SignInResponse } from "next-auth/react"
 import { ClockTower, DayCampus, LionShrine, LogoIcon, NightCampus } from '../lib/icons';
 
 const Home = () => {
@@ -60,7 +60,18 @@ const Home = () => {
                             <h2 className='pt-4 text-3xl text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
                             <p className='pt-4 text-xl text-graybg drop-shadow-lg'>Please log in to continue</p>
                             <div className="mt-4">
-                                <button onClick={() => setLoggedIn(true)} className="p-2 border rounded-full bg-white">Log in</button>
+                                <button onClick={async () => {
+                                    setLoggedIn(true);
+                                    // console.log("ATTEMPTING LOG IN");
+                                    // const response: SignInResponse | undefined = await signIn("microsoft-entra-id");
+                                    // if (response && response.ok) {
+                                    //     console.log("DID NOT FAIL TO LOG IN");
+                                    //     setLoggedIn(true);
+                                    // } else {
+                                    //     console.log(response);
+                                    //     console.log("FAILED TO LOG IN");
+                                    // }
+                                }} className="p-2 border rounded-full bg-white">Log in</button>
                             </div>
                         </div>
 

@@ -1,14 +1,9 @@
-import { signIn } from "@/lib/auth";
- 
-export default function SignIn() {
-  return (
-    <form
-      action={async () => {
-        "use server"
-        await signIn("microsoft-entra-id");
-      }}
-    >
-      <button type="submit">Signin with PSU SSO</button>
-    </form>
-  );
-} 
+"use client"
+
+import { signIn } from "next-auth/react"
+
+const SignIn = () => {
+    return <button className="px-5 rounded-md h-full w-full sm:min-w-max text-white hover:opacity-75 duration-100" onClick={() => signIn("microsoft-entra-id")}>Log In</button>
+}
+
+export default SignIn;
