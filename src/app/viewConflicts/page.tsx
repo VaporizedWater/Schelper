@@ -58,7 +58,7 @@ const ViewConflicts = () => {
                     // Determine background and text colors based on conflict type
                     let bgColor = "bg-red-100 hover:bg-red-50";
                     let textColor = "text-red-800";
-                    let conflictLabel = "All";
+                    let conflictLabel = "Room + Instructor + Cohort";
 
                     if (conflict.conflictType === "room + instructor") {
                         bgColor = "bg-orange-100 hover:bg-orange-50";

@@ -237,6 +237,7 @@ const ImportSheet = () => {
                     ...cls,
                     properties: {
                         ...cls.properties,
+                        cohort: selectedCohort,
                         tags: [...filteredTags, newCohortTag]
                     }
                 };
