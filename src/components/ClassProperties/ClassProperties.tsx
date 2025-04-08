@@ -21,6 +21,7 @@ const ClassProperties = () => {
     const [tags, setTags] = useState<string[]>(Array.isArray(initialProps.tags) ? initialProps.tags : []);
     const [startTime, setStartTime] = useState(initialProps.start_time || '');
     const [endTime, setEndTime] = useState(initialProps.end_time || '');
+    const [cohort, setCohort] = useState(initialProps.cohort || '');
 
     useEffect(() => {
         if (currentCombinedClass) {
@@ -37,6 +38,7 @@ const ClassProperties = () => {
             setTags(Array.isArray(newProps.tags) ? newProps.tags : []);
             setStartTime(newProps.start_time || '');
             setEndTime(newProps.end_time || '');
+            setCohort(newProps.cohort || '');
         }
     }, [currentCombinedClass]);
 
@@ -158,6 +160,16 @@ const ClassProperties = () => {
         }
     };
 
+    const handleCohortChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newVal = e.target.value;
+        setCohort(newVal);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.properties.cohort = newVal;
+            updateOneClass(modifiedClass);
+        }
+    };
+
     const handleDeleteClass = () => {
         if (!currentCombinedClass || !currentCombinedClass._id) return;
 
@@ -272,6 +284,15 @@ const ClassProperties = () => {
                                         className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                                         value={endTime}
                                         onChange={handleEndTimeChange}
+                                    />
+                                </li>
+                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
+                                    <span className='w-full text-start font-semibold'>Cohort</span>
+                                    <input
+                                        type="text"
+                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                        value={cohort}
+                                        onChange={handleCohortChange}
                                     />
                                 </li>
                             </ul>

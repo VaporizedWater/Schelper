@@ -40,6 +40,7 @@ const NewClassForm = () => {
         room: '',
         instructor_email: '',
         instructor_name: '',
+        cohort: '',
     } as ClassProperty, { initializeWithValue: false });
 
     const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<string[]>("selectedTags", [], { initializeWithValue: false });
@@ -66,6 +67,7 @@ const NewClassForm = () => {
             room: '',
             instructor_email: '',
             instructor_name: '',
+            cohort: '',
         } as ClassProperty);
         clearSelectedTags();
     }
@@ -292,6 +294,14 @@ const NewClassForm = () => {
                         value={classProperties.total_waitlisted || ''}
                         onChange={(e) => setClassProperties({ ...classProperties, total_waitlisted: e.target.value } as ClassProperty)}
                         onWheel={preventWheelChange}
+                        className="p-2 border rounded-sm"
+                    />
+
+                    <input
+                        type="text"
+                        placeholder="Cohort"
+                        value={classProperties.cohort}
+                        onChange={(e) => setClassProperties({ ...classProperties, cohort: e.target.value } as ClassProperty)}
                         className="p-2 border rounded-sm"
                     />
 

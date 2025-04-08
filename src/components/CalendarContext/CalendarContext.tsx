@@ -57,8 +57,8 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
 
         if (!class1Day || !class1End) continue;
 
-        // Cache key includes room and instructor to check specific conflicts
-        const cacheKey = class1Day + class1.properties.room + class1.properties.instructor_email;
+        // Cache key includes room and instructor (& cohort!) to check specific conflicts
+        const cacheKey = class1Day + class1.properties.room + class1.properties.instructor_email + class1.properties.cohort;
         if (!dayConflictCache.has(cacheKey)) {
             dayConflictCache.set(cacheKey, []);
         }
@@ -89,17 +89,30 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
                     class2.properties.instructor_name &&
                     class1.properties.instructor_name === class2.properties.instructor_name;
 
+                // Check for cohort conflict if both cohorts exist and are non-empty
+                const cohortConflict = class1.properties.cohort &&
+                    class2.properties.cohort &&
+                    class1.properties.cohort === class2.properties.cohort;
+
                 // Determine conflict type
                 let conflictType = null;
-                if (roomConflict && instructorConflict) {
-                    conflictType = "both";
+                if (roomConflict && instructorConflict && cohortConflict) {
+                    conflictType = "all";
+                } else if (roomConflict && instructorConflict && !cohortConflict) {
+                    conflictType = "room + instructor";
+                } else if (roomConflict && cohortConflict && !instructorConflict) {
+                    conflictType = "room + cohort";
+                } else if (instructorConflict && cohortConflict && !roomConflict) {
+                    conflictType = "instructor + cohort";
                 } else if (roomConflict) {
                     conflictType = "room";
                 } else if (instructorConflict) {
                     conflictType = "instructor";
+                } else if (cohortConflict) {
+                    conflictType = "cohort";
                 }
 
-                // Register conflict only if time overlaps AND there's either a room or instructor conflict
+                // Register conflict only if time overlaps AND there's either a room or instructor or cohort conflict
                 if (conflictType) {
                     conflicts.push({
                         class1,
