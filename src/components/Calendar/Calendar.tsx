@@ -8,16 +8,37 @@ import { EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { createEventsFromCombinedClass, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
-import { CombinedClass } from "@/lib/types";
+import { Faculty, CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
     const { setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, displayClasses, conflicts, isLoading } = useCalendarContext();
+    const [facultyList, setFacultyList] = useState<Faculty[]>([]);
+    const [facultyBusinessHours, setFacultyBusinessHours] = useState<any[]>([]);
 
     // Local state for events
     const [events, setEvents] = useState<EventInput[]>([]);
+
+    // Fetch the faculty list 
+    useEffect(() => {
+        const fetchFacultyData = async () => {
+            try {
+                const res = await fetch("/api/faculty");
+                if (res.ok) {
+                    const data = await res.json();
+                    setFacultyList(data);
+                } else {
+                    console.error("Error fetching faculty data");
+                }
+            } catch (error) {
+                console.error("Error fetching faculty data:", error);
+            }
+        };
+
+        fetchFacultyData();
+    }, []);
 
     // Create events efficiently when displayClasses changes
     useEffect(() => {
@@ -126,6 +147,43 @@ const Calendar = () => {
 
             setCurrentClass(foundClass);
             console.log("Current class: ", foundClass);
+
+            // Use the instructor's name to find the matching Faculty record
+            const instructorName = foundClass.properties.instructor_name;
+            const matchedFaculty = facultyList.find(
+                (faculty) => faculty.name.trim().toLowerCase() === instructorName.trim().toLowerCase()
+            );
+
+            if (matchedFaculty) {
+                const dayMapping: { [key: string]: number } = {
+                    mon: 1,
+                    tue: 2,
+                    wed: 3,
+                    thu: 4,
+                    fri: 5,
+                };
+
+                const newBusinessHours: any[] = [];
+
+                Object.entries(matchedFaculty.unavailability).forEach(([dayKey, slots]) => {
+                    // Only add businessHours if there are time slots present
+                    if (slots.length && dayMapping[dayKey] !== undefined) {
+                        slots.forEach((slot) => {
+                            newBusinessHours.push({
+                                daysOfWeek: [dayMapping[dayKey]],
+                                startTime: slot.start,
+                                endTime: slot.end,
+                            });
+                        });
+                    }
+                });
+
+                // Update the businessHours
+                setFacultyBusinessHours(newBusinessHours);
+            } else {
+                // If no matching record is found, clear all
+                setFacultyBusinessHours([]);
+            }
         } else {
             console.log("Class not found");
         }
@@ -296,6 +354,7 @@ const Calendar = () => {
                 eventContent={eventContent}
                 eventClassNames={eventClassNames}
                 eventDidMount={eventMounted}
+                businessHours={facultyBusinessHours}
             />
 
             {/* Add custom CSS for calendar font sizes */}
