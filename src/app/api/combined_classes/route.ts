@@ -175,9 +175,7 @@ export async function PUT(request: Request): Promise<Response> {
                     "data.section": cls.data.section,
                     "properties.room": cls.properties.room,
                     "properties.instructor_name": cls.properties.instructor_name,
-                    "properties.days": cls.properties.days,
-                    "properties.start_time": cls.properties.start_time,
-                    "properties.end_time": cls.properties.end_time,
+                    "properties.days": cls.properties.days
                 };
             }
 
