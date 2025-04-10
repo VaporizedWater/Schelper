@@ -50,6 +50,7 @@ const Calendar = () => {
 
         setEvents(newEvents);
         detectConflicts();
+        console.log("Events created: ", newEvents);
         console.timeEnd("Calendar:createEvents");
     }, [displayClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 

@@ -55,7 +55,12 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
         const class1Day = class1.properties.days?.[0];
         const class1End = class1.properties.end_time;
 
-        if (!class1Day || !class1End) continue;
+        if (!class1Day || !class1End) {
+            console.log("Skipping class due to missing day or end time:", class1);
+            continue;
+        } else {
+            // console.log("NOSKIP!@!!!!!")
+        }
 
         // Cache key includes room and instructor (& cohort!) to check specific conflicts
         const cacheKey = class1Day + class1.properties.room + class1.properties.instructor_email + class1.properties.cohort;
@@ -69,10 +74,20 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
             const class2Day = class2.properties.days?.[0];
             const class2Start = class2.properties.start_time;
 
-            if (!class2Day || !class2Start) continue;
+            if (!class2Day || !class2Start) {
+                console.log("Skipping class due to missing day or start time:", class2);
+                continue;
+            } else {
+                // console.log("22NOSKIP!@!!!!!")
+            }
 
-            // If we've moved to a different day, break
-            if (class1Day !== class2Day) break;
+            // Check for day overlap.
+            let hasDayOverlap = class2.properties.days.some(item => new Set(class1.properties.days).has(item));
+
+            // If no day overlap, break
+            if (!hasDayOverlap) {
+                break;
+            }
 
             // Check for time overlap and conflict condition
             if (class2Start < class1End) {
@@ -97,18 +112,25 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
                 // Determine conflict type
                 let conflictType = null;
                 if (roomConflict && instructorConflict && cohortConflict) {
+                    console.log("ALL CONFLICTS DETECTED!");
                     conflictType = "all";
                 } else if (roomConflict && instructorConflict && !cohortConflict) {
+                    console.log("ROOM + INSTRUCTOR CONFLICT DETECTED!");
                     conflictType = "room + instructor";
                 } else if (roomConflict && cohortConflict && !instructorConflict) {
+                    console.log("ROOM + COHORT CONFLICT DETECTED!");
                     conflictType = "room + cohort";
                 } else if (instructorConflict && cohortConflict && !roomConflict) {
+                    console.log("INSTRUCTOR + COHORT CONFLICT DETECTED!");
                     conflictType = "instructor + cohort";
-                } else if (roomConflict) {
+                } else if (roomConflict && !instructorConflict && !cohortConflict) {
+                    console.log("ROOM CONFLICT DETECTED!");
                     conflictType = "room";
-                } else if (instructorConflict) {
+                } else if (instructorConflict && !roomConflict && !cohortConflict) {
+                    console.log("INSTRUCTOR CONFLICT DETECTED!");
                     conflictType = "instructor";
-                } else if (cohortConflict) {
+                } else if (cohortConflict && !roomConflict && !instructorConflict) {
+                    console.log("COHORT CONFLICT DETECTED!");
                     conflictType = "cohort";
                 }
 
@@ -127,8 +149,8 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
             }
         }
     }
-
     console.timeEnd("detectClassConflicts");
+    // console.log("Conflicts", conflicts);
     return conflicts;
 };
 
@@ -609,8 +631,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         },
 
         detectConflicts: () => {
+            console.log("ALLL CLASSESSSS: ", state.classes.all);
             const conflicts = detectClassConflicts(state.classes.all); // Changed this from state.classes.display to state.classes.all
-
+            console.log("CONFLICTS: ", conflicts);
             dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
         },
 
