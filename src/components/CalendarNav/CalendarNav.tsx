@@ -18,6 +18,11 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const createDropList = [
         { content: "Class", link: "/classes" },
         { content: "Tag", link: "/addTag" },
+        { content: "Faculty", link: "/faculty" },
+    ];
+    const facultyDropList = [
+        { content: "Class", link: "/classes" },
+        { content: "Tag", link: "/addTag" },
     ];
 
     return (
@@ -68,7 +73,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                 </li>
                 <li key={6} className={`${listString} hover:bg-gray-200`}>
                     <button>
-                        <Link href="/faculty" className="flex items-center p-2 bg-white rounded-full hover:bg-gray-200">
+                        <Link href="/displayFaculty" className="flex items-center p-2 bg-white rounded-full hover:bg-gray-200">
                             <FacultyIcon stroke_color="#3B82F6" width="24" height="24" className="size-4" />
                             <div>Faculty</div>
                         </Link>

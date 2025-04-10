@@ -1,6 +1,5 @@
-import { Calendar } from "@fullcalendar/core/index.js";
-import { newDefaultEmptyCalendar, newDefaultEmptyClass } from "./common";
-import { CalendarType, CombinedClass, TagType, UserType } from "./types";
+import { newDefaultEmptyCalendar } from "./common";
+import { CalendarType, CombinedClass, TagType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -193,6 +192,22 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[], ca
         return result.success;
     } catch (error) {
         console.error("Failed to insert class:", error);
+        return false;
+    }
+}
+
+export async function updateCalendarClasses(classIds: string[]) {
+    try {
+        const response = await fetchWithTimeout("api/calendar", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(classIds),
+        });
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to update calendar classes:", error);
         return false;
     }
 }
