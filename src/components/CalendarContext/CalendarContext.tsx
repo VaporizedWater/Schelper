@@ -506,7 +506,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
                 const [allClasses, allTags] = await Promise.all([
-                    loadCombinedClasses(),
+                    loadCombinedClasses("674c3a79d38ce78c78bc30ee"),
                     loadTags()
                 ]);
 
@@ -565,9 +565,13 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         // Actions
         resetContextToEmpty: () => {
             console.log('LOGGING OUT, SETTING CONTEXT TO EMPTY');
-            dispatch({ type: 'INITIALIZE_DATA', payload: { classes: [
-                newDefaultEmptyClass()
-            ], tags: new Set() } });
+            dispatch({
+                type: 'INITIALIZE_DATA', payload: {
+                    classes: [
+                        newDefaultEmptyClass()
+                    ], tags: new Set()
+                }
+            });
         },
 
         setCurrentClass: (cls: CombinedClass) => {
