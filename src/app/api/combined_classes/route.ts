@@ -1,14 +1,15 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
+import { doBulkOperation, handleInsertManyResult } from "@/lib/routerUtils";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
 import {
     AnyBulkWriteOperation,
-    BulkWriteResult,
+    // BulkWriteResult,
     Collection,
     Document,
-    InsertManyResult,
+    // InsertManyResult,
     ObjectId,
     OptionalId,
 } from "mongodb";
@@ -16,55 +17,21 @@ import {
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("combined_classes") as Collection<Document>;
 
-async function doBulkOperation(bulkOps: AnyBulkWriteOperation<Document>[]): Promise<Response> {
-    const result = await collection.bulkWrite(bulkOps);
-
-    return handleBulkWriteResult(result);
-}
-
-function handleBulkWriteResult(result: BulkWriteResult) {
-    if (result.ok) {
-        return new Response(JSON.stringify({ success: true }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-        });
-    } else {
-        return new Response(JSON.stringify({ success: false }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-        });
-    }
-}
-
-function handleInsertManyResult(result: InsertManyResult) {
-    if (result.insertedCount > 0) {
-        return new Response(JSON.stringify({ success: true, count: result.insertedCount }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-        });
-    } else {
-        return new Response(JSON.stringify({ success: false }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-        });
-    }
-}
-
 export async function GET(request: Request) {
     const collection = client.db("class-scheduling-app").collection("calendars");
 
     try {
         const headerId = request.headers.get("calendarId");
         if (!headerId || !ObjectId.isValid(headerId)) {
-            return new Response(JSON.stringify("Header: \'calendarId\' is missing or invalid"), { status: 400 });
+            return new Response(JSON.stringify("Header: 'calendarId' is missing or invalid"), { status: 400 });
         }
 
         const pipeline = [];
-        const calenderID = new ObjectId(headerId);
+        const calendarID = new ObjectId(headerId);
         pipeline.push({
             $match: {
-                _id: calenderID
-            }
+                _id: calendarID,
+            },
         });
 
         pipeline.push({
@@ -72,10 +39,10 @@ export async function GET(request: Request) {
                 from: "combined_classes",
                 localField: "classes",
                 foreignField: "_id",
-                as: "classDetails"
-            }
-        })
-        
+                as: "classDetails",
+            },
+        });
+
         pipeline.push({
             $project: {
                 _id: 0,
@@ -86,23 +53,23 @@ export async function GET(request: Request) {
                         in: {
                             _id: { $toString: "$$class._id" },
                             data: "$$class.data",
-                            properties: "$$class.properties"
-                        }
-                    }
-                }
-            }
+                            properties: "$$class.properties",
+                        },
+                    },
+                },
+            },
         });
 
         pipeline.push({
-            $unwind: "$classes"
+            $unwind: "$classes",
         });
-        
+
         pipeline.push({
             $replaceRoot: {
-                newRoot: "$classes"
-            }
+                newRoot: "$classes",
+            },
         });
-        
+
         const data = await collection.aggregate(pipeline).toArray();
 
         if (!data.length) {
@@ -186,7 +153,7 @@ export async function PUT(request: Request): Promise<Response> {
             }
         });
 
-        return doBulkOperation(bulkOperations);
+        return doBulkOperation(collection, bulkOperations);
     } catch (error) {
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
@@ -231,7 +198,7 @@ export async function DELETE(request: Request): Promise<Response> {
             });
         }
 
-        return doBulkOperation(bulkOperations);
+        return doBulkOperation(collection, bulkOperations);
     } catch (error) {
         console.error("Error in DELETE /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {

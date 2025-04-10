@@ -191,3 +191,13 @@ export type CalendarData = {
     semester: string;
     year: string;
 };
+
+export type UserData = {
+    success: boolean;
+    calendar: {
+        _id: string;
+        email: string;
+        calendars: string[];
+        current_calendar: string;
+    };
+};

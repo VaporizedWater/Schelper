@@ -2,8 +2,9 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { updateCombinedClasses, loadCombinedClasses, loadTags, deleteCombinedClasses } from '@/lib/utils';
+import { updateCombinedClasses, loadCombinedClasses, loadTags, deleteCombinedClasses, loadUserFromEmail } from '@/lib/utils';
 import { dayToDate, initialCalendarState, newDefaultEmptyClass } from '@/lib/common';
+import { useSession } from 'next-auth/react';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -217,13 +218,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             const updateClassById = (classes: CombinedClass[]) =>
                 classes.map(c => c._id === updatedClass._id ? updatedClass : c);
 
-            // const updateEventsById = (events: EventInput[]) =>
-            //     events.flatMap(e =>
-            //         e.extendedProps?.combinedClassId === updatedClass._id
-            //             ? updatedEvents
-            //             : [e]
-            //     );
-
             console.timeEnd("UPDATE_CLASS");
             return {
                 ...state,
@@ -232,10 +226,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     display: updateClassById(state.classes.display),
                     current: updatedClass
                 },
-                // events: {
-                //     all: updateEventsById(state.events.all),
-                //     display: updateEventsById(state.events.display)
-                // }
             };
         }
 
@@ -516,6 +506,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 export const CalendarProvider = ({ children }: ReactNodeChildren) => {
     const [state, dispatch] = useReducer(calendarReducer, initialCalendarState);
     const [forceUpdate, setForceUpdate] = useState('');
+    const { data: session } = useSession();
 
     // Load initial data
     useEffect(() => {
@@ -523,12 +514,21 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         let mounted = true;
 
         const loadData = async () => {
+            // Don't try to load data if no session exists yet
+            if (!session?.user?.email) return;
+
             console.time("loadData");
+            console.log(session.user.email);
             try {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
+                console.log("IT STARTS HERE!!!!!:", session.user.email);
+
+                const userData = await loadUserFromEmail(session?.user?.email!);
+                console.log("USER DATA", userData);
+
                 const [allClasses, allTags] = await Promise.all([
-                    loadCombinedClasses("674c3a79d38ce78c78bc30ee"),
+                    loadCombinedClasses(userData.calendar.current_calendar),
                     loadTags()
                 ]);
 
@@ -556,7 +556,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         loadData();
         console.timeEnd("CalendarProvider:initialLoad");
         return () => { mounted = false; };
-    }, [forceUpdate]);
+    }, [forceUpdate, session]);
 
     // Detect conflicts whenever classes change
     useEffect(() => {
@@ -761,7 +761,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 setForceUpdate(Date.now().toString());
                 return false;
             }
-        }
+        },
     }), [state]);
 
     return (

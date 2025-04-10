@@ -4,7 +4,7 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 
 const client = await clientPromise;
-const collection = client.db("class-scheduling-app").collection("calendar");
+const collection = client.db("class-scheduling-app").collection("calendars");
 
 export async function GET(request: Request) {
     const calendarId = request.headers.get("calendarId");
@@ -36,3 +36,5 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     console.log(request);
 }
+
+export async function PUT(request: Request) {}

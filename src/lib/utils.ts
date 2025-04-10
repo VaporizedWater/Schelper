@@ -1,4 +1,4 @@
-import { CalendarData, CombinedClass, TagType } from "./types";
+import { CalendarData, CombinedClass, TagType, UserData } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -108,6 +108,24 @@ export async function loadCalendar(calendarId: string): Promise<CalendarData> {
     }
 }
 
+export async function loadUserFromEmail(email: string) {
+    try {
+        const response = await fetchWithTimeout(`./api/users`, {
+            headers: { email: email },
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to load user data");
+        }
+
+        const data = await parseJsonResponse<UserData>(response);
+        return data;
+    } catch (error) {
+        console.error("Error loading user:", error);
+        throw error;
+    }
+}
+
 // INSERTs/POSTs
 
 // Insert combined class
@@ -178,6 +196,22 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[]): P
         return result.success;
     } catch (error) {
         console.error("Failed to insert class:", error);
+        return false;
+    }
+}
+
+export async function updateCalendarClasses(classIds: string[]) {
+    try {
+        const response = await fetchWithTimeout("api/calendar", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(classIds),
+        });
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to update calendar classes:", error);
         return false;
     }
 }
