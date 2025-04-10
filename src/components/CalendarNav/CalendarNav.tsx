@@ -20,10 +20,6 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
         { content: "Tag", link: "/addTag" },
         { content: "Faculty", link: "/faculty" },
     ];
-    const facultyDropList = [
-        { content: "Class", link: "/classes" },
-        { content: "Tag", link: "/addTag" },
-    ];
 
     return (
         <div className="flex flex-row px-2 ">

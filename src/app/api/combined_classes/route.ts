@@ -1,7 +1,6 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
-import { doBulkOperation, handleInsertManyResult } from "@/lib/routerUtils";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
 import {
@@ -147,7 +146,6 @@ export async function PUT(request: Request): Promise<Response> {
     try {
         const { calendarId, classes } = await request.json() as { calendarId?: string, classes: CombinedClass[] };
 
-        const results = [];
         const allIds: ObjectId[] = [];
 
         for (const cls of classes) {

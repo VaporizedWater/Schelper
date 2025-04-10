@@ -57,8 +57,6 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
         if (!class1Day || !class1End) {
             console.log("Skipping class due to missing day or end time:", class1);
             continue;
-        } else {
-            // console.log("NOSKIP!@!!!!!")
         }
 
         // Cache key includes room and instructor (& cohort!) to check specific conflicts
@@ -76,12 +74,10 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
             if (!class2Day || !class2Start) {
                 console.log("Skipping class due to missing day or start time:", class2);
                 continue;
-            } else {
-                // console.log("22NOSKIP!@!!!!!")
             }
 
             // Check for day overlap.
-            let hasDayOverlap = class2.properties.days.some(item => new Set(class1.properties.days).has(item));
+            const hasDayOverlap = class2.properties.days.some(item => new Set(class1.properties.days).has(item));
 
             // If no day overlap, break
             if (!hasDayOverlap) {
@@ -559,7 +555,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         loadData();
         // console.timeEnd("CalendarProvider:initialLoad");
         return () => { mounted = false; };
-    }, [forceUpdate, session?.user?.email]); // Depends on session.email rather than session itself because it only changes on login state
+    }, [forceUpdate, session?.user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
+    // Depends on session.email rather than session itself because it only changes on login state
 
     // Detect conflicts whenever classes change
     useEffect(() => {

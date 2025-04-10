@@ -4,7 +4,7 @@ import FullCalendar from "@fullcalendar/react";
 import interactionPlugin, { EventResizeStopArg } from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 
-import { EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
+import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { createEventsFromCombinedClass, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
@@ -15,8 +15,8 @@ const selectedEvents: HTMLElement[] = [];
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
     const { setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, displayClasses, conflicts, isLoading } = useCalendarContext();
-    const [facultyList, setFacultyList] = useState<Faculty[]>([]);
-    const [facultyBusinessHours, setFacultyBusinessHours] = useState<any[]>([]);
+    const [facultyList, setFacultyList] = useState<Faculty[]>([] as Faculty[]);
+    const [facultyBusinessHours, setFacultyBusinessHours] = useState<BusinessHoursInput>([] as BusinessHoursInput);
 
     // Local state for events
     const [events, setEvents] = useState<EventInput[]>([]);
@@ -162,7 +162,7 @@ const Calendar = () => {
                     fri: 5,
                 };
 
-                const newBusinessHours: any[] = [];
+                const newBusinessHours: BusinessHoursInput = [] as EventInput[];
 
                 Object.entries(matchedFaculty.unavailability).forEach(([dayKey, slots]) => {
                     // Only add businessHours if there are time slots present

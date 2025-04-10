@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { CalendarProvider } from "@/components/CalendarContext/CalendarContext";
 import NavWrapper from "@/components/NavWrapper/NavWrapper";
-import AppInitializer from "@/components/AppInitializer/AppInitializer";
 import { SessionProvider } from "next-auth/react"
 
 const geistSans = localFont({

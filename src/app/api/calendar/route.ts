@@ -37,4 +37,4 @@ export async function POST(request: Request) {
     console.log(request);
 }
 
-export async function PUT(request: Request) {}
+export async function PUT() {}

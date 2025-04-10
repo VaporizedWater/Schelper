@@ -1,5 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CalendarState, CalendarType, Class, ClassProperty, CombinedClass, UserType } from "./types";
+import { CalendarState, CalendarType, Class, ClassProperty, CombinedClass } from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
