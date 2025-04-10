@@ -32,7 +32,6 @@ export default function RootLayout(
                     <CalendarProvider>
                         <NavWrapper />
                         <div className="bg-graybg flex-1">
-                            <AppInitializer />
                             {children}
                         </div>
                     </CalendarProvider>

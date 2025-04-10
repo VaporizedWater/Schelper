@@ -4,11 +4,11 @@ import { useState, useEffect, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import Spreadsheet, { Selection, Matrix, RangeSelection, EntireRowsSelection, EntireColumnsSelection } from "react-spreadsheet";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
-import { updateCombinedClasses } from "@/lib/utils";
+import { updateCombinedClasses } from "@/lib/DatabaseUtils";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
-    const { allClasses, updateAllClasses, updateDisplayClasses, displayClasses, setCurrentClass, currentCombinedClass, isLoading } = useCalendarContext();
+    const { allClasses, updateAllClasses, updateDisplayClasses, displayClasses, setCurrentClass, currentCombinedClass, isLoading, currentCalendarId } = useCalendarContext();
 
     // Add state to track selected row index
     const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
@@ -149,7 +149,7 @@ export default function CalendarSheet() {
                 } as CombinedClass;
             }).filter(Boolean) as CombinedClass[];
 
-            const success = await updateCombinedClasses(classesToUpdate);
+            const success = await updateCombinedClasses(classesToUpdate, currentCalendarId);
 
             if (success) {
                 console.log("Classes updated successfully");

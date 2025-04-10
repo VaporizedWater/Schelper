@@ -3,7 +3,7 @@ import { useState } from "react";
 import { MdAdd, MdExpandLess, MdExpandMore } from "react-icons/md";
 import DropDown from "../DropDown/DropDown";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { insertTag } from "@/lib/utils";
+import { insertTag } from "@/lib/DatabaseUtils";
 
 const AddTagButton = () => {
     const { allTags } = useCalendarContext();

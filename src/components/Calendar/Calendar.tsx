@@ -21,10 +21,10 @@ const Calendar = () => {
 
     // Create events efficiently when displayClasses changes
     useEffect(() => {
-        console.time("Calendar:createEvents");
+        // console.time("Calendar:createEvents");
         if (!displayClasses || displayClasses.length === 0) {
             setEvents([]);
-            console.timeEnd("Calendar:createEvents");
+            // console.timeEnd("Calendar:createEvents");
             return;
         }
 
@@ -50,14 +50,14 @@ const Calendar = () => {
 
         setEvents(newEvents);
         detectConflicts();
-        console.timeEnd("Calendar:createEvents");
+        // console.timeEnd("Calendar:createEvents");
     }, [displayClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Update events for a single class (much more efficient)
     const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {
         if (!updatedClass._id) return;
 
-        console.time("Calendar:updateEventsForClass");
+        // console.time("Calendar:updateEventsForClass");
         const newClassEvents = createEventsFromCombinedClass(updatedClass);
 
         // Add class reference to each event's extendedProps
@@ -76,7 +76,7 @@ const Calendar = () => {
             // Add the new events
             return [...filteredEvents, ...newClassEvents];
         });
-        console.timeEnd("Calendar:updateEventsForClass");
+        // console.timeEnd("Calendar:updateEventsForClass");
     }, []);
 
     // Log events when they change
@@ -124,7 +124,6 @@ const Calendar = () => {
             }
 
             setCurrentClass(foundClass);
-            console.log("Current class: ", foundClass);
         } else {
             console.log("Class not found");
         }

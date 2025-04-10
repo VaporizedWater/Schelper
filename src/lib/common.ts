@@ -1,5 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CalendarState, Class, ClassProperty, CombinedClass, UserType } from "./types";
+import { CalendarState, CalendarType, Class, ClassProperty, CombinedClass, UserType } from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
@@ -76,6 +76,15 @@ export function newDefaultEmptyClass() {
         },
         events: undefined,
     } as CombinedClass;
+}
+
+export function newDefaultEmptyCalendar(): CalendarType {
+    return {
+        _id: "",
+        semester: "",
+        year: "",
+        classes: []
+    };
 }
 
 export function createEventsFromCombinedClass(combinedClass: CombinedClass): EventInput[] {
@@ -156,5 +165,6 @@ export const initialCalendarState: CalendarState = {
         error: null,
     },
     conflicts: [],
-    userLoggedIn: { userId: "" } as UserType
+    user: null,
+    currentCalendarId: ""
 };

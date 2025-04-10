@@ -1,4 +1,6 @@
-import { CalendarData, CombinedClass, TagType } from "./types";
+import { Calendar } from "@fullcalendar/core/index.js";
+import { newDefaultEmptyCalendar, newDefaultEmptyClass } from "./common";
+import { CalendarType, CombinedClass, TagType, UserType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -48,6 +50,31 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 }
 
 // LOADS/GETs
+// export async function getUserCalendar(userEmail: string | null | undefined): Promise<UserType | null> {
+//     if (!userEmail) {
+//         console.log("User email is undefined");
+//         return null;
+//     }
+
+//     try {
+//         const response = await fetchWithTimeout("./api/user", {
+//             method: "GET",
+//             headers: { userEmail },
+//         });
+
+//         if (!response.ok) {
+//             throw new Error("Failed to load calendar data");
+//         }
+
+//         const data = await parseJsonResponse<UserType>(response);
+//         return data;
+//     } catch (error) {
+//         console.error("Error loading calendar ID:", error);
+//         return null;
+//     }
+// }
+
+
 // Get tags by ID or all tags if no ID specified
 export async function loadTags(): Promise<Set<string>> {
     try {
@@ -60,78 +87,62 @@ export async function loadTags(): Promise<Set<string>> {
     }
 }
 
-export async function loadCombinedClasses(calendarId?: string): Promise<CombinedClass[]> {
-    if (!calendarId) {
+export async function loadCalendar(userEmail: string): Promise<CalendarType> {
+    if (userEmail === "") {
         console.error("Calendar ID is undefined");
-        return [] as CombinedClass[];
+        return newDefaultEmptyCalendar();
     }
 
     try {
         const classResponse = await fetchWithTimeout(
-            "./api/combined_classes",
-            {
+            "./api/combined_classes", {
                 headers: {
-                    calendarId: calendarId,
+                    userEmail: userEmail,
                 },
             },
             50000
         );
 
         if (classResponse.ok) {
-            const text = await classResponse.text();
-            const classes = JSON.parse(text) as CombinedClass[];
-            return classes;
+            return parseJsonResponse<CalendarType>(classResponse);
         }
 
-        return [] as CombinedClass[];
+        return newDefaultEmptyCalendar();
     } catch (error) {
         console.error("Failed to load combined classes:", error);
-        return [] as CombinedClass[];
-    }
-}
-
-export async function loadCalendar(calendarId: string): Promise<CalendarData> {
-    try {
-        const response = await fetchWithTimeout(`./api/calendar`, {
-            headers: { calendarId },
-        });
-
-        if (!response.ok) {
-            throw new Error("Failed to load calendar data");
-        }
-
-        const data = await parseJsonResponse<CalendarData>(response);
-        return data;
-    } catch (error) {
-        console.error("Error loading calendar:", error);
-        throw error;
+        return newDefaultEmptyCalendar();
     }
 }
 
 // INSERTs/POSTs
 
 // Insert combined class
-export async function insertCombinedClasses(combinedClasses: CombinedClass[]): Promise<boolean> {
-    try {
-        // Create a deep copy to avoid mutating the original objects
-        const classesToSend = combinedClasses.map((cls) => ({
-            ...cls,
-            events: undefined, // Only set events to undefined in the copy
-        }));
+// export async function insertCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
+//     try {
+//         // Create a deep copy to avoid mutating the original objects
+//         const classesToSend = combinedClasses.map((cls) => ({
+//             ...cls,
+//             events: undefined, // Only set events to undefined in the copy
+//         }));
 
-        const response = await fetchWithTimeout("api/combined_classes", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(classesToSend),
-        });
+//         const payload = {
+//             calendarId: calendarId,
+//             classes: classesToSend,
+//         };
 
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
-    } catch (error) {
-        console.error("Failed to insert class:", error);
-        return false;
-    }
-}
+//         const response = await fetchWithTimeout("api/combined_classes", {
+//             method: "POST",
+//             headers: { "Content-Type": "application/json" },
+//             body: JSON.stringify(payload),
+//         });
+
+//         const result = await parseJsonResponse<{ success: boolean }>(response);
+//         return result.success;
+//     } catch (error) {
+//         console.error("Failed to insert class:", error);
+//         return false;
+//     }
+// }
 
 // Insert tag
 export async function insertTag(tagName: string): Promise<string | null> {
@@ -158,9 +169,7 @@ export async function insertTag(tagName: string): Promise<string | null> {
 // --------
 // PUTS/UPDATES
 
-export async function updateCombinedClasses(combinedClasses: CombinedClass[]): Promise<boolean> {
-    console.log("updateCombinedClasses: ", combinedClasses);
-
+export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
     try {
         // Create a deep copy to avoid mutating the original objects
         const classesToSend = combinedClasses.map((cls) => ({
@@ -168,13 +177,19 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[]): P
             events: undefined, // Only set events to undefined in the copy
         }));
 
+        const payload = {
+            calendarId: calendarId,
+            classes: classesToSend,
+        };
+
         const response = await fetchWithTimeout("api/combined_classes", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(classesToSend),
+            body: JSON.stringify(payload),
         });
 
         const result = await parseJsonResponse<{ success: boolean }>(response);
+
         return result.success;
     } catch (error) {
         console.error("Failed to insert class:", error);
@@ -184,12 +199,17 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[]): P
 
 // ---
 // DELETEs
-export async function deleteCombinedClasses(classIds: string[]): Promise<boolean> {
+export async function deleteCombinedClasses(classIds: string[], calendarId: string): Promise<boolean> {
     try {
+        const payload = {
+            calendarId: calendarId,
+            classes: classIds,
+        };
+
         const response = await fetchWithTimeout("api/combined_classes", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(classIds),
+            body: JSON.stringify(payload),
         });
 
         const result = await parseJsonResponse<{ success: boolean }>(response);

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { insertTag } from "@/lib/utils";
+import { insertTag } from "@/lib/DatabaseUtils";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 
 const AddTag = () => {

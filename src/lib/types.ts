@@ -1,4 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
+import { Session } from "next-auth";
 import { ReactNode } from "react";
 
 export type tagListType = Map<string, { classIds: Set<string> }>;
@@ -67,6 +68,14 @@ export type CombinedClass = {
     events: EventInput | undefined;
 };
 
+// This serves as a type to transport the calendar/class data from the API to the calendar context via LoadCalendar (previously LoadCombinedClasses)
+export type CalendarType = {
+    _id: string;
+    semester: string;
+    year: string;
+    classes: CombinedClass[]
+};
+
 export type DropDownProps = {
     /** Function to render the button content */
     renderButton: (isOpen: boolean) => ReactNode;
@@ -99,6 +108,8 @@ export type ConflictType = {
 };
 
 export type CalendarContextType = {
+    currentCalendarId: string;
+
     allClasses: CombinedClass[];
     displayClasses: CombinedClass[];
     currentCombinedClass?: CombinedClass | undefined;
@@ -138,6 +149,9 @@ export type CalendarContextType = {
 
 export type UserType = {
     userId: string;
+    email: string;
+    current_calendar: string;
+    calendars: CalendarType[];
 };
 
 export type CalendarState = {
@@ -155,11 +169,12 @@ export type CalendarState = {
         error: string | null;
     };
     conflicts: ConflictType[];
-    userLoggedIn: UserType;
+    user: Session | null;
+    currentCalendarId: string;
 };
 
 export type CalendarAction =
-    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: Set<string> } }
+    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: Set<string>, currentCalendarId: string} }
     | { type: "SET_DISPLAY_CLASSES"; payload: CombinedClass[] }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }
@@ -185,9 +200,9 @@ export type Faculty = {
     };
 };
 
-export type CalendarData = {
-    _id: string;
-    classes: string[];
-    semester: string;
-    year: string;
-};
+// export type CalendarData = {
+//     _id: string;
+//     classes: string[];
+//     semester: string;
+//     year: string;
+// };
