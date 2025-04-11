@@ -2,11 +2,6 @@ import { EventInput } from "@fullcalendar/core/index.js";
 import { Session } from "next-auth";
 import { ReactNode } from "react";
 
-export type tagListType = Map<string, Set<string>>; // Map of tag ids to a set of class ids
-
-export type TagType = {
-    _id: string;
-};
 
 export type SVGProps = {
     className?: string | undefined;
@@ -106,6 +101,8 @@ export type ConflictType = {
     class2: CombinedClass;
     conflictType: string;
 };
+
+export type tagListType = Map<string, Set<string>>; // Map of tag ids to a set of class ids
 
 export type CalendarContextType = {
     currentCalendarId: string;

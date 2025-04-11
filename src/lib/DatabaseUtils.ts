@@ -1,5 +1,5 @@
 import { newDefaultEmptyCalendar } from "./common";
-import { CalendarType, CombinedClass, tagListType, TagType } from "./types";
+import { CalendarType, CombinedClass, tagListType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -49,36 +49,11 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 }
 
 // LOADS/GETs
-// export async function getUserCalendar(userEmail: string | null | undefined): Promise<UserType | null> {
-//     if (!userEmail) {
-//         console.log("User email is undefined");
-//         return null;
-//     }
-
-//     try {
-//         const response = await fetchWithTimeout("./api/user", {
-//             method: "GET",
-//             headers: { userEmail },
-//         });
-
-//         if (!response.ok) {
-//             throw new Error("Failed to load calendar data");
-//         }
-
-//         const data = await parseJsonResponse<UserType>(response);
-//         return data;
-//     } catch (error) {
-//         console.error("Error loading calendar ID:", error);
-//         return null;
-//     }
-// }
-
-
 // Get tags by ID or all tags if no ID specified
 export async function loadTags(): Promise<tagListType> {
     try {
         const response = await fetchWithTimeout("./api/tags");
-        const tags = await parseJsonResponse<TagType[]>(response);
+        const tags = await parseJsonResponse<{ _id: string }[]>(response);
         return new Map(tags.map((tag) => [tag._id, new Set()]));
     } catch (error) {
         console.error("Error fetching tag:", error);
@@ -95,10 +70,10 @@ export async function loadCalendar(userEmail: string): Promise<CalendarType> {
     try {
         const classResponse = await fetchWithTimeout(
             "./api/combined_classes", {
-                headers: {
-                    userEmail: userEmail,
-                },
+            headers: {
+                userEmail: userEmail,
             },
+        },
             50000
         );
 
@@ -114,35 +89,6 @@ export async function loadCalendar(userEmail: string): Promise<CalendarType> {
 }
 
 // INSERTs/POSTs
-
-// Insert combined class
-// export async function insertCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
-//     try {
-//         // Create a deep copy to avoid mutating the original objects
-//         const classesToSend = combinedClasses.map((cls) => ({
-//             ...cls,
-//             events: undefined, // Only set events to undefined in the copy
-//         }));
-
-//         const payload = {
-//             calendarId: calendarId,
-//             classes: classesToSend,
-//         };
-
-//         const response = await fetchWithTimeout("api/combined_classes", {
-//             method: "POST",
-//             headers: { "Content-Type": "application/json" },
-//             body: JSON.stringify(payload),
-//         });
-
-//         const result = await parseJsonResponse<{ success: boolean }>(response);
-//         return result.success;
-//     } catch (error) {
-//         console.error("Failed to insert class:", error);
-//         return false;
-//     }
-// }
-
 // Insert tag
 export async function insertTag(tagName: string): Promise<string | null> {
     try {
@@ -218,7 +164,7 @@ export async function deleteCombinedClasses(classId: string, calendarId: string)
     try {
         const payload = {
             calendarId: calendarId,
-            classes: classId,
+            classId: classId,
         };
 
         const response = await fetchWithTimeout("api/combined_classes", {

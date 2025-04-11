@@ -221,14 +221,14 @@ type CalendarCollection = {
 
 export async function DELETE(request: Request): Promise<Response> {
     try {
-        const { calendarId, classToDelete } = await request.json() as { calendarId?: string, classToDelete: CombinedClass };
+        const { calendarId, classId } = await request.json() as { calendarId?: string, classId: CombinedClass };
         const collection = client.db("class-scheduling-app").collection<CalendarCollection>("calendar");
 
         const result = await collection.updateOne(
             { _id: new ObjectId(calendarId) },
             {
                 $pull: {
-                    classes: new ObjectId(classToDelete._id)
+                    classes: new ObjectId(classId._id)
                 }
             }
         );
