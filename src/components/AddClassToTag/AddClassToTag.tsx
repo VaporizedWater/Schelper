@@ -39,9 +39,9 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
 
             // Optionally update the tagList in your context:
             if (tagList.has(tagId)) {
-                tagList.get(tagId)?.classIds.add(classId);
+                tagList.get(tagId)?.add(classId);
             } else {
-                tagList.set(tagId, { classIds: new Set([classId]) });
+                tagList.set(tagId, new Set([classId]));
             }
 
             // Update the class in the CalendarContext

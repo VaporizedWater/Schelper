@@ -1,7 +1,7 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
-import { Class, ClassProperty, CombinedClass } from "@/lib/types";
+import { CalendarType, Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
 import {
     AnyBulkWriteOperation,
@@ -212,42 +212,38 @@ export async function PUT(request: Request): Promise<Response> {
     }
 }
 
+type CalendarCollection = {
+    _id: ObjectId;
+    semester: string;
+    year: number;
+    classes: ObjectId[];
+}
+
 export async function DELETE(request: Request): Promise<Response> {
     try {
-        const classIds: string[] = await request.json();
+        const { calendarId, classToDelete } = await request.json() as { calendarId?: string, classToDelete: CombinedClass };
+        const collection = client.db("class-scheduling-app").collection<CalendarCollection>("calendar");
 
-        if (!Array.isArray(classIds)) {
-            return new Response(
-                JSON.stringify({ success: false, error: "Invalid request format - expected array of IDs" }),
-                {
-                    status: 400,
-                    headers: { "Content-Type": "application/json" },
+        const result = await collection.updateOne(
+            { _id: new ObjectId(calendarId) },
+            {
+                $pull: {
+                    classes: new ObjectId(classToDelete._id)
                 }
-            );
-        }
-
-        const bulkOperations: AnyBulkWriteOperation<Document>[] = [];
-
-        classIds.forEach((id: string) => {
-            if (id && id !== "" && ObjectId.isValid(id)) {
-                const objectId = new ObjectId(id);
-
-                bulkOperations.push({
-                    deleteOne: {
-                        filter: { _id: objectId },
-                    },
-                });
             }
-        });
+        );
 
-        if (bulkOperations.length === 0) {
-            return new Response(JSON.stringify({ success: false, error: "No valid IDs provided" }), {
-                status: 400,
+        if (result.acknowledged) {
+            return new Response(JSON.stringify({ success: true }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
+        } else {
+            return new Response(JSON.stringify({ success: false }), {
+                status: 500,
                 headers: { "Content-Type": "application/json" },
             });
         }
-        const result = await collection.bulkWrite(bulkOperations);
-        return handleBulkWriteResult(result);
     } catch (error) {
         console.error("Error in DELETE /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {

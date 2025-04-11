@@ -16,9 +16,9 @@ const buildTagMapping = (classes: CombinedClass[]): tagListType => {
     classes.forEach(cls => {
         cls.properties.tags?.forEach(tag => {
             if (!mapping.has(tag)) {
-                mapping.set(tag, { classIds: new Set() });
+                mapping.set(tag, new Set());
             }
-            mapping.get(tag)?.classIds.add(cls._id);
+            mapping.get(tag)?.add(cls._id);
         });
     });
 
@@ -267,14 +267,14 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
             // Update tag mapping
             const newMapping = new Map(state.tags.mapping);
-            const tagData = newMapping.get(tagId);
+            const classIds = newMapping.get(tagId);
 
-            if (tagData) {
-                tagData.classIds.delete(classId);
-                if (tagData.classIds.size === 0) {
+            if (classIds) {
+                classIds.delete(classId);
+                if (classIds.size === 0) {
                     newMapping.delete(tagId);
                 } else {
-                    newMapping.set(tagId, tagData);
+                    newMapping.set(tagId, classIds);
                 }
             }
 
@@ -331,9 +331,9 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
             // Update tag mapping
             const newMapping = new Map(state.tags.mapping);
-            for (const [tagId, tagData] of newMapping.entries()) {
-                tagData.classIds.delete(classId);
-                if (tagData.classIds.size === 0) {
+            for (const [tagId, classIds] of newMapping.entries()) {
+                classIds.delete(classId);
+                if (classIds.size === 0) {
                     newMapping.delete(tagId);
                 }
             }
@@ -360,8 +360,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
         case 'UNLINK_ALL_CLASSES_FROM_TAG': {
             const tagId = action.payload;
-            const tagData = state.tags.mapping.get(tagId);
-            const affectedClassIds = tagData ? Array.from(tagData.classIds) : [];
+            const classIds = state.tags.mapping.get(tagId);
+            const affectedClassIds = classIds ? Array.from(classIds) : [];
 
             // Update classes
             const updatedClasses = state.classes.all.map(c => {
@@ -451,37 +451,32 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             };
         }
 
-        case 'DELETE_CLASSES': {
-            const classIdsToDelete = action.payload;
-
-            // Create a Set for O(1) lookups
-            const classIdSet = new Set(classIdsToDelete);
+        case 'DELETE_CLASS': {
+            const classIdToDelete = action.payload;
 
             // Filter out deleted classes in a single pass each
-            const filteredAllClasses = state.classes.all.filter(c => !classIdSet.has(c._id));
-            const filteredDisplayClasses = state.classes.display.filter(c => !classIdSet.has(c._id));
+            const filteredAllClasses = state.classes.all.filter(c => c._id !== classIdToDelete);
+            const filteredDisplayClasses = state.classes.display.filter(c => c._id !== classIdToDelete);
 
             // Update tag mapping
             const newMapping = new Map(state.tags.mapping);
-            for (const [tagId, tagData] of newMapping.entries()) {
+            for (const [tagName, classIds] of newMapping.entries()) {
                 // Process all tag mappings at once
                 let modified = false;
 
-                for (const classId of classIdsToDelete) {
-                    if (tagData.classIds.has(classId)) {
-                        tagData.classIds.delete(classId);
-                        modified = true;
-                    }
+                if (classIds.has(classIdToDelete)) {
+                    classIds.delete(classIdToDelete);
+                    modified = true;
                 }
 
                 // Remove empty tag entries
-                if (modified && tagData.classIds.size === 0) {
-                    newMapping.delete(tagId);
+                if (modified && classIds.size === 0) {
+                    newMapping.delete(tagName);
                 }
             }
 
             // Handle current class (unset if it's one of the deleted classes)
-            const newCurrentClass = state.classes.current && classIdSet.has(state.classes.current._id)
+            const newCurrentClass = state.classes.current && classIdToDelete === state.classes.current._id
                 ? undefined
                 : state.classes.current;
 
@@ -683,10 +678,10 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             dispatch({ type: 'UNLINK_ALL_CLASSES_FROM_TAG', payload: tagId });
 
             // Update all affected classes in the database
-            const tagData = state.tags.mapping.get(tagId);
-            if (tagData) {
+            const classIds = state.tags.mapping.get(tagId);
+            if (classIds) {
                 state.classes.all
-                    .filter(c => tagData.classIds.has(c._id))
+                    .filter(c => classIds.has(c._id))
                     .forEach(c => {
                         const updatedClass = {
                             ...c,
@@ -748,9 +743,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             // console.timeEnd("uploadNewClasses");
         },
 
-        deleteClasses: async (classIds: string[]) => {
+        deleteClass: async (classId: string) => {
             try {
-                const success = await deleteCombinedClasses(classIds, state.currentCalendarId);
+                const success = await deleteCombinedClasses(classId, state.currentCalendarId);
 
                 if (!success) {
                     // If API call fails, reload data to restore state
@@ -758,7 +753,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     setForceUpdate(Date.now().toString());
                 }
 
-                dispatch({ type: 'DELETE_CLASSES', payload: classIds });
+                dispatch({ type: 'DELETE_CLASS', payload: classId });
 
                 return success;
             } catch (error) {

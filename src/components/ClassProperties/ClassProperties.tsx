@@ -6,7 +6,7 @@ import { BiChevronUp, BiChevronDown } from 'react-icons/bi';
 import DropDown from '../DropDown/DropDown';
 
 const ClassProperties = () => {
-    const { currentCombinedClass, updateOneClass, allTags, deleteClasses, setCurrentClass } = useCalendarContext();
+    const { currentCombinedClass, updateOneClass, allTags, deleteClass, setCurrentClass } = useCalendarContext();
     const initialData: Class = currentCombinedClass?.data || {} as Class;
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
@@ -180,7 +180,7 @@ const ClassProperties = () => {
 
         if (isConfirmed) {
             try {
-                deleteClasses([currentCombinedClass._id]);
+                deleteClass(currentCombinedClass._id);
                 // Clear current class selection
                 setCurrentClass(newDefaultEmptyClass());
             } catch (error) {

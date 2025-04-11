@@ -214,11 +214,11 @@ export async function updateCalendarClasses(classIds: string[]) {
 
 // ---
 // DELETEs
-export async function deleteCombinedClasses(classIds: string[], calendarId: string): Promise<boolean> {
+export async function deleteCombinedClasses(classId: string, calendarId: string): Promise<boolean> {
     try {
         const payload = {
             calendarId: calendarId,
-            classes: classIds,
+            classes: classId,
         };
 
         const response = await fetchWithTimeout("api/combined_classes", {

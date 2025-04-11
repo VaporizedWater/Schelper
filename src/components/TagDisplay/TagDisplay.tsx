@@ -52,7 +52,7 @@ const TagDisplay = () => {
                 {/* Render linked tags with prefixed key */}
                 {
                     Array.from(tagList)
-                        .sort(([, tagIdA], [, tagIdB]) => tagIdB.classIds.size - tagIdA.classIds.size)
+                        .sort(([, tagIdA], [, tagIdB]) => tagIdB.size - tagIdA.size)
                         .map(([tagId, tagData]) => (
                             <li
                                 key={`linked-${tagId}`}
@@ -68,7 +68,7 @@ const TagDisplay = () => {
                                             </span>
                                             <div className="flex items-center gap-2">
                                                 <span>
-                                                    Classes: {tagData.classIds.size}
+                                                    Classes: {tagData.size}
                                                 </span>
                                                 {hoveredTagId === tagId && (
                                                     <div className="hover:bg-gray-300 p-1 rounded-sm cursor-pointer" onClick={(e) => {
@@ -88,7 +88,7 @@ const TagDisplay = () => {
                                     renderDropdown={() => (
                                         <div>
                                             <ul className="flex flex-col gap-1 bg-white border rounded-sm shadow-lg">
-                                                {Array.from(tagData.classIds).map((classId) => {
+                                                {Array.from(tagData).map((classId) => {
                                                     const foundClass = allClasses.find(
                                                         (cls) => String(cls._id) === classId
                                                     );

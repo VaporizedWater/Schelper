@@ -2,7 +2,7 @@ import { EventInput } from "@fullcalendar/core/index.js";
 import { Session } from "next-auth";
 import { ReactNode } from "react";
 
-export type tagListType = Map<string, { classIds: Set<string> }>;
+export type tagListType = Map<string, Set<string>>; // Map of tag ids to a set of class ids
 
 export type TagType = {
     _id: string;
@@ -144,7 +144,7 @@ export type CalendarContextType = {
 
     uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
 
-    deleteClasses: (classIds: string[]) => void;
+    deleteClass: (classId: string) => void;
 };
 
 export type UserType = {
@@ -186,7 +186,7 @@ export type CalendarAction =
     | { type: "UNLINK_ALL_CLASSES_FROM_TAG"; payload: string }
     | { type: "UNLINK_ALL_TAGS_FROM_ALL_CLASSES" }
     | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] }
-    | { type: "DELETE_CLASSES"; payload: string[] };
+    | { type: "DELETE_CLASS"; payload: string };
 
 export type Faculty = {
     _id?: string;
