@@ -10,8 +10,9 @@ const CalendarContext = createContext<CalendarContextType | undefined>(undefined
 
 // Helper functions
 
-const buildTagMapping = (classes: CombinedClass[]): tagListType => {
-    const mapping: tagListType = new Map();
+
+const buildTagMapping = (classes: CombinedClass[], existingMapping?: tagListType): tagListType => {
+    const mapping: tagListType = existingMapping || new Map();
 
     classes.forEach(cls => {
         cls.properties.tags?.forEach(tag => {
@@ -159,9 +160,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             // console.time("INITIALIZE_DATA");
             const classes = action.payload.classes;
             // const events = createEventsFromClasses(classes);
-            const tagMapping = buildTagMapping(classes);
-
-            // console.timeEnd("INITIALIZE_DATA");
+            const tagMapping = buildTagMapping(classes, action.payload.tags);
 
             return {
                 ...state,
@@ -170,10 +169,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     display: classes,
                     current: state.classes.current
                 },
-                tags: {
-                    all: action.payload.tags,
-                    mapping: tagMapping
-                },
+                tags: tagMapping,
                 status: {
                     loading: false,
                     error: null
@@ -266,7 +262,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             const { tagId, classId } = action.payload;
 
             // Update tag mapping
-            const newMapping = new Map(state.tags.mapping);
+            const newMapping = new Map(state.tags);
             const classIds = newMapping.get(tagId);
 
             if (classIds) {
@@ -305,10 +301,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                         updatedClasses.find(c => c._id === classId) :
                         state.classes.current
                 },
-                tags: {
-                    ...state.tags,
-                    mapping: newMapping
-                }
+                tags: newMapping
             };
         }
 
@@ -330,7 +323,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             });
 
             // Update tag mapping
-            const newMapping = new Map(state.tags.mapping);
+            const newMapping = new Map(state.tags);
             for (const [tagId, classIds] of newMapping.entries()) {
                 classIds.delete(classId);
                 if (classIds.size === 0) {
@@ -351,16 +344,13 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                         updatedClasses.find(c => c._id === classId) :
                         state.classes.current
                 },
-                tags: {
-                    ...state.tags,
-                    mapping: newMapping
-                }
+                tags: newMapping
             };
         }
 
         case 'UNLINK_ALL_CLASSES_FROM_TAG': {
             const tagId = action.payload;
-            const classIds = state.tags.mapping.get(tagId);
+            const classIds = state.tags.get(tagId);
             const affectedClassIds = classIds ? Array.from(classIds) : [];
 
             // Update classes
@@ -378,7 +368,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             });
 
             // Update tag mapping
-            const newMapping = new Map(state.tags.mapping);
+            const newMapping = new Map(state.tags);
             newMapping.delete(tagId);
 
             return {
@@ -394,10 +384,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                         updatedClasses.find(c => c._id === state.classes.current?._id) :
                         state.classes.current
                 },
-                tags: {
-                    ...state.tags,
-                    mapping: newMapping
-                }
+                tags: newMapping
             };
         }
 
@@ -424,17 +411,14 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                         }
                     } : undefined
                 },
-                tags: {
-                    ...state.tags,
-                    mapping: new Map()
-                }
+                tags: new Map()
             };
         }
 
         case 'UPLOAD_CLASSES': {
             // console.time("UPLOAD_CLASSES");
             const newClasses = [...state.classes.all, ...action.payload];
-            const tagMapping = buildTagMapping(newClasses);
+            const newMapping = buildTagMapping(newClasses);
             // console.timeEnd("UPLOAD_CLASSES");
 
             return {
@@ -444,10 +428,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     display: newClasses,
                     current: state.classes.current
                 },
-                tags: {
-                    ...state.tags,
-                    mapping: tagMapping
-                },
+                tags: newMapping
             };
         }
 
@@ -459,7 +440,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             const filteredDisplayClasses = state.classes.display.filter(c => c._id !== classIdToDelete);
 
             // Update tag mapping
-            const newMapping = new Map(state.tags.mapping);
+            const newMapping = new Map(state.tags);
             for (const [tagName, classIds] of newMapping.entries()) {
                 // Process all tag mappings at once
                 let modified = false;
@@ -487,10 +468,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     display: filteredDisplayClasses,
                     current: newCurrentClass
                 },
-                tags: {
-                    ...state.tags,
-                    mapping: newMapping
-                }
+                tags: newMapping
             };
         }
 
@@ -531,7 +509,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 } else {
                     dispatch({
                         type: 'INITIALIZE_DATA',
-                        payload: { classes: [], tags: new Set<string>, currentCalendarId: state.currentCalendarId }
+                        payload: { classes: [], tags: new Map(), currentCalendarId: state.currentCalendarId }
                     });
                 }
             } catch (err) {
@@ -572,8 +550,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         currentCombinedClass: state.classes.current,
 
         // Tags
-        allTags: state.tags.all,
-        tagList: state.tags.mapping,
+        tagList: state.tags,
 
         // Conflicts
         conflicts: state.conflicts,
@@ -590,7 +567,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     classes: [
                         newDefaultEmptyClass()
                     ], 
-                    tags: new Set(),
+                    tags: new Map(),
                     currentCalendarId: ""
                 }
             });
@@ -619,7 +596,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         updateAllClasses: (classes: CombinedClass[]) => {
             // console.time("updateAllClasses");
-            const payload = { classes, tags: state.tags.all, currentCalendarId: state.currentCalendarId };
+            const payload = { classes, tags: state.tags, currentCalendarId: state.currentCalendarId };
             console.log('INITIALIZE_DATA');
             dispatch({ type: 'INITIALIZE_DATA', payload });
             // console.timeEnd("updateAllClasses");
@@ -678,7 +655,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             dispatch({ type: 'UNLINK_ALL_CLASSES_FROM_TAG', payload: tagId });
 
             // Update all affected classes in the database
-            const classIds = state.tags.mapping.get(tagId);
+            const classIds = state.tags.get(tagId);
             if (classIds) {
                 state.classes.all
                     .filter(c => classIds.has(c._id))

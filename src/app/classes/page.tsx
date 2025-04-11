@@ -44,7 +44,7 @@ const NewClassForm = () => {
     } as ClassProperty, { initializeWithValue: false });
 
     const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<string[]>("selectedTags", [], { initializeWithValue: false });
-    const { allTags, uploadNewClasses } = useCalendarContext();
+    const { tagList, uploadNewClasses } = useCalendarContext();
 
     const router = useRouter();
 
@@ -316,7 +316,7 @@ const NewClassForm = () => {
                         )}
                         renderDropdown={() => (
                             <div className="p-2 border rounded-sm flex flex-col gap-2">
-                                {[...allTags].map((tag) => (
+                                {[...tagList.keys()].map((tag) => (
                                     <label key={tag} className="flex items-center gap-2 cursor-pointer">
                                         <input
                                             type="checkbox"

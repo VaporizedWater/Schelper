@@ -6,7 +6,7 @@ import { BiChevronUp, BiChevronDown } from 'react-icons/bi';
 import DropDown from '../DropDown/DropDown';
 
 const ClassProperties = () => {
-    const { currentCombinedClass, updateOneClass, allTags, deleteClass, setCurrentClass } = useCalendarContext();
+    const { tagList, currentCombinedClass, updateOneClass, deleteClass, setCurrentClass } = useCalendarContext();
     const initialData: Class = currentCombinedClass?.data || {} as Class;
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
@@ -340,7 +340,7 @@ const ClassProperties = () => {
                         )}
                         renderDropdown={() => (
                             <div className="flex-1 flex-col gap-2 py-1 pl-1">
-                                {Array.from(allTags).sort((a, b) => a.length - b.length).map((tag) => (
+                                {Array.from(tagList.keys()).sort((a, b) => a.length - b.length).map((tag) => (
                                     <label key={tag} className="flex items-center gap-1">
                                         <input
                                             type="checkbox"

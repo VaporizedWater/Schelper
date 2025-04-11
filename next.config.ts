@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
 
 module.exports = {
     compiler: {
-        removeConsole: true,
+        removeConsole: process.env.NODE_ENV === "production",
     },
 }
 

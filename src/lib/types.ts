@@ -114,7 +114,6 @@ export type CalendarContextType = {
     displayClasses: CombinedClass[];
     currentCombinedClass?: CombinedClass | undefined;
 
-    allTags: Set<string>;
     tagList: tagListType; // Map of tags to a set of class ids
 
     isLoading: boolean;
@@ -134,7 +133,7 @@ export type CalendarContextType = {
 
     detectConflicts: () => void;
 
-    unlinkTagFromClass: (classId: string, tagId: string) => void;
+    unlinkTagFromClass: (tagId: string, classId: string) => void;
 
     unlinkAllTagsFromClass: (classId: string) => void;
 
@@ -160,10 +159,7 @@ export type CalendarState = {
         display: CombinedClass[];
         current: CombinedClass | undefined;
     };
-    tags: {
-        all: Set<string>;
-        mapping: tagListType;
-    };
+    tags: tagListType;
     status: {
         loading: boolean;
         error: string | null;
@@ -174,7 +170,7 @@ export type CalendarState = {
 };
 
 export type CalendarAction =
-    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: Set<string>, currentCalendarId: string} }
+    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: tagListType, currentCalendarId: string} }
     | { type: "SET_DISPLAY_CLASSES"; payload: CombinedClass[] }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }

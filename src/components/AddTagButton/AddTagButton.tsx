@@ -6,7 +6,7 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { insertTag } from "@/lib/DatabaseUtils";
 
 const AddTagButton = () => {
-    const { allTags } = useCalendarContext();
+    const { tagList } = useCalendarContext();
     const [inputValue, setInputValue] = useState("");
 
     const handleAddTag = async () => {
@@ -15,7 +15,9 @@ const AddTagButton = () => {
             const result = await insertTag(trimmedValue);
 
             if (result) {
-                allTags.add(trimmedValue);
+                if (!tagList.has(trimmedValue)) {
+                    tagList.set(trimmedValue, new Set());
+                }
                 setInputValue("");
 
                 // Display success message

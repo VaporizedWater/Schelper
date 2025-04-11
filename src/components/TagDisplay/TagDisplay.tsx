@@ -8,21 +8,28 @@ import { BiUnlink } from "react-icons/bi";
 import AddClassToTag from "../AddClassToTag/AddClassToTag";
 
 const TagDisplay = () => {
-    const { tagList, allTags, allClasses, unlinkTagFromClass, unlinkAllClassesFromTag } = useCalendarContext();
+    const { tagList,  allClasses, unlinkTagFromClass, unlinkAllClassesFromTag } = useCalendarContext();
     const [hoveredTagId, setHoveredTagId] = useState<string | null>(null);
     const [hoveredTagClassId, setHoveredTagClassId] = useState<string[] | null>(null);
 
     // Get the IDs of tags that are linked to classes.
-    const linkedTagIds = new Set(Array.from(tagList).map(([tagId]) => tagId));
+    // const linkedTagIds = new Set(Array.from(tagList).map(([tagId]) => tagId));
 
-    interface TagObject {
-        _id: string;
-    }
+    // interface TagObject {
+    //     _id: string;
+    // }
 
-    // Filter allTags to get unlinked tags; if tag is an object, use its _id as key
-    const unlinkedTags = Array.from(allTags).filter((tag: string | TagObject) => {
-        // When tag is an object, compare using tag._id; otherwise, use the tag value directly.
-        return typeof tag === "object" ? !linkedTagIds.has(tag._id) : !linkedTagIds.has(tag);
+    // // Filter allTags to get unlinked tags; if tag is an object, use its _id as key
+    // const unlinkedTags = Array.from(tagList.keys()).filter((tag: string | TagObject) => {
+    //     // When tag is an object, compare using tag._id; otherwise, use the tag value directly.
+    //     return typeof tag === "object" ? !linkedTagIds.has(tag._id) : !linkedTagIds.has(tag);
+    // });
+
+    const unlinkedTags = [] as string[];
+    tagList.entries().forEach(([tag, classIds]) => {
+        if (classIds.size === 0) {
+            unlinkedTags.push(tag);
+        }
     });
 
     const handleTagUnlink = (tagName: string) => {
@@ -52,6 +59,7 @@ const TagDisplay = () => {
                 {/* Render linked tags with prefixed key */}
                 {
                     Array.from(tagList)
+                        .filter(([, tagData]) => { return tagData.size !== 0 })
                         .sort(([, tagIdA], [, tagIdB]) => tagIdB.size - tagIdA.size)
                         .map(([tagId, tagData]) => (
                             <li
@@ -113,7 +121,6 @@ const TagDisplay = () => {
                                                 <div className="">
                                                     <AddClassToTag tagId={tagId} />
                                                 </div>
-
                                             </ul>
                                         </div>
                                     )
@@ -123,22 +130,22 @@ const TagDisplay = () => {
                         ))
                 }
                 {
-                    unlinkedTags.map((tag: string | TagObject, index) => {
-                        const keyValue =
-                            typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
-                        const displayValue =
-                            typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
+                    unlinkedTags.map((tag: string, index) => {
+                        // const keyValue =
+                        //     typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
+                        // const displayValue =
+                        //     typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
                         return (
                             <li
-                                key={`unlinked-${keyValue}-${index}`}
-                                onMouseEnter={() => setHoveredTagId(keyValue)}
+                                key={`unlinked-${tag}-${index}`}
+                                onMouseEnter={() => setHoveredTagId(tag)}
                                 onMouseLeave={() => setHoveredTagId(null)}
                             >
                                 <DropDown
                                     buttonClassName="w-full"
                                     renderButton={(isOpen) => (
                                         <div className="flex justify-between items-center p-2 bg-gray-100 rounded-sm cursor-pointer">
-                                            <span>{displayValue}</span>
+                                            <span>{tag}</span>
                                             {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                                         </div>
                                     )}
@@ -147,7 +154,7 @@ const TagDisplay = () => {
                                         <div>
                                             <ul className="flex flex-col gap-1 bg-white border rounded-sm shadow-lg">
                                                 <div className="">
-                                                    <AddClassToTag tagId={keyValue} />
+                                                    <AddClassToTag tagId={tag} />
                                                 </div>
                                             </ul>
                                         </div>

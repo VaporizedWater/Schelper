@@ -1,5 +1,5 @@
 import { newDefaultEmptyCalendar } from "./common";
-import { CalendarType, CombinedClass, TagType } from "./types";
+import { CalendarType, CombinedClass, tagListType, TagType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -75,14 +75,14 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 
 
 // Get tags by ID or all tags if no ID specified
-export async function loadTags(): Promise<Set<string>> {
+export async function loadTags(): Promise<tagListType> {
     try {
         const response = await fetchWithTimeout("./api/tags");
         const tags = await parseJsonResponse<TagType[]>(response);
-        return new Set(tags.map((tag) => tag._id));
+        return new Map(tags.map((tag) => [tag._id, new Set()]));
     } catch (error) {
         console.error("Error fetching tag:", error);
-        return new Set<string>();
+        return new Map();
     }
 }
 

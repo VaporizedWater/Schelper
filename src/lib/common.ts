@@ -156,10 +156,7 @@ export const initialCalendarState: CalendarState = {
         display: [],
         current: undefined,
     },
-    tags: {
-        all: new Set(),
-        mapping: new Map(),
-    },
+    tags: new Map(),
     status: {
         loading: true,
         error: null,
