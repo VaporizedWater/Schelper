@@ -61,6 +61,7 @@ export type CombinedClass = {
     data: Class;
     properties: ClassProperty;
     events: EventInput | undefined;
+    visible: boolean;
 };
 
 // This serves as a type to transport the calendar/class data from the API to the calendar context via LoadCalendar (previously LoadCombinedClasses)
@@ -108,7 +109,6 @@ export type CalendarContextType = {
     currentCalendarId: string;
 
     allClasses: CombinedClass[];
-    displayClasses: CombinedClass[];
     currentCombinedClass?: CombinedClass | undefined;
 
     tagList: tagListType; // Map of tags to a set of class ids
@@ -125,8 +125,6 @@ export type CalendarContextType = {
     updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
 
     updateAllClasses: (newClasses: CombinedClass[]) => void;
-
-    updateDisplayClasses: (newDisplayClasses: CombinedClass[]) => void;
 
     detectConflicts: () => void;
 
@@ -153,7 +151,7 @@ export type UserType = {
 export type CalendarState = {
     classes: {
         all: CombinedClass[];
-        display: CombinedClass[];
+        // display: CombinedClass[];
         current: CombinedClass | undefined;
     };
     tags: tagListType;
@@ -168,7 +166,7 @@ export type CalendarState = {
 
 export type CalendarAction =
     | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: tagListType, currentCalendarId: string} }
-    | { type: "SET_DISPLAY_CLASSES"; payload: CombinedClass[] }
+    // | { type: "SET_DISPLAY_CLASSES"; payload: CombinedClass[] }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }
     | { type: "SET_CONFLICTS"; payload: ConflictType[] }

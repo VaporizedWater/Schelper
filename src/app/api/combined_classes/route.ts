@@ -78,7 +78,8 @@ export async function GET(request: Request) {
                             in: {
                                 _id: { $toString: "$$class._id" },
                                 data: "$$class.data",
-                                properties: "$$class.properties"
+                                properties: "$$class.properties",
+                                visible: true,
                             }
                         }
                     }

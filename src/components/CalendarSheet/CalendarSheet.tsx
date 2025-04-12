@@ -8,7 +8,7 @@ import { updateCombinedClasses } from "@/lib/DatabaseUtils";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
-    const { allClasses, updateAllClasses, updateDisplayClasses, displayClasses, setCurrentClass, currentCombinedClass, isLoading, currentCalendarId } = useCalendarContext();
+    const { allClasses, updateAllClasses, setCurrentClass, currentCombinedClass, isLoading, currentCalendarId } = useCalendarContext();
 
     // Add state to track selected row index
     const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
@@ -16,8 +16,8 @@ export default function CalendarSheet() {
     // Compute a hidden mapping of row index (starting at 0 for first data row) to class id.
     // Use useMemo instead of a regular variable + useEffect
     const classIds = useMemo(() => {
-        return displayClasses.map((item) => item._id);
-    }, [displayClasses]);
+        return allClasses.filter(cls => cls.visible).map((item) => item._id);
+    }, [allClasses]);
 
     // Update selected row when currentClass changes in context
     useEffect(() => {
@@ -54,7 +54,7 @@ export default function CalendarSheet() {
 
     const spreadsheetData = useMemo(() => [
         ...headers,
-        ...displayClasses.map((item, index) => {
+        ...allClasses.filter(cls => cls.visible).map((item, index) => {
             // Style for the selected row (index + 1 because headers are row 0)
             const isSelected = index === selectedRowIndex;
 
@@ -81,7 +81,7 @@ export default function CalendarSheet() {
                 { value: String(item.properties.tags.join(', ')), className: isSelected ? 'bg-blue-100' : '' },
             ];
         }),
-    ], [displayClasses, headers, selectedRowIndex]);
+    ], [allClasses, headers, selectedRowIndex]);
 
     const [pendingData, setPendingData] = useState<Matrix<{ value: string }>>(spreadsheetData);
 
@@ -156,15 +156,12 @@ export default function CalendarSheet() {
                 // Only update the context if database update was successful
 
                 // Create a new array with updated classes replacing the originals
-                const updatedAllClasses = allClasses.map(cls => {
+                const updatedClasses = allClasses.map(cls => {
                     const updated = classesToUpdate.find(u => u._id === cls._id);
                     return updated || cls;
                 });
 
-                updateAllClasses(updatedAllClasses);
-                updateDisplayClasses(updatedAllClasses.filter(cls =>
-                    classesToUpdate.some(u => u._id === cls._id)
-                ));
+                updateAllClasses(updatedClasses);
             }
         } catch (error) {
             console.error("Error updating classes:", error);

@@ -7,11 +7,12 @@ import LeftMenu from '@/components/LeftMenu/LeftMenu';
 import CalendarNav from '@/components/CalendarNav/CalendarNav';
 import { useSearchParams } from 'next/navigation';
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
+import { CombinedClass } from '@/lib/types';
 
 const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
     const searchParams = useSearchParams();
-    const { allClasses, updateDisplayClasses } = useCalendarContext();
+    const { allClasses, updateAllClasses } = useCalendarContext();
 
     // Apply cohort filter from URL parameter
     useEffect(() => {
@@ -19,15 +20,25 @@ const CalendarPage = () => {
 
         if (cohort && ['freshman', 'sophomore', 'junior', 'senior'].includes(cohort)) {
             // Filter classes to only show those with the matching cohort tag
-            const filteredClasses = allClasses.filter(cls =>
-                cls.properties.tags && cls.properties.tags.includes(cohort)
-            );
+            const updatedClasses = allClasses.map(cls => {
+                const isVisible = cls.properties.tags?.some(tag => tag === cohort);
+                return {
+                    ...cls,
+                    visible: isVisible
+                };
+            });
 
-            // Update display classes to show only the filtered classes
-            updateDisplayClasses(filteredClasses);
+            updateAllClasses(updatedClasses);
         } else {
             // If no cohort filter or invalid cohort, show all classes
-            updateDisplayClasses(allClasses);
+            const updatedClasses = allClasses.map(cls => {
+                return {
+                    ...cls,
+                    visible: true
+                };
+            });
+
+            updateAllClasses(updatedClasses);
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 

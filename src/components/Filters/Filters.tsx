@@ -7,9 +7,10 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useEffect, useState } from "react";
 import DropDown from "../DropDown/DropDown";
 import { useSearchParams } from "next/navigation";
+import { CombinedClass } from "@/lib/types";
 
 const Filters = () => {
-    const { tagList, allClasses, updateDisplayClasses } = useCalendarContext();
+    const { tagList, allClasses, updateAllClasses } = useCalendarContext();
     const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
     const searchParams = useSearchParams();
     const cohortParam = searchParams.get('cohort');
@@ -48,12 +49,15 @@ const Filters = () => {
 
         setSelectedTags(newSelectedTags);
 
-        const newDisplayClasses = newSelectedTags.size > 0
-            ? allClasses.filter((classItem) =>
-                classItem.properties.tags?.some((tag) => newSelectedTags.has(tag))
-            )
-            : []; // Return empty array when no tags selected
-        updateDisplayClasses(newDisplayClasses);
+        const updatedClasses = allClasses.map((cls) => {
+            const isVisible = cls.properties.tags?.some((tag) => newSelectedTags.has(tag));
+            return {
+                ...cls,
+                visible: isVisible
+            };
+        });
+        
+        updateAllClasses(updatedClasses);
     };
 
     return (

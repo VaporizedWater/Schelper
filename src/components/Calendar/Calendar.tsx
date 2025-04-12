@@ -14,7 +14,7 @@ const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, displayClasses, conflicts, isLoading } = useCalendarContext();
+    const { allClasses, setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
     const [facultyList, setFacultyList] = useState<Faculty[]>([] as Faculty[]);
     const [facultyBusinessHours, setFacultyBusinessHours] = useState<BusinessHoursInput>([] as BusinessHoursInput);
 
@@ -40,8 +40,14 @@ const Calendar = () => {
         fetchFacultyData();
     }, []);
 
+    useEffect(() => {
+        console.log("DISPLAY EVENTS CHANGED");
+    }, [allClasses]);
+
     // Create events efficiently when displayClasses changes
     useEffect(() => {
+        const displayClasses = allClasses.filter(cls => cls.visible);
+
         // console.time("Calendar:createEvents");
         if (!displayClasses || displayClasses.length === 0) {
             setEvents([]);
@@ -72,7 +78,7 @@ const Calendar = () => {
         setEvents(newEvents);
         detectConflicts();
         // console.timeEnd("Calendar:createEvents");
-    }, [displayClasses]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Update events for a single class (much more efficient)
     const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {
@@ -107,6 +113,8 @@ const Calendar = () => {
 
     // Enhanced findClass that uses our eventMap for better performance
     function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {
+        const displayClasses = allClasses.filter(cls => cls.visible);
+        
         // Get the class directly from the event's extendedProps
         if (info.event.extendedProps?.combinedClass) {
             return info.event.extendedProps.combinedClass as CombinedClass;

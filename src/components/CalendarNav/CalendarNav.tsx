@@ -1,6 +1,6 @@
 import { LuFileSpreadsheet } from "react-icons/lu";
 import { MdCalendarMonth, MdFileDownload, MdFileUpload } from "react-icons/md";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CalendarOpenProps } from "@/lib/types";
 import ButtonDropDown from "../ButtonDropDown/ButtonDropDown";
 import Link from "next/link";
@@ -9,7 +9,7 @@ import { AlertTriangleIcon, FacultyIcon } from "@/lib/icons";
 import { IoMdSettings } from "react-icons/io";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
-    const { displayClasses } = useCalendarContext();
+    const { allClasses } = useCalendarContext();
     const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
     const [calendarActive, setActive] = useState(true);
 
@@ -20,7 +20,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
         { content: "Tag", link: "/addTag" },
         { content: "Faculty", link: "/faculty" },
     ];
-
+    
     return (
         <div className="flex flex-row px-2 ">
             <ul className="flex flex-row items-center">
@@ -36,7 +36,10 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
 
                     <p className="text-lg text-lightblack text-center font-semibold">Spring 25</p>
                     {/* Show number of classes */}
-                    <p className="text-sm text-gray-400">{displayClasses.length} Class{displayClasses.length !== 1 && 'es'}</p>
+                    <p className="text-sm text-gray-400">{(() => {
+                        const displayClasses = allClasses.filter(cls => cls.visible);
+                        return displayClasses.length + " Class" + (displayClasses.length !== 1 ? 'es' : '')
+                    })()}</p>
                 </li>
             </ul>
             <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">

@@ -9,8 +9,6 @@ import { useSession } from 'next-auth/react';
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
 // Helper functions
-
-
 const buildTagMapping = (classes: CombinedClass[], existingMapping?: tagListType): tagListType => {
     const mapping: tagListType = existingMapping || new Map();
 
@@ -166,7 +164,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: classes,
-                    display: classes,
+                    // display: classes,
                     current: state.classes.current
                 },
                 tags: tagMapping,
@@ -176,21 +174,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 },
                 user: state.user,
                 currentCalendarId: action.payload.currentCalendarId
-            };
-        }
-
-        case 'SET_DISPLAY_CLASSES': {
-            // console.time("SET_DISPLAY_CLASSES");
-            const displayClasses = action.payload;
-            // const displayEvents = createEventsFromClasses(displayClasses);
-            // console.timeEnd("SET_DISPLAY_CLASSES");
-
-            return {
-                ...state,
-                classes: {
-                    ...state.classes,
-                    display: displayClasses
-                },
             };
         }
 
@@ -213,19 +196,12 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             const updateClassById = (classes: CombinedClass[]) =>
                 classes.map(c => c._id === updatedClass._id ? updatedClass : c);
 
-            // const updateEventsById = (events: EventInput[]) =>
-            //     events.flatMap(e =>
-            //         e.extendedProps?.combinedClassId === updatedClass._id
-            //             ? updatedEvents
-            //             : [e]
-            //     );
-
             // console.timeEnd("UPDATE_CLASS");
             return {
                 ...state,
                 classes: {
                     all: updateClassById(state.classes.all),
-                    display: updateClassById(state.classes.display),
+                    // display: updateClassById(state.classes.display),
                     current: updatedClass
                 },
             };
@@ -292,11 +268,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: updatedClasses,
-                    display: state.classes.display.map(c =>
-                        c._id === classId ?
-                            updatedClasses.find(uc => uc._id === classId)! :
-                            c
-                    ),
                     current: state.classes.current?._id === classId ?
                         updatedClasses.find(c => c._id === classId) :
                         state.classes.current
@@ -335,11 +306,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: updatedClasses,
-                    display: state.classes.display.map(c =>
-                        c._id === classId ?
-                            updatedClasses.find(uc => uc._id === classId)! :
-                            c
-                    ),
                     current: state.classes.current?._id === classId ?
                         updatedClasses.find(c => c._id === classId) :
                         state.classes.current
@@ -375,11 +341,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: updatedClasses,
-                    display: state.classes.display.map(c =>
-                        affectedClassIds.includes(c._id) ?
-                            updatedClasses.find(uc => uc._id === c._id)! :
-                            c
-                    ),
                     current: state.classes.current && affectedClassIds.includes(state.classes.current._id) ?
                         updatedClasses.find(c => c._id === state.classes.current?._id) :
                         state.classes.current
@@ -402,7 +363,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: updatedClasses,
-                    display: updatedClasses,
+                    // display: updatedClasses,
                     current: state.classes.current ? {
                         ...state.classes.current,
                         properties: {
@@ -425,7 +386,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: newClasses,
-                    display: newClasses,
+                    // display: newClasses,
                     current: state.classes.current
                 },
                 tags: newMapping
@@ -437,7 +398,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
             // Filter out deleted classes in a single pass each
             const filteredAllClasses = state.classes.all.filter(c => c._id !== classIdToDelete);
-            const filteredDisplayClasses = state.classes.display.filter(c => c._id !== classIdToDelete);
+            // const filteredDisplayClasses = state.classes.display.filter(c => c._id !== classIdToDelete);
 
             // Update tag mapping
             const newMapping = new Map(state.tags);
@@ -465,7 +426,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: filteredAllClasses,
-                    display: filteredDisplayClasses,
+                    // display: filteredDisplayClasses,
                     current: newCurrentClass
                 },
                 tags: newMapping
@@ -546,7 +507,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         // Classes
         allClasses: state.classes.all,
-        displayClasses: state.classes.display,
         currentCombinedClass: state.classes.current,
 
         // Tags
@@ -597,14 +557,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         updateAllClasses: (classes: CombinedClass[]) => {
             // console.time("updateAllClasses");
             const payload = { classes, tags: state.tags, currentCalendarId: state.currentCalendarId };
-            console.log('INITIALIZE_DATA');
+            console.log('INITIALIZE_DATA', classes);
             dispatch({ type: 'INITIALIZE_DATA', payload });
             // console.timeEnd("updateAllClasses");
-        },
-
-        updateDisplayClasses: (classes: CombinedClass[]) => {
-            console.log('SET_DISPLAY_CLASSES');
-            dispatch({ type: 'SET_DISPLAY_CLASSES', payload: classes });
         },
 
         detectConflicts: () => {

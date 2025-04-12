@@ -75,6 +75,7 @@ export function newDefaultEmptyClass() {
             tags: [] as string[],
         },
         events: undefined,
+        visible: true
     } as CombinedClass;
 }
 
@@ -153,7 +154,7 @@ export const dayToDate: { [key: string]: string } = {
 export const initialCalendarState: CalendarState = {
     classes: {
         all: [],
-        display: [],
+        // display: [],
         current: undefined,
     },
     tags: new Map(),
