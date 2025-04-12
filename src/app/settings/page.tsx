@@ -2,6 +2,11 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import xlsx, { WorkBook, WorkSheet } from 'xlsx';
+import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
+import { insertCohort } from '@/lib/DatabaseUtils';
+import { CohortType } from '@/lib/types';
+import { useSession } from 'next-auth/react';
 
 // Define settings sections
 const SETTINGS_SECTIONS = [
@@ -12,6 +17,7 @@ const SETTINGS_SECTIONS = [
     { id: 'security', label: 'Security', group: 'user' },
     { id: 'advanced', label: 'Advanced', group: 'user' },
     { id: 'calendar', label: 'Calendar', group: 'calendar' },
+    { id: 'cohorts', label: 'Cohorts', group: 'calendar' },
     { id: 'sheet', label: 'Sheet', group: 'calendar' },
     { id: 'export', label: 'Export', group: 'calendar' },
     { id: 'import', label: 'Import', group: 'calendar' },
@@ -41,7 +47,11 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="flex h-screen relative overflow-hidden">
+        <div className="flex h-screen relative overflow-hidden" onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+                handleEscClick();
+            }
+        }}>
             {/* Left sidebar - independently scrollable */}
             <div className="w-60 bg-gray-100 overflow-y-auto border-r border-gray-200">
                 <div className="p-4">
@@ -77,6 +87,7 @@ export default function SettingsPage() {
                     {activeSection === 'security' && <SecuritySettings />}
                     {activeSection === 'advanced' && <AdvancedSettings />}
                     {activeSection === 'calendar' && <CalendarSettings />}
+                    {activeSection === 'cohorts' && <CohortSettings />}
                     {activeSection === 'sheet' && <SheetSettings />}
                     {activeSection === 'export' && <ExportSettings />}
                     {activeSection === 'import' && <ImportSettings />}
@@ -211,6 +222,212 @@ function CalendarSettings() {
                     <label htmlFor="show-weekends" className="font-medium text-gray-700">Show weekends</label>
                 </div>
             </div>
+        </div>
+    );
+}
+
+function CohortSettings() {
+    const { currentCalendar } = useCalendarContext();
+    const { data: session } = useSession();
+    console.log('Current Calendar:', currentCalendar);
+
+    // Update state type to match CohortType
+    const [cohort, setCohort] = useState<CohortType | null>(null);
+
+    // Define a type for the structured cohort data
+    interface CohortCourses {
+        Fall: string[];
+        Spring: string[];
+    }
+
+    // Transform function remains the same
+    function transformRawData(rawRows: any[][]): Record<string, CohortCourses> {
+        // Existing transformation logic
+        const cohorts: Record<string, CohortCourses> = {};
+        let currentCohort: string | null = null;
+
+        const headersToSkip = new Set([
+            'MECHANICAL ENGINEERING - ON TRACK',
+            'Fall',
+            'Spring'
+        ]);
+
+        for (const row of rawRows) {
+            // Skip empty rows
+            if (!row || row.length === 0 || row.every(cell => !cell?.toString().trim())) {
+                continue;
+            }
+
+            const firstCell = row[0]?.toString().trim();
+
+            if (firstCell && headersToSkip.has(firstCell)) {
+                continue;
+            }
+
+            if (firstCell) {
+                currentCohort = firstCell;
+                if (!currentCohort) {
+                    continue;
+                }
+
+                if (!cohorts[currentCohort]) {
+                    cohorts[currentCohort] = { Fall: [], Spring: [] };
+                }
+            }
+
+            if (currentCohort) {
+                const fallCourse = row[1]?.toString().trim();
+                const springCourse = row[2]?.toString().trim();
+
+                if (fallCourse) {
+                    cohorts[currentCohort].Fall.push(fallCourse);
+                }
+                if (springCourse) {
+                    cohorts[currentCohort].Spring.push(springCourse);
+                }
+            }
+        }
+
+        return cohorts;
+    }
+
+    // Handle file uploads
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const data = await file.arrayBuffer();
+            const workbook: WorkBook = xlsx.read(data, { type: 'array' });
+            const sheetName: string = workbook.SheetNames[0];
+            const worksheet: WorkSheet = workbook.Sheets[sheetName];
+            const rawRows: any[] = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+
+            // Transform raw rows into structured cohorts
+            const parsedCohorts = transformRawData(rawRows);
+
+            // Create a proper CohortType structure
+            const newCohort: CohortType = {
+                freshman: [],
+                sophomore: [],
+                junior: [],
+                senior: []
+            };
+
+            // Map courses to the appropriate year based on semester
+            if (currentCalendar.semester === 'FA') {
+                // Assuming the first entry is freshman courses, second is sophomore, etc.
+                const cohortEntries = Object.entries(parsedCohorts);
+                if (cohortEntries.length >= 1) newCohort.freshman = cohortEntries[0][1].Fall;
+                if (cohortEntries.length >= 2) newCohort.sophomore = cohortEntries[1][1].Fall;
+                if (cohortEntries.length >= 3) newCohort.junior = cohortEntries[2][1].Fall;
+                if (cohortEntries.length >= 4) newCohort.senior = cohortEntries[3][1].Fall;
+
+            } else if (currentCalendar.semester === 'SP') {
+                const cohortEntries = Object.entries(parsedCohorts);
+                if (cohortEntries.length >= 1) newCohort.freshman = cohortEntries[0][1].Spring;
+                if (cohortEntries.length >= 2) newCohort.sophomore = cohortEntries[1][1].Spring;
+                if (cohortEntries.length >= 3) newCohort.junior = cohortEntries[2][1].Spring;
+                if (cohortEntries.length >= 4) newCohort.senior = cohortEntries[3][1].Spring;
+
+            }
+
+            setCohort(newCohort);
+            console.log('Parsed cohort:', newCohort);
+        } catch (error) {
+            console.error('Error reading file:', error);
+        }
+    };
+
+    const handleSaveCohort = async () => {
+        if (!cohort) {
+            alert("Missing cohort data");
+            return;
+        }
+
+        try {
+            if (!session?.user?.email) {
+                alert("User email is not available");
+                return;
+            }
+
+            const result = await insertCohort(session.user.email, cohort);
+            if (result) {
+                alert("Cohort saved successfully!");
+            } else {
+                alert("Failed to save cohort");
+            }
+        } catch (error) {
+            console.error("Error saving cohort:", error);
+            alert("An error occurred while saving the cohort");
+        }
+    };
+
+    return (
+        <div>
+            <h2 className="text-2xl font-semibold mb-6">Cohorts Settings</h2>
+
+            {/* File upload input */}
+            <div className="mb-3">
+                <label htmlFor="cohort-file" className="block mb-1 font-medium text-gray-700">
+                    Upload Cohort Spreadsheet
+                </label>
+                <input
+                    type="file"
+                    id="cohort-file"
+                    accept=".csv, .xlsx, .xls"
+                    onChange={handleFileUpload}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
+                     file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700
+                     hover:file:bg-blue-100"
+                />
+            </div>
+
+            {/* Save button */}
+            {cohort && (
+                <button
+                    onClick={handleSaveCohort}
+                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                >
+                    Save Cohort
+                </button>
+            )}
+
+            {/* Display parsed data */}
+            {cohort && (
+                <div className="mt-5">
+                    <h3 className="font-semibold">Parsed Data Preview:</h3>
+                    <div className="mt-2 p-4 bg-gray-100 rounded-md overflow-auto">
+                        <h4 className="font-medium">Freshman Courses:</h4>
+                        <ul className="list-disc ml-5">
+                            {cohort.freshman.map((course, index) => (
+                                <li key={`freshman-${index}`}>{course}</li>
+                            ))}
+                        </ul>
+
+                        <h4 className="font-medium mt-3">Sophomore Courses:</h4>
+                        <ul className="list-disc ml-5">
+                            {cohort.sophomore.map((course, index) => (
+                                <li key={`sophomore-${index}`}>{course}</li>
+                            ))}
+                        </ul>
+
+                        <h4 className="font-medium mt-3">Junior Courses:</h4>
+                        <ul className="list-disc ml-5">
+                            {cohort.junior.map((course, index) => (
+                                <li key={`junior-${index}`}>{course}</li>
+                            ))}
+                        </ul>
+
+                        <h4 className="font-medium mt-3">Senior Courses:</h4>
+                        <ul className="list-disc ml-5">
+                            {cohort.senior.map((course, index) => (
+                                <li key={`senior-${index}`}>{course}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

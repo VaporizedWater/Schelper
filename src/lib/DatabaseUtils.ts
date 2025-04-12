@@ -1,5 +1,6 @@
+import { turborepoTraceAccess } from "next/dist/build/turborepo-access-trace";
 import { newDefaultEmptyCalendar } from "./common";
-import { CalendarType, CombinedClass, tagListType } from "./types";
+import { CalendarType, CohortType, CombinedClass, tagListType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -69,11 +70,12 @@ export async function loadCalendar(userEmail: string): Promise<CalendarType> {
 
     try {
         const classResponse = await fetchWithTimeout(
-            "./api/combined_classes", {
-            headers: {
-                userEmail: userEmail,
+            "./api/combined_classes",
+            {
+                headers: {
+                    userEmail: userEmail,
+                },
             },
-        },
             50000
         );
 
@@ -111,6 +113,27 @@ export async function insertTag(tagName: string): Promise<string | null> {
     }
 }
 
+// Insert Cohort
+export async function insertCohort(userEmail: string, cohort: CohortType): Promise<boolean | null> {
+    try {
+        const response = await fetchWithTimeout("api/cohorts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userEmail, cohortData: cohort }),
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to insert cohort:", error);
+        return null;
+    }
+}
+
 // --------
 // PUTS/UPDATES
 export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
@@ -142,6 +165,25 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[], ca
     }
 }
 
+export async function updateCohort(cohortId: string, cohort: CohortType): Promise<boolean | null> {
+    try {
+        const response = await fetchWithTimeout(`api/cohorts/${cohortId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(cohort),
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to update cohort:", error);
+        return null;
+    }
+}
 // ---
 // DELETEs
 export async function deleteCombinedClasses(classId: string, calendarId: string): Promise<boolean> {

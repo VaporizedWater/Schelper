@@ -2,7 +2,6 @@ import { EventInput } from "@fullcalendar/core/index.js";
 import { Session } from "next-auth";
 import { ReactNode } from "react";
 
-
 export type SVGProps = {
     className?: string | undefined;
     width?: string | undefined;
@@ -69,7 +68,7 @@ export type CalendarType = {
     _id: string;
     semester: string;
     year: string;
-    classes: CombinedClass[]
+    classes: CombinedClass[];
 };
 
 export type DropDownProps = {
@@ -146,6 +145,8 @@ export type UserType = {
     email: string;
     current_calendar: string;
     calendars: CalendarType[];
+    current_cohort: string;
+    cohorts: string[];
 };
 
 export type CalendarState = {
@@ -164,7 +165,7 @@ export type CalendarState = {
 };
 
 export type CalendarAction =
-    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: tagListType, currentCalendar: CalendarType} }
+    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType } }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }
     | { type: "SET_CONFLICTS"; payload: ConflictType[] }
@@ -187,4 +188,12 @@ export type Faculty = {
         thu: { start: string; end: string }[];
         fri: { start: string; end: string }[];
     };
+};
+
+export type CohortType = {
+    _id?: string;
+    freshman: string[];
+    sophomore: string[];
+    junior: string[];
+    senior: string[];
 };
