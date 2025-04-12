@@ -2,44 +2,78 @@
 
 import clientPromise from "@/lib/mongodb";
 import { UserType } from "@/lib/types";
-import { Collection, Document, ObjectId } from "mongodb";
+// import { Collection, Document, ObjectId } from "mongodb";
+import { Document } from "mongodb";
 
 const client = await clientPromise;
-const collection = client.db("class-scheduling-app").collection("cohorts") as Collection<Document>;
+// const collection = client.db("class-scheduling-app").collection("cohorts") as Collection<Document>;
 
 export async function GET(request: Request) {
     const collection = client.db("class-scheduling-app").collection("users");
 
     try {
         const userEmail = request.headers.get("userEmail");
+
+        if (request.headers.get("loadAll") === null) {
+            return new Response(JSON.stringify("Header: 'loadAll' is missing"), { status: 400 });
+        }
+
+        const loadAll: boolean = request.headers.get("loadAll") === "true";
+
         if (!userEmail || userEmail.split("@").length !== 2) {
             return new Response(JSON.stringify("Header: 'userEmail' is missing or invalid"), { status: 400 });
         }
 
-        const pipeline = [
-            {
-                $match: {
-                    email: userEmail,
+        let pipeline: Document[] = [];
+        console.log("loadAll", loadAll);
+        if (loadAll) {
+            pipeline = [
+                {
+                    $match: {
+                        email: userEmail,
+                    },
                 },
-            },
-            {
-                $lookup: {
-                    from: "cohorts",
-                    localField: "current_cohort",
-                    foreignField: "_id",
-                    as: "cohortDetails",
+                {
+                    $lookup: {
+                        from: "cohorts",
+                        localField: "cohorts",
+                        foreignField: "_id",
+                        as: "cohortsDetails",
+                    },
                 },
-            },
-            {
-                $project: {
-                    _id: "$current_cohort",
-                    freshman: "$cohortDetails.freshman",
-                    sophomore: "$cohortDetails.sophomore",
-                    junior: "$cohortDetails.junior",
-                    senior: "$cohortDetails.senior",
+                {
+                    $unwind: "$cohortsDetails", // Flatten the array
                 },
-            },
-        ];
+                {
+                    $replaceRoot: { newRoot: "$cohortsDetails" }, // Promote cohort to top level
+                },
+            ];
+        } else {
+            pipeline = [
+                {
+                    $match: {
+                        email: userEmail,
+                    },
+                },
+                {
+                    $lookup: {
+                        from: "cohorts",
+                        localField: "current_cohort",
+                        foreignField: "_id",
+                        as: "cohortDetails",
+                    },
+                },
+                {
+                    $project: {
+                        _id: "$current_cohort",
+                        freshman: "$cohortDetails.freshman",
+                        sophomore: "$cohortDetails.sophomore",
+                        junior: "$cohortDetails.junior",
+                        senior: "$cohortDetails.senior",
+                    },
+                },
+            ];
+        }
 
         const data = await collection.aggregate(pipeline).toArray();
 
@@ -47,7 +81,7 @@ export async function GET(request: Request) {
             return new Response(JSON.stringify({ error: "No cohorts found" }), { status: 404 });
         }
 
-        return new Response(JSON.stringify(data[0]), { status: 200 });
+        return new Response(JSON.stringify(data), { status: 200 });
     } catch (error) {
         console.error("Error in GET /api/cohorts:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
@@ -80,8 +114,8 @@ export async function POST(request: Request) {
             const updateResult = await usersCollection.findOneAndUpdate(
                 { email: userEmail },
                 {
-                    $push: { cohorts: newCohortId.toString() },
-                    $set: { current_cohort: newCohortId.toString() },
+                    $push: { cohorts: newCohortId },
+                    $set: { current_cohort: newCohortId },
                 },
                 { session, returnDocument: "after" }
             );
@@ -116,24 +150,24 @@ export async function POST(request: Request) {
     }
 }
 
-export async function PUT(request: Request, { params }: { params: { cohortId: string } }) {
-    try {
-        const cohortId = params.cohortId;
-        const cohortData = await request.json();
+// export async function PUT(request: Request, { params }: { params: { cohortId: string } }) {
+//     try {
+//         const cohortId = params.cohortId;
+//         const cohortData = await request.json();
 
-        if (!cohortId || !cohortData) {
-            return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
-        }
+//         if (!cohortId || !cohortData) {
+//             return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
+//         }
 
-        const result = await collection.updateOne({ _id: new ObjectId(cohortId) }, { $set: cohortData });
+//         const result = await collection.updateOne({ _id: new ObjectId(cohortId) }, { $set: cohortData });
 
-        if (result.modifiedCount === 0) {
-            return new Response(JSON.stringify({ error: "Cohort not found or no changes made" }), { status: 404 });
-        }
+//         if (result.modifiedCount === 0) {
+//             return new Response(JSON.stringify({ error: "Cohort not found or no changes made" }), { status: 404 });
+//         }
 
-        return new Response(JSON.stringify({ message: "Cohort updated successfully", success: true }), { status: 200 });
-    } catch (error) {
-        console.error("Error in PUT /api/cohorts:", error);
-        return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
-    }
-}
+//         return new Response(JSON.stringify({ message: "Cohort updated successfully", success: true }), { status: 200 });
+//     } catch (error) {
+//         console.error("Error in PUT /api/cohorts:", error);
+//         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+//     }
+// }

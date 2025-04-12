@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import xlsx, { WorkBook, WorkSheet } from 'xlsx';
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
-import { insertCohort } from '@/lib/DatabaseUtils';
+import { insertCohort, loadCohorts } from '@/lib/DatabaseUtils';
 import { CohortType } from '@/lib/types';
 import { useSession } from 'next-auth/react';
 
@@ -47,13 +47,13 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="flex h-screen relative overflow-hidden" onKeyDown={(e) => {
+        <div className="flex h-full relative" onKeyDown={(e) => {
             if (e.key === 'Escape') {
                 handleEscClick();
             }
         }}>
             {/* Left sidebar - independently scrollable */}
-            <div className="w-60 bg-gray-100 overflow-y-auto border-r border-gray-200">
+            <div className="w-60 bg-gray-100 overflow-y-auto border-r border-gray-200 sticky top-15 self-start h-full">
                 <div className="p-4">
                     <h2 className="mb-4 pb-2 border-b border-gray-200 font-semibold text-lg">Settings</h2>
                     <nav>
@@ -78,7 +78,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Right content - independently scrollable with padding for the ESC button */}
-            <div className="flex-1 overflow-y-auto relative pr-16">
+            <div className="flex-1 overflow-y-auto pr-16">
                 <div className="p-8">
                     {activeSection === 'profile' && <ProfileSettings />}
                     {activeSection === 'appearance' && <AppearanceSettings />}
@@ -227,9 +227,24 @@ function CalendarSettings() {
 }
 
 function CohortSettings() {
+    // State to store loaded cohorts
+    const [cohorts, setCohorts] = useState<CohortType[]>([]);
+
+    // Load cohorts when component mounts
+    useEffect(() => {
+        async function fetchCohorts() {
+            const result = await loadCohorts(session?.user?.email || '', 'true');
+            setCohorts(result);
+            console.log('Loaded cohorts:', result);
+        }
+        fetchCohorts();
+    }, []);
+
+
     const { currentCalendar } = useCalendarContext();
     const { data: session } = useSession();
     console.log('Current Calendar:', currentCalendar);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Update state type to match CohortType
     const [cohort, setCohort] = useState<CohortType | null>(null);
@@ -241,7 +256,7 @@ function CohortSettings() {
     }
 
     // Transform function remains the same
-    function transformRawData(rawRows: any[][]): Record<string, CohortCourses> {
+    function transformRawData(rawRows: (string | number | null | undefined)[][]): Record<string, CohortCourses> {
         // Existing transformation logic
         const cohorts: Record<string, CohortCourses> = {};
         let currentCohort: string | null = null;
@@ -301,7 +316,12 @@ function CohortSettings() {
             const workbook: WorkBook = xlsx.read(data, { type: 'array' });
             const sheetName: string = workbook.SheetNames[0];
             const worksheet: WorkSheet = workbook.Sheets[sheetName];
-            const rawRows: any[] = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+            const rawRows: (string | number | null | undefined)[][] = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+
+            if (!rawRows || rawRows.length === 0) {
+                alert("No data found in the uploaded file.");
+                return;
+            }
 
             // Transform raw rows into structured cohorts
             const parsedCohorts = transformRawData(rawRows);
@@ -363,8 +383,16 @@ function CohortSettings() {
         }
     };
 
+    const handleCancel = () => {
+        setCohort(null);
+
+        if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+        }
+    };
+
     return (
-        <div>
+        <div className='flex-1'>
             <h2 className="text-2xl font-semibold mb-6">Cohorts Settings</h2>
 
             {/* File upload input */}
@@ -373,6 +401,7 @@ function CohortSettings() {
                     Upload Cohort Spreadsheet
                 </label>
                 <input
+                    ref={fileInputRef}
                     type="file"
                     id="cohort-file"
                     accept=".csv, .xlsx, .xls"
@@ -383,14 +412,22 @@ function CohortSettings() {
                 />
             </div>
 
-            {/* Save button */}
+            {/* Save and Cancel buttons */}
             {cohort && (
-                <button
-                    onClick={handleSaveCohort}
-                    className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                >
-                    Save Cohort
-                </button>
+                <div className="flex space-x-3 mt-4">
+                    <button
+                        onClick={handleSaveCohort}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                    >
+                        Save Cohort
+                    </button>
+                    <button
+                        onClick={handleCancel}
+                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                    >
+                        Cancel
+                    </button>
+                </div>
             )}
 
             {/* Display parsed data */}
@@ -428,6 +465,28 @@ function CohortSettings() {
                     </div>
                 </div>
             )}
+
+            {/* Display all existing cohorts neatly */}
+            <div className="mt-5">
+                <h3 className="font-semibold">Existing Cohorts:</h3>
+                {cohorts.length > 0 ? (
+                    <div className="mt-2 p-4 bg-gray-100 rounded-md overflow-auto">
+                        {cohorts.map((cohort, index) => (
+                            <div key={index} className="mb-4">
+                                <h4 className="font-medium">Cohort {index + 1}:</h4>
+                                <ul className="list-disc ml-5">
+                                    <li>Freshman: {cohort.freshman.join(', ')}</li>
+                                    <li>Sophomore: {cohort.sophomore.join(', ')}</li>
+                                    <li>Junior: {cohort.junior.join(', ')}</li>
+                                    <li>Senior: {cohort.senior.join(', ')}</li>
+                                </ul>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <p>No existing cohorts found.</p>
+                )}
+            </div>
         </div>
     );
 }
