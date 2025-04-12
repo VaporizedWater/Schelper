@@ -155,10 +155,10 @@ const Calendar = () => {
             setCurrentClass(foundClass);
             console.log("Current class: ", foundClass);
 
-            // Use the instructor's name to find the matching Faculty record
-            const instructorName = foundClass.properties.instructor_name;
+            // Use the instructor's email to find the matching Faculty record
+            const instructorEmail = foundClass.properties.instructor_email;
             const matchedFaculty = facultyList.find(
-                (faculty) => faculty.name.trim().toLowerCase() === instructorName.trim().toLowerCase()
+                (faculty) => faculty.email.trim().toLowerCase() === instructorEmail.trim().toLowerCase()
             );
 
             if (matchedFaculty) {

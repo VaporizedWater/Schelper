@@ -13,7 +13,7 @@ const initialUnavailability: Faculty["unavailability"] = {
 };
 
 const FacultyForm = () => {
-    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
     const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
 
@@ -47,12 +47,12 @@ const FacultyForm = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name) {
+        if (!email) {
             alert("Please enter a faculty name");
             return;
         }
 
-        const payload: Faculty = { name, unavailability };
+        const payload: Faculty = { email, unavailability };
 
         const response = await fetch("/api/faculty", {
             method: "POST",
@@ -78,8 +78,8 @@ const FacultyForm = () => {
                 <input
                     type="text"
                     placeholder="Faculty Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="p-2 border rounded-sm"
                 />
 
@@ -128,7 +128,7 @@ const FacultyForm = () => {
                     <button
                         type="reset"
                         onClick={() => {
-                            setName("");
+                            setEmail("");
                             setUnavailability(initialUnavailability);
                         }}
                         className="bg-gray-300 text-black p-2 rounded-sm grow"

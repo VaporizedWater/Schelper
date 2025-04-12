@@ -33,7 +33,7 @@ const FacultyDisplayPage = () => {
             <h1 className="text-2xl font-semibold mb-6">Faculty Unavailability</h1>
             {facultyData.map((faculty) => (
                 <div key={faculty._id} className="mb-6 border-b pb-4">
-                    <h2 className="text-xl font-medium mb-2">{faculty.name}</h2>
+                    <h2 className="text-xl font-medium mb-2">{faculty.email}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                         {Object.entries(faculty.unavailability).map(([day, slots]) => (
                             <div key={day}>

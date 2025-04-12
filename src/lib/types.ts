@@ -180,7 +180,7 @@ export type CalendarAction =
 
 export type Faculty = {
     _id?: string;
-    name: string;
+    email: string;
     unavailability: {
         mon: { start: string; end: string }[];
         tue: { start: string; end: string }[];
