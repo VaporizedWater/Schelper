@@ -7,7 +7,6 @@ import LeftMenu from '@/components/LeftMenu/LeftMenu';
 import CalendarNav from '@/components/CalendarNav/CalendarNav';
 import { useSearchParams } from 'next/navigation';
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
-import { CombinedClass } from '@/lib/types';
 
 const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);

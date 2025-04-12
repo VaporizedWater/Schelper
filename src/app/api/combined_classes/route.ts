@@ -1,35 +1,17 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
-import { CalendarType, Class, ClassProperty, CombinedClass } from "@/lib/types";
+import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
 import {
-    AnyBulkWriteOperation,
-    BulkWriteResult,
-    // BulkWriteResult,
     Collection,
     Document,
-    // InsertManyResult,
     ObjectId,
     OptionalId,
 } from "mongodb";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("combined_classes") as Collection<Document>;
-
-function handleBulkWriteResult(result: BulkWriteResult) {
-    if (result.ok) {
-        return new Response(JSON.stringify({ success: true }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-        });
-    } else {
-        return new Response(JSON.stringify({ success: false }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-        });
-    }
-}
 
 export async function GET(request: Request) {
     const collection = client.db("class-scheduling-app").collection("users");

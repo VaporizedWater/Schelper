@@ -7,7 +7,6 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useEffect, useState } from "react";
 import DropDown from "../DropDown/DropDown";
 import { useSearchParams } from "next/navigation";
-import { CombinedClass } from "@/lib/types";
 
 const Filters = () => {
     const { tagList, allClasses, updateAllClasses } = useCalendarContext();
@@ -56,7 +55,7 @@ const Filters = () => {
                 visible: isVisible
             };
         });
-        
+
         updateAllClasses(updatedClasses);
     };
 
