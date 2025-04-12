@@ -1,4 +1,3 @@
-import { turborepoTraceAccess } from "next/dist/build/turborepo-access-trace";
 import { newDefaultEmptyCalendar } from "./common";
 import { CalendarType, CohortType, CombinedClass, tagListType } from "./types";
 
@@ -87,6 +86,27 @@ export async function loadCalendar(userEmail: string): Promise<CalendarType> {
     } catch (error) {
         console.error("Failed to load combined classes:", error);
         return newDefaultEmptyCalendar();
+    }
+}
+
+export async function loadCohorts(userEmail: string, loadAll: string): Promise<CohortType[]> {
+    try {
+        const response = await fetchWithTimeout("./api/cohorts", {
+            headers: {
+                userEmail: userEmail,
+                loadAll: loadAll,
+            },
+        });
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const cohorts = await parseJsonResponse<CohortType[]>(response);
+        return cohorts;
+    } catch (error) {
+        console.error("Error fetching cohorts:", error);
+        return [];
     }
 }
 

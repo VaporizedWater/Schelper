@@ -1,4 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
+import { ObjectId } from "mongodb";
 import { Session } from "next-auth";
 import { ReactNode } from "react";
 
@@ -145,8 +146,8 @@ export type UserType = {
     email: string;
     current_calendar: string;
     calendars: CalendarType[];
-    current_cohort: string;
-    cohorts: string[];
+    current_cohort: ObjectId;
+    cohorts: ObjectId[];
 };
 
 export type CalendarState = {
