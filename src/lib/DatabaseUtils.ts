@@ -113,7 +113,6 @@ export async function insertTag(tagName: string): Promise<string | null> {
 
 // --------
 // PUTS/UPDATES
-
 export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
     try {
         // Create a deep copy to avoid mutating the original objects
@@ -139,22 +138,6 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[], ca
         return result.success;
     } catch (error) {
         console.error("Failed to insert class:", error);
-        return false;
-    }
-}
-
-export async function updateCalendarClasses(classIds: string[]) {
-    try {
-        const response = await fetchWithTimeout("api/calendar", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(classIds),
-        });
-
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
-    } catch (error) {
-        console.error("Failed to update calendar classes:", error);
         return false;
     }
 }
