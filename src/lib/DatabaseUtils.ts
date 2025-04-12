@@ -120,6 +120,7 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[], ca
         const classesToSend = combinedClasses.map((cls) => ({
             ...cls,
             events: undefined, // Only set events to undefined in the copy
+            visible: undefined, // Only set visible to undefined in the copy
         }));
 
         const payload = {
