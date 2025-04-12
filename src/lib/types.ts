@@ -106,7 +106,7 @@ export type ConflictType = {
 export type tagListType = Map<string, Set<string>>; // Map of tag ids to a set of class ids
 
 export type CalendarContextType = {
-    currentCalendarId: string;
+    currentCalendar: CalendarType;
 
     allClasses: CombinedClass[];
     currentCombinedClass?: CombinedClass | undefined;
@@ -151,7 +151,6 @@ export type UserType = {
 export type CalendarState = {
     classes: {
         all: CombinedClass[];
-        // display: CombinedClass[];
         current: CombinedClass | undefined;
     };
     tags: tagListType;
@@ -161,12 +160,11 @@ export type CalendarState = {
     };
     conflicts: ConflictType[];
     user: Session | null;
-    currentCalendarId: string;
+    currentCalendar: CalendarType;
 };
 
 export type CalendarAction =
-    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: tagListType, currentCalendarId: string} }
-    // | { type: "SET_DISPLAY_CLASSES"; payload: CombinedClass[] }
+    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: tagListType, currentCalendar: CalendarType} }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }
     | { type: "SET_CONFLICTS"; payload: ConflictType[] }
@@ -188,22 +186,5 @@ export type Faculty = {
         wed: { start: string; end: string }[];
         thu: { start: string; end: string }[];
         fri: { start: string; end: string }[];
-    };
-};
-
-// export type CalendarData = {
-//     _id: string;
-//     classes: string[];
-//     semester: string;
-//     year: string;
-// };
-
-export type UserData = {
-    success: boolean;
-    calendar: {
-        _id: string;
-        email: string;
-        calendars: string[];
-        current_calendar: string;
     };
 };

@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ReactNodeChildren, tagListType } from '@/lib/types';
 import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses } from '@/lib/DatabaseUtils';
-import { dayToDate, initialCalendarState, newDefaultEmptyClass } from '@/lib/common';
+import { dayToDate, initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
@@ -173,7 +173,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     error: null
                 },
                 user: state.user,
-                currentCalendarId: action.payload.currentCalendarId
+                currentCalendar: action.payload.currentCalendar
             };
         }
 
@@ -459,18 +459,19 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         loadTags()
                     ]);
 
-                    console.log("CALENDAR\n", calendar);
+                    const classes = calendar.classes;
+                    calendar.classes = [];
     
                     if (mounted) {
                         dispatch({
                             type: 'INITIALIZE_DATA',
-                            payload: { classes: calendar.classes, tags: allTags, currentCalendarId: calendar._id }
+                            payload: { classes: classes, tags: allTags, currentCalendar: calendar }
                         });
                     }
                 } else {
                     dispatch({
                         type: 'INITIALIZE_DATA',
-                        payload: { classes: [], tags: new Map(), currentCalendarId: state.currentCalendarId }
+                        payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar }
                     });
                 }
             } catch (err) {
@@ -503,7 +504,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
     // Memoize context value to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({
         // Calendar ID
-        currentCalendarId: state.currentCalendarId,
+        currentCalendar: state.currentCalendar,
 
         // Classes
         allClasses: state.classes.all,
@@ -528,7 +529,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         newDefaultEmptyClass()
                     ], 
                     tags: new Map(),
-                    currentCalendarId: ""
+                    currentCalendar: newDefaultEmptyCalendar()
                 }
             });
         },
@@ -543,7 +544,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             try {
                 console.log('UPDATE_CLASS');
 
-                await updateCombinedClasses([cls], state.currentCalendarId);
+                await updateCombinedClasses([cls], state.currentCalendar._id);
 
                 dispatch({ type: 'UPDATE_CLASS', payload: cls });
 
@@ -556,7 +557,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         updateAllClasses: (classes: CombinedClass[]) => {
             // console.time("updateAllClasses");
-            const payload = { classes, tags: state.tags, currentCalendarId: state.currentCalendarId };
+            const payload = { classes, tags: state.tags, currentCalendar: state.currentCalendar };
             console.log('INITIALIZE_DATA', classes);
             dispatch({ type: 'INITIALIZE_DATA', payload });
             // console.timeEnd("updateAllClasses");
@@ -583,7 +584,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         tags: classToUpdate.properties.tags.filter(t => t !== tagId)
                     }
                 };
-                updateCombinedClasses([updatedClass], state.currentCalendarId);
+                updateCombinedClasses([updatedClass], state.currentCalendar._id);
             }
         },
 
@@ -601,7 +602,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         tags: []
                     }
                 };
-                updateCombinedClasses([updatedClass], state.currentCalendarId);
+                updateCombinedClasses([updatedClass], state.currentCalendar._id);
             }
         },
 
@@ -622,7 +623,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                                 tags: c.properties.tags.filter(t => t !== tagId)
                             }
                         };
-                        updateCombinedClasses([updatedClass], state.currentCalendarId);
+                        updateCombinedClasses([updatedClass], state.currentCalendar._id);
                     });
             }
         },
@@ -640,7 +641,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         tags: []
                     }
                 };
-                updateCombinedClasses([updatedClass], state.currentCalendarId);
+                updateCombinedClasses([updatedClass], state.currentCalendar._id);
             });
         },
 
@@ -651,7 +652,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             dispatch({ type: 'SET_LOADING', payload: true });
 
             // Use bulk update instead of individual updates
-            updateCombinedClasses(classes, state.currentCalendarId).then(() => {
+            updateCombinedClasses(classes, state.currentCalendar._id).then(() => {
                 // Update local state
                 console.log('UPLOAD_CLASSES');
                 dispatch({ type: 'UPLOAD_CLASSES', payload: classes });
@@ -677,7 +678,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         deleteClass: async (classId: string) => {
             try {
-                const success = await deleteCombinedClasses(classId, state.currentCalendarId);
+                const success = await deleteCombinedClasses(classId, state.currentCalendar._id);
 
                 if (!success) {
                     // If API call fails, reload data to restore state

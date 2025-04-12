@@ -8,7 +8,7 @@ import { updateCombinedClasses } from "@/lib/DatabaseUtils";
 
 export default function CalendarSheet() {
     // Get the data from the combined classes in calendar context
-    const { allClasses, updateAllClasses, setCurrentClass, currentCombinedClass, isLoading, currentCalendarId } = useCalendarContext();
+    const { allClasses, updateAllClasses, setCurrentClass, currentCombinedClass, isLoading, currentCalendar } = useCalendarContext();
 
     // Add state to track selected row index
     const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
@@ -149,7 +149,7 @@ export default function CalendarSheet() {
                 } as CombinedClass;
             }).filter(Boolean) as CombinedClass[];
 
-            const success = await updateCombinedClasses(classesToUpdate, currentCalendarId);
+            const success = await updateCombinedClasses(classesToUpdate, currentCalendar._id);
 
             if (success) {
                 console.log("Classes updated successfully");

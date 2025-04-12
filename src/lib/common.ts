@@ -164,5 +164,5 @@ export const initialCalendarState: CalendarState = {
     },
     conflicts: [],
     user: null,
-    currentCalendarId: ""
+    currentCalendar: newDefaultEmptyCalendar()
 };
