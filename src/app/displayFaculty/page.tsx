@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Faculty } from "@/lib/types";
 import { IoBan } from "react-icons/io5";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
+import { LuUserRoundX } from "react-icons/lu";
 
 const FacultyDisplayPage = () => {
     const [facultyData, setFacultyData] = useState<Faculty[]>([]);
@@ -108,16 +109,24 @@ const FacultyDisplayPage = () => {
                     <div className="flex justify-between items-center bg-psublue">
                         {/* Clickable area to toggle dropdown */}
                         <div
-                            className="flex items-center space-x-2 cursor-pointer"
+                            className="cursor-pointer"
                             onClick={() => toggleFaculty(faculty._id!)}
                         >
                             <h2 className="text-xl font-medium mb-2">{faculty.name}</h2>
-                            <span className="text-xl">{expandedFaculty.includes(faculty._id!) ? <MdExpandLess /> : <MdExpandMore />}</span>
+                            <div className="flex items-center space-x-2">
+                                <h2 className="text-xl font-medium">{faculty.email}</h2>
+                                <span className="text-xl">
+                                    {expandedFaculty.includes(faculty._id!)
+                                        ? <MdExpandLess />
+                                        : <MdExpandMore />
+                                    }
+                                </span>
+                            </div>
+
                         </div>
                         {/* Delete Faculty Button */}
                         <button onClick={() => handleDeleteFaculty(faculty._id!)} className="flex items-center space-x-2 text-red-500">
-                            <IoBan size="1em" />
-                            <span>Delete Faculty</span>
+                            <LuUserRoundX size="1.5em" />
                         </button>
                     </div>
                     {/* Render dropdown content if expanded */}

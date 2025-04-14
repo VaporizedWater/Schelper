@@ -114,7 +114,7 @@ const Calendar = () => {
     // Enhanced findClass that uses our eventMap for better performance
     function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {
         const displayClasses = allClasses.filter(cls => cls.visible);
-        
+
         // Get the class directly from the event's extendedProps
         if (info.event.extendedProps?.combinedClass) {
             return info.event.extendedProps.combinedClass as CombinedClass;
@@ -156,10 +156,20 @@ const Calendar = () => {
             console.log("Current class: ", foundClass);
 
             // Use the instructor's name to find the matching Faculty record
-            const instructorName = foundClass.properties.instructor_name;
-            const matchedFaculty = facultyList.find(
-                (faculty) => faculty.name.trim().toLowerCase() === instructorName.trim().toLowerCase()
-            );
+            const instructorEmailRaw = foundClass.properties.instructor_email;
+            if (!instructorEmailRaw) {
+                console.warn("Instructor email is missing from class data");
+                setFacultyBusinessHours([]);
+                return;
+            }
+
+            const instructorLocalPart = instructorEmailRaw.trim().toLowerCase().split("@")[0];
+
+            const matchedFaculty = facultyList.find((faculty) => {
+                const facultyEmailRaw = (faculty.email || "").trim().toLowerCase();
+                const facultyLocalPart = facultyEmailRaw.split("@")[0];
+                return facultyLocalPart === instructorLocalPart;
+            });
 
             if (matchedFaculty) {
                 console.log("Matched faculty:", matchedFaculty);
