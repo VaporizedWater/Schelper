@@ -162,6 +162,7 @@ const Calendar = () => {
             );
 
             if (matchedFaculty) {
+                console.log("Matched faculty:", matchedFaculty);
                 const dayMapping: { [key: string]: number } = {
                     mon: 1,
                     tue: 2,
@@ -200,6 +201,7 @@ const Calendar = () => {
     const handleDateClick = () => {
         unselectAll();
         setCurrentClass(newDefaultEmptyClass());
+        setFacultyBusinessHours([]);
     };
 
     const handleEventDrop = (info: EventDropArg) => {
