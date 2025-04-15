@@ -32,22 +32,16 @@ export async function POST(request: Request) {
         const collection = client.db("class-scheduling-app").collection("faculty");
 
         const result = await collection.insertOne(facultyDataToInsert);
-        return new Response(
-            JSON.stringify({ success: true, insertedId: result.insertedId }),
-            {
-                status: 200,
-                headers: { "Content-Type": "application/json" },
-            }
-        );
+        return new Response(JSON.stringify({ success: true, insertedId: result.insertedId }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
     } catch (error) {
         console.error("Error in POST /api/faculty:", error);
-        return new Response(
-            JSON.stringify({ success: false, error: "Internal server error" }),
-            {
-                status: 500,
-                headers: { "Content-Type": "application/json" },
-            }
-        );
+        return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 }
 
@@ -61,42 +55,30 @@ export async function DELETE(request: Request) {
             // If day, start, and end are provided, remove that specific time slot from the faculty document
             const updateResult = await collection.updateOne(
                 { _id: new ObjectId(facultyId) },
-                { $pull: { [`unavailability.${day}`]: { start, end } } as any }
+                { $pull: { [`unavailability.${day}`]: { start, end } } as any } // eslint-disable-line @typescript-eslint/no-explicit-any
             );
-            return new Response(
-                JSON.stringify({ success: true, updated: updateResult.modifiedCount }),
-                {
-                    status: 200,
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
+            return new Response(JSON.stringify({ success: true, updated: updateResult.modifiedCount }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
         } else if (facultyId) {
             // Otherwise, if only facultyId is provided, delete the entire faculty record
             const deleteResult = await collection.deleteOne({ _id: new ObjectId(facultyId) });
-            return new Response(
-                JSON.stringify({ success: true, deleted: deleteResult.deletedCount }),
-                {
-                    status: 200,
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
+            return new Response(JSON.stringify({ success: true, deleted: deleteResult.deletedCount }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
         } else {
-            return new Response(
-                JSON.stringify({ success: false, error: "Missing facultyId" }),
-                {
-                    status: 400,
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
+            return new Response(JSON.stringify({ success: false, error: "Missing facultyId" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
         }
     } catch (error) {
         console.error("Error in DELETE /api/faculty:", error);
-        return new Response(
-            JSON.stringify({ success: false, error: "Internal server error" }),
-            {
-                status: 500,
-                headers: { "Content-Type": "application/json" },
-            }
-        );
+        return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 }
