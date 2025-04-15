@@ -1,7 +1,7 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
-import { Collection, Document } from "mongodb";
+import { Collection, Document, ObjectId } from "mongodb";
 import { Faculty } from "@/lib/types";
 
 const client = await clientPromise;
@@ -51,3 +51,52 @@ export async function POST(request: Request) {
     }
 }
 
+export async function DELETE(request: Request) {
+    try {
+        // Expecting a JSON body with facultyId and optionally day, start, and end
+        const { facultyId, day, start, end } = await request.json();
+        const collection = client.db("class-scheduling-app").collection("faculty");
+
+        if (day && start && end) {
+            // If day, start, and end are provided, remove that specific time slot from the faculty document
+            const updateResult = await collection.updateOne(
+                { _id: new ObjectId(facultyId) },
+                { $pull: { [`unavailability.${day}`]: { start, end } } as any }
+            );
+            return new Response(
+                JSON.stringify({ success: true, updated: updateResult.modifiedCount }),
+                {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+        } else if (facultyId) {
+            // Otherwise, if only facultyId is provided, delete the entire faculty record
+            const deleteResult = await collection.deleteOne({ _id: new ObjectId(facultyId) });
+            return new Response(
+                JSON.stringify({ success: true, deleted: deleteResult.deletedCount }),
+                {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+        } else {
+            return new Response(
+                JSON.stringify({ success: false, error: "Missing facultyId" }),
+                {
+                    status: 400,
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+        }
+    } catch (error) {
+        console.error("Error in DELETE /api/faculty:", error);
+        return new Response(
+            JSON.stringify({ success: false, error: "Internal server error" }),
+            {
+                status: 500,
+                headers: { "Content-Type": "application/json" },
+            }
+        );
+    }
+}

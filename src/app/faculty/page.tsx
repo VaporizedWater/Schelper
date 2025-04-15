@@ -14,6 +14,7 @@ const initialUnavailability: Faculty["unavailability"] = {
 
 const FacultyForm = () => {
     const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
     const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
 
@@ -52,7 +53,12 @@ const FacultyForm = () => {
             return;
         }
 
-        const payload: Faculty = { name, unavailability };
+        if (!email) {
+            alert("Please enter a faculty email");
+            return;
+        }
+
+        const payload: Faculty = { name, email, unavailability };
 
         const response = await fetch("/api/faculty", {
             method: "POST",
@@ -80,6 +86,14 @@ const FacultyForm = () => {
                     placeholder="Faculty Name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
+                    className="p-2 border rounded-sm"
+                />
+
+                <input
+                    type="text"
+                    placeholder="Faculty email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="p-2 border rounded-sm"
                 />
 

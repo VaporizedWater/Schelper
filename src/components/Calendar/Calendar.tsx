@@ -156,12 +156,23 @@ const Calendar = () => {
             console.log("Current class: ", foundClass);
 
             // Use the instructor's name to find the matching Faculty record
-            const instructorName = foundClass.properties.instructor_name;
-            const matchedFaculty = facultyList.find(
-                (faculty) => faculty.name.trim().toLowerCase() === instructorName.trim().toLowerCase()
-            );
+            const instructorEmailRaw = foundClass.properties.instructor_email;
+            if (!instructorEmailRaw) {
+                console.warn("Instructor email is missing from class data");
+                setFacultyBusinessHours([]);
+                return;
+            }
+
+            const instructorLocalPart = instructorEmailRaw.trim().toLowerCase().split("@")[0];
+
+            const matchedFaculty = facultyList.find((faculty) => {
+                const facultyEmailRaw = (faculty.email || "").trim().toLowerCase();
+                const facultyLocalPart = facultyEmailRaw.split("@")[0];
+                return facultyLocalPart === instructorLocalPart;
+            });
 
             if (matchedFaculty) {
+                console.log("Matched faculty:", matchedFaculty);
                 const dayMapping: { [key: string]: number } = {
                     mon: 1,
                     tue: 2,
@@ -200,6 +211,7 @@ const Calendar = () => {
     const handleDateClick = () => {
         unselectAll();
         setCurrentClass(newDefaultEmptyClass());
+        setFacultyBusinessHours([]);
     };
 
     const handleEventDrop = (info: EventDropArg) => {
