@@ -53,7 +53,7 @@ export type ClassProperty = {
     total_enrolled: string;
     total_waitlisted: string;
     cohort: string;
-    tags: string[];
+    tags: tagType[];
 };
 
 export type CombinedClass = {
@@ -103,7 +103,11 @@ export type ConflictType = {
     conflictType: string;
 };
 
-export type tagListType = Map<string, Set<string>>; // Map of tag ids to a set of class ids
+export type tagCategory = "cohort" | "room" | "instructor" | "subject" | "level" | "user";
+
+export type tagType = { tagName: string; tagCategory: tagCategory };
+
+export type tagListType = Map<string, { tagCategory: tagCategory; classIds: Set<string> }>; // Map of tag id to a set of class ids
 
 export type CalendarContextType = {
     currentCalendar: CalendarType;

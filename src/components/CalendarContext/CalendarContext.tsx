@@ -13,11 +13,11 @@ const buildTagMapping = (classes: CombinedClass[], existingMapping?: tagListType
     const mapping: tagListType = existingMapping || new Map();
 
     classes.forEach(cls => {
-        cls.properties.tags?.forEach(tag => {
-            if (!mapping.has(tag)) {
-                mapping.set(tag, new Set());
+        cls.properties.tags?.forEach((tag) => {
+            if (!mapping.has(tag.tagName)) {
+                mapping.set(tag.tagName, { tagCategory: tag.tagCategory, classIds: new Set() });
             }
-            mapping.get(tag)?.add(cls._id);
+            mapping.get(tag.tagName)?.classIds.add(cls._id);
         });
     });
 
@@ -154,7 +154,7 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
 function calendarReducer(state: CalendarState, action: CalendarAction): CalendarState {
     switch (action.type) {
         case 'INITIALIZE_DATA': {
-            
+
             // console.time("INITIALIZE_DATA");
             const classes = action.payload.classes;
             // const events = createEventsFromClasses(classes);
@@ -239,14 +239,14 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
             // Update tag mapping
             const newMapping = new Map(state.tags);
-            const classIds = newMapping.get(tagId);
+            const tagCategoryAndClassIds = newMapping.get(tagId);
 
-            if (classIds) {
-                classIds.delete(classId);
-                if (classIds.size === 0) {
+            if (tagCategoryAndClassIds) {
+                tagCategoryAndClassIds.classIds.delete(classId);
+                if (tagCategoryAndClassIds.classIds.size === 0) {
                     newMapping.delete(tagId);
                 } else {
-                    newMapping.set(tagId, classIds);
+                    newMapping.set(tagId, tagCategoryAndClassIds);
                 }
             }
 
@@ -257,7 +257,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                         ...c,
                         properties: {
                             ...c.properties,
-                            tags: c.properties.tags.filter(t => t !== tagId)
+                            tags: c.properties.tags.filter(t => t.tagName !== tagId)
                         }
                     };
                 }
@@ -295,9 +295,9 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
             // Update tag mapping
             const newMapping = new Map(state.tags);
-            for (const [tagId, classIds] of newMapping.entries()) {
-                classIds.delete(classId);
-                if (classIds.size === 0) {
+            for (const [tagId, tagCategoryAndClassIds] of newMapping.entries()) {
+                tagCategoryAndClassIds.classIds.delete(classId);
+                if (tagCategoryAndClassIds.classIds.size === 0) {
                     newMapping.delete(tagId);
                 }
             }
@@ -316,7 +316,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
         case 'UNLINK_ALL_CLASSES_FROM_TAG': {
             const tagId = action.payload;
-            const classIds = state.tags.get(tagId);
+            const classIds = state.tags.get(tagId)?.classIds;
             const affectedClassIds = classIds ? Array.from(classIds) : [];
 
             // Update classes
@@ -326,7 +326,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                         ...c,
                         properties: {
                             ...c.properties,
-                            tags: c.properties.tags.filter(t => t !== tagId)
+                            tags: c.properties.tags.filter(t => t.tagName !== tagId)
                         }
                     };
                 }
@@ -402,9 +402,11 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
             // Update tag mapping
             const newMapping = new Map(state.tags);
-            for (const [tagName, classIds] of newMapping.entries()) {
+            for (const [tagName, tagCategoryAndclassIds] of newMapping.entries()) {
                 // Process all tag mappings at once
                 let modified = false;
+
+                const classIds = tagCategoryAndclassIds.classIds;
 
                 if (classIds.has(classIdToDelete)) {
                     classIds.delete(classIdToDelete);
@@ -459,9 +461,11 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         loadTags()
                     ]);
 
+                    console.log("ALL TAGS", allTags);
+
                     const classes = calendar.classes;
                     calendar.classes = [];
-    
+
                     if (mounted) {
                         dispatch({
                             type: 'INITIALIZE_DATA',
@@ -527,7 +531,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 type: 'INITIALIZE_DATA', payload: {
                     classes: [
                         newDefaultEmptyClass()
-                    ], 
+                    ],
                     tags: new Map(),
                     currentCalendar: newDefaultEmptyCalendar()
                 }
@@ -581,7 +585,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     ...classToUpdate,
                     properties: {
                         ...classToUpdate.properties,
-                        tags: classToUpdate.properties.tags.filter(t => t !== tagId)
+                        tags: classToUpdate.properties.tags.filter(t => t.tagName !== tagId)
                     }
                 };
                 updateCombinedClasses([updatedClass], state.currentCalendar._id);
@@ -611,7 +615,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             dispatch({ type: 'UNLINK_ALL_CLASSES_FROM_TAG', payload: tagId });
 
             // Update all affected classes in the database
-            const classIds = state.tags.get(tagId);
+            const classIds = state.tags.get(tagId)?.classIds;
             if (classIds) {
                 state.classes.all
                     .filter(c => classIds.has(c._id))
@@ -620,7 +624,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                             ...c,
                             properties: {
                                 ...c.properties,
-                                tags: c.properties.tags.filter(t => t !== tagId)
+                                tags: c.properties.tags.filter(t => t.tagName !== tagId)
                             }
                         };
                         updateCombinedClasses([updatedClass], state.currentCalendar._id);
@@ -660,19 +664,19 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 // Force refresh data from server
                 setForceUpdate(Date.now().toString());
             })
-            .catch(error => {
-                console.error("Error uploading classes:", error);
-                console.log('SET_ERROR');
-                dispatch({
-                    type: 'SET_ERROR',
-                    payload: 'Failed to upload classes. Please try again.'
+                .catch(error => {
+                    console.error("Error uploading classes:", error);
+                    console.log('SET_ERROR');
+                    dispatch({
+                        type: 'SET_ERROR',
+                        payload: 'Failed to upload classes. Please try again.'
+                    });
+
+                    // Make sure to set loading to false if there's an error
+                    dispatch({ type: 'SET_LOADING', payload: false });
                 });
 
-                // Make sure to set loading to false if there's an error
-                dispatch({ type: 'SET_LOADING', payload: false });
-            });
 
-           
             // console.timeEnd("uploadNewClasses");
         },
 

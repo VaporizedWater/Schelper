@@ -114,7 +114,7 @@ const Calendar = () => {
     // Enhanced findClass that uses our eventMap for better performance
     function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {
         const displayClasses = allClasses.filter(cls => cls.visible);
-        
+
         // Get the class directly from the event's extendedProps
         if (info.event.extendedProps?.combinedClass) {
             return info.event.extendedProps.combinedClass as CombinedClass;

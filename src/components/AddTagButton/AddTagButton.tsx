@@ -3,7 +3,7 @@ import { useState } from "react";
 import { MdAdd, MdExpandLess, MdExpandMore } from "react-icons/md";
 import DropDown from "../DropDown/DropDown";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { insertTag } from "@/lib/DatabaseUtils";
+import { insertTags } from "@/lib/DatabaseUtils";
 
 const AddTagButton = () => {
     const { tagList } = useCalendarContext();
@@ -12,11 +12,11 @@ const AddTagButton = () => {
     const handleAddTag = async () => {
         if (inputValue.trim() !== "") {
             const trimmedValue = inputValue.trim();
-            const result = await insertTag(trimmedValue);
+            const result = await insertTags([{ tagName: trimmedValue, tagCategory: "user" }]);
 
             if (result) {
                 if (!tagList.has(trimmedValue)) {
-                    tagList.set(trimmedValue, new Set());
+                    tagList.set(trimmedValue, { tagCategory: "user", classIds: new Set() });
                 }
                 setInputValue("");
 

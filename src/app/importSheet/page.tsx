@@ -2,8 +2,8 @@
 
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
 import { newDefaultEmptyClass } from '@/lib/common';
-import { loadCohorts } from '@/lib/DatabaseUtils';
-import { CohortType, CombinedClass } from '@/lib/types';
+import { loadCohorts, insertTags } from '@/lib/DatabaseUtils';
+import { CohortType, CombinedClass, tagType } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import xlsx from 'xlsx';
@@ -152,16 +152,16 @@ const ImportSheet = () => {
                                 if (!isNaN(numbers)) {
                                     switch (Math.floor(numbers / 100)) {
                                         case 1:
-                                            classProperties.tags.push("100level");
+                                            classProperties.tags.push({ tagName: "100level", tagCategory: "level" });
                                             break;
                                         case 2:
-                                            classProperties.tags.push("200level");
+                                            classProperties.tags.push({ tagName: "200level", tagCategory: "level" });
                                             break;
                                         case 3:
-                                            classProperties.tags.push("300level");
+                                            classProperties.tags.push({ tagName: "300level", tagCategory: "level" });
                                             break;
                                         case 4:
-                                            classProperties.tags.push("400level");
+                                            classProperties.tags.push({ tagName: "400level", tagCategory: "level" });
                                             break;
                                         default:
                                             break;
@@ -257,7 +257,7 @@ const ImportSheet = () => {
                 const levelTag = extractCourseLevel(combinedClass.data.course_num);
 
                 if (levelTag) {
-                    combinedClass.properties.tags.push(levelTag);
+                    combinedClass.properties.tags.push({ tagName: levelTag, tagCategory: "level" });
                 }
 
                 combinedClasses.push(combinedClass);
@@ -284,7 +284,11 @@ const ImportSheet = () => {
         setIsLoading(false);
     };
 
-    const handleImport = () => {
+    const handleImport = async () => {
+        // Track all unique tags that need to be created
+        const tagsToCreate: tagType[] = [];
+        const tagTracker = new Map<string, boolean>(); // To avoid duplicates
+
         const classesToImport = parsedClasses
             .filter(c => selectedClasses.has(getUniqueClassId(c)))
             .map(cls => {
@@ -293,7 +297,39 @@ const ImportSheet = () => {
 
                 // Remove any existing cohort tags
                 const cohortTags = ["freshman", "sophomore", "junior", "senior"];
-                const filteredTags = cls.properties.tags.filter(tag => !cohortTags.includes(tag));
+                const filteredTags = cls.properties.tags.filter(tag => !cohortTags.includes(tag.tagName));
+
+                // Create subject tag if course subject exists
+                const updatedTags = [...filteredTags];
+
+                // Helper function to add a tag both to class and our collection list
+                const addTag = (tagName: string, tagCategory: string) => {
+                    const tag = { tagName, tagCategory } as tagType;
+                    updatedTags.push(tag);
+
+                    // Track unique tags for database insertion
+                    const key = `${tagName}-${tagCategory}`;
+                    if (!tagTracker.has(key)) {
+                        tagTracker.set(key, true);
+                        tagsToCreate.push(tag);
+                    }
+                };
+
+                // Add subject tag (e.g., "CS", "MATH")
+                if (cls.data.course_subject) {
+                    const subjectName = cls.data.course_subject.toLowerCase();
+                    addTag(subjectName, "subject");
+                }
+
+                // Add room tag if it exists and isn't empty
+                if (cls.properties.room && cls.properties.room.trim() !== '') {
+                    addTag(cls.properties.room.toLowerCase().replace(/\s+/g, ""), "room");
+                }
+
+                // Add instructor tag if it exists and isn't empty
+                if (cls.properties.instructor_name && cls.properties.instructor_name.trim() !== '') {
+                    addTag(cls.properties.instructor_name.toLowerCase().replace(/\s+/g, ""), "instructor");
+                }
 
                 // Add the new cohort tag
                 if (!selectedCohort || selectedCohort === "None") {
@@ -301,23 +337,30 @@ const ImportSheet = () => {
                         ...cls,
                         properties: {
                             ...cls.properties,
-                            tags: [...filteredTags]
+                            tags: updatedTags
                         }
                     };
                 }
 
                 const newCohortTag = cohortToTag(selectedCohort);
+                addTag(newCohortTag, "cohort");
 
                 return {
                     ...cls,
                     properties: {
                         ...cls.properties,
                         cohort: selectedCohort,
-                        tags: [...filteredTags, newCohortTag]
+                        tags: updatedTags
                     }
                 };
             });
 
+        // Create all tags in the database first
+        if (tagsToCreate.length > 0) {
+            await insertTags(tagsToCreate);
+        }
+
+        // Then upload the classes with tags
         uploadNewClasses(classesToImport);
         router.back();
     };

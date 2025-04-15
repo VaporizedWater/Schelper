@@ -41,7 +41,7 @@ const FacultyDisplayPage = () => {
                                 {slots.length > 0 ? (
                                     slots.map((slot, index) => (
                                         <div key={index} className="mb-1">
-                                            {slot.start || "–"} to {slot.end || "–"}
+                                            {slot.start || "-"} to {slot.end || "-"}
                                         </div>
                                     ))
                                 ) : (
