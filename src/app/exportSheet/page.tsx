@@ -80,7 +80,6 @@ const ExportSheet = () => {
                 'Instructor': classItem.properties.instructor_name,
                 'Instructor Email': classItem.properties.instructor_email || '',
                 'Room': classItem.properties.room,
-                'Location': classItem.data.location,
                 'Days': classItem.properties.days.join(', '),
                 'Start Time': classItem.properties.start_time,
                 'End Time': classItem.properties.end_time,
@@ -130,7 +129,6 @@ const ExportSheet = () => {
                 classItem.properties.instructor_name,
                 classItem.properties.instructor_email || '',
                 classItem.properties.room,
-                classItem.data.location,
                 classItem.properties.days.join(', '),
                 classItem.properties.start_time,
                 classItem.properties.end_time,
@@ -286,7 +284,6 @@ const ExportSheet = () => {
                                             <td className="p-2 border">{classItem.properties.instructor_name}</td>
                                             <td className="p-2 border">{classItem.properties.instructor_email || ''}</td>
                                             <td className="p-2 border">{classItem.properties.room}</td>
-                                            <td className="p-2 border">{classItem.data.location}</td>
                                             <td className="p-2 border">{classItem.properties.days.join(', ')}</td>
                                             <td className="p-2 border">{classItem.properties.start_time}</td>
                                             <td className="p-2 border">{classItem.properties.end_time}</td>

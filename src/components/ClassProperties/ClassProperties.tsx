@@ -18,7 +18,6 @@ const ClassProperties = () => {
     const [instructor, setInstructor] = useState(initialProps.instructor_name || '');
     const [email, setEmail] = useState(initialProps.instructor_email || '');
     const [room, setRoom] = useState(initialProps.room || '');
-    const [location, setLocation] = useState(initialData.location || '');
     const [cohort, setCohort] = useState(initialProps.cohort || '');
 
     useEffect(() => {
@@ -31,7 +30,6 @@ const ClassProperties = () => {
             setInstructor(newProps.instructor_name || '');
             setEmail(newProps.instructor_email || '');
             setRoom(newProps.room || '');
-            setLocation(newData.location || '');
             setCohort(newProps.cohort || '');
         }
     }, [currentCombinedClass]);
@@ -92,16 +90,6 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.room = newVal;
-            updateOneClass(modifiedClass);
-        }
-    };
-
-    const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newVal = e.target.value;
-        setLocation(newVal);
-        if (currentCombinedClass) {
-            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-            modifiedClass.data.location = newVal;
             updateOneClass(modifiedClass);
         }
     };
@@ -177,15 +165,6 @@ const ClassProperties = () => {
                             className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
                             value={room}
                             onChange={handleRoomChange}
-                        />
-                    </li>
-                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
-                        <span className='w-full text-start font-semibold'>Location</span>
-                        <input
-                            type="text"
-                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                            value={location}
-                            onChange={handleLocationChange}
                         />
                     </li>
                     <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">

@@ -1,5 +1,6 @@
 import { AnyBulkWriteOperation, BulkWriteResult, Collection, Document, InsertManyResult } from "mongodb";
 
+// Not currently used
 export async function doBulkOperation(
     collection: Collection,
     bulkOps: AnyBulkWriteOperation<Document>[]
@@ -9,6 +10,7 @@ export async function doBulkOperation(
     return handleBulkWriteResult(result);
 }
 
+// In use
 export function handleBulkWriteResult(result: BulkWriteResult) {
     if (result.ok) {
         return new Response(JSON.stringify({ success: true }), {
@@ -23,6 +25,7 @@ export function handleBulkWriteResult(result: BulkWriteResult) {
     }
 }
 
+// Not currently used
 export function handleInsertManyResult(result: InsertManyResult) {
     if (result.insertedCount > 0) {
         return new Response(JSON.stringify({ success: true, count: result.insertedCount }), {

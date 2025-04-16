@@ -35,7 +35,6 @@ export type Class = {
     course_num: string;
     section: string;
     title: string;
-    location: string;
     enrollment_cap: string;
     waitlist_cap: string;
 };
