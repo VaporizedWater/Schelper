@@ -11,26 +11,26 @@ const LeftMenu = () => {
     return (
         <div className="flex h-full">
             {/* Icon sidebar */}
-            <div className="flex-none flex flex-col py-2 bg-gray-100 border-r border-gray-300 w-14">
+            <div className="flex-none flex flex-col py-4 bg-gray-100 border-r border-gray-300 w-12">
                 <div
-                    className={`p-3 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'filters'
+                    className={`p-2 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'filters'
                         ? 'bg-blue-600 text-white shadow-lg'
                         : 'hover:bg-gray-700 hover:text-white'
                         }`}
                     onClick={() => setActiveComponent('filters')}
                     title="Filters"
                 >
-                    <FaFilter size={18} />
+                    <FaFilter size={14} />
                 </div>
                 <div
-                    className={`p-3 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'properties'
+                    className={`p-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'properties'
                         ? 'bg-blue-600 text-white shadow-lg'
                         : 'hover:bg-gray-700 hover:text-white'
                         }`}
                     onClick={() => setActiveComponent('properties')}
                     title="Class Properties"
                 >
-                    <FaListUl size={18} />
+                    <FaListUl size={14} />
                 </div>
             </div>
 
@@ -45,7 +45,7 @@ const LeftMenu = () => {
 
                 <div className={`absolute inset-0 transition-opacity duration-200 ${activeComponent === 'properties' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                     }`}>
-                    <div className="h-full pl-4 py-3 overflow-auto">
+                    <div className="h-full pl-2 py-3 overflow-auto">
                         <ClassProperties />
                     </div>
                 </div>

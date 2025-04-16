@@ -42,7 +42,7 @@ const CalendarPage = () => {
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
-        <div className='h-full grid grid-cols-[15%_85%]'>
+        <div className='h-full grid grid-cols-[18%_82%]'>
             <div className='min-w-24 h-full overflow-hidden'>
                 <LeftMenu />
             </div>

@@ -44,7 +44,7 @@ const Home = () => {
 
         const interval = setInterval(cycleImages, 3000); // Increase interval to wait for full transition
         return () => clearInterval(interval);
-    });
+    }, []);
 
     return (
         session?.user == undefined ?
