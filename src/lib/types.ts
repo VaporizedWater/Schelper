@@ -106,6 +106,8 @@ export type ConflictType = {
 export type tagListType = Map<string, Set<string>>; // Map of tag ids to a set of class ids
 
 export type CalendarContextType = {
+    faculty: FacultyType[];
+
     currentCalendar: CalendarType;
 
     allClasses: CombinedClass[];
@@ -139,6 +141,10 @@ export type CalendarContextType = {
     uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
 
     deleteClass: (classId: string) => void;
+
+    updateFaculty: (faculty: FacultyType[]) => void;
+
+    deleteFaculty: (faculty: FacultyType) => void;
 };
 
 export type UserType = {
@@ -163,10 +169,11 @@ export type CalendarState = {
     conflicts: ConflictType[];
     user: Session | null;
     currentCalendar: CalendarType;
+    faculty: FacultyType[];
 };
 
 export type CalendarAction =
-    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType } }
+    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType, faculty: FacultyType[] } }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }
     | { type: "SET_CONFLICTS"; payload: ConflictType[] }
@@ -177,19 +184,34 @@ export type CalendarAction =
     | { type: "UNLINK_ALL_CLASSES_FROM_TAG"; payload: string }
     | { type: "UNLINK_ALL_TAGS_FROM_ALL_CLASSES" }
     | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] }
-    | { type: "DELETE_CLASS"; payload: string };
+    | { type: "DELETE_CLASS"; payload: string }
+    | { type: "UPDATE_FACULTY"; payload: FacultyType[] };
 
-export type Faculty = {
-    _id?: string;
+// export type Faculty = {
+//     _id?: string;
+//     email: string;
+//     unavailability: {
+//         mon: { start: string; end: string }[];
+//         tue: { start: string; end: string }[];
+//         wed: { start: string; end: string }[];
+//         thu: { start: string; end: string }[];
+//         fri: { start: string; end: string }[];
+//     };
+// };
+
+export type FacultyType = {
+    _id: string;
     email: string;
     unavailability: {
-        mon: { start: string; end: string }[];
-        tue: { start: string; end: string }[];
-        wed: { start: string; end: string }[];
-        thu: { start: string; end: string }[];
-        fri: { start: string; end: string }[];
-    };
-};
+        Mon: EventInput[];
+        Tue: EventInput[];
+        Wed: EventInput[];
+        Thu: EventInput[];
+        Fri: EventInput[];
+    }
+}
+
+
 
 export type CohortType = {
     _id?: string;

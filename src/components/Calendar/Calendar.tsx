@@ -7,42 +7,17 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { createEventsFromCombinedClass, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
-import { Faculty, CombinedClass } from "@/lib/types";
+import { createEventsFromCombinedClass, dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
+import { CombinedClass } from "@/lib/types";
+import { match } from "assert";
 
 const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { allClasses, setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
-    const [facultyList, setFacultyList] = useState<Faculty[]>([] as Faculty[]);
-    const [facultyBusinessHours, setFacultyBusinessHours] = useState<BusinessHoursInput>([] as BusinessHoursInput);
-
-    // Local state for events
+    const { faculty, allClasses, setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
     const [events, setEvents] = useState<EventInput[]>([]);
-
-    // Fetch the faculty list 
-    useEffect(() => {
-        const fetchFacultyData = async () => {
-            try {
-                const res = await fetch("/api/faculty");
-                if (res.ok) {
-                    const data = await res.json();
-                    setFacultyList(data);
-                } else {
-                    console.error("Error fetching faculty data");
-                }
-            } catch (error) {
-                console.error("Error fetching faculty data:", error);
-            }
-        };
-
-        fetchFacultyData();
-    }, []);
-
-    useEffect(() => {
-        console.log("DISPLAY EVENTS CHANGED");
-    }, [allClasses]);
+    const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
     // Create events efficiently when displayClasses changes
     useEffect(() => {
@@ -157,39 +132,27 @@ const Calendar = () => {
 
             // Use the instructor's email to find the matching Faculty record
             const instructorEmail = foundClass.properties.instructor_email;
-            const matchedFaculty = facultyList.find(
-                (faculty) => faculty.email.trim().toLowerCase() === instructorEmail.trim().toLowerCase()
+            const matchedFaculty = faculty.find(
+                (faculty) => faculty.email === instructorEmail
             );
 
             if (matchedFaculty) {
-                const dayMapping: { [key: string]: number } = {
-                    mon: 1,
-                    tue: 2,
-                    wed: 3,
-                    thu: 4,
-                    fri: 5,
-                };
-
                 const newBusinessHours: BusinessHoursInput = [] as EventInput[];
 
                 Object.entries(matchedFaculty.unavailability).forEach(([dayKey, slots]) => {
-                    // Only add businessHours if there are time slots present
-                    if (slots.length && dayMapping[dayKey] !== undefined) {
-                        slots.forEach((slot) => {
-                            newBusinessHours.push({
-                                daysOfWeek: [dayMapping[dayKey]],
-                                startTime: slot.start,
-                                endTime: slot.end,
-                            });
+                    slots.forEach(event => {
+                        newBusinessHours.push({
+                            daysOfWeek: [dayIndex[dayKey]],
+                            startTime: event.start,
+                            endTime: event.end,
                         });
-                    }
+                    });
                 });
 
-                // Update the businessHours
-                setFacultyBusinessHours(newBusinessHours);
+                setBusinessHours(newBusinessHours);
             } else {
                 // If no matching record is found, clear all
-                setFacultyBusinessHours([]);
+                setBusinessHours([]);
             }
         } else {
             console.log("Class not found");
@@ -361,7 +324,7 @@ const Calendar = () => {
                 eventContent={eventContent}
                 eventClassNames={eventClassNames}
                 eventDidMount={eventMounted}
-                businessHours={facultyBusinessHours}
+                businessHours={businessHours}
             />
 
             {/* Add custom CSS for calendar font sizes */}

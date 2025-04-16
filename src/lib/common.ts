@@ -1,5 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CalendarState, CalendarType, Class, ClassProperty, CombinedClass } from "./types";
+import { CalendarState, CalendarType, Class, ClassProperty, CombinedClass, FacultyType } from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
@@ -88,6 +88,20 @@ export function newDefaultEmptyCalendar(): CalendarType {
     };
 }
 
+export function newDefaultEmptyFaculty(): FacultyType {
+    return {
+        _id: "",
+        email: "",
+        unavailability: {
+            Mon: [],
+            Tue: [],
+            Wed: [],
+            Thu: [],
+            Fri: []
+        }
+    };
+}
+
 export function createEventsFromCombinedClass(combinedClass: CombinedClass): EventInput[] {
     const events: EventInput[] = [];
 
@@ -150,6 +164,14 @@ export const dayToDate: { [key: string]: string } = {
     Fri: "2025-01-10",
 };
 
+export const dayIndex: { [key: string]: number } = {
+    Mon: 1,
+    Tue: 2,
+    Wed: 3,
+    Thu: 4,
+    Fri: 5,
+};
+
 // Initial Calendar state
 export const initialCalendarState: CalendarState = {
     classes: {
@@ -164,5 +186,6 @@ export const initialCalendarState: CalendarState = {
     },
     conflicts: [],
     user: null,
-    currentCalendar: newDefaultEmptyCalendar()
+    currentCalendar: newDefaultEmptyCalendar(),
+    faculty: [newDefaultEmptyFaculty()],
 };

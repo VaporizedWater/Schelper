@@ -2,30 +2,29 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Faculty } from "@/lib/types";
+import { FacultyType } from "@/lib/types";
+import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
+import { ShortenedDays } from "@/lib/common";
 
-const initialUnavailability: Faculty["unavailability"] = {
-    mon: [],
-    tue: [],
-    wed: [],
-    thu: [],
-    fri: [],
-};
+// const initialUnavailability: Faculty["unavailability"] = {
+//     mon: [],
+//     tue: [],
+//     wed: [],
+//     thu: [],
+//     fri: [],
+// };
 
 const FacultyForm = () => {
     const [email, setEmail] = useState("");
-    const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
+    const { faculty, updateFaculty, deleteFaculty } = useCalendarContext();
 
-    const addTimeSlot = (day: keyof Faculty["unavailability"]) => {
-        setUnavailability((prev) => ({
-            ...prev,
-            [day]: [...prev[day], { start: "", end: "" }],
-        }));
+    const addTimeSlot = (day: keyof FacultyType["unavailability"]) => {
+        
     };
 
     const updateTimeSlot = (
-        day: keyof Faculty["unavailability"],
+        day: keyof FacultyType["unavailability"],
         index: number,
         field: "start" | "end",
         value: string
@@ -48,11 +47,13 @@ const FacultyForm = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!email) {
-            alert("Please enter a faculty name");
+            alert("Please enter a faculty member's email");
             return;
         }
 
-        const payload: Faculty = { email, unavailability };
+
+
+        const payload: FacultyType = { email, unavailability };
 
         const response = await fetch("/api/faculty", {
             method: "POST",
@@ -67,8 +68,6 @@ const FacultyForm = () => {
             alert("Error saving faculty");
         }
     };
-
-    const days: (keyof Faculty["unavailability"])[] = ["mon", "tue", "wed", "thu", "fri"];
 
     return (
         <div className="p-8 mx-auto">
@@ -86,7 +85,7 @@ const FacultyForm = () => {
                 {/* Unavailability for each day */}
                 <div>
                     <h3 className="text-xl font-medium mb-2">Unavailability</h3>
-                    {days.map((day) => (
+                    {ShortenedDays.map((day) => (
                         <div key={day} className="mb-4">
                             <h4 className="capitalize font-semibold">{day}</h4>
                             {unavailability[day].map((slot, index) => (
