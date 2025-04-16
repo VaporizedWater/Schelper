@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Faculty } from "@/lib/types";
+import { FacultyType } from "@/lib/types";
 import { IoBan } from "react-icons/io5";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { LuUserRoundX } from "react-icons/lu";
 
 const FacultyDisplayPage = () => {
-    const [facultyData, setFacultyData] = useState<Faculty[]>([]);
+    const [facultyData, setFacultyData] = useState<FacultyType[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     // State to keep track of which faculties are expanded (dropdown)
@@ -18,7 +18,7 @@ const FacultyDisplayPage = () => {
             try {
                 const response = await fetch("/api/faculty");
                 if (!response.ok) throw new Error("Error fetching faculty data");
-                const data: Faculty[] = await response.json();
+                const data: FacultyType[] = await response.json();
                 setFacultyData(data);
             } catch (err) {
                 setError((err as Error).message);
@@ -61,7 +61,7 @@ const FacultyDisplayPage = () => {
     // Handler to delete a specific time slot for a given day.
     const handleDeleteTimeSlot = async (
         facultyId: string,
-        day: keyof Faculty["unavailability"],
+        day: keyof FacultyType["unavailability"],
         start: string,
         end: string
     ) => {
@@ -112,7 +112,7 @@ const FacultyDisplayPage = () => {
                             className="cursor-pointer"
                             onClick={() => toggleFaculty(faculty._id!)}
                         >
-                            <h2 className="text-xl font-medium mb-2">{faculty.name}</h2>
+                            <h2 className="text-xl font-medium mb-2">{faculty.email /*This was name, but my type doesnt track that because we never needed it*/}</h2>
                             <div className="flex items-center space-x-2">
                                 <h2 className="text-xl font-medium">{faculty.email}</h2>
                                 <span className="text-xl">
@@ -132,7 +132,7 @@ const FacultyDisplayPage = () => {
                     {/* Render dropdown content if expanded */}
                     {expandedFaculty.includes(faculty._id!) && (
                         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            {(Object.entries(faculty.unavailability) as [keyof Faculty["unavailability"], { start: string; end: string }[]][]).map(([day, slots]) => (
+                            {(Object.entries(faculty.unavailability) as [keyof FacultyType["unavailability"], { start: string; end: string }[]][]).map(([day, slots]) => (
                                 <div key={day}>
                                     <h3 className="capitalize font-semibold underline mb-2">{day}</h3>
                                     {slots.length > 0 ? (

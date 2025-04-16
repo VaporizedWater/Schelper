@@ -1,8 +1,8 @@
 "use client"
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
-import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses } from '@/lib/DatabaseUtils';
+import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
+import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty } from '@/lib/DatabaseUtils';
 import { dayToDate, initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 
@@ -174,6 +174,13 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 },
                 user: state.user,
                 currentCalendar: action.payload.currentCalendar
+            };
+        }
+
+        case 'UPDATE_FACULTY': {
+            return {
+                ...state,
+                faculty: action.payload
             };
         }
 
@@ -456,9 +463,10 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
                 if (session?.user?.email) {
-                    const [calendar, allTags] = await Promise.all([
+                    const [calendar, allTags, faculty] = await Promise.all([
                         loadCalendar(session?.user?.email),
-                        loadTags()
+                        loadTags(),
+                        loadFaculty()
                     ]);
 
                     console.log("ALL TAGS", allTags);
@@ -469,13 +477,13 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     if (mounted) {
                         dispatch({
                             type: 'INITIALIZE_DATA',
-                            payload: { classes: classes, tags: allTags, currentCalendar: calendar }
+                            payload: { classes: classes, tags: allTags, currentCalendar: calendar, faculty: faculty }
                         });
                     }
                 } else {
                     dispatch({
                         type: 'INITIALIZE_DATA',
-                        payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar }
+                        payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar, faculty: state.faculty }
                     });
                 }
             } catch (err) {
@@ -507,6 +515,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
     // Memoize context value to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({
+        // Faculty
+        faculty: state.faculty,
+
         // Calendar ID
         currentCalendar: state.currentCalendar,
 
@@ -525,6 +536,11 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         error: state.status.error,
 
         // Actions
+        updateFaculty: (faculty: FacultyType[]) => {
+            console.log('UPDATE_FACULTY');
+            dispatch({ type: 'UPDATE_FACULTY', payload: faculty });
+        },
+
         resetContextToEmpty: () => {
             console.log('LOGGING OUT, SETTING CONTEXT TO EMPTY');
             dispatch({
@@ -533,7 +549,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         newDefaultEmptyClass()
                     ],
                     tags: new Map(),
-                    currentCalendar: newDefaultEmptyCalendar()
+                    currentCalendar: newDefaultEmptyCalendar(), 
+                    faculty: state.faculty
                 }
             });
         },
@@ -561,7 +578,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         updateAllClasses: (classes: CombinedClass[]) => {
             // console.time("updateAllClasses");
-            const payload = { classes, tags: state.tags, currentCalendar: state.currentCalendar };
+            const payload = { classes, tags: state.tags, currentCalendar: state.currentCalendar, faculty: state.faculty };
             console.log('INITIALIZE_DATA', classes);
             dispatch({ type: 'INITIALIZE_DATA', payload });
             // console.timeEnd("updateAllClasses");
@@ -700,6 +717,22 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 return false;
             }
         },
+
+        deleteFaculty: (facultyToDelete: FacultyType) => {
+            try {
+                console.log('DELETE_FACULTY');
+                if (facultyToDelete._id) {
+                    deleteStoredFaculty(facultyToDelete._id);
+                }
+
+                const updatedFaculty = state.faculty.filter(faculty => faculty._id !== facultyToDelete._id);
+                dispatch({ type: 'UPDATE_FACULTY', payload: updatedFaculty });
+                return true;
+            } catch (error) {
+                console.error("Error deleting faculty:", error);
+                return false;
+            }
+        }
     }), [state]);
 
     return (

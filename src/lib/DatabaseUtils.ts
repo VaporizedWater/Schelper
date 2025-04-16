@@ -1,5 +1,6 @@
+import { headers } from "next/headers";
 import { newDefaultEmptyCalendar } from "./common";
-import { CalendarType, CohortType, CombinedClass, tagCategory, tagListType, tagType } from "./types";
+import { CalendarType, CohortType, CombinedClass, FacultyType, tagCategory, tagListType, tagType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -110,6 +111,17 @@ export async function loadCohorts(userEmail: string, loadAll: string): Promise<C
     }
 }
 
+export async function loadFaculty(): Promise<FacultyType[]> {
+    try {
+        const response = await fetchWithTimeout("./api/faculty");
+        const faculty = await parseJsonResponse<FacultyType[]>(response);
+        return faculty;
+    } catch (error) {
+        console.error("Error fetching faculty:", error);
+        return [];
+    }
+}
+
 // INSERTs/POSTs
 // Insert tags
 export async function insertTags(tags: tagType[]): Promise<boolean> {
@@ -197,6 +209,26 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[], ca
     }
 }
 
+export async function updateFaculty(faculty: FacultyType[]): Promise<boolean | null> {
+    try {
+        const response = await fetchWithTimeout("api/faculty", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ faculty }),
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to insert faculty:", error);
+        return null;
+    }
+}
+
 export async function updateCohort(cohortId: string, cohort: CohortType): Promise<boolean | null> {
     try {
         const response = await fetchWithTimeout(`api/cohorts/${cohortId}`, {
@@ -228,13 +260,29 @@ export async function deleteCombinedClasses(classId: string, calendarId: string)
         const response = await fetchWithTimeout("api/combined_classes", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
+            body: JSON.stringify(payload)
         });
 
         const result = await parseJsonResponse<{ success: boolean }>(response);
         return result.success;
     } catch (error) {
         console.error("Failed to delete classes:", error);
+        return false;
+    }
+}
+
+export async function deleteStoredFaculty(facultyId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/faculty", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ facultyId })
+        });
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete faculty:", error);
         return false;
     }
 }

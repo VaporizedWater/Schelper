@@ -2,14 +2,14 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Faculty } from "@/lib/types";
+import { FacultyType } from "@/lib/types";
 
-const initialUnavailability: Faculty["unavailability"] = {
-    mon: [],
-    tue: [],
-    wed: [],
-    thu: [],
-    fri: [],
+const initialUnavailability: FacultyType["unavailability"] = {
+    Mon: [],
+    Tue: [],
+    Wed: [],
+    Thu: [],
+    Fri: [],
 };
 
 const FacultyForm = () => {
@@ -18,7 +18,7 @@ const FacultyForm = () => {
     const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
 
-    const addTimeSlot = (day: keyof Faculty["unavailability"]) => {
+    const addTimeSlot = (day: keyof FacultyType["unavailability"]) => {
         setUnavailability((prev) => ({
             ...prev,
             [day]: [...prev[day], { start: "", end: "" }],
@@ -26,7 +26,7 @@ const FacultyForm = () => {
     };
 
     const updateTimeSlot = (
-        day: keyof Faculty["unavailability"],
+        day: keyof FacultyType["unavailability"],
         index: number,
         field: "start" | "end",
         value: string
@@ -39,7 +39,7 @@ const FacultyForm = () => {
         });
     };
 
-    const removeTimeSlot = (day: keyof Faculty["unavailability"], index: number) => {
+    const removeTimeSlot = (day: keyof FacultyType["unavailability"], index: number) => {
         setUnavailability((prev) => {
             const updatedSlots = prev[day].filter((_, i) => i !== index);
             return { ...prev, [day]: updatedSlots };
@@ -58,7 +58,7 @@ const FacultyForm = () => {
             return;
         }
 
-        const payload: Faculty = { name, email, unavailability };
+        const payload: FacultyType = { email, unavailability };
 
         const response = await fetch("/api/faculty", {
             method: "POST",
@@ -74,7 +74,7 @@ const FacultyForm = () => {
         }
     };
 
-    const days: (keyof Faculty["unavailability"])[] = ["mon", "tue", "wed", "thu", "fri"];
+    const days: (keyof FacultyType["unavailability"])[] = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
     return (
         <div className="p-8 mx-auto">
@@ -107,14 +107,14 @@ const FacultyForm = () => {
                                 <div key={index} className="flex items-center gap-2 mb-2">
                                     <input
                                         type="time"
-                                        value={slot.start}
+                                        value={slot.start?.toString()}
                                         onChange={(e) => updateTimeSlot(day, index, "start", e.target.value)}
                                         className="p-2 border rounded-sm"
                                     />
                                     <span>to</span>
                                     <input
                                         type="time"
-                                        value={slot.end}
+                                        value={slot.end?.toString()}
                                         onChange={(e) => updateTimeSlot(day, index, "end", e.target.value)}
                                         className="p-2 border rounded-sm"
                                     />
