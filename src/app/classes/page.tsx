@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Class, ClassProperty } from "@/lib/types";
+import { Class, ClassProperty, tagType } from "@/lib/types";
 import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
@@ -43,7 +43,7 @@ const NewClassForm = () => {
         cohort: '',
     } as ClassProperty, { initializeWithValue: false });
 
-    const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<string[]>("selectedTags", [], { initializeWithValue: false });
+    const [selectedTags, setSelectedTags, clearSelectedTags] = useLocalStorage<tagType[]>("selectedTags", [], { initializeWithValue: false });
     const { tagList, uploadNewClasses } = useCalendarContext();
 
     const router = useRouter();
@@ -320,13 +320,13 @@ const NewClassForm = () => {
                                     <label key={tag} className="flex items-center gap-2 cursor-pointer">
                                         <input
                                             type="checkbox"
-                                            checked={selectedTags.includes(tag)}
+                                            checked={selectedTags.includes({ tagName: tag, tagCategory: tagList.get(tag)?.tagCategory } as tagType)}
                                             onChange={(e) => {
-                                                let newTags: string[];
+                                                let newTags: tagType[];
                                                 if (e.target.checked) {
-                                                    newTags = [...selectedTags, tag];
+                                                    newTags = [...selectedTags, { tagName: tag, tagCategory: tagList.get(tag)?.tagCategory } as tagType];
                                                 } else {
-                                                    newTags = selectedTags.filter(t => t !== tag);
+                                                    newTags = selectedTags.filter(t => t.tagName !== tag);
                                                 }
                                                 setSelectedTags(newTags);
                                                 setClassProperties({

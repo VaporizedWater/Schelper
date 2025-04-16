@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { Class, ClassProperty, CombinedClass } from '@/lib/types';
+import { Class, ClassProperty, CombinedClass, tagType } from '@/lib/types';
 import { createEventsFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
 import { BiChevronUp, BiChevronDown } from 'react-icons/bi';
 import DropDown from '../DropDown/DropDown';
@@ -18,7 +18,7 @@ const ClassProperties = () => {
     const [room, setRoom] = useState(initialProps.room || '');
     const [location, setLocation] = useState(initialData.location || '');
     const [days, setDays] = useState<string[]>(initialProps.days || []);
-    const [tags, setTags] = useState<string[]>(Array.isArray(initialProps.tags) ? initialProps.tags : []);
+    const [tags, setTags] = useState<tagType[]>(Array.isArray(initialProps.tags) ? initialProps.tags : []);
     const [startTime, setStartTime] = useState(initialProps.start_time || '');
     const [endTime, setEndTime] = useState(initialProps.end_time || '');
     const [cohort, setCohort] = useState(initialProps.cohort || '');
@@ -125,10 +125,10 @@ const ClassProperties = () => {
         }
     };
 
-    const handleTagCheck = (tag: string, isChecked: boolean) => {
+    const handleTagCheck = (tag: tagType, isChecked: boolean) => {
         const updatedTags = isChecked
             ? [...tags, tag]
-            : tags.filter(t => t !== tag);
+            : tags.filter(t => t.tagName !== tag.tagName);
 
         setTags(updatedTags);
         if (currentCombinedClass) {
@@ -251,7 +251,7 @@ const ClassProperties = () => {
                                     />
                                 </li>
                                 <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Location</span>
+                                    <span className='w-full text-start font-semibold'>Room</span>
                                     <input
                                         type="text"
                                         className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
@@ -344,8 +344,8 @@ const ClassProperties = () => {
                                     <label key={tag} className="flex items-center gap-1">
                                         <input
                                             type="checkbox"
-                                            checked={tags.includes(tag)}
-                                            onChange={(e) => handleTagCheck(tag, e.target.checked)}
+                                            checked={tags.map(tag => tag.tagName).includes(tag)}
+                                            onChange={(e) => handleTagCheck({ tagName: tag, tagCategory: tagList.get(tag)?.tagCategory || "user" }, e.target.checked)}
                                             className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-ylue-600"
                                         />
                                         <span>{tag}</span>
@@ -372,8 +372,8 @@ const ClassProperties = () => {
                     )}
                 </ul>
             ) : (
-                <div className="flex items-center justify-center h-full text-gray-400 pb-8">
-                    Select a class to edit
+                <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
+                    <p>Select a class to edit</p>
                 </div>
             )}
         </div>

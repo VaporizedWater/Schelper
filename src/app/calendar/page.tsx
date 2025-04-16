@@ -20,7 +20,7 @@ const CalendarPage = () => {
         if (cohort && ['freshman', 'sophomore', 'junior', 'senior'].includes(cohort)) {
             // Filter classes to only show those with the matching cohort tag
             const updatedClasses = allClasses.map(cls => {
-                const isVisible = cls.properties.tags?.some(tag => tag === cohort);
+                const isVisible = cls.properties.tags?.some(tag => tag.tagName === cohort);
                 return {
                     ...cls,
                     visible: isVisible

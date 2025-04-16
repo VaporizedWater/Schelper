@@ -10,29 +10,25 @@ import { IoMdSettings } from "react-icons/io";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const { allClasses } = useCalendarContext();
-    const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
+    // const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
     const [calendarActive, setActive] = useState(true);
 
-    const whiteClassL: string = "py-2 px-4 hover:bg-gray-200 rounded-l-full", blueClassL: string = whiteClassL + " bg-lightblue";
-    const whiteClassR: string = "py-2 px-4 hover:bg-gray-200 rounded-r-full", blueClassR: string = whiteClassR + " bg-lightblue";
     const createDropList = [
         { content: "Class", link: "/classes" },
         { content: "Tag", link: "/addTag" },
         { content: "Faculty", link: "/faculty" },
     ];
-    
+
     return (
-        <div className="flex flex-row px-2 ">
+        <div className="flex flex-row px-2 py-1">
             <ul className="flex flex-row items-center">
-                {/* Drop down for selecting calendars/semesters*/}
                 <li key={1} className={`flex flex-row gap-3 items-center`}>
-                    <button className="text-gray-300 hover:text-gray-500 hover:shadow-md rounded-full cursor-pointer">
-                        <Link href="/settings" className="">
-                            <div className="p-2">
-                                <IoMdSettings />
-                            </div>
+                    <button className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-all duration-150">
+                        <Link href="/settings">
+                            <IoMdSettings className="size-5" />
                         </Link>
                     </button>
+                    {/* <Link href="/faculty">Faculty</Link> */}
 
                     <p className="text-lg text-lightblack text-center font-semibold">Spring 25</p>
                     {/* Show number of classes */}
@@ -42,48 +38,48 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                     })()}</p>
                 </li>
             </ul>
-            <ul className="ml-auto flex flex-row p-2 gap-2 pl-4 items-center">
-                <li key={2} className={`${listString} hover:bg-gray-200`}>
-                    <button>
-                        <Link href="/viewConflicts" className="flex items-center p-2 bg-white rounded-full hover:bg-gray-200">
-                            <AlertTriangleIcon stroke_color="#FFCC00" width="16" height="16" />
-                            <div>View Conflicts</div>
-                        </Link>
-                    </button>
+            <ul className="ml-auto flex flex-row p-2 gap-3 items-center">
+                <li key={2}>
+                    <Link href="/viewConflicts" className="flex items-center gap-2 px-3 py-2 bg-white rounded-full hover:bg-gray-100 transition-all duration-200 shadow-sm hover:shadow border border-gray-200">
+                        <AlertTriangleIcon stroke_color="#FFCC00" width="16" height="16" />
+                        <span className="text-sm font-medium">View Conflicts</span>
+                    </Link>
                 </li>
-                <li key={3} className={`${listString} hover:bg-gray-200`}>
-                    <button>
-                        <Link href="/exportSheet" className="flex items-center p-2 px-4 bg-white rounded-full hover:bg-gray-200">
-                            <MdFileDownload className="size-4 text-gray-600" />
-                            <div>Export</div>
-                        </Link>
-                    </button>
+                <li key={3}>
+                    <Link href="/exportSheet" className="flex items-center gap-2 px-3 py-2 bg-white rounded-full hover:bg-gray-100 transition-all duration-200 shadow-sm hover:shadow border border-gray-200">
+                        <MdFileDownload className="size-4 text-gray-600" />
+                        <span className="text-sm font-medium">Export</span>
+                    </Link>
                 </li>
-                <li key={4} className={`${listString} hover:bg-gray-200`}>
-                    <button>
-                        <Link href="/importSheet" className="flex items-center p-2 px-4 bg-white rounded-full hover:bg-gray-200">
-                            <MdFileUpload className="size-4 text-gray-600" />
-                            <div>Import</div>
-                        </Link>
-                    </button>
+                <li key={4}>
+                    <Link href="/importSheet" className="flex items-center gap-2 px-3 py-2 bg-white rounded-full hover:bg-gray-100 transition-all duration-200 shadow-sm hover:shadow border border-gray-200">
+                        <MdFileUpload className="size-4 text-gray-600" />
+                        <span className="text-sm font-medium">Import</span>
+                    </Link>
                 </li>
-                <li key={5} className={`${listString} hover:bg-gray-200`}>
+                <li key={5}>
                     <ButtonDropDown title="Create" items={createDropList} type="create"></ButtonDropDown>
                 </li>
-                <li key={6} className={`${listString} hover:bg-gray-200`}>
-                    <button>
-                        <Link href="/displayFaculty" className="flex items-center p-2 bg-white rounded-full hover:bg-gray-200">
-                            <FacultyIcon stroke_color="#3B82F6" width="24" height="24" className="size-4" />
-                            <div>Faculty</div>
-                        </Link>
+                <li key={6}>
+                    <Link href="/displayFaculty" className="flex items-center gap-2 px-3 py-2 bg-white rounded-full hover:bg-gray-100 transition-all duration-200 shadow-sm hover:shadow border border-gray-200">
+                        <FacultyIcon stroke_color="#3B82F6" width="20" height="20" />
+                        <span className="text-sm font-medium">Faculty</span>
+                    </Link>
+                </li>
+                <li key={7} className="flex overflow-hidden rounded-full border border-gray-200 shadow-sm">
+                    <button
+                        onClick={() => { toggleCalendar(true); setActive(true); }}
+                        className={`flex items-center justify-center px-3 py-2 transition-all duration-200 ${calendarActive ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-100'}`}>
+                        <MdCalendarMonth className="size-5" />
+                    </button>
+                    <button
+                        onClick={() => { toggleCalendar(false); setActive(false); }}
+                        className={`flex items-center justify-center px-3 py-2 transition-all duration-200 ${!calendarActive ? 'bg-blue-600 text-white' : 'bg-white hover:bg-gray-100'}`}>
+                        <LuFileSpreadsheet className="size-5" />
                     </button>
                 </li>
-                <li key={7} className={`${listString2} flex flex-row divide-inherit divide-x-2 divide-solid`}>
-                    <button onClick={() => { toggleCalendar(true); setActive(true); }} className={(calendarActive ? blueClassL : whiteClassL)}><MdCalendarMonth className="size-6" /></button>
-                    <button onClick={() => { toggleCalendar(false); setActive(false); }} className={(calendarActive ? whiteClassR : blueClassR)}><LuFileSpreadsheet className="size-6" /></button>
-                </li>
             </ul>
-        </div >
+        </div>
     );
 }
 

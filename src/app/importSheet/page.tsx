@@ -2,10 +2,12 @@
 
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
 import { newDefaultEmptyClass } from '@/lib/common';
-import { CombinedClass } from '@/lib/types';
+import { loadCohorts, insertTags } from '@/lib/DatabaseUtils';
+import { CohortType, CombinedClass, tagType } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import xlsx from 'xlsx';
+import { useSession } from 'next-auth/react';
 
 const convertTime = (excelTime: string): string => {
     const [time, period] = excelTime.split(' ');
@@ -30,22 +32,66 @@ const extractCourseLevel = (courseNum: string): string | null => {
     return level >= 1 && level <= 4 ? `${level}00level` : null;
 };
 
-const levelToCohort = (level: string | null): string => {
-    if (!level) return "Freshman";
-    switch (level) {
-        case "100level": return "Freshman";
-        case "200level": return "Sophomore";
-        case "300level": return "Junior";
-        case "400level": return "Senior";
-        default: return "Freshman";
-    }
-};
-
 const cohortToTag = (cohort: string): string => {
     return cohort.toLowerCase();
 };
 
+const isValidCohort = (cohort: CohortType): boolean => {
+    if (cohort && cohort.freshman && cohort.sophomore && cohort.junior && cohort.senior) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+const assignCohort = (cls: CombinedClass, cohort: CohortType): string | null => {
+    // Extract only the numeric portion of the course number
+    // const numericPart = cls.data.course_num.match(/^(\d+)/)?.[1] || cls.data.course_num;
+    // const courseSubjectNum = cls.data.course_subject.toUpperCase() + " " + numericPart;
+
+    // OR keep the full course number with the letter.
+    const courseSubjectNum = cls.data.course_subject.toUpperCase() + " " + cls.data.course_num;
+
+    // Check if the class 
+    if (cohort.freshman.includes(courseSubjectNum)) {
+        return "Freshman";
+    } else if (cohort.sophomore.includes(courseSubjectNum)) {
+        return "Sophomore";
+    } else if (cohort.junior.includes(courseSubjectNum)) {
+        return "Junior";
+    } else if (cohort.senior.includes(courseSubjectNum)) {
+        return "Senior";
+    }
+
+    return null;
+}
+
 const ImportSheet = () => {
+    // State to store loaded cohorts
+    const { data: session } = useSession();
+    const [currentCohort, setCurrentCohort] = useState<CohortType>({} as CohortType);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [fileName, setFileName] = useState<string>("");
+
+    const isCurrentCohortValid = useMemo(() => isValidCohort(currentCohort), [currentCohort]);
+
+    // Load cohorts when component mounts
+    useEffect(() => {
+        async function fetchCohorts() {
+            const result = await loadCohorts(session?.user?.email || '', 'false');
+
+            if (!result || result.length === 0) {
+                console.log("No cohorts found for the user.");
+                return;
+            }
+
+            setCurrentCohort(result[0]);
+            console.log('Loaded cohort:', result);
+            console.log("RESULT 0", result[0]);
+        }
+        fetchCohorts();
+    }, [session?.user?.email]);
+
     const router = useRouter();
     const { uploadNewClasses } = useCalendarContext();
     const [parsedClasses, setParsedClasses] = useState<CombinedClass[]>([]);
@@ -60,6 +106,11 @@ const ImportSheet = () => {
     const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (!selectedFile) return;
+
+        // Set loading state and filename
+        setIsLoading(true);
+        setFileName(selectedFile.name);
+        setParsedClasses([]);
 
         // Process the file immediately
         const data = await selectedFile.arrayBuffer();
@@ -101,16 +152,16 @@ const ImportSheet = () => {
                                 if (!isNaN(numbers)) {
                                     switch (Math.floor(numbers / 100)) {
                                         case 1:
-                                            classProperties.tags.push("100level");
+                                            classProperties.tags.push({ tagName: "100level", tagCategory: "level" });
                                             break;
                                         case 2:
-                                            classProperties.tags.push("200level");
+                                            classProperties.tags.push({ tagName: "200level", tagCategory: "level" });
                                             break;
                                         case 3:
-                                            classProperties.tags.push("300level");
+                                            classProperties.tags.push({ tagName: "300level", tagCategory: "level" });
                                             break;
                                         case 4:
-                                            classProperties.tags.push("400level");
+                                            classProperties.tags.push({ tagName: "400level", tagCategory: "level" });
                                             break;
                                         default:
                                             break;
@@ -206,46 +257,117 @@ const ImportSheet = () => {
                 const levelTag = extractCourseLevel(combinedClass.data.course_num);
 
                 if (levelTag) {
-                    combinedClass.properties.tags.push(levelTag);
+                    combinedClass.properties.tags.push({ tagName: levelTag, tagCategory: "level" });
                 }
 
                 combinedClasses.push(combinedClass);
             }
         });
 
+        // After classes are parsed, auto-assign cohorts
+        const initialCohortSelections: Record<string, string> = {};
+
+        if (isCurrentCohortValid) {
+            combinedClasses.forEach(cls => {
+                const uniqueId = getUniqueClassId(cls);
+                const suggestedCohort = assignCohort(cls, currentCohort);
+                if (suggestedCohort) {
+                    initialCohortSelections[uniqueId] = suggestedCohort;
+                }
+            });
+        }
+
         setParsedClasses(combinedClasses);
         // Initially select all classes
         setSelectedClasses(new Set(combinedClasses.map(c => getUniqueClassId(c))));
+        setCohortSelections(initialCohortSelections);
+        setIsLoading(false);
     };
 
-    const handleImport = () => {
+    const handleImport = async () => {
+        // Track all unique tags that need to be created
+        const tagsToCreate: tagType[] = [];
+        const tagTracker = new Map<string, boolean>(); // To avoid duplicates
+
         const classesToImport = parsedClasses
             .filter(c => selectedClasses.has(getUniqueClassId(c)))
             .map(cls => {
                 const uniqueId = getUniqueClassId(cls);
-                const selectedCohort = cohortSelections[uniqueId] ||
-                    levelToCohort(extractCourseLevel(cls.data.course_num));
+                const selectedCohort = cohortSelections[uniqueId];
 
                 // Remove any existing cohort tags
                 const cohortTags = ["freshman", "sophomore", "junior", "senior"];
-                const filteredTags = cls.properties.tags.filter(tag => !cohortTags.includes(tag));
+                const filteredTags = cls.properties.tags.filter(tag => !cohortTags.includes(tag.tagName));
+
+                // Create subject tag if course subject exists
+                const updatedTags = [...filteredTags];
+
+                // Helper function to add a tag both to class and our collection list
+                const addTag = (tagName: string, tagCategory: string) => {
+                    const tag = { tagName, tagCategory } as tagType;
+                    updatedTags.push(tag);
+
+                    // Track unique tags for database insertion
+                    const key = `${tagName}-${tagCategory}`;
+                    if (!tagTracker.has(key)) {
+                        tagTracker.set(key, true);
+                        tagsToCreate.push(tag);
+                    }
+                };
+
+                // Add subject tag (e.g., "CS", "MATH")
+                if (cls.data.course_subject) {
+                    const subjectName = cls.data.course_subject.toLowerCase();
+                    addTag(subjectName, "subject");
+                }
+
+                // Add room tag if it exists and isn't empty
+                if (cls.properties.room && cls.properties.room.trim() !== '') {
+                    addTag(cls.properties.room.toLowerCase().replace(/\s+/g, ""), "room");
+                }
+
+                // Add instructor tag if it exists and isn't empty
+                if (cls.properties.instructor_name && cls.properties.instructor_name.trim() !== '') {
+                    addTag(cls.properties.instructor_name.toLowerCase().replace(/\s+/g, ""), "instructor");
+                }
 
                 // Add the new cohort tag
+                if (!selectedCohort || selectedCohort === "None") {
+                    return {
+                        ...cls,
+                        properties: {
+                            ...cls.properties,
+                            tags: updatedTags
+                        }
+                    };
+                }
+
                 const newCohortTag = cohortToTag(selectedCohort);
+                addTag(newCohortTag, "cohort");
 
                 return {
                     ...cls,
                     properties: {
                         ...cls.properties,
                         cohort: selectedCohort,
-                        tags: [...filteredTags, newCohortTag]
+                        tags: updatedTags
                     }
                 };
             });
 
+        // Create all tags in the database first
+        if (tagsToCreate.length > 0) {
+            await insertTags(tagsToCreate);
+        }
+
+        // Then upload the classes with tags
         uploadNewClasses(classesToImport);
         router.back();
     };
+
+    const autoAssignedCount = (isCurrentCohortValid) ? parsedClasses.filter(cls =>
+        assignCohort(cls, currentCohort) !== null).length
+        : 0;
 
     return (
         <div className="p-4">
@@ -257,14 +379,36 @@ const ImportSheet = () => {
                         accept=".csv,.xlsx,.xls"
                         onChange={handleFileChange}
                         className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        disabled={isLoading}
                     />
                 </div>
+
+                {isLoading && (
+                    <div className="mt-4 p-6 flex flex-col items-center justify-center">
+                        <div className="flex items-center space-x-2">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
+                            <span className="text-lg font-medium text-gray-700">Processing file...</span>
+                        </div>
+                        {fileName && (
+                            <div className="mt-2 text-sm text-gray-500">
+                                {fileName}
+                            </div>
+                        )}
+                    </div>
+                )}
             </div>
 
-            {parsedClasses.length > 0 && (
+            {!isLoading && parsedClasses.length > 0 && (
                 <div className="mt-4">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold">Classes to Import ({selectedClasses.size})</h2>
+                        <div>
+                            <h2 className="text-xl font-semibold">Classes to Import ({selectedClasses.size})</h2>
+                            {autoAssignedCount > 0 && (
+                                <p className="text-sm text-blue-600">
+                                    {autoAssignedCount} classes with auto-assigned cohorts
+                                </p>
+                            )}
+                        </div>
                         <button
                             onClick={handleImport}
                             className="px-4 py-2 bg-green-500 text-white rounded-sm hover:bg-green-600"
@@ -343,23 +487,30 @@ const ImportSheet = () => {
                                             <td className="p-2 border">{cls.properties.room}</td>
                                             <td className="p-2 border">{cls.data.location}</td>
 
-                                            {/* Cohort which is based on level for now. 100 => freshman, 200 => sophomore, 300 => junior, 400 => senior*/}
+                                            {/* Cohort which is based on selection + cohort list*/}
                                             <td className="p-2 border min-w-32">
                                                 <select
-                                                    value={cohortSelections[uniqueId] || levelToCohort(extractCourseLevel(cls.data.course_num))}
+                                                    value={cohortSelections[uniqueId] || ''}
                                                     onChange={(e) => {
                                                         setCohortSelections({
                                                             ...cohortSelections,
                                                             [uniqueId]: e.target.value
                                                         });
                                                     }}
-                                                    className="w-full p-1 border rounded"
+
+                                                    className={`w-full p-1 border rounded ${isCurrentCohortValid && assignCohort(cls, currentCohort) ? 'bg-blue-50' : ''
+                                                        }`}
+                                                    data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohort)}
                                                 >
+                                                    <option value="None"></option>
                                                     <option value="Freshman">Freshman</option>
                                                     <option value="Sophomore">Sophomore</option>
                                                     <option value="Junior">Junior</option>
                                                     <option value="Senior">Senior</option>
                                                 </select>
+                                                {isCurrentCohortValid && assignCohort(cls, currentCohort) && (
+                                                    <div className="text-xs text-blue-600 mt-1">Auto-assigned</div>
+                                                )}
                                             </td>
 
                                         </tr>

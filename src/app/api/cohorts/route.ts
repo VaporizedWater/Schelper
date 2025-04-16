@@ -64,6 +64,9 @@ export async function GET(request: Request) {
                     },
                 },
                 {
+                    $unwind: "$cohortDetails", // Unwind the array before projecting
+                },
+                {
                     $project: {
                         _id: "$current_cohort",
                         freshman: "$cohortDetails.freshman",

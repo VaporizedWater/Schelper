@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { insertTag } from "@/lib/DatabaseUtils";
+import { insertTags } from "@/lib/DatabaseUtils";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
+import { tagType } from "@/lib/types";
 
 const AddTag = () => {
     const { tagList } = useCalendarContext();
@@ -16,10 +17,10 @@ const AddTag = () => {
 
         if (!trimmedTag) return;
 
-        const success = await insertTag(trimmedTag);
+        const success = await insertTags([{ tagName: trimmedTag, tagCategory: "user" } as tagType]);
         if (success) {
             if (!tagList.has(trimmedTag)) {
-                tagList.set(trimmedTag, new Set());
+                tagList.set(trimmedTag, { tagCategory: "user", classIds: new Set() });
             }
 
             // Display success message

@@ -1,6 +1,6 @@
 import { headers } from "next/headers";
 import { newDefaultEmptyCalendar } from "./common";
-import { CalendarType, CohortType, CombinedClass, FacultyType, tagListType } from "./types";
+import { CalendarType, CohortType, CombinedClass, FacultyType, tagCategory, tagListType, tagType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -54,8 +54,8 @@ export default async function fetchWithTimeout(requestURL: string, options = {},
 export async function loadTags(): Promise<tagListType> {
     try {
         const response = await fetchWithTimeout("./api/tags");
-        const tags = await parseJsonResponse<{ _id: string }[]>(response);
-        return new Map(tags.map((tag) => [tag._id, new Set()]));
+        const tags = await parseJsonResponse<{ _id: string; category: string }[]>(response);
+        return new Map(tags.map((tag) => [tag._id, { tagCategory: tag.category as tagCategory, classIds: new Set() }]));
     } catch (error) {
         console.error("Error fetching tag:", error);
         return new Map();
@@ -123,25 +123,37 @@ export async function loadFaculty(): Promise<FacultyType[]> {
 }
 
 // INSERTs/POSTs
-// Insert tag
-export async function insertTag(tagName: string): Promise<string | null> {
+// Insert tags
+export async function insertTags(tags: tagType[]): Promise<boolean> {
     try {
-        const processedTag = tagName.toLowerCase().replace(/\s+/g, "");
+        // Handle empty tags array case
+        if (!tags || tags.length === 0) {
+            return true; // Nothing to do, so technically successful
+        }
+
+        // Format tags for API
+        const formattedTags = tags.map((tag) => ({
+            name: tag.tagName,
+            category: tag.tagCategory,
+        }));
 
         const response = await fetchWithTimeout("api/tags", {
             method: "POST",
-            headers: { "Content-Type": "text/plain" },
-            body: processedTag,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formattedTags),
         });
 
         if (!response.ok) {
-            return null;
+            console.error(`Failed to insert tags: ${response.status}`);
+            return false;
         }
 
-        return processedTag;
+        // Parse the response to get success status
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
     } catch (error) {
-        console.error("Failed to insert tag:", error);
-        return null;
+        console.error("Failed to insert tags:", error);
+        return false;
     }
 }
 

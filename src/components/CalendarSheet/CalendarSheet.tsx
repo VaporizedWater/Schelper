@@ -138,7 +138,8 @@ export default function CalendarSheet() {
                     total_enrolled: String(existing?.properties.total_enrolled ?? 0),
                     total_waitlisted: String(existing?.properties.total_waitlisted ?? 0),
                     cohort: row[18]?.value ?? '',
-                    tags: row[19]?.value ? row[19].value.split(",").map((t) => t.trim()).sort() : [],
+                    // tags: row[19]?.value ? row[19].value.split(",").map((t) => t.trim()).sort() : [],
+                    tags: existing?.properties.tags ?? [], // Keep existing tags
                 };
 
                 return {

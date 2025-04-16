@@ -1,20 +1,54 @@
-// Parent of Filters, and ClassProperties
 'use client'
 
+import { useState } from "react";
 import Filters from "../Filters/Filters";
 import ClassProperties from "../ClassProperties/ClassProperties";
+import { FaFilter, FaListUl } from "react-icons/fa";
 
 const LeftMenu = () => {
+    const [activeComponent, setActiveComponent] = useState<'filters' | 'properties'>('filters');
+
     return (
-        <div className="flex flex-col h-full overflow-hidden">
-            {/* Filters section with fixed height */}
-            <div className="px-4 py-3 flex-shrink-0">
-                <Filters />
+        <div className="flex h-full">
+            {/* Icon sidebar */}
+            <div className="flex-none flex flex-col py-2 bg-gray-100 border-r border-gray-300 w-14">
+                <div
+                    className={`p-3 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'filters'
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'hover:bg-gray-700 hover:text-white'
+                        }`}
+                    onClick={() => setActiveComponent('filters')}
+                    title="Filters"
+                >
+                    <FaFilter size={18} />
+                </div>
+                <div
+                    className={`p-3 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'properties'
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'hover:bg-gray-700 hover:text-white'
+                        }`}
+                    onClick={() => setActiveComponent('properties')}
+                    title="Class Properties"
+                >
+                    <FaListUl size={18} />
+                </div>
             </div>
 
-            {/* ClassProperties section with proper height constraints */}
-            <div className="px-4 py-1 flex-grow h-0 min-h-0 overflow-hidden">
-                <ClassProperties />
+            {/* Content area with consistent sizing */}
+            <div className="flex-1 min-w-0 relative overflow-hidden">
+                <div className={`absolute inset-0 transition-opacity duration-200 ${activeComponent === 'filters' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                    }`}>
+                    <div className="h-full px-4 py-3 overflow-auto">
+                        <Filters />
+                    </div>
+                </div>
+
+                <div className={`absolute inset-0 transition-opacity duration-200 ${activeComponent === 'properties' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                    }`}>
+                    <div className="h-full pl-4 py-3 overflow-auto">
+                        <ClassProperties />
+                    </div>
+                </div>
             </div>
         </div>
     );

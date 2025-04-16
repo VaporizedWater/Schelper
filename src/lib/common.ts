@@ -1,5 +1,5 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CalendarState, CalendarType, Class, ClassProperty, CombinedClass, FacultyType } from "./types";
+import { CalendarState, CalendarType, Class, ClassProperty, CombinedClass, FacultyType, tagType } from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
@@ -72,10 +72,10 @@ export function newDefaultEmptyClass() {
             total_enrolled: "",
             total_waitlisted: "",
             cohort: "",
-            tags: [] as string[],
+            tags: [] as tagType[],
         },
         events: undefined,
-        visible: true
+        visible: true,
     } as CombinedClass;
 }
 
@@ -84,7 +84,7 @@ export function newDefaultEmptyCalendar(): CalendarType {
         _id: "",
         semester: "",
         year: "",
-        classes: []
+        classes: [],
     };
 }
 
@@ -125,9 +125,9 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
             display: "auto",
             title:
                 combinedClass.data.course_subject +
-                combinedClass.data.course_num +
-                "\n" +
-                combinedClass.properties.instructor_name || "",
+                    combinedClass.data.course_num +
+                    "\n" +
+                    combinedClass.properties.instructor_name || "",
             start: dateStringStart || "",
             end: dateStringEnd || "",
             backgroundColor: defaultBackgroundColor,

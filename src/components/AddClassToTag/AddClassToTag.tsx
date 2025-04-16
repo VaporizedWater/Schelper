@@ -5,24 +5,24 @@ import DropDown from "../DropDown/DropDown";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { BiLink } from "react-icons/bi";
+import { tagCategory } from "@/lib/types";
 
 interface AddClassToTagProps {
     tagId: string;
+    tagCategory: tagCategory;
 }
 
-const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
+const AddClassToTag = ({ tagId, tagCategory }: AddClassToTagProps) => {
     const { allClasses, tagList, updateOneClass } = useCalendarContext();
     const [error, setError] = useState<string | null>(null);
 
     // Filter classes that don't already have the tag
     const availableClasses = allClasses.filter(
-        (c) => !c.properties.tags.includes(tagId)
+        (c) => !c.properties.tags.includes({ tagName: tagId, tagCategory: tagCategory })
     );
 
     const handleSelectClass = async (classId: string) => {
         try {
-
-
             // Find the class to update
             const classToUpdate = allClasses.find(
                 (c) => c._id === classId
@@ -34,14 +34,14 @@ const AddClassToTag = ({ tagId }: AddClassToTagProps) => {
             }
 
             // Update the class's tags array
-            const updatedTags = [...classToUpdate.properties.tags, tagId];
+            const updatedTags = [...classToUpdate.properties.tags, { tagName: tagId, tagCategory: tagCategory }];
             classToUpdate.properties.tags = updatedTags;
 
             // Optionally update the tagList in your context:
             if (tagList.has(tagId)) {
-                tagList.get(tagId)?.add(classId);
+                tagList.get(tagId)?.classIds.add(classId);
             } else {
-                tagList.set(tagId, new Set([classId]));
+                tagList.set(tagId, { tagCategory: tagCategory, classIds: new Set([classId]) });
             }
 
             // Update the class in the CalendarContext

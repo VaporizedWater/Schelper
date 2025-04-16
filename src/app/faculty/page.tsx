@@ -3,24 +3,26 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FacultyType } from "@/lib/types";
-import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
-import { ShortenedDays } from "@/lib/common";
 
-// const initialUnavailability: Faculty["unavailability"] = {
-//     mon: [],
-//     tue: [],
-//     wed: [],
-//     thu: [],
-//     fri: [],
-// };
+const initialUnavailability: FacultyType["unavailability"] = {
+    Mon: [],
+    Tue: [],
+    Wed: [],
+    Thu: [],
+    Fri: [],
+};
 
 const FacultyForm = () => {
+    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
+    const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
-    const { faculty, updateFaculty, deleteFaculty } = useCalendarContext();
 
     const addTimeSlot = (day: keyof FacultyType["unavailability"]) => {
-        
+        setUnavailability((prev) => ({
+            ...prev,
+            [day]: [...prev[day], { start: "", end: "" }],
+        }));
     };
 
     const updateTimeSlot = (
@@ -37,7 +39,7 @@ const FacultyForm = () => {
         });
     };
 
-    const removeTimeSlot = (day: keyof Faculty["unavailability"], index: number) => {
+    const removeTimeSlot = (day: keyof FacultyType["unavailability"], index: number) => {
         setUnavailability((prev) => {
             const updatedSlots = prev[day].filter((_, i) => i !== index);
             return { ...prev, [day]: updatedSlots };
@@ -46,12 +48,15 @@ const FacultyForm = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email) {
-            alert("Please enter a faculty member's email");
+        if (!name) {
+            alert("Please enter a faculty name");
             return;
         }
 
-
+        if (!email) {
+            alert("Please enter a faculty email");
+            return;
+        }
 
         const payload: FacultyType = { email, unavailability };
 
@@ -69,6 +74,8 @@ const FacultyForm = () => {
         }
     };
 
+    const days: (keyof FacultyType["unavailability"])[] = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+
     return (
         <div className="p-8 mx-auto">
             <h2 className="text-2xl font-semibold mb-6">Manage Faculty Availability</h2>
@@ -77,6 +84,14 @@ const FacultyForm = () => {
                 <input
                     type="text"
                     placeholder="Faculty Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="p-2 border rounded-sm"
+                />
+
+                <input
+                    type="text"
+                    placeholder="Faculty email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="p-2 border rounded-sm"
@@ -85,21 +100,21 @@ const FacultyForm = () => {
                 {/* Unavailability for each day */}
                 <div>
                     <h3 className="text-xl font-medium mb-2">Unavailability</h3>
-                    {ShortenedDays.map((day) => (
+                    {days.map((day) => (
                         <div key={day} className="mb-4">
                             <h4 className="capitalize font-semibold">{day}</h4>
                             {unavailability[day].map((slot, index) => (
                                 <div key={index} className="flex items-center gap-2 mb-2">
                                     <input
                                         type="time"
-                                        value={slot.start}
+                                        value={slot.start?.toString()}
                                         onChange={(e) => updateTimeSlot(day, index, "start", e.target.value)}
                                         className="p-2 border rounded-sm"
                                     />
                                     <span>to</span>
                                     <input
                                         type="time"
-                                        value={slot.end}
+                                        value={slot.end?.toString()}
                                         onChange={(e) => updateTimeSlot(day, index, "end", e.target.value)}
                                         className="p-2 border rounded-sm"
                                     />
@@ -127,7 +142,7 @@ const FacultyForm = () => {
                     <button
                         type="reset"
                         onClick={() => {
-                            setEmail("");
+                            setName("");
                             setUnavailability(initialUnavailability);
                         }}
                         className="bg-gray-300 text-black p-2 rounded-sm grow"

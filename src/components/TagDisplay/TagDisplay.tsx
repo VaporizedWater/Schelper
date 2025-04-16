@@ -6,9 +6,10 @@ import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useState } from "react";
 import { BiUnlink } from "react-icons/bi";
 import AddClassToTag from "../AddClassToTag/AddClassToTag";
+import { tagType } from "@/lib/types";
 
 const TagDisplay = () => {
-    const { tagList,  allClasses, unlinkTagFromClass, unlinkAllClassesFromTag } = useCalendarContext();
+    const { tagList, allClasses, unlinkTagFromClass, unlinkAllClassesFromTag } = useCalendarContext();
     const [hoveredTagId, setHoveredTagId] = useState<string | null>(null);
     const [hoveredTagClassId, setHoveredTagClassId] = useState<string[] | null>(null);
 
@@ -25,10 +26,11 @@ const TagDisplay = () => {
     //     return typeof tag === "object" ? !linkedTagIds.has(tag._id) : !linkedTagIds.has(tag);
     // });
 
-    const unlinkedTags = [] as string[];
-    tagList.entries().forEach(([tag, classIds]) => {
+    const unlinkedTags = [] as tagType[];
+    tagList.entries().forEach(([tag, tagCategoryAndClassIds]) => {
+        const classIds = tagCategoryAndClassIds.classIds;
         if (classIds.size === 0) {
-            unlinkedTags.push(tag);
+            unlinkedTags.push({ tagName: tag, tagCategory: tagCategoryAndClassIds.tagCategory });
         }
     });
 
@@ -59,8 +61,8 @@ const TagDisplay = () => {
                 {/* Render linked tags with prefixed key */}
                 {
                     Array.from(tagList)
-                        .filter(([, tagData]) => { return tagData.size !== 0 })
-                        .sort(([, tagIdA], [, tagIdB]) => tagIdB.size - tagIdA.size)
+                        .filter(([, tagData]) => { return tagData.classIds.size !== 0 })
+                        .sort(([, tagIdA], [, tagIdB]) => tagIdB.classIds.size - tagIdA.classIds.size)
                         .map(([tagId, tagData]) => (
                             <li
                                 key={`linked-${tagId}`}
@@ -76,7 +78,7 @@ const TagDisplay = () => {
                                             </span>
                                             <div className="flex items-center gap-2">
                                                 <span>
-                                                    Classes: {tagData.size}
+                                                    Classes: {tagData.classIds.size}
                                                 </span>
                                                 {hoveredTagId === tagId && (
                                                     <div className="hover:bg-gray-300 p-1 rounded-sm cursor-pointer" onClick={(e) => {
@@ -96,7 +98,7 @@ const TagDisplay = () => {
                                     renderDropdown={() => (
                                         <div>
                                             <ul className="flex flex-col gap-1 bg-white border rounded-sm shadow-lg">
-                                                {Array.from(tagData).map((classId) => {
+                                                {Array.from(tagData.classIds).map((classId) => {
                                                     const foundClass = allClasses.find(
                                                         (cls) => String(cls._id) === classId
                                                     );
@@ -119,7 +121,7 @@ const TagDisplay = () => {
                                                     );
                                                 })}
                                                 <div className="">
-                                                    <AddClassToTag tagId={tagId} />
+                                                    <AddClassToTag tagId={tagId} tagCategory={tagData.tagCategory} />
                                                 </div>
                                             </ul>
                                         </div>
@@ -130,7 +132,7 @@ const TagDisplay = () => {
                         ))
                 }
                 {
-                    unlinkedTags.map((tag: string, index) => {
+                    unlinkedTags.map((tag: tagType, index) => {
                         // const keyValue =
                         //     typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
                         // const displayValue =
@@ -138,14 +140,14 @@ const TagDisplay = () => {
                         return (
                             <li
                                 key={`unlinked-${tag}-${index}`}
-                                onMouseEnter={() => setHoveredTagId(tag)}
+                                onMouseEnter={() => setHoveredTagId(tag.tagName)}
                                 onMouseLeave={() => setHoveredTagId(null)}
                             >
                                 <DropDown
                                     buttonClassName="w-full"
                                     renderButton={(isOpen) => (
                                         <div className="flex justify-between items-center p-2 bg-gray-100 rounded-sm cursor-pointer">
-                                            <span>{tag}</span>
+                                            <span>{tag.tagName}</span>
                                             {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                                         </div>
                                     )}
@@ -154,7 +156,7 @@ const TagDisplay = () => {
                                         <div>
                                             <ul className="flex flex-col gap-1 bg-white border rounded-sm shadow-lg">
                                                 <div className="">
-                                                    <AddClassToTag tagId={tag} />
+                                                    <AddClassToTag tagId={tag.tagName} tagCategory={tag.tagCategory} />
                                                 </div>
                                             </ul>
                                         </div>
