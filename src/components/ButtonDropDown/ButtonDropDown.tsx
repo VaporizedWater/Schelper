@@ -25,7 +25,7 @@ const ButtonDropDown = ({ title, items, type }: ButtonDropDownProps) => {
                 </div>
             )}
             renderDropdown={() => (
-                <ul className="w-full mt-1 rounded-lg shadow-md border border-gray-200 bg-white overflow-hidden">
+                <ul className="w-full rounded-lg shadow-md border border-gray-200 bg-white overflow-hidden">
                     {items.map((item, index) => (
                         <li key={index} className={`${index !== items.length - 1 ? 'border-b border-gray-100' : ''}`}>
                             <Link href={item.link} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors duration-150">

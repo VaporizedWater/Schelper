@@ -172,7 +172,7 @@ const Filters = () => {
                 </span>
             )}
             renderDropdown={() => (
-                <div className="pl-2">
+                <div className="pl-2 -mt-2">
                     <ul className="pr-3" title="tag-list">
                         {Array.from(tagMap.entries())
                             .sort((a, b) => a[0].localeCompare(b[0], undefined, {

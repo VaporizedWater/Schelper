@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+// import { headers } from "next/headers";
 import { newDefaultEmptyCalendar } from "./common";
 import { CalendarType, CohortType, CombinedClass, FacultyType, tagCategory, tagListType, tagType } from "./types";
 
@@ -260,7 +260,7 @@ export async function deleteCombinedClasses(classId: string, calendarId: string)
         const response = await fetchWithTimeout("api/combined_classes", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
         });
 
         const result = await parseJsonResponse<{ success: boolean }>(response);
@@ -276,7 +276,7 @@ export async function deleteStoredFaculty(facultyId: string): Promise<boolean> {
         const response = await fetchWithTimeout("api/faculty", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ facultyId })
+            body: JSON.stringify({ facultyId }),
         });
 
         const result = await parseJsonResponse<{ success: boolean }>(response);

@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { Class, ClassProperty, CombinedClass, tagType } from '@/lib/types';
-import { createEventsFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from '@/lib/common';
-import { BiChevronUp, BiChevronDown } from 'react-icons/bi';
-import DropDown from '../DropDown/DropDown';
+import { Class, ClassProperty, CombinedClass } from '@/lib/types';
+import { newDefaultEmptyClass } from '@/lib/common';
+
+// Cohort options constant
+const COHORT_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior"];
 
 const ClassProperties = () => {
-    const { tagList, currentCombinedClass, updateOneClass, deleteClass, setCurrentClass } = useCalendarContext();
+    // const {tagList, deleteClass, setCurrentClass} = useCalendarContext();
+    const { currentCombinedClass, updateOneClass } = useCalendarContext();
     const initialData: Class = currentCombinedClass?.data || {} as Class;
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
@@ -17,10 +19,6 @@ const ClassProperties = () => {
     const [email, setEmail] = useState(initialProps.instructor_email || '');
     const [room, setRoom] = useState(initialProps.room || '');
     const [location, setLocation] = useState(initialData.location || '');
-    const [days, setDays] = useState<string[]>(initialProps.days || []);
-    const [tags, setTags] = useState<tagType[]>(Array.isArray(initialProps.tags) ? initialProps.tags : []);
-    const [startTime, setStartTime] = useState(initialProps.start_time || '');
-    const [endTime, setEndTime] = useState(initialProps.end_time || '');
     const [cohort, setCohort] = useState(initialProps.cohort || '');
 
     useEffect(() => {
@@ -34,10 +32,6 @@ const ClassProperties = () => {
             setEmail(newProps.instructor_email || '');
             setRoom(newProps.room || '');
             setLocation(newData.location || '');
-            setDays(newProps.days || []);
-            setTags(Array.isArray(newProps.tags) ? newProps.tags : []);
-            setStartTime(newProps.start_time || '');
-            setEndTime(newProps.end_time || '');
             setCohort(newProps.cohort || '');
         }
     }, [currentCombinedClass]);
@@ -112,55 +106,7 @@ const ClassProperties = () => {
         }
     };
 
-    const handleDaysChange = (day: string, isChecked: boolean) => {
-        const updatedDays = isChecked
-            ? [...days, day]
-            : days.filter(d => d !== day);
-
-        setDays(updatedDays);
-        if (currentCombinedClass) {
-            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-            modifiedClass.properties.days = updatedDays;
-            updateOneClass(modifiedClass);
-        }
-    };
-
-    const handleTagCheck = (tag: tagType, isChecked: boolean) => {
-        const updatedTags = isChecked
-            ? [...tags, tag]
-            : tags.filter(t => t.tagName !== tag.tagName);
-
-        setTags(updatedTags);
-        if (currentCombinedClass) {
-            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-            modifiedClass.properties.tags = updatedTags;
-            updateOneClass(modifiedClass);
-        }
-    };
-
-    const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newVal = e.target.value;
-        setStartTime(newVal);
-        if (currentCombinedClass) {
-            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-            modifiedClass.properties.start_time = newVal;
-            modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
-            updateOneClass(modifiedClass);
-        }
-    };
-
-    const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newVal = e.target.value;
-        setEndTime(newVal);
-        if (currentCombinedClass) {
-            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-            modifiedClass.properties.end_time = newVal;
-            modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
-            updateOneClass(modifiedClass);
-        }
-    };
-
-    const handleCohortChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCohortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newVal = e.target.value;
         setCohort(newVal);
         if (currentCombinedClass) {
@@ -170,206 +116,91 @@ const ClassProperties = () => {
         }
     };
 
-    const handleDeleteClass = () => {
-        if (!currentCombinedClass || !currentCombinedClass._id) return;
-
-        // Confirmation dialog
-        const isConfirmed = confirm(
-            `Are you sure you want to delete ${currentCombinedClass.data.course_subject} ${currentCombinedClass.data.course_num}?\n\nThis action cannot be undone.`
-        );
-
-        if (isConfirmed) {
-            try {
-                deleteClass(currentCombinedClass._id);
-                // Clear current class selection
-                setCurrentClass(newDefaultEmptyClass());
-            } catch (error) {
-                alert("Failed to delete class. Please try again. ");
-                console.log("Error deleting class:", error);
-            }
-        }
-    };
-
     return (
         <div className="h-full w-full overflow-y-auto scrollbar-thin">
             {currentCombinedClass?._id ? (
-                <ul className="flex flex-col w-full pb-4">
+                <ul className="flex flex-col w-full py-2">
                     {/* Properties Section */}
-                    <DropDown
-                        renderButton={(isOpen) => (
-                            <span className='font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between'>
-                                Course Info
-                                {isOpen ? <BiChevronUp /> : <BiChevronDown />}
-                            </span>
-                        )}
-                        renderDropdown={() => (
-                            <ul className='py-1'>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Subject</span>
-                                    <input
-                                        type="text"
-                                        placeholder="Subject"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={courseSubject}
-                                        onChange={handleCourseSubjectChange}
-                                    />
-                                </li>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Course Number</span>
-                                    <input
-                                        type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={courseNum}
-                                        onChange={handleCourseNumChange}
-                                    />
-                                </li>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Title</span>
-                                    <input
-                                        type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={title}
-                                        onChange={handleTitleChange}
-                                    />
-                                </li>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Instructor</span>
-                                    <input
-                                        type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={instructor}
-                                        onChange={handleInstructorChange}
-                                    />
-                                </li>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Email</span>
-                                    <input
-                                        type="email"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={email}
-                                        onChange={handleEmailChange}
-                                    />
-                                </li>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Room</span>
-                                    <input
-                                        type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={room}
-                                        onChange={handleRoomChange}
-                                    />
-                                </li>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Location</span>
-                                    <input
-                                        type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={location}
-                                        onChange={handleLocationChange}
-                                    />
-                                </li>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Start Time</span>
-                                    <input
-                                        type="time"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={startTime}
-                                        onChange={handleStartTimeChange}
-                                    />
-                                </li>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>End Time</span>
-                                    <input
-                                        type="time"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={endTime}
-                                        onChange={handleEndTimeChange}
-                                    />
-                                </li>
-                                <li className="flex flex-col py-2 px-2 items-center focus-within:bg-blue-50">
-                                    <span className='w-full text-start font-semibold'>Cohort</span>
-                                    <input
-                                        type="text"
-                                        className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                                        value={cohort}
-                                        onChange={handleCohortChange}
-                                    />
-                                </li>
-                            </ul>
-                        )}
-                        buttonClassName="w-full text-left py-1"
-                        dropdownClassName="relative shadow-none w-full"
-                        alwaysOpen={true}
-                    />
-
-                    {/* Days Section */}
-                    <DropDown
-                        renderButton={(isOpen) => (
-                            <span className="font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between">
-                                Days
-                                {isOpen ? <BiChevronUp /> : <BiChevronDown />}
-                            </span>
-                        )}
-                        renderDropdown={() => (
-                            <div className="flex-1 flex flex-col py-1 pl-1">
-                                {ShortenedDays.map(day => (
-                                    <label key={day} className="flex items-center gap-1">
-                                        <input
-                                            type="checkbox"
-                                            checked={days.includes(day)}
-                                            onChange={(e) => handleDaysChange(day, e.target.checked)}
-                                            className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-ylue-600"
-                                        />
-                                        <span>{day}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        )}
-                        buttonClassName="w-full text-left py-1"
-                        dropdownClassName="relative shadow-none w-full"
-                        alwaysOpen={true}
-                    />
-
-                    {/* Tags Section */}
-                    <DropDown
-                        renderButton={(isOpen) => (
-                            <span className="font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between">
-                                Tags
-                                {isOpen ? <BiChevronUp /> : <BiChevronDown />}
-                            </span>
-                        )}
-                        renderDropdown={() => (
-                            <div className="flex-1 flex-col gap-2 py-1 pl-1">
-                                {Array.from(tagList.keys()).sort((a, b) => a.length - b.length).map((tag) => (
-                                    <label key={tag} className="flex items-center gap-1">
-                                        <input
-                                            type="checkbox"
-                                            checked={tags.map(tag => tag.tagName).includes(tag)}
-                                            onChange={(e) => handleTagCheck({ tagName: tag, tagCategory: tagList.get(tag)?.tagCategory || "user" }, e.target.checked)}
-                                            className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-ylue-600"
-                                        />
-                                        <span>{tag}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        )}
-                        buttonClassName="w-full text-left py-1"
-                        dropdownClassName="relative shadow-none w-full"
-                        alwaysOpen={true}
-                    />
-
-                    {/* Delete button - only show if we have a valid class with an ID */}
-                    {currentCombinedClass && currentCombinedClass._id && (
-                        <li className="flex hover:border-gray-200 border-transparent border-y items-center pt-4">
-                            <button
-                                onClick={handleDeleteClass}
-                                className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors cursor-pointer"
-                                aria-label="Delete class"
-                            >
-                                Delete Class
-                            </button>
-                        </li>
-                    )}
+                    <div className='font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between'>
+                        Course Info
+                    </div>
+                    <li className="flex flex-col p-2 items-center focus-within:bg-blue-50">
+                        <span className='w-full text-start font-semibold'>Subject</span>
+                        <input
+                            type="text"
+                            placeholder="Subject"
+                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                            value={courseSubject}
+                            onChange={handleCourseSubjectChange}
+                        />
+                    </li>
+                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                        <span className='w-full text-start font-semibold'>Course Number</span>
+                        <input
+                            type="text"
+                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                            value={courseNum}
+                            onChange={handleCourseNumChange}
+                        />
+                    </li>
+                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                        <span className='w-full text-start font-semibold'>Title</span>
+                        <input
+                            type="text"
+                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                            value={title}
+                            onChange={handleTitleChange}
+                        />
+                    </li>
+                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                        <span className='w-full text-start font-semibold'>Instructor</span>
+                        <input
+                            type="text"
+                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                            value={instructor}
+                            onChange={handleInstructorChange}
+                        />
+                    </li>
+                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                        <span className='w-full text-start font-semibold'>Email</span>
+                        <input
+                            type="email"
+                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                            value={email}
+                            onChange={handleEmailChange}
+                        />
+                    </li>
+                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                        <span className='w-full text-start font-semibold'>Room</span>
+                        <input
+                            type="text"
+                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                            value={room}
+                            onChange={handleRoomChange}
+                        />
+                    </li>
+                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                        <span className='w-full text-start font-semibold'>Location</span>
+                        <input
+                            type="text"
+                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                            value={location}
+                            onChange={handleLocationChange}
+                        />
+                    </li>
+                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                        <span className='w-full text-start font-semibold'>Cohort</span>
+                        <select
+                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                            value={cohort}
+                            onChange={handleCohortChange}
+                        >
+                            <option value="">Select Cohort</option>
+                            {COHORT_OPTIONS.map(option => (
+                                <option key={option} value={option}>{option}</option>
+                            ))}
+                        </select>
+                    </li>
                 </ul>
             ) : (
                 <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
