@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FacultyType } from "@/lib/types";
+import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 
 const initialUnavailability: FacultyType["unavailability"] = {
     Mon: [],
@@ -13,6 +14,7 @@ const initialUnavailability: FacultyType["unavailability"] = {
 };
 
 const FacultyForm = () => {
+    const { faculty, updateFaculty } = useCalendarContext();
     const [email, setEmail] = useState("");
     const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
@@ -55,17 +57,14 @@ const FacultyForm = () => {
 
         const payload: FacultyType = { email, unavailability };
 
-        const response = await fetch("/api/faculty", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
+        const response = await updateFaculty([payload], true); // Merge faculty data with existing data
 
-        if (response.ok) {
-            alert("Faculty saved successfully!");
-            router.back();
+        if (!response) {
+            alert("Error updating faculty");
+            return;
         } else {
-            alert("Error saving faculty");
+            alert("Faculty updated successfully!");
+            router.back();
         }
     };
 

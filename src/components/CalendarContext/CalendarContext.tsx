@@ -2,9 +2,10 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty } from '@/lib/DatabaseUtils';
+import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty } from '@/lib/DatabaseUtils';
 import { dayToDate, initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
+import { EventInput } from '@fullcalendar/core/index.js';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -22,6 +23,116 @@ const buildTagMapping = (classes: CombinedClass[], existingMapping?: tagListType
     });
 
     return mapping;
+};
+
+// Helper function to merge faculty entries
+const mergeFacultyEntries = (existingFaculty: FacultyType[] = [], newFaculty: FacultyType[] = []): FacultyType[] => {
+    // Create a map of existing faculty for quick lookups
+    const facultyMap = new Map<string, FacultyType>();
+    existingFaculty.forEach(faculty => {
+        if (faculty.email) {
+            facultyMap.set(faculty.email, { ...faculty });
+        }
+    });
+
+    // Process each new faculty entry
+    newFaculty.forEach(newEntry => {
+        if (!newEntry.email) return;
+
+        if (facultyMap.has(newEntry.email)) {
+            // Merge with existing entry
+            const existingEntry = facultyMap.get(newEntry.email)!;
+            facultyMap.set(newEntry.email, {
+                ...existingEntry,
+                unavailability: {
+                    Mon: mergeDaySlots(existingEntry.unavailability.Mon, newEntry.unavailability.Mon),
+                    Tue: mergeDaySlots(existingEntry.unavailability.Tue, newEntry.unavailability.Tue),
+                    Wed: mergeDaySlots(existingEntry.unavailability.Wed, newEntry.unavailability.Wed),
+                    Thu: mergeDaySlots(existingEntry.unavailability.Thu, newEntry.unavailability.Thu),
+                    Fri: mergeDaySlots(existingEntry.unavailability.Fri, newEntry.unavailability.Fri),
+                }
+            });
+        } else {
+            // Add new entry
+            facultyMap.set(newEntry.email, { ...newEntry });
+        }
+    });
+
+    // Convert the map back to an array
+    return Array.from(facultyMap.values());
+};
+
+// Helper function to merge time slots for a specific day
+const mergeDaySlots = (
+    existingSlots: EventInput[] = [],
+    newSlots: EventInput[] = []
+): EventInput[] => {
+    // If either array is empty, just return the other (or empty if both empty)
+    if (existingSlots.length === 0) return [...newSlots];
+    if (newSlots.length === 0) return [...existingSlots];
+
+    // Helper function to convert time string "HH:MM" to minutes for easier comparison
+    const timeToMinutes = (timeStr: string | undefined): number => {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    };
+
+    // Helper function to convert minutes back to time string "HH:MM"
+    const minutesToTime = (minutes: number): string => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+    };
+
+    // Create a type-safe array of interval objects for processing
+    type TimeInterval = { start: number; end: number; originalSlot: EventInput };
+
+    // Combine all slots and convert to interval objects with numeric values
+    const intervals: TimeInterval[] = [
+        ...existingSlots.map(slot => ({
+            start: timeToMinutes(slot.start as string),
+            end: timeToMinutes(slot.end as string),
+            originalSlot: slot
+        })),
+        ...newSlots.map(slot => ({
+            start: timeToMinutes(slot.start as string),
+            end: timeToMinutes(slot.end as string),
+            originalSlot: slot
+        }))
+    ];
+
+    // Sort by start time 
+    intervals.sort((a, b) => a.start - b.start);
+
+    // Merge overlapping intervals
+    const mergedIntervals: TimeInterval[] = [];
+
+    for (const interval of intervals) {
+        // If this is the first interval or if it doesn't overlap with the last merged interval
+        if (mergedIntervals.length === 0 || interval.start > mergedIntervals[mergedIntervals.length - 1].end) {
+            mergedIntervals.push(interval);
+        } else {
+            // Overlapping case: extend the end time of the last merged interval if needed
+            mergedIntervals[mergedIntervals.length - 1].end = Math.max(
+                mergedIntervals[mergedIntervals.length - 1].end,
+                interval.end
+            );
+        }
+    }
+
+    // Convert back to EventInput format
+    return mergedIntervals.map(interval => {
+        // Start with properties from one of the original slots
+        const baseSlot = { ...interval.originalSlot };
+
+        // Update only the start and end times
+        return {
+            ...baseSlot,
+            start: minutesToTime(interval.start),
+            end: minutesToTime(interval.end)
+        };
+    });
 };
 
 // Rebuilt for efficiency - single sort with compound comparator
@@ -173,7 +284,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     error: null
                 },
                 user: state.user,
-                currentCalendar: action.payload.currentCalendar
+                currentCalendar: action.payload.currentCalendar,
+                faculty: action.payload.faculty || state.faculty
             };
         }
 
@@ -470,6 +582,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     ]);
 
                     console.log("ALL TAGS", allTags);
+                    console.log("FACULTY", faculty);
 
                     const classes = calendar.classes;
                     calendar.classes = [];
@@ -536,9 +649,34 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         error: state.status.error,
 
         // Actions
-        updateFaculty: (faculty: FacultyType[]) => {
+        updateFaculty: (faculty: FacultyType[], doMerge: boolean): Promise<boolean> => {
             console.log('UPDATE_FACULTY');
-            dispatch({ type: 'UPDATE_FACULTY', payload: faculty });
+
+            // Merge the new faculty data with existing state
+            let mergedFaculty: FacultyType[] = [];
+
+            if (doMerge) {
+                // Merge faculty entries if doMerge is true
+                mergedFaculty = mergeFacultyEntries(state.faculty, faculty);
+            } else {
+                // Just use the new faculty data as is
+                mergedFaculty = faculty;
+            }
+
+            // Return a promise to allow proper async handling
+            return new Promise((resolve) => {
+                // Update faculty in the database
+                updateFaculty(mergedFaculty)
+                    .then(() => {
+                        console.log("Faculty updated successfully!");
+                        dispatch({ type: 'UPDATE_FACULTY', payload: mergedFaculty });
+                        resolve(true);
+                    })
+                    .catch((error) => {
+                        console.error("Error updating faculty:", error);
+                        resolve(false);
+                    });
+            });
         },
 
         resetContextToEmpty: () => {
@@ -549,7 +687,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         newDefaultEmptyClass()
                     ],
                     tags: new Map(),
-                    currentCalendar: newDefaultEmptyCalendar(), 
+                    currentCalendar: newDefaultEmptyCalendar(),
                     faculty: state.faculty
                 }
             });
@@ -718,15 +856,17 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             }
         },
 
-        deleteFaculty: (facultyToDelete: FacultyType) => {
+        deleteFaculty: (facultyToDeleteEmail: string) => {
             try {
                 console.log('DELETE_FACULTY');
-                if (facultyToDelete._id) {
-                    deleteStoredFaculty(facultyToDelete._id);
+                if (facultyToDeleteEmail) {
+                    deleteStoredFaculty(facultyToDeleteEmail);
                 }
 
-                const updatedFaculty = state.faculty.filter(faculty => faculty._id !== facultyToDelete._id);
+                const updatedFaculty = state.faculty.filter(faculty => faculty.email !== facultyToDeleteEmail);
                 dispatch({ type: 'UPDATE_FACULTY', payload: updatedFaculty });
+
+                window.alert(`Faculty ${facultyToDeleteEmail} deleted successfully.`);
                 return true;
             } catch (error) {
                 console.error("Error deleting faculty:", error);

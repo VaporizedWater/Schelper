@@ -145,9 +145,9 @@ export type CalendarContextType = {
 
     deleteClass: (classId: string) => void;
 
-    updateFaculty: (faculty: FacultyType[]) => void;
+    updateFaculty: (faculty: FacultyType[], doMerge: boolean) => Promise<boolean>;
 
-    deleteFaculty: (faculty: FacultyType) => void;
+    deleteFaculty: (faculty: string) => void;
 };
 
 export type UserType = {
@@ -176,7 +176,10 @@ export type CalendarState = {
 };
 
 export type CalendarAction =
-    | { type: "INITIALIZE_DATA"; payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType, faculty: FacultyType[] } }
+    | {
+          type: "INITIALIZE_DATA";
+          payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType; faculty: FacultyType[] };
+      }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }
     | { type: "SET_CONFLICTS"; payload: ConflictType[] }
@@ -211,8 +214,8 @@ export type FacultyType = {
         Wed: EventInput[];
         Thu: EventInput[];
         Fri: EventInput[];
-    }
-}
+    };
+};
 
 export type CohortType = {
     _id?: string;

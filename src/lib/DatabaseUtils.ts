@@ -214,7 +214,7 @@ export async function updateFaculty(faculty: FacultyType[]): Promise<boolean | n
         const response = await fetchWithTimeout("api/faculty", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ faculty }),
+            body: JSON.stringify(faculty), // Send array directly
         });
 
         if (!response.ok) {
@@ -224,7 +224,7 @@ export async function updateFaculty(faculty: FacultyType[]): Promise<boolean | n
         const result = await parseJsonResponse<{ success: boolean }>(response);
         return result.success;
     } catch (error) {
-        console.error("Failed to insert faculty:", error);
+        console.error("Failed to update faculty:", error);
         return null;
     }
 }
