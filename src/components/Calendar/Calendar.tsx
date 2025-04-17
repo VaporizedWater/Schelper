@@ -136,6 +136,7 @@ const Calendar = () => {
             );
 
             if (matchedFaculty) {
+                console.log("Matched Faculty: ", matchedFaculty);
                 const newBusinessHours: BusinessHoursInput = [] as EventInput[];
 
                 Object.entries(matchedFaculty.unavailability).forEach(([dayKey, slots]) => {
@@ -162,6 +163,7 @@ const Calendar = () => {
     const handleDateClick = () => {
         unselectAll();
         setCurrentClass(newDefaultEmptyClass());
+        setBusinessHours([]);
     };
 
     const handleEventDrop = (info: EventDropArg) => {
@@ -338,6 +340,14 @@ const Calendar = () => {
                 .fc-event-main {
                     font-size: 1rem !important; /* text-md */
                 }
+
+
+                .fc .fc-non-business {
+  background-color: rgba(0, 100, 255, 0.3) !important; /* semi-transparent light blue */
+  background-image: none !important;
+}
+
+
             `}</style>
         </div>
     );

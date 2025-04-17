@@ -14,7 +14,7 @@ const initialUnavailability: FacultyType["unavailability"] = {
 };
 
 const FacultyForm = () => {
-    const { faculty, updateFaculty } = useCalendarContext();
+    const { updateFaculty } = useCalendarContext();
     const [email, setEmail] = useState("");
     const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
