@@ -271,12 +271,12 @@ export async function deleteCombinedClasses(classId: string, calendarId: string)
     }
 }
 
-export async function deleteStoredFaculty(facultyId: string): Promise<boolean> {
+export async function deleteStoredFaculty(facultyEmail: string): Promise<boolean> {
     try {
         const response = await fetchWithTimeout("api/faculty", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ facultyId }),
+            body: JSON.stringify({ email: facultyEmail }),
         });
 
         const result = await parseJsonResponse<{ success: boolean }>(response);

@@ -23,15 +23,41 @@ export async function GET() {
     }
 }
 
+export async function POST(request: Request) {
+    try {
+        const facultyData: FacultyType = await request.json();
+        const { _id, ...facultyDataToInsert } = facultyData; // eslint-disable-line @typescript-eslint/no-unused-vars
+
+        const result = await collection.insertOne(facultyDataToInsert);
+
+        if (result.acknowledged) {
+            return new Response(JSON.stringify({ success: true, id: result.insertedId }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+        return new Response(JSON.stringify({ success: false }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (error) {
+        console.error("Error in POST /api/faculty:", error);
+        return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+}
+
 export async function PUT(request: Request) {
     try {
         const facultyData: FacultyType[] = await request.json();
 
         const bulkOps = facultyData.map((faculty) => {
-            const { _id, ...facultyDataToInsert } = faculty; // eslint-disable-line @typescript-eslint/no-unused-vars
+            const { _id, email, ...facultyDataToInsert } = faculty; // eslint-disable-line @typescript-eslint/no-unused-vars
             return {
                 updateOne: {
-                    filter: { _id: new ObjectId(_id) },
+                    filter: { email: email },
                     update: { $set: facultyDataToInsert },
                     upsert: true,
                 },
@@ -39,33 +65,60 @@ export async function PUT(request: Request) {
         });
 
         const result = await collection.bulkWrite(bulkOps);
-        
-        if (result.ok) {
-            return new Response(
-                JSON.stringify({ success: true }),
-                {
-                    status: 200,
-                    headers: { "Content-Type": "application/json" },
-                }
-            );
-        }
-        return new Response(
-            JSON.stringify({ success: false }),
-            {
-                status: 500,
-                headers: { "Content-Type": "application/json" },
-            }
-        );
 
+        if (result.ok) {
+            return new Response(JSON.stringify({ success: true }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+        return new Response(JSON.stringify({ success: false }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     } catch (error) {
         console.error("Error in POST /api/faculty:", error);
-        return new Response(
-            JSON.stringify({ success: false, error: "Internal server error" }),
-            {
-                status: 500,
-                headers: { "Content-Type": "application/json" },
-            }
-        );
+        return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
     }
 }
 
+export async function DELETE(request: Request) {
+    try {
+        const { email } = await request.json();
+
+        if (!email) {
+            return new Response(JSON.stringify({ success: false, error: "Email is required" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        const result = await collection.deleteOne({ email });
+
+        if (result.deletedCount === 1) {
+            return new Response(JSON.stringify({ success: true }), {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            });
+        } else if (result.deletedCount === 0) {
+            return new Response(JSON.stringify({ success: false, error: "Faculty not found" }), {
+                status: 404,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        return new Response(JSON.stringify({ success: false }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (error) {
+        console.error("Error in DELETE /api/faculty:", error);
+        return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+}

@@ -195,7 +195,7 @@ const ClassProperties = () => {
                             value={cohort}
                             onChange={handleCohortChange}
                         >
-                            <option value="">Select Cohort</option>
+                            <option value="" className=''>Select Cohort</option>
                             {COHORT_OPTIONS.map(option => (
                                 <option key={option} value={option}>{option}</option>
                             ))}

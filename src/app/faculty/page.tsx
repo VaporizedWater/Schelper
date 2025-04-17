@@ -13,7 +13,6 @@ const initialUnavailability: FacultyType["unavailability"] = {
 };
 
 const FacultyForm = () => {
-    const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
@@ -48,10 +47,6 @@ const FacultyForm = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!name) {
-            alert("Please enter a faculty name");
-            return;
-        }
 
         if (!email) {
             alert("Please enter a faculty email");
@@ -78,17 +73,8 @@ const FacultyForm = () => {
 
     return (
         <div className="p-8 mx-auto">
-            <h2 className="text-2xl font-semibold mb-6">Manage Faculty Availability</h2>
+            <h2 className="font-semibold mb-6">Manage Faculty Availability</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-                {/* Faculty Name */}
-                <input
-                    type="text"
-                    placeholder="Faculty Name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="p-2 border rounded-sm"
-                />
-
                 <input
                     type="text"
                     placeholder="Faculty email"
@@ -99,7 +85,7 @@ const FacultyForm = () => {
 
                 {/* Unavailability for each day */}
                 <div>
-                    <h3 className="text-xl font-medium mb-2">Unavailability</h3>
+                    <h3 className="font-medium mb-2">Unavailability</h3>
                     {days.map((day) => (
                         <div key={day} className="mb-4">
                             <h4 className="capitalize font-semibold">{day}</h4>
@@ -142,7 +128,7 @@ const FacultyForm = () => {
                     <button
                         type="reset"
                         onClick={() => {
-                            setName("");
+                            // setName("");
                             setUnavailability(initialUnavailability);
                         }}
                         className="bg-gray-300 text-black p-2 rounded-sm grow"
