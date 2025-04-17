@@ -7,7 +7,7 @@ const collection = client.db("class-scheduling-app").collection("intial_states")
 
 export async function GET(request: Request) {
     // Get headers from request
-    const { headerItem } = await request.json() as { headerItem: any };
+    const { headerItem } = await request.json() as { headerItem: string };
 
     try {
         // Set up the MongoDB aggregation pipeline

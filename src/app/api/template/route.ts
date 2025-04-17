@@ -9,11 +9,11 @@ import { ObjectId } from "mongodb";
 
 
 const client = await clientPromise;
-const collection = client.db("DATABASE_NAME").collection<{ headerId?: string, headerItem: any }>("COLLECTION_NAME");
+const collection = client.db("DATABASE_NAME").collection<{ headerId?: string, headerItem: any }>("COLLECTION_NAME"); // eslint-disable-line @typescript-eslint/no-explicit-any
 
 export async function GET(request: Request) {
     // Get headers from request
-    const { headerItem } = await request.json() as { headerItem: any };
+    const { headerItem } = await request.json() as { headerItem: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     try {
         // Set up the MongoDB aggregation pipeline
@@ -47,10 +47,10 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
     try {
         // Get headers from request
-        const { headerItem } = await request.json() as { headerItem: any };
+        const { headerItem } = await request.json() as { headerItem: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
         // Payload formatting
-        const document: { headerItem: any } = {
+        const document: { headerItem: any } = { // eslint-disable-line @typescript-eslint/no-explicit-any
             headerItem: headerItem,
         };
 
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
 export async function PUT(request: Request) {
     try {
         // Get headers from request
-        const { headerItem } = await request.json() as { headerItem: any };
+        const { headerItem } = await request.json() as { headerItem: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
         // Payload formatting
         const filter = { headerItem: headerItem };
@@ -120,7 +120,7 @@ export async function PUT(request: Request) {
 export async function DELETE(request: Request) {
     try {
         // Get headers from request
-        const { headerId, headerItem } = await request.json() as { headerId?: string, headerItem: any };
+        const { headerId, headerItem } = await request.json() as { headerId?: string, headerItem: any }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
         // Validate headerId
         if (!headerId && ObjectId.isValid(headerId ? headerId : "")) {

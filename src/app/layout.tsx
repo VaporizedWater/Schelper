@@ -26,11 +26,11 @@ export default function RootLayout(
 ) {
     return (
         <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-graybg flex flex-col h-screen`}>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen`}>
                 <SessionProvider>
                     <CalendarProvider>
                         <NavWrapper />
-                        <div className="bg-graybg flex-1">
+                        <div className="flex-1">
                             {children}
                         </div>
                     </CalendarProvider>

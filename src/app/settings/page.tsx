@@ -238,6 +238,7 @@ function CohortSettings() {
             console.log('Loaded cohorts:', result);
         }
         fetchCohorts();
+        // eslint-disable-next-line
     }, []);
 
 
