@@ -1,7 +1,7 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
-import { Collection, Document, ObjectId } from "mongodb";
+import { Collection, Document } from "mongodb";
 import { FacultyType } from "@/lib/types";
 
 const client = await clientPromise;
