@@ -12,7 +12,6 @@ export function documentToClass(doc: Document): Class {
         course_num: doc.course_num,
         section: doc.section,
         title: doc.title,
-        location: doc.location,
         enrollment_cap: doc.enrollment_cap,
         waitlist_cap: doc.waitlist_cap,
     };
@@ -56,7 +55,6 @@ export function newDefaultEmptyClass() {
             course_num: "",
             section: "",
             title: "",
-            location: "",
             enrollment_cap: "",
             waitlist_cap: "",
         },

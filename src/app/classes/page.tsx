@@ -28,7 +28,6 @@ const NewClassForm = () => {
         course_subject: '',
         course_num: '',
         section: '',
-        location: '',
         // enrollment_cap: '',
         // waitlist_cap: ''
     } as Class, { initializeWithValue: false });
@@ -58,7 +57,6 @@ const NewClassForm = () => {
             course_subject: '',
             course_num: '',
             section: '',
-            location: '',
         } as Class);
         setClassProperties({
             days: ["Mon"],
@@ -212,13 +210,6 @@ const NewClassForm = () => {
                         placeholder="Section"
                         value={classInfo.section}
                         onChange={(e) => setClassInfo({ ...classInfo, section: e.target.value } as Class)}
-                        className="p-2 border rounded-sm"
-                    />
-                    <input
-                        type="text"
-                        placeholder="Location"
-                        value={classInfo.location}
-                        onChange={(e) => setClassInfo({ ...classInfo, location: e.target.value } as Class)}
                         className="p-2 border rounded-sm"
                     />
                     <input

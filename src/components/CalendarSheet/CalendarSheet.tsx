@@ -66,7 +66,6 @@ export default function CalendarSheet() {
                 { value: String(item.data.course_num), className: isSelected ? 'bg-blue-100' : '' },
                 { value: String(item.data.section), className: isSelected ? 'bg-blue-100' : '' },
                 { value: String(item.data.title), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.data.location), className: isSelected ? 'bg-blue-100' : '' },
                 { value: String(item.properties.class_status), className: isSelected ? 'bg-blue-100' : '' },
                 { value: String(item.properties.start_time), className: isSelected ? 'bg-blue-100' : '' },
                 { value: String(item.properties.end_time), className: isSelected ? 'bg-blue-100' : '' },
@@ -121,7 +120,6 @@ export default function CalendarSheet() {
                     course_num: row[4]?.value ?? '',
                     section: row[5]?.value ?? '',
                     title: row[6]?.value ?? '',
-                    location: row[7]?.value ?? '',
                     enrollment_cap: row[16]?.value ?? '',
                     waitlist_cap: row[17]?.value ?? '',
                 };

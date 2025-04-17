@@ -95,7 +95,7 @@ const ImportSheet = () => {
     const router = useRouter();
     const { uploadNewClasses } = useCalendarContext();
     const [parsedClasses, setParsedClasses] = useState<CombinedClass[]>([]);
-    const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set());
+    const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set()); // Use selected classes as initial_state, and then make an initial_state per user. On export, any classes exporting that are not on initial state get everything included.
     const [cohortSelections, setCohortSelections] = useState<Record<string, string>>({});
 
     // Create a unique identifier for each class
@@ -128,6 +128,9 @@ const ImportSheet = () => {
             let isCancelled = false;
 
             Object.keys(element).forEach(key => {
+                if (isCancelled) {
+                    return;
+                }
                 const value = String(element[key as keyof typeof element]);
                 if (value) {
                     switch (key) {
@@ -176,9 +179,6 @@ const ImportSheet = () => {
                         case "Title":
                             classData.title = value;
                             break;
-                        case "Location":
-                            classData.location = value;
-                            break;
                         case "Enr Cpcty":
                             classData.enrollment_cap = value;
                             break;
@@ -189,9 +189,11 @@ const ImportSheet = () => {
                         // Class Property
                         case "Class Stat":
                             classProperties.class_status = value;
+
                             if (value === "Cancelled Section") {
                                 isCancelled = true;
                             }
+
                             break;
                         case "Start":
                             classProperties.start_time = convertTime(value);
@@ -201,9 +203,19 @@ const ImportSheet = () => {
                             break;
                         case "Room":
                             classProperties.room = value;
+
+                            if (value === "WEB") {
+                                isCancelled = true;
+                            }
+
                             break;
                         case "Facility ID":
                             classProperties.facility_id = value;
+
+                            if (value === "WEB") {
+                                isCancelled = true;
+                            }
+
                             break;
                         case "M":
                             if (value.trim() === "" || value === undefined) {
@@ -253,6 +265,8 @@ const ImportSheet = () => {
                 }
             });
 
+            // Do not insert class if cancelled (e.g., "Cancelled Section", "WEB")
+            // Important to mention that Class ID will contain duplicates if the class is marked as WEB (Web vs Non-Web have the same ID)
             if (!isCancelled) {
                 const levelTag = extractCourseLevel(combinedClass.data.course_num);
 
@@ -485,7 +499,6 @@ const ImportSheet = () => {
                                             </td>
                                             <td className="p-2 border">{cls.properties.instructor_name}</td>
                                             <td className="p-2 border">{cls.properties.room}</td>
-                                            <td className="p-2 border">{cls.data.location}</td>
 
                                             {/* Cohort which is based on selection + cohort list*/}
                                             <td className="p-2 border min-w-32">
