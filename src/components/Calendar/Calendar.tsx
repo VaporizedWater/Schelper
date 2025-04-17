@@ -341,13 +341,10 @@ const Calendar = () => {
                     font-size: 1rem !important; /* text-md */
                 }
 
-
                 .fc .fc-non-business {
-  background-color: rgba(0, 100, 255, 0.3) !important; /* semi-transparent light blue */
-  background-image: none !important;
-}
-
-
+                    background-color: rgba(0, 100, 255, 0.3) !important; /* semi-transparent light blue */
+                    background-image: none !important;
+                }
             `}</style>
         </div>
     );

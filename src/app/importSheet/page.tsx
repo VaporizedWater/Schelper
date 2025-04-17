@@ -204,7 +204,7 @@ const ImportSheet = () => {
                         case "Room":
                             classProperties.room = value;
 
-                            if (value === "WEB") {
+                            if (value === "WEB" || value === "APPT") {
                                 isCancelled = true;
                             }
 
