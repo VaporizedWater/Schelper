@@ -238,7 +238,8 @@ function CohortSettings() {
             console.log('Loaded cohorts:', result);
         }
         fetchCohorts();
-    }, []); // eslint-disable-line @typescript-eslint/react-hooks/exhaustive-deps
+        // eslint-disable-next-line
+    }, []);
 
 
     const { currentCalendar } = useCalendarContext();

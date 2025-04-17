@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Footer from '@/components/Footer/Footer';
-import Image, { StaticImageData } from 'next/image';
+import Image from 'next/image';
 import Link from "next/link";
 import { ClockTower, DayCampus, LionShrine, LogoIcon, NightCampus } from '../lib/icons';
 import { useSession } from "next-auth/react"
