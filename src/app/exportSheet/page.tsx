@@ -161,7 +161,6 @@ const ExportSheet = () => {
                 4: { cellWidth: 35 },    // Instructor
                 5: { cellWidth: 30 },    // Email
                 6: { cellWidth: 35 },    // Room
-                7: { cellWidth: 15 },    // Location
                 8: { cellWidth: 25 },    // Days
                 9: { cellWidth: 12 },    // Start
                 10: { cellWidth: 12 },   // End
@@ -239,7 +238,6 @@ const ExportSheet = () => {
                                     <th className="p-2 border text-left">Instructor</th>
                                     <th className="p-2 border text-left">Email</th>
                                     <th className="p-2 border text-left">Room</th>
-                                    <th className="p-2 border text-left">Location</th>
                                     <th className="p-2 border text-left">Days</th>
                                     <th className="p-2 border text-left">Start</th>
                                     <th className="p-2 border text-left">End</th>

@@ -12,7 +12,9 @@ import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
 
+
 const Calendar = () => {
+    const lastConflictRelevantData = useRef<string>("");
     const calendarRef = useRef<FullCalendar>(null);
     const { faculty, allClasses, setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
     const [events, setEvents] = useState<EventInput[]>([]);
@@ -22,10 +24,8 @@ const Calendar = () => {
     useEffect(() => {
         const displayClasses = allClasses.filter(cls => cls.visible);
 
-        // console.time("Calendar:createEvents");
         if (!displayClasses || displayClasses.length === 0) {
             setEvents([]);
-            // console.timeEnd("Calendar:createEvents");
             return;
         }
 
@@ -50,15 +50,30 @@ const Calendar = () => {
         });
 
         setEvents(newEvents);
-        detectConflicts();
-        // console.timeEnd("Calendar:createEvents");
+
+        // Only run conflict detection if conflict-relevant data has changed
+        const conflictRelevantData = JSON.stringify(
+            allClasses.map(cls => ({
+                id: cls._id,
+                days: cls.properties.days,
+                start: cls.properties.start_time,
+                end: cls.properties.end_time,
+                room: cls.properties.room,
+                instructor: cls.properties.instructor_email || cls.properties.instructor_name,
+                cohort: cls.properties.cohort
+            }))
+        );
+
+        if (conflictRelevantData !== lastConflictRelevantData.current) {
+            detectConflicts();
+            lastConflictRelevantData.current = conflictRelevantData;
+        }
     }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Update events for a single class (much more efficient)
     const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {
         if (!updatedClass._id) return;
 
-        // console.time("Calendar:updateEventsForClass");
         const newClassEvents = createEventsFromCombinedClass(updatedClass);
 
         // Add class reference to each event's extendedProps
@@ -77,7 +92,6 @@ const Calendar = () => {
             // Add the new events
             return [...filteredEvents, ...newClassEvents];
         });
-        // console.timeEnd("Calendar:updateEventsForClass");
     }, []);
 
     // Log events when they change
@@ -244,6 +258,15 @@ const Calendar = () => {
         let backgroundColor = '#3788d8';
 
         if (classConflicts.length > 0) {
+            // Add debug logging to see what conflicts are found
+            console.log(`Class ${eventInfo.event.title} has ${classConflicts.length} conflicts:`,
+                classConflicts.map(c => ({
+                    with: c.class1._id === classId ?
+                        c.class2 : c.class1,
+                    type: c.conflictType
+                }))
+            );
+
             // Determine most severe conflict type (all > room + instructor > room + cohort > instructor + cohort > room > instructor > cohort)
             const hasAllConflict = classConflicts.some(c => c.conflictType === "all");
             const hasRoomInstructorConflict = classConflicts.some(c => c.conflictType === "room + instructor");

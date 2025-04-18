@@ -135,129 +135,100 @@ const mergeDaySlots = (
     });
 };
 
-// Rebuilt for efficiency - single sort with compound comparator
 const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
-    // console.time("detectClassConflicts");
-    // Single sort with compound key (day, start_time)
-    const sortedClasses = [...classes].sort((a, b) => {
-        // First by day
-        const aDay = a.properties.days?.[0];
-        const bDay = b.properties.days?.[0];
-
-        if (!aDay || !bDay) return 0;
-
-        const dayCompare = dayToDate[aDay].localeCompare(dayToDate[bDay]);
-        if (dayCompare !== 0) return dayCompare;
-
-        // Then by start time
-        const aStart = a.properties.start_time || '';
-        const bStart = b.properties.start_time || '';
-        return aStart.localeCompare(bStart);
-    });
-
     const conflicts: ConflictType[] = [];
-    const dayConflictCache = new Map(); // Cache conflicts by day to avoid redundant checks
 
-    // More efficient conflict detection
-    for (let i = 0; i < sortedClasses.length - 1; i++) {
-        const class1 = sortedClasses[i];
-        const class1Day = class1.properties.days?.[0];
-        const class1End = class1.properties.end_time;
+    // Helper to convert time string to minutes for easier comparison
+    const timeToMinutes = (timeStr: string | undefined): number => {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    };
 
-        if (!class1Day || !class1End) {
-            console.log("Skipping class due to missing day or end time:", class1);
+    // Process all class pairs - no need for sorting
+    for (let i = 0; i < classes.length; i++) {
+        const class1 = classes[i];
+
+        // Skip classes with no days or times
+        if (!class1.properties.days?.length || !class1.properties.start_time || !class1.properties.end_time) {
             continue;
         }
 
-        // Cache key includes room and instructor (& cohort!) to check specific conflicts
-        const cacheKey = class1Day + class1.properties.room + class1.properties.instructor_email + class1.properties.cohort;
-        if (!dayConflictCache.has(cacheKey)) {
-            dayConflictCache.set(cacheKey, []);
-        }
+        const class1StartMinutes = timeToMinutes(class1.properties.start_time);
+        const class1EndMinutes = timeToMinutes(class1.properties.end_time);
 
-        // Only check against classes with same day
-        for (let j = i + 1; j < sortedClasses.length; j++) {
-            const class2 = sortedClasses[j];
-            const class2Day = class2.properties.days?.[0];
-            const class2Start = class2.properties.start_time;
+        for (let j = i + 1; j < classes.length; j++) {
+            const class2 = classes[j];
 
-            if (!class2Day || !class2Start) {
-                console.log("Skipping class due to missing day or start time:", class2);
+            // Skip classes with no days or times
+            if (!class2.properties.days?.length || !class2.properties.start_time || !class2.properties.end_time) {
                 continue;
             }
 
-            // Check for day overlap.
-            const hasDayOverlap = class2.properties.days.some(item => new Set(class1.properties.days).has(item));
+            const class2StartMinutes = timeToMinutes(class2.properties.start_time);
+            const class2EndMinutes = timeToMinutes(class2.properties.end_time);
 
-            // If no day overlap, break
-            if (!hasDayOverlap) {
-                break;
-            }
+            // Check for time overlap (classes run at same time)
+            const hasTimeOverlap = !(class1EndMinutes <= class2StartMinutes || class2EndMinutes <= class1StartMinutes);
 
-            // Check for time overlap and conflict condition
-            if (class2Start < class1End) {
+            if (hasTimeOverlap) {
+                // Check if any day overlaps between the two classes
+                const dayOverlap = class1.properties.days.some(day1 =>
+                    class2.properties.days.some(day2 => day1 === day2)
+                );
 
+                if (dayOverlap) {
+                    // Only check room conflict if both rooms exist and are non-empty
+                    const roomConflict = class1.properties.room &&
+                        class2.properties.room &&
+                        class1.properties.room === class2.properties.room;
+                    // && class1.properties.room === 'Off Campus';
 
-                // Only check room conflict if both rooms exist and are non-empty
-                const roomConflict = class1.properties.room &&
-                    class2.properties.room &&
-                    class1.properties.room === class2.properties.room;
+                    // Check instructor conflict via email or name
+                    const instructorConflict =
+                        (class1.properties.instructor_email &&
+                            class2.properties.instructor_email &&
+                            class1.properties.instructor_email === class2.properties.instructor_email) ||
+                        (class1.properties.instructor_name &&
+                            class2.properties.instructor_name &&
+                            class1.properties.instructor_name === class2.properties.instructor_name);
 
-                // Only check instructor conflict if both instructor emails exist and are non-empty
-                const instructorConflict = class1.properties.instructor_email &&
-                    class2.properties.instructor_email &&
-                    class1.properties.instructor_email === class2.properties.instructor_email ||
-                    class1.properties.instructor_name &&
-                    class2.properties.instructor_name &&
-                    class1.properties.instructor_name === class2.properties.instructor_name;
+                    // Check for cohort conflict
+                    const cohortConflict = class1.properties.cohort &&
+                        class2.properties.cohort &&
+                        class1.properties.cohort === class2.properties.cohort;
 
-                // Check for cohort conflict if both cohorts exist and are non-empty
-                const cohortConflict = class1.properties.cohort &&
-                    class2.properties.cohort &&
-                    class1.properties.cohort === class2.properties.cohort;
+                    // Determine conflict type
+                    let conflictType = null;
 
-                // Determine conflict type
-                let conflictType = null;
-                if (roomConflict && instructorConflict && cohortConflict) {
-                    console.log("ALL CONFLICTS DETECTED!");
-                    conflictType = "all";
-                } else if (roomConflict && instructorConflict && !cohortConflict) {
-                    console.log("ROOM + INSTRUCTOR CONFLICT DETECTED!");
-                    conflictType = "room + instructor";
-                } else if (roomConflict && cohortConflict && !instructorConflict) {
-                    console.log("ROOM + COHORT CONFLICT DETECTED!");
-                    conflictType = "room + cohort";
-                } else if (instructorConflict && cohortConflict && !roomConflict) {
-                    console.log("INSTRUCTOR + COHORT CONFLICT DETECTED!");
-                    conflictType = "instructor + cohort";
-                } else if (roomConflict && !instructorConflict && !cohortConflict) {
-                    console.log("ROOM CONFLICT DETECTED!");
-                    conflictType = "room";
-                } else if (instructorConflict && !roomConflict && !cohortConflict) {
-                    console.log("INSTRUCTOR CONFLICT DETECTED!");
-                    conflictType = "instructor";
-                } else if (cohortConflict && !roomConflict && !instructorConflict) {
-                    console.log("COHORT CONFLICT DETECTED!");
-                    conflictType = "cohort";
+                    if (roomConflict && instructorConflict && cohortConflict) {
+                        conflictType = "all";
+                    } else if (roomConflict && instructorConflict && !cohortConflict) {
+                        conflictType = "room + instructor";
+                    } else if (roomConflict && cohortConflict && !instructorConflict) {
+                        conflictType = "room + cohort";
+                    } else if (instructorConflict && cohortConflict && !roomConflict) {
+                        conflictType = "instructor + cohort";
+                    } else if (roomConflict && !instructorConflict && !cohortConflict) {
+                        conflictType = "room";
+                    } else if (instructorConflict && !roomConflict && !cohortConflict) {
+                        conflictType = "instructor";
+                    } else if (cohortConflict && !roomConflict && !instructorConflict) {
+                        conflictType = "cohort";
+                    }
+
+                    if (conflictType) {
+                        conflicts.push({
+                            class1,
+                            class2,
+                            conflictType
+                        });
+                    }
                 }
-
-                // Register conflict only if time overlaps AND there's either a room or instructor or cohort conflict
-                if (conflictType) {
-                    conflicts.push({
-                        class1,
-                        class2,
-                        conflictType
-                    });
-                    dayConflictCache.get(cacheKey).push(class2._id);
-                }
-            } else if (class2Start >= class1End) {
-                // No more possible conflicts with class1
-                break;
             }
         }
     }
 
-    // console.timeEnd("detectClassConflicts");
     return conflicts;
 };
 

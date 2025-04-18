@@ -3,12 +3,7 @@
 import clientPromise from "@/lib/mongodb";
 import { Class, ClassProperty, CombinedClass } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
-import {
-    Collection,
-    Document,
-    ObjectId,
-    OptionalId,
-} from "mongodb";
+import { Collection, Document, ObjectId, OptionalId } from "mongodb";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("combined_classes") as Collection<Document>;
@@ -18,38 +13,37 @@ export async function GET(request: Request) {
 
     try {
         const userEmail = request.headers.get("userEmail");
-        if (!userEmail || userEmail.split('@').length !== 2) {
-            return new Response(JSON.stringify("Header: \'userEmail\' is missing or invalid"), { status: 400 });
+        if (!userEmail || userEmail.split("@").length !== 2) {
+            return new Response(JSON.stringify("Header: 'userEmail' is missing or invalid"), { status: 400 });
         }
 
         const pipeline = [
             {
                 $match: {
-                    email: userEmail
-                }
+                    email: userEmail,
+                },
             },
             {
                 $lookup: {
                     from: "calendars",
                     localField: "current_calendar",
                     foreignField: "_id",
-                    as: "calendarDetails"
-                }
+                    as: "calendarDetails",
+                },
             },
             {
-                $unwind: "$calendarDetails"
+                $unwind: "$calendarDetails",
             },
             {
                 $lookup: {
                     from: "combined_classes",
                     localField: "calendarDetails.classes",
                     foreignField: "_id",
-                    as: "classDetails"
-                }
+                    as: "classDetails",
+                },
             },
             {
                 $project: {
-
                     _id: "$current_calendar",
                     semester: "$calendarDetails.semester",
                     year: "$calendarDetails.year",
@@ -62,11 +56,11 @@ export async function GET(request: Request) {
                                 data: "$$class.data",
                                 properties: "$$class.properties",
                                 visible: true,
-                            }
-                        }
-                    }
-                }
-            }
+                            },
+                        },
+                    },
+                },
+            },
         ];
 
         const data = await collection.aggregate(pipeline).toArray();
@@ -84,7 +78,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
-        const { calendarId, classes } = await request.json() as { calendarId?: string, classes: CombinedClass[] };
+        const { calendarId, classes } = (await request.json()) as { calendarId?: string; classes: CombinedClass[] };
 
         const documents:
             | OptionalId<Document>[]
@@ -99,12 +93,11 @@ export async function POST(request: Request) {
 
         if (result.acknowledged && result.insertedCount > 0) {
             const calendarObjectId = new ObjectId(calendarId);
-            const classIds = Object.values<ObjectId>(result.insertedIds)
-            await client.db("class-scheduling-app").collection("calendars").updateOne(
-                { _id: calendarObjectId },
-                { $addToSet: { classes: { $each: classIds } } },
-                { upsert: true }
-            );
+            const classIds = Object.values<ObjectId>(result.insertedIds);
+            await client
+                .db("class-scheduling-app")
+                .collection("calendars")
+                .updateOne({ _id: calendarObjectId }, { $addToSet: { classes: { $each: classIds } } }, { upsert: true });
 
             return new Response(JSON.stringify({ success: true, count: result.insertedCount }), {
                 status: 200,
@@ -127,65 +120,75 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request): Promise<Response> {
     try {
-        const { calendarId, classes } = await request.json() as { calendarId?: string, classes: CombinedClass[] };
+        const { calendarId, classes } = (await request.json()) as { calendarId?: string; classes: CombinedClass[] };
 
-        const allIds: ObjectId[] = [];
-
-        for (const cls of classes) {
-            // Destructure _id from the incoming document data
+        // Prepare bulk operations array
+        const bulkOperations = classes.map((cls) => {
             const { _id, ...updateData } = cls;
-            let filter;
-            // Default options: return the document after update and allow upsert.
-            // For an existing document, upsert is not needed.
-            const options: { returnDocument: "after"; upsert: boolean } = {
-                returnDocument: "after",
-                upsert: true,
-            };
 
             if (_id && _id !== "") {
-                // If _id is provided, update based on _id and do not upsert.
-                const objectId = new ObjectId(_id);
-                filter = { _id: objectId };
-                options.upsert = false;
+                // Update existing class by ID
+                return {
+                    updateOne: {
+                        filter: { _id: new ObjectId(_id) },
+                        update: { $set: updateData },
+                    },
+                };
             } else {
-                // Build a filter that uniquely identifies the document.
-                filter = {
-                    "data.catalog_num": cls.data.catalog_num,
-                    "data.class_num": cls.data.class_num,
-                    "data.session": cls.data.session,
-                    "data.course_subject": cls.data.course_subject,
-                    "data.course_num": cls.data.course_num,
-                    "data.section": cls.data.section,
-                    "properties.room": cls.properties.room,
-                    "properties.instructor_name": cls.properties.instructor_name,
-                    "properties.days": cls.properties.days
+                // Upsert based on unique class properties
+                return {
+                    updateOne: {
+                        filter: {
+                            "data.catalog_num": cls.data.catalog_num,
+                            "data.class_num": cls.data.class_num,
+                            "data.session": cls.data.session,
+                            "data.course_subject": cls.data.course_subject,
+                            "data.course_num": cls.data.course_num,
+                            "data.section": cls.data.section,
+                            "properties.room": cls.properties.room,
+                            "properties.instructor_name": cls.properties.instructor_name,
+                            "properties.days": cls.properties.days,
+                        },
+                        update: { $set: updateData },
+                        upsert: true,
+                    },
                 };
             }
+        });
 
-            // Execute the update and capture the returned document.
-            const result = await collection.findOneAndUpdate(filter, { $set: updateData }, options);
+        // Execute all operations in a single database call
+        const bulkResult = await collection.bulkWrite(bulkOperations);
 
-            if (result) {
-                allIds.push(new ObjectId(result["_id"]));
-            }
-        }
+        // Collect IDs of all updated/inserted documents
+        const existingIds = classes.filter((cls) => cls._id && cls._id !== "").map((cls) => new ObjectId(cls._id));
 
-        if (calendarId) {
-            const calendarObjectId = new ObjectId(calendarId);
+        const upsertedIds = Object.values(bulkResult.upsertedIds || {});
+        const allIds = [...existingIds, ...upsertedIds];
+
+        // Update calendar with all document IDs (single operation)
+        if (calendarId && allIds.length > 0) {
             await client
                 .db("class-scheduling-app")
                 .collection("calendars")
                 .updateOne(
-                    { _id: calendarObjectId },
+                    { _id: new ObjectId(calendarId) },
                     { $addToSet: { classes: { $each: allIds } } },
                     { upsert: true }
                 );
         }
 
-        return new Response(JSON.stringify({ success: true }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-        });
+        return new Response(
+            JSON.stringify({
+                success: true,
+                modifiedCount: bulkResult.modifiedCount,
+                upsertedCount: bulkResult.upsertedCount,
+                totalCount: allIds.length,
+            }),
+            {
+                status: 200,
+                headers: { "Content-Type": "application/json" },
+            }
+        );
     } catch (error) {
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
@@ -200,19 +203,19 @@ type CalendarCollection = {
     semester: string;
     year: number;
     classes: ObjectId[];
-}
+};
 
 export async function DELETE(request: Request): Promise<Response> {
     try {
-        const { calendarId, classId } = await request.json() as { calendarId?: string, classId: CombinedClass };
+        const { calendarId, classId } = (await request.json()) as { calendarId?: string; classId: CombinedClass };
         const collection = client.db("class-scheduling-app").collection<CalendarCollection>("calendar");
 
         const result = await collection.updateOne(
             { _id: new ObjectId(calendarId) },
             {
                 $pull: {
-                    classes: new ObjectId(classId._id)
-                }
+                    classes: new ObjectId(classId._id),
+                },
             }
         );
 

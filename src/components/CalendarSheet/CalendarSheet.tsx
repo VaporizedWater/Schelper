@@ -38,7 +38,6 @@ export default function CalendarSheet() {
         { value: "Course Number" },
         { value: "Section" },
         { value: "Title" },
-        { value: "Location" },
         { value: "Class Status" },
         { value: "Start Time" },
         { value: "End Time" },
