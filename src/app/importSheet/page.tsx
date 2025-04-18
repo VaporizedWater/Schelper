@@ -12,15 +12,13 @@ import { useSession } from 'next-auth/react';
 const convertTime = (excelTime: string): string => {
     const [time, period] = excelTime.split(' ');
     const [hours, minutes] = time.split(':').map(num => parseInt(num, 10));
-
+    
     let adjustedHours = hours;
     if (period?.toLowerCase() === 'pm' && hours < 12) {
         adjustedHours += 12;
-    } else if (period?.toLowerCase() === 'am' && hours === 12) {
-        adjustedHours = 0;
     }
 
-    return `${adjustedHours}:${minutes?.toString().padStart(2, '0') || '00'}`;
+    return `${adjustedHours.toString().padStart(2, '0') || '00'}:${minutes?.toString().padStart(2, '0') || '00'}`;
 };
 
 // Extract course level for tagging (e.g., "300" from "300W" becomes "300level")
@@ -212,7 +210,7 @@ const ImportSheet = () => {
                         case "Facility ID":
                             classProperties.facility_id = value;
 
-                            if (value === "WEB") {
+                            if (value === "WEB" || value === "APPT") {
                                 isCancelled = true;
                             }
 
