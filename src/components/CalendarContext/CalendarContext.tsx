@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
 import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty } from '@/lib/DatabaseUtils';
-import { dayToDate, initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
+import { initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
 
