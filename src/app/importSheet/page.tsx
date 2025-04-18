@@ -457,7 +457,6 @@ const ImportSheet = () => {
                                     <th className="p-2 border">End</th>
                                     <th className="p-2 border">Instructor</th>
                                     <th className="p-2 border">Room</th>
-                                    <th className="p-2 border">Location</th>
                                     <th className="p-2 border">Cohort</th>
                                 </tr>
                             </thead>
