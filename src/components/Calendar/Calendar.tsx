@@ -14,7 +14,6 @@ const selectedEvents: HTMLElement[] = [];
 
 
 const Calendar = () => {
-    const lastConflictRelevantData = useRef<string>("");
     const calendarRef = useRef<FullCalendar>(null);
     const { faculty, allClasses, setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
     const [events, setEvents] = useState<EventInput[]>([]);
@@ -52,22 +51,8 @@ const Calendar = () => {
         setEvents(newEvents);
 
         // Only run conflict detection if conflict-relevant data has changed
-        const conflictRelevantData = JSON.stringify(
-            allClasses.map(cls => ({
-                id: cls._id,
-                days: cls.properties.days,
-                start: cls.properties.start_time,
-                end: cls.properties.end_time,
-                room: cls.properties.room,
-                instructor: cls.properties.instructor_email || cls.properties.instructor_name,
-                cohort: cls.properties.cohort
-            }))
-        );
+        detectConflicts();
 
-        if (conflictRelevantData !== lastConflictRelevantData.current) {
-            detectConflicts();
-            lastConflictRelevantData.current = conflictRelevantData;
-        }
     }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Update events for a single class (much more efficient)
