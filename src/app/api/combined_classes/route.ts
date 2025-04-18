@@ -122,6 +122,38 @@ export async function PUT(request: Request): Promise<Response> {
     try {
         const { calendarId, classes } = (await request.json()) as { calendarId?: string; classes: CombinedClass[] };
 
+        // First, find IDs of documents that already exist without an _id field
+        const classesWithIds = classes.filter((cls) => cls._id && cls._id !== "");
+        const classesWithoutIds = classes.filter((cls) => !cls._id || cls._id === "");
+
+        // Create a bulk find operation to get existing class IDs in one batch
+        const existingClassFilters = classesWithoutIds.map((cls) => ({
+            "data.catalog_num": cls.data.catalog_num,
+            "data.class_num": cls.data.class_num,
+            "data.session": cls.data.session,
+            "data.course_subject": cls.data.course_subject,
+            "data.course_num": cls.data.course_num,
+            "data.section": cls.data.section,
+            "properties.room": cls.properties.room,
+            "properties.instructor_name": cls.properties.instructor_name,
+            "properties.days": cls.properties.days,
+        }));
+
+        // Only perform find if we have classes without IDs
+        let preExistingIds: ObjectId[] = [];
+        if (existingClassFilters.length > 0) {
+            const existingDocs = await collection
+                .find(
+                    {
+                        $or: existingClassFilters,
+                    },
+                    { projection: { _id: 1 } }
+                )
+                .toArray();
+
+            preExistingIds = existingDocs.map((doc) => doc._id);
+        }
+
         // Prepare bulk operations array
         const bulkOperations = classes.map((cls) => {
             const { _id, ...updateData } = cls;
@@ -131,7 +163,13 @@ export async function PUT(request: Request): Promise<Response> {
                 return {
                     updateOne: {
                         filter: { _id: new ObjectId(_id) },
-                        update: { $set: updateData },
+                        update: {
+                            $set: {
+                                ...updateData,
+                                lastUpdated: new Date(),
+                                _random: Math.random(), // Force an update
+                            },
+                        },
                     },
                 };
             } else {
@@ -149,7 +187,13 @@ export async function PUT(request: Request): Promise<Response> {
                             "properties.instructor_name": cls.properties.instructor_name,
                             "properties.days": cls.properties.days,
                         },
-                        update: { $set: updateData },
+                        update: {
+                            $set: {
+                                ...updateData,
+                                lastUpdated: new Date(),
+                                _random: Math.random(), // Force an update
+                            },
+                        },
                         upsert: true,
                     },
                 };
@@ -160,10 +204,11 @@ export async function PUT(request: Request): Promise<Response> {
         const bulkResult = await collection.bulkWrite(bulkOperations);
 
         // Collect IDs of all updated/inserted documents
-        const existingIds = classes.filter((cls) => cls._id && cls._id !== "").map((cls) => new ObjectId(cls._id));
-
+        const existingIds = classesWithIds.map((cls) => new ObjectId(cls._id));
         const upsertedIds = Object.values(bulkResult.upsertedIds || {});
-        const allIds = [...existingIds, ...upsertedIds];
+
+        // Include the IDs we found earlier that weren't modified or upserted
+        const allIds = [...existingIds, ...upsertedIds, ...preExistingIds];
 
         // Update calendar with all document IDs (single operation)
         if (calendarId && allIds.length > 0) {
@@ -182,6 +227,7 @@ export async function PUT(request: Request): Promise<Response> {
                 success: true,
                 modifiedCount: bulkResult.modifiedCount,
                 upsertedCount: bulkResult.upsertedCount,
+                foundExisting: preExistingIds.length,
                 totalCount: allIds.length,
             }),
             {
