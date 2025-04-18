@@ -114,6 +114,7 @@ export type CalendarContextType = {
     currentCalendar: CalendarType;
 
     allClasses: CombinedClass[];
+    displayClasses: CombinedClass[];
     currentCombinedClass?: CombinedClass | undefined;
 
     tagList: tagListType; // Map of tags to a set of class ids

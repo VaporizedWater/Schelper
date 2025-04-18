@@ -607,6 +607,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         // Classes
         allClasses: state.classes.all,
+        displayClasses: state.classes.all.filter(c => c.visible),
         currentCombinedClass: state.classes.current,
 
         // Tags
