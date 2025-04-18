@@ -11,7 +11,7 @@ import { useSession } from 'next-auth/react';
 
 const convertTime = (excelTime: string): string => {
     const [time, period] = excelTime.split(' ');
-    const [hours, minutes] = time.split(':').map(num => parseInt(num, 10));
+    const [hours, minutes] = time.split(':').map(num => parseInt(num.trim(), 10));
 
     let adjustedHours = hours;
     if (period?.toLowerCase() === 'pm' && hours < 12) {
@@ -212,7 +212,7 @@ const ImportSheet = () => {
                         case "Facility ID":
                             classProperties.facility_id = value;
 
-                            if (value === "WEB") {
+                            if (value === "WEB" || value === "APPT") {
                                 isCancelled = true;
                             }
 
