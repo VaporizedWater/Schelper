@@ -40,7 +40,6 @@ export const PSU_Logo = logoPSUPath;
 export const TagsImage = tagPath;
 export const HorizontalTextPSULogo = horizontalTextPSULogoPath;
 
-// export const LogoIcon = calendarWhiteIconPath;
 // export const FileIcon = fileIconPath;
 // export const CalendarIcon = calendarIconPath;
 // export const GlobeIcon = globeIconPath;
