@@ -188,6 +188,7 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[], ca
             events: undefined, // Only set events to undefined in the copy
             visible: undefined, // Only set visible to undefined in the copy
             lastUpdated: undefined, // Only set lastUpdated to undefined in the copy
+            conflictPropertyChanged: undefined, // Only set conflictPropertyChanged to undefined in the copy
         }));
 
         const payload = {

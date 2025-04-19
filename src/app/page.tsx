@@ -81,7 +81,7 @@ const Home = () => {
                 <div className='flex flex-col h-screen'>
                     <div className="h-full w-full">
                         <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
-                            <h1 className='text-lightblue text-8xl font-bold flex items-center justify-center gap-4'>
+                            <h1 className='text-lightblue text-shadow-lg text-8xl font-bold flex items-center justify-center gap-4'>
                                 <LogoIcon height="96" width="96" />
                                 Schelper
                             </h1>
