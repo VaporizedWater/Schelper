@@ -2,228 +2,33 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import Spreadsheet, { Selection, Matrix, RangeSelection, EntireRowsSelection, EntireColumnsSelection } from "react-spreadsheet";
-import { Class, ClassProperty, CombinedClass } from "@/lib/types";
-import { updateCombinedClasses } from "@/lib/DatabaseUtils";
+import { CombinedClass } from "@/lib/types";
 
 export default function CalendarSheet() {
-    // Get the data from the combined classes in calendar context
-    const { allClasses, updateAllClasses, setCurrentClass, currentCombinedClass, isLoading, currentCalendar } = useCalendarContext();
-
-    // Add state to track selected row index
+    const { allClasses, setCurrentClass, currentCombinedClass, isLoading } = useCalendarContext();
     const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 
-    // Compute a hidden mapping of row index (starting at 0 for first data row) to class id.
-    // Use useMemo instead of a regular variable + useEffect
-    const classIds = useMemo(() => {
-        return allClasses.filter(cls => cls.visible).map((item) => item._id);
-    }, [allClasses]);
+    // Filtered visible classes - compute only once
+    const visibleClasses = useMemo(() =>
+        allClasses.filter(cls => cls.visible),
+        [allClasses]);
 
-    // Update selected row when currentClass changes in context
+    // Update selected row when currentClass changes
     useEffect(() => {
         if (currentCombinedClass) {
-            const rowIndex = classIds.findIndex(id => id === currentCombinedClass._id);
+            const rowIndex = visibleClasses.findIndex(cls => cls._id === currentCombinedClass._id);
             if (rowIndex !== -1) {
                 setSelectedRowIndex(rowIndex);
             }
         }
-    }, [currentCombinedClass, classIds]);
+    }, [currentCombinedClass, visibleClasses]);
 
-    // Define headers separately so that we can prepend them to the data matrix.
-    const headers = useMemo<Matrix<{ value: string }>>(() => [[
-        { value: "Catalog Number" },
-        { value: "Class Number" },
-        { value: "Session" },
-        { value: "Course Subject" },
-        { value: "Course Number" },
-        { value: "Section" },
-        { value: "Title" },
-        { value: "Class Status" },
-        { value: "Start Time" },
-        { value: "End Time" },
-        { value: "Facility ID" },
-        { value: "Room" },
-        { value: "Days" },
-        { value: "Instructor Name" },
-        { value: "Instructor Email" },
-        { value: "Enrollment Capacity" },
-        { value: "Waitlist Capacity" },
-        { value: "Tags" },
-    ]], []);
-
-    const spreadsheetData = useMemo(() => [
-        ...headers,
-        ...allClasses.filter(cls => cls.visible).map((item, index) => {
-            // Style for the selected row (index + 1 because headers are row 0)
-            const isSelected = index === selectedRowIndex;
-
-            return [
-                { value: String(item.data.catalog_num), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.data.class_num), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.data.session), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.data.course_subject), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.data.course_num), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.data.section), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.data.title), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.class_status), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.start_time), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.end_time), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.facility_id), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.room), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.days.join(', ')), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.instructor_name), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.instructor_email), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.data.enrollment_cap), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.data.waitlist_cap), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.cohort), className: isSelected ? 'bg-blue-100' : '' },
-                { value: String(item.properties.tags.join(', ')), className: isSelected ? 'bg-blue-100' : '' },
-            ];
-        }),
-    ], [allClasses, headers, selectedRowIndex]);
-
-    const [pendingData, setPendingData] = useState<Matrix<{ value: string }>>(spreadsheetData);
-
-    useEffect(() => {
-        setPendingData(spreadsheetData);
-    }, [spreadsheetData]);
-
-    // Handle changes
-    const handleSpreadsheetChange = (newData: Matrix<{ value: string }>) => {
-        setPendingData(newData);
+    // Handle row selection
+    const handleRowClick = (item: CombinedClass, index: number) => {
+        setCurrentClass(item);
+        setSelectedRowIndex(index);
     };
 
-    // Process updates when Enter is pressed
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            processUpdates(pendingData);
-        }
-    };
-
-    // Move the update logic to a separate async function
-    const processUpdates = async (newData: Matrix<{ value: string }>) => {
-
-        try {
-            // Prepare classes to update (only those that were modified)
-            const classesToUpdate: CombinedClass[] = newData.slice(1).map((row, idx) => {
-                const id = classIds[idx]; // Get the id from the mapping
-                console.log("id " + id);
-                const existing = allClasses.find((item) => item._id === id);
-
-                console.log("existing: ", existing);
-
-                const newData: Class = {
-                    catalog_num: row[0]?.value ?? '',
-                    class_num: row[1]?.value ?? '',
-                    session: row[2]?.value ?? '',
-                    course_subject: row[3]?.value ?? '',
-                    course_num: row[4]?.value ?? '',
-                    section: row[5]?.value ?? '',
-                    title: row[6]?.value ?? '',
-                    enrollment_cap: row[16]?.value ?? '',
-                    waitlist_cap: row[17]?.value ?? '',
-                };
-
-                const newProperties: ClassProperty = {
-                    class_status: row[8]?.value ?? '',
-                    start_time: row[9]?.value ?? '',
-                    end_time: row[10]?.value ?? '',
-                    facility_id: row[11]?.value ?? '',
-                    room: row[12]?.value ?? '',
-                    days: row[13]?.value ? row[13].value.split(",").map((d) => d.trim()) : [],
-                    instructor_name: row[14]?.value ?? '',
-                    instructor_email: row[15]?.value ?? '',
-                    total_enrolled: String(existing?.properties.total_enrolled ?? 0),
-                    total_waitlisted: String(existing?.properties.total_waitlisted ?? 0),
-                    cohort: row[18]?.value ?? '',
-                    // tags: row[19]?.value ? row[19].value.split(",").map((t) => t.trim()).sort() : [],
-                    tags: existing?.properties.tags ?? [], // Keep existing tags
-                };
-
-                return {
-                    _id: id,
-                    data: newData,
-                    properties: newProperties,
-                    events: undefined,
-                } as CombinedClass;
-            }).filter(Boolean) as CombinedClass[];
-
-            const success = await updateCombinedClasses(classesToUpdate, currentCalendar._id);
-
-            if (success) {
-                console.log("Classes updated successfully");
-                // Only update the context if database update was successful
-
-                // Create a new array with updated classes replacing the originals
-                const updatedClasses = allClasses.map(cls => {
-                    const updated = classesToUpdate.find(u => u._id === cls._id);
-                    return updated || cls;
-                });
-
-                updateAllClasses(updatedClasses);
-            }
-        } catch (error) {
-            console.error("Error updating classes:", error);
-        }
-    };
-
-    const getIdsFromSelection = (selection: Selection) => {
-        // Set to store unique row indexes (excluding header row)
-        const rowIndexes = new Set<number>();
-
-        // Find the type of selection
-        if (selection instanceof RangeSelection) {
-            // For range selection, get all rows in the range
-            for (let i = selection.range.start.row; i <= selection.range.end.row; i++) {
-                // Skip header row (row 0)
-                if (i > 0) {
-                    rowIndexes.add(i - 1); // Adjust index for header row
-                }
-            }
-        } else if (selection instanceof EntireRowsSelection) {
-            // For entire rows selection
-            for (let i = selection.start; i <= selection.end; i++) {
-                // Skip header row (row 0)
-                if (i > 0) {
-                    rowIndexes.add(i - 1); // Adjust index for header row
-                }
-            }
-        } else if (selection instanceof EntireColumnsSelection) {
-            // For entire columns, include all data rows
-            for (let i = 0; i < classIds.length; i++) {
-                rowIndexes.add(i);
-            }
-        }
-
-        // Convert row indexes to class ids and return
-        return Array.from(rowIndexes)
-            .filter(idx => idx >= 0 && idx < classIds.length)
-            .map(idx => classIds[idx]);
-    };
-
-    const handleSelection = (selection: Selection) => {
-        // console.log("SELECTED: ! ", selection, getIdsFromSelection(selection));
-        const ids = getIdsFromSelection(selection);
-
-        if (ids.length > 0) {
-            const currentClass = allClasses.find(cls => cls._id === ids[0]);
-
-            if (currentClass) {
-                const currentCombined: CombinedClass = currentClass as CombinedClass;
-
-                // console.log("Current Combined: ", currentCombined);
-
-                setCurrentClass(currentCombined);
-
-                // Update the selected row index
-                const rowIndex = classIds.findIndex(id => id === currentCombined._id);
-                if (rowIndex !== -1) {
-                    setSelectedRowIndex(rowIndex);
-                }
-            }
-        }
-    }
-
-    // Add conditional rendering
     if (isLoading) {
         return (
             <div className="h-full flex items-center justify-center">
@@ -237,13 +42,66 @@ export default function CalendarSheet() {
 
     return (
         <div className="grow overflow-auto max-h-[80vh]">
-            <Spreadsheet
-                data={pendingData}
-                onChange={handleSpreadsheetChange}
-                onKeyDown={handleKeyDown}
-                onSelect={handleSelection}
-                className="w-full"
-            />
+            <table className="w-full border-collapse min-w-full text-sm">
+                <thead className="bg-gray-50 sticky top-0 z-10">
+                    <tr>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 bg-gray-50 z-20">#</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catalog #</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class #</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Session</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course #</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Section</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-40">Title</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">End</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Facility</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Days</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Instructor</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enroll Cap</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Wait Cap</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cohort</th>
+                        <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tags</th>
+                    </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                    {visibleClasses.map((item, index) => (
+                        <tr
+                            key={item._id}
+                            className={`${index === selectedRowIndex ? 'bg-blue-100' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')
+                                } hover:bg-gray-100 transition-colors duration-150`}
+                            onClick={() => handleRowClick(item, index)}
+                            style={{ cursor: 'pointer' }}
+                            role="row"
+                            aria-selected={index === selectedRowIndex}
+                        >
+                            <td className="p-2 text-xs font-medium text-gray-500 sticky left-0 bg-inherit">{index + 1}</td>
+                            <td className="p-2 whitespace-nowrap">{item.data.catalog_num}</td>
+                            <td className="p-2 whitespace-nowrap">{item.data.class_num}</td>
+                            <td className="p-2 whitespace-nowrap">{item.data.session}</td>
+                            <td className="p-2 whitespace-nowrap">{item.data.course_subject}</td>
+                            <td className="p-2 whitespace-nowrap">{item.data.course_num}</td>
+                            <td className="p-2 whitespace-nowrap">{item.data.section}</td>
+                            <td className="p-2 ">{item.data.title}</td>
+                            <td className="p-2 whitespace-nowrap">{item.properties.class_status}</td>
+                            <td className="p-2 whitespace-nowrap">{item.properties.start_time}</td>
+                            <td className="p-2 whitespace-nowrap">{item.properties.end_time}</td>
+                            <td className="p-2 whitespace-nowrap">{item.properties.facility_id}</td>
+                            <td className="p-2 whitespace-nowrap">{item.properties.room}</td>
+                            <td className="p-2 whitespace-nowrap">{item.properties.days?.join(', ')}</td>
+                            <td className="p-2 whitespace-nowrap">{item.properties.instructor_name}</td>
+                            <td className="p-2">{item.properties.instructor_email}</td>
+                            <td className="p-2 whitespace-nowrap">{item.data.enrollment_cap}</td>
+                            <td className="p-2 whitespace-nowrap">{item.data.waitlist_cap}</td>
+                            <td className="p-2 whitespace-nowrap">{item.properties.cohort}</td>
+                            <td className="p-2 whitespace-nowrap">{item.properties.tags?.filter(tag => tag.tagCategory === "user").map(tag => tag.tagName).join(', ')}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
 }

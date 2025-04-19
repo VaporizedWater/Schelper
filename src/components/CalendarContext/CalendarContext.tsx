@@ -177,21 +177,35 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
                     class2.properties.days.some(day2 => day1 === day2)
                 );
 
-                if (dayOverlap) {
+                const sameExactTime =
+                    class1.properties.start_time && class1.properties.end_time && class2.properties.start_time && class2.properties.end_time &&
+                    class1.properties.start_time === class2.properties.start_time &&
+                    class1.properties.end_time === class2.properties.end_time;
+
+                const sameExactName =
+                    (class1.data.course_subject && class1.data.course_num && class2.data.course_subject && class2.data.course_num &&
+                        class1.data.course_subject === class2.data.course_subject &&
+                        class1.data.course_num === class2.data.course_num) ||
+                    (class1.data.title && class1.data.title && class1.data.title === class2.data.title);
+
+                const sameInstructor = (class1.properties.instructor_email &&
+                    class2.properties.instructor_email &&
+                    class1.properties.instructor_email === class2.properties.instructor_email) ||
+                    (class1.properties.instructor_name &&
+                        class2.properties.instructor_name &&
+                        class1.properties.instructor_name === class2.properties.instructor_name);
+
+                if (dayOverlap && !sameExactName) {
                     // Only check room conflict if both rooms exist and are non-empty
                     const roomConflict = class1.properties.room &&
                         class2.properties.room &&
+                        class1.properties.room !== 'Off Campus' &&
+                        class2.properties.room !== 'Off Campus' &&
                         class1.properties.room === class2.properties.room;
-                    // && class1.properties.room === 'Off Campus';
+
 
                     // Check instructor conflict via email or name
-                    const instructorConflict =
-                        (class1.properties.instructor_email &&
-                            class2.properties.instructor_email &&
-                            class1.properties.instructor_email === class2.properties.instructor_email) ||
-                        (class1.properties.instructor_name &&
-                            class2.properties.instructor_name &&
-                            class1.properties.instructor_name === class2.properties.instructor_name);
+                    const instructorConflict = !sameExactTime && sameInstructor;
 
                     // Check for cohort conflict
                     const cohortConflict = class1.properties.cohort &&
