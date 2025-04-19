@@ -1,6 +1,4 @@
-import { ClassProperty, CombinedClass } from "@/lib/types";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { useEffect, useState } from "react";
 
 const ConflictProperties = () => {
     const { currentCombinedClass, conflicts } = useCalendarContext();
