@@ -6,11 +6,12 @@ import ClassProperties from "../ClassProperties/ClassProperties";
 import { FaClock, FaFilter, FaListUl, FaTag } from "react-icons/fa";
 import Tags from "../Tags/Tags";
 import DeleteClass from "../DeleteClass/DeleteClass";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdWarning } from "react-icons/md";
 import ClassTimeProperties from "../ClassTimeProperties/ClassTimeProperties";
+import ConflictProperties from "../ConflictProperties/ConflictProperties";
 
 const LeftMenu = () => {
-    const [activeComponent, setActiveComponent] = useState<'filters' | 'properties' | 'timeProperties' | 'tags' | 'delete'>('filters');
+    const [activeComponent, setActiveComponent] = useState<'filters' | 'properties' | 'timeProperties' | 'tags' | 'conflicts' | 'delete'>('filters');
 
     return (
         <div className="flex h-full">
@@ -57,14 +58,29 @@ const LeftMenu = () => {
                     <FaTag size={14} />
                 </div>
                 <div
-                    className={`p-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'delete'
+                    className={`p-2 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 text-yellow-500 ${activeComponent === 'conflicts'
+                        ? 'bg-blue-600 text-white shadow-lg'
+                        : 'hover:bg-gray-700 hover:text-white'
+                        }`}
+                    onClick={() => setActiveComponent('conflicts')}
+                    title="Conflicts"
+                >
+                    <div className="">
+                        <MdWarning size={14} />
+                    </div>
+
+                </div>
+                <div
+                    className={`p-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 text-red-600 ${activeComponent === 'delete'
                         ? 'bg-blue-600 text-white shadow-lg'
                         : 'hover:bg-gray-700 hover:text-white'
                         }`}
                     onClick={() => setActiveComponent('delete')}
                     title="Delete Class"
                 >
-                    <MdDelete size={14} />
+                    <div className="">
+                        <MdDelete size={14} />
+                    </div>
                 </div>
             </div>
 
@@ -93,6 +109,12 @@ const LeftMenu = () => {
                     }`}>
                     <div className="h-full pl-4 pr-2 py-3 overflow-auto">
                         <Tags />
+                    </div>
+                </div>
+                <div className={`absolute inset-0 transition-opacity duration-200 ${activeComponent === 'conflicts' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
+                    }`}>
+                    <div className="h-full pl-4 pr-2 py-3 overflow-auto">
+                        <ConflictProperties />
                     </div>
                 </div>
                 <div className={`absolute inset-0 transition-opacity duration-200 ${activeComponent === 'delete' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'

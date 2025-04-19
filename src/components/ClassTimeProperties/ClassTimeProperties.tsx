@@ -57,11 +57,12 @@ const ClassTimeProperties = () => {
     };
 
     return (
-        <div className="h-full w-full">
-            {currentCombinedClass?._id ? (
-                <div>
-                    <div className="font-bold py-2">Time Properties</div>
-                    <ul className="flex flex-col w-full py-1">
+        <div className="h-full w-full flex flex-col">
+            <div className="w-full text-left py-2 font-bold text-gray-700">Time Properties</div>
+            <div className="h-full">
+
+                {currentCombinedClass?._id ? (
+                    <ul className="flex flex-col w-full">
                         <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
                             <span className='w-full text-start font-semibold'>Start Time</span>
                             <input
@@ -102,13 +103,13 @@ const ClassTimeProperties = () => {
                             </div>
                         </li>
                     </ul>
-                </div>
-            ) : (
-                <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
-                    <p>Select a class to edit</p>
-                </div>
-            )}
 
+                ) : (
+                    <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
+                        <p>Select a class to edit</p>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

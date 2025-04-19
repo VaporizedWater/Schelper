@@ -30,15 +30,13 @@ const Tags = () => {
     };
 
     return (
-        <div className="h-full w-full overflow-y-auto scrollbar-thin">
-            {currentCombinedClass?._id ? (
-                <div className="flex flex-col w-full pb-4 pt-1">
-                    <div className="w-full text-left py-1">
-                        <div className="font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between">
-                            Tags
-                        </div>
-                    </div>
-                    <div className="relative shadow-none w-full">
+        <div className="h-full w-full overflow-y-auto scrollbar-thin flex flex-col">
+            <div className="w-full text-left py-2 font-bold text-gray-700">
+                Tags
+            </div>
+            <div className="h-full">
+                {currentCombinedClass?._id ? (
+                    <div className="relative w-full pb-4 shadow-none">
                         <div className="flex-1 flex-col gap-2 py-1 pl-1">
                             {Array.from(tagList.keys())
                                 .filter(tag => tagList.get(tag)?.tagCategory === "user")
@@ -56,13 +54,12 @@ const Tags = () => {
                                 ))}
                         </div>
                     </div>
-                </div>
-
-            ) : (
-                <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
-                    <p>Select a class to edit</p>
-                </div>
-            )}
+                ) : (
+                    <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
+                        <p>Select a class to edit</p>
+                    </div>
+                )}
+            </div>
         </div>
     )
 }

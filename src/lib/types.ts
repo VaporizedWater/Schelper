@@ -80,6 +80,7 @@ export type DropDownProps = {
     buttonClassName?: string;
     dropdownClassName?: string;
     alwaysOpen?: boolean;
+    defaultOpen?: boolean;
 };
 
 export type ButtonDropDownProps = {

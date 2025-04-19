@@ -105,87 +105,90 @@ const ClassProperties = () => {
     };
 
     return (
-        <div className="h-full w-full overflow-y-auto scrollbar-thin">
-            {currentCombinedClass?._id ? (
-                <ul className="flex flex-col w-full py-2">
-                    {/* Properties Section */}
-                    <div className='font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between'>
-                        Course Info
+        <div className="h-full w-full overflow-y-auto scrollbar-thin flex flex-col">
+            <div className='w-full text-left py-2 font-bold text-gray-700'>
+                Course Info
+            </div>
+            <div className="h-full">
+                {currentCombinedClass?._id ? (
+                    <ul className="flex flex-col w-full">
+                        {/* Properties Section */}
+
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                            <span className='w-full text-start font-semibold'>Subject</span>
+                            <input
+                                type="text"
+                                placeholder="Subject"
+                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                value={courseSubject}
+                                onChange={handleCourseSubjectChange}
+                            />
+                        </li>
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                            <span className='w-full text-start font-semibold'>Course Number</span>
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                value={courseNum}
+                                onChange={handleCourseNumChange}
+                            />
+                        </li>
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                            <span className='w-full text-start font-semibold'>Title</span>
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                value={title}
+                                onChange={handleTitleChange}
+                            />
+                        </li>
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                            <span className='w-full text-start font-semibold'>Instructor</span>
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                value={instructor}
+                                onChange={handleInstructorChange}
+                            />
+                        </li>
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                            <span className='w-full text-start font-semibold'>Email</span>
+                            <input
+                                type="email"
+                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                value={email}
+                                onChange={handleEmailChange}
+                            />
+                        </li>
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                            <span className='w-full text-start font-semibold'>Room</span>
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                value={room}
+                                onChange={handleRoomChange}
+                            />
+                        </li>
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                            <span className='w-full text-start font-semibold'>Cohort</span>
+                            <select
+                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                value={cohort}
+                                onChange={handleCohortChange}
+                            >
+                                <option value="" className=''>Select Cohort</option>
+                                {COHORT_OPTIONS.map(option => (
+                                    <option key={option} value={option}>{option}</option>
+                                ))}
+                            </select>
+                        </li>
+                    </ul>
+                ) : (
+                    <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
+                        <p>Select a class to edit</p>
                     </div>
-                    <li className="flex flex-col p-2 items-center focus-within:bg-blue-50">
-                        <span className='w-full text-start font-semibold'>Subject</span>
-                        <input
-                            type="text"
-                            placeholder="Subject"
-                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                            value={courseSubject}
-                            onChange={handleCourseSubjectChange}
-                        />
-                    </li>
-                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
-                        <span className='w-full text-start font-semibold'>Course Number</span>
-                        <input
-                            type="text"
-                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                            value={courseNum}
-                            onChange={handleCourseNumChange}
-                        />
-                    </li>
-                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
-                        <span className='w-full text-start font-semibold'>Title</span>
-                        <input
-                            type="text"
-                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                            value={title}
-                            onChange={handleTitleChange}
-                        />
-                    </li>
-                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
-                        <span className='w-full text-start font-semibold'>Instructor</span>
-                        <input
-                            type="text"
-                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                            value={instructor}
-                            onChange={handleInstructorChange}
-                        />
-                    </li>
-                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
-                        <span className='w-full text-start font-semibold'>Email</span>
-                        <input
-                            type="email"
-                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                            value={email}
-                            onChange={handleEmailChange}
-                        />
-                    </li>
-                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
-                        <span className='w-full text-start font-semibold'>Room</span>
-                        <input
-                            type="text"
-                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                            value={room}
-                            onChange={handleRoomChange}
-                        />
-                    </li>
-                    <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
-                        <span className='w-full text-start font-semibold'>Cohort</span>
-                        <select
-                            className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
-                            value={cohort}
-                            onChange={handleCohortChange}
-                        >
-                            <option value="" className=''>Select Cohort</option>
-                            {COHORT_OPTIONS.map(option => (
-                                <option key={option} value={option}>{option}</option>
-                            ))}
-                        </select>
-                    </li>
-                </ul>
-            ) : (
-                <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
-                    <p>Select a class to edit</p>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 };
