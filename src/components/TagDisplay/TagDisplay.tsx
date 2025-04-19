@@ -29,7 +29,7 @@ const TagDisplay = () => {
     const unlinkedTags = [] as tagType[];
     tagList.entries().forEach(([tag, tagCategoryAndClassIds]) => {
         const classIds = tagCategoryAndClassIds.classIds;
-        if (classIds.size === 0) {
+        if (tagCategoryAndClassIds.tagCategory === "user" && classIds.size === 0) {
             unlinkedTags.push({ tagName: tag, tagCategory: tagCategoryAndClassIds.tagCategory });
         }
     });
@@ -61,7 +61,7 @@ const TagDisplay = () => {
                 {/* Render linked tags with prefixed key */}
                 {
                     Array.from(tagList)
-                        .filter(([, tagData]) => { return tagData.classIds.size !== 0 })
+                        .filter(([, tagData]) => { return tagData.tagCategory === "user" && tagData.classIds.size !== 0 })
                         .sort(([, tagIdA], [, tagIdB]) => tagIdB.classIds.size - tagIdA.classIds.size)
                         .map(([tagId, tagData]) => (
                             <li
