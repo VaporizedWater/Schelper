@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Footer from '@/components/Footer/Footer';
 import Image from 'next/image';
 import Link from "next/link";
-import { ClockTower, DayCampus, LionShrine, LogoIcon, NightCampus } from '../lib/icons';
+import { ClockTower, DayCampus, LionShrine, NightCampus } from '../lib/icons';
 import { useSession } from "next-auth/react"
 import SignIn from "@/components/SignIn/SignIn";
 
@@ -58,7 +58,6 @@ const Home = () => {
                     <div className="h-full w-full">
                         <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
                             <h1 className='text-lightblue text-shadow-lg text-8xl font-bold flex items-center justify-center gap-4'>
-                                <LogoIcon height="96" width="96" />
                                 Schelper
                             </h1>
                             <h2 className='pt-4 text-3xl text-shadow-lg text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
@@ -82,7 +81,6 @@ const Home = () => {
                     <div className="h-full w-full">
                         <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
                             <h1 className='text-lightblue text-shadow-lg text-8xl font-bold flex items-center justify-center gap-4'>
-                                {/* <LogoIcon height="96" width="96" /> */}
                                 Schelper
                             </h1>
                             <h2 className='pt-4 text-3xl text-graybg text-shadow-lg drop-shadow-lg'>The Class Scheduling App</h2>
