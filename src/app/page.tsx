@@ -61,7 +61,7 @@ const Home = () => {
                                 Schelper
                             </h1>
                             <h2 className='pt-4 text-3xl text-shadow-lg text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
-                            <p className='pt-4 text-xl text-graybg drop-shadow-lg'>Please log in to continue</p>
+                            <p className='pt-4 text-xl text-shadow-lg text-graybg drop-shadow-lg'>Please log in to continue</p>
                             <div className="mt-4">
                                 {/* <button onClick={async () => {
                                     await signIn("microsoft-entra-id");
@@ -87,7 +87,7 @@ const Home = () => {
                             <h2 className='pt-4 text-3xl text-graybg text-shadow-lg drop-shadow-lg'>The Class Scheduling App</h2>
 
                             {/* Main navigation options */}
-                            <div className='mt-10 flex flex-col items-center justify-center'>
+                            <div className='mt-10 flex flex-col items-center justify-center drop-shadow-lg'>
                                 <Link className="overflow-hidden"
                                     href='/calendar'>
                                     <Image

@@ -15,7 +15,7 @@ const SignIn = () => {
                     resetContextToEmpty();
                     signOut()
                 }}>Log Out</button>
-                <div className="text-white text-sm ml-2">{session.user.email}</div>
+                <div className="text-white text-sm ml-2">{session.user.email?.split('@')[0]}</div>
             </div>
         )
     }
