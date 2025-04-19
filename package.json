@@ -9,15 +9,15 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@fullcalendar/core": "^6.1.15",
-    "@fullcalendar/interaction": "^6.1.15",
-    "@fullcalendar/react": "^6.1.15",
-    "@fullcalendar/timegrid": "^6.1.15",
-    "dotenv": "^16.4.7",
+    "@fullcalendar/core": "^6.1.17",
+    "@fullcalendar/interaction": "^6.1.17",
+    "@fullcalendar/react": "^6.1.17",
+    "@fullcalendar/timegrid": "^6.1.17",
+    "dotenv": "^16.5.0",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "mongodb": "^6.15.0",
-    "next": "^15.2.4",
+    "next": "^15.3.1",
     "next-auth": "5.0.0-beta.25",
     "react": "19.0.0",
     "react-dom": "19.0.0",
@@ -29,17 +29,17 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
   },
   "devDependencies": {
-    "@playwright/test": "^1.51.1",
-    "@tailwindcss/postcss": "^4.0.17",
+    "@playwright/test": "^1.52.0",
+    "@tailwindcss/postcss": "^4.1.4",
     "@testing-library/dom": "^10.4.0",
-    "@types/node": "^22.13.16",
-    "@types/react": "^19.0.12",
-    "@types/react-dom": "^19.0.4",
-    "eslint": "^9.23.0",
+    "@types/node": "^22.14.1",
+    "@types/react": "^19.1.2",
+    "@types/react-dom": "^19.1.2",
+    "eslint": "^9.25.0",
     "eslint-config-next": "15.2.4",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.0.17",
+    "tailwindcss": "^4.1.4",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.3"
   }
 }
