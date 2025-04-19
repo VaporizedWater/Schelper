@@ -57,11 +57,10 @@ const Home = () => {
                 <div className="flex flex-col h-screen">
                     <div className="h-full w-full">
                         <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
-                            <h1 className='text-lightblue text-8xl font-bold flex items-center justify-center gap-4'>
-                                <LogoIcon height="96" width="96" />
+                            <h1 className='text-lightblue text-shadow-lg text-8xl font-bold flex items-center justify-center gap-4'>
                                 Schelper
                             </h1>
-                            <h2 className='pt-4 text-3xl text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
+                            <h2 className='pt-4 text-3xl text-shadow-lg text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
                             <p className='pt-4 text-xl text-graybg drop-shadow-lg'>Please log in to continue</p>
                             <div className="mt-4">
                                 {/* <button onClick={async () => {
