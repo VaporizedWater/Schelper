@@ -8,7 +8,7 @@ const COHORT_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior"];
 
 const ClassProperties = () => {
     // const {tagList, deleteClass, setCurrentClass} = useCalendarContext();
-    const { currentCombinedClass, updateOneClass } = useCalendarContext();
+    const { currentCombinedClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
     const initialData: Class = currentCombinedClass?.data || {} as Class;
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
@@ -40,6 +40,7 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.data.course_subject = newVal;
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };
@@ -50,6 +51,7 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.data.course_num = newVal;
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };
@@ -60,6 +62,7 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.data.title = newVal;
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };
@@ -70,6 +73,7 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.instructor_name = newVal;
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };
@@ -80,6 +84,7 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.instructor_email = newVal;
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };
@@ -90,6 +95,7 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.room = newVal;
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };
@@ -100,6 +106,7 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.cohort = newVal;
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };

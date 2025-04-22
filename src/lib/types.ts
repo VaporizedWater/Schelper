@@ -109,6 +109,7 @@ export type tagType = { tagName: string; tagCategory: tagCategory };
 
 export type tagListType = Map<string, { tagCategory: tagCategory; classIds: Set<string> }>; // Map of tag id to a set of class ids
 
+// Usually same as CalendarState, but only include here if you want external objects to access context values and functions
 export type CalendarContextType = {
     faculty: FacultyType[];
 
@@ -125,6 +126,8 @@ export type CalendarContextType = {
 
     conflicts: ConflictType[];
 
+    toggleConflictPropertyChanged: () => void;
+
     resetContextToEmpty: () => void;
 
     setCurrentClass: (newClasses: CombinedClass) => void;
@@ -133,7 +136,7 @@ export type CalendarContextType = {
 
     updateAllClasses: (newClasses: CombinedClass[]) => void;
 
-    detectConflicts: () => void;
+    // detectConflicts: () => void;
 
     unlinkTagFromClass: (tagId: string, classId: string) => void;
 
@@ -175,15 +178,18 @@ export type CalendarState = {
     user: Session | null;
     currentCalendar: CalendarType;
     faculty: FacultyType[];
+    conflictyPropertyChanged: boolean;
 };
 
 export type CalendarAction =
     | {
-          type: "INITIALIZE_DATA";
-          payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType; faculty: FacultyType[] };
-      }
+        type: "INITIALIZE_DATA";
+        payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType; faculty: FacultyType[] };
+    }
+    | { type: "TOGGLE_CONFLICT_PROPERTY_CHANGED"; payload: boolean }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }
+    | { type: "UPDATE_ALL_CLASSES"; payload: CombinedClass[] }
     | { type: "SET_CONFLICTS"; payload: ConflictType[] }
     | { type: "SET_LOADING"; payload: boolean }
     | { type: "SET_ERROR"; payload: string | null }
@@ -194,18 +200,6 @@ export type CalendarAction =
     | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] }
     | { type: "DELETE_CLASS"; payload: string }
     | { type: "UPDATE_FACULTY"; payload: FacultyType[] };
-
-// export type Faculty = {
-//     _id?: string;
-//     email: string;
-//     unavailability: {
-//         mon: { start: string; end: string }[];
-//         tue: { start: string; end: string }[];
-//         wed: { start: string; end: string }[];
-//         thu: { start: string; end: string }[];
-//         fri: { start: string; end: string }[];
-//     };
-// };
 
 export type FacultyType = {
     _id?: string;

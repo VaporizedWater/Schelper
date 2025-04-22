@@ -15,7 +15,7 @@ const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { faculty, allClasses, setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
+    const { faculty, allClasses, setCurrentClass, updateOneClass, toggleConflictPropertyChanged, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
     const [events, setEvents] = useState<EventInput[]>([]);
     const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
@@ -50,8 +50,9 @@ const Calendar = () => {
 
         setEvents(newEvents);
 
+        // No reason to call this when its already in a useEffect in the context, this will end up running it twice
         // Only run conflict detection if conflict-relevant data has changed
-        detectConflicts();
+        // detectConflicts();
 
     }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -198,6 +199,7 @@ const Calendar = () => {
             updateEventsForClass(updatedClass);
 
             // Then update in context/database
+            toggleConflictPropertyChanged();
             updateOneClass(updatedClass);
         }
     }
@@ -225,6 +227,7 @@ const Calendar = () => {
             updateEventsForClass(updatedClass);
 
             // Then update in context/database
+            toggleConflictPropertyChanged();
             updateOneClass(updatedClass);
         }
     }
@@ -244,13 +247,13 @@ const Calendar = () => {
 
         if (classConflicts.length > 0) {
             // Add debug logging to see what conflicts are found
-            console.log(`Class ${eventInfo.event.title} has ${classConflicts.length} conflicts:`,
-                classConflicts.map(c => ({
-                    with: c.class1._id === classId ?
-                        c.class2 : c.class1,
-                    type: c.conflictType
-                }))
-            );
+            // console.log(`Class ${eventInfo.event.title} has ${classConflicts.length} conflicts:`,
+            //     classConflicts.map(c => ({
+            //         with: c.class1._id === classId ?
+            //             c.class2 : c.class1,
+            //         type: c.conflictType
+            //     }))
+            // );
 
             // Determine most severe conflict type (all > room + instructor > room + cohort > instructor + cohort > room > instructor > cohort)
             const hasAllConflict = classConflicts.some(c => c.conflictType === "all");
@@ -359,3 +362,4 @@ const Calendar = () => {
 };
 
 export default Calendar;
+

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createEventsFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from "@/lib/common";
 
 const ClassTimeProperties = () => {
-    const { currentCombinedClass, updateOneClass } = useCalendarContext();
+    const { currentCombinedClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
     const [days, setDays] = useState<string[]>(initialProps.days || []);
     const [startTime, setStartTime] = useState(initialProps.start_time || '');
@@ -30,6 +30,7 @@ const ClassTimeProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.days = updatedDays;
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };
@@ -41,6 +42,7 @@ const ClassTimeProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.start_time = newVal;
             modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };
@@ -52,6 +54,7 @@ const ClassTimeProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.end_time = newVal;
             modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
+            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
         }
     };

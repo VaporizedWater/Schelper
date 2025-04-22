@@ -270,8 +270,16 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 },
                 user: state.user,
                 currentCalendar: action.payload.currentCalendar,
-                faculty: action.payload.faculty || state.faculty
+                faculty: action.payload.faculty || state.faculty,
+                conflictyPropertyChanged: !state.conflictyPropertyChanged
             };
+        }
+
+        case 'TOGGLE_CONFLICT_PROPERTY_CHANGED': {
+            return {
+                ...state,
+                conflictyPropertyChanged: action.payload
+            }
         }
 
         case 'UPDATE_FACULTY': {
@@ -309,6 +317,20 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     current: updatedClass
                 },
             };
+        }
+
+        case 'UPDATE_ALL_CLASSES': {
+            const classes = action.payload;
+            const tagMapping = buildTagMapping(classes, state.tags);
+
+            return {
+                ...state,
+                classes: {
+                    all: classes,
+                    current: state.classes.current
+                },
+                tags: tagMapping
+            }
         }
 
         case 'SET_CONFLICTS': {
@@ -493,7 +515,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     // display: newClasses,
                     current: state.classes.current
                 },
-                tags: newMapping
+                tags: newMapping,
+                conflictyPropertyChanged: !state.conflictyPropertyChanged
             };
         }
 
@@ -535,7 +558,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     // display: filteredDisplayClasses,
                     current: newCurrentClass
                 },
-                tags: newMapping
+                tags: newMapping,
+                conflictyPropertyChanged: !state.conflictyPropertyChanged
             };
         }
 
@@ -584,6 +608,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar, faculty: state.faculty }
                     });
                 }
+
+                
             } catch (err) {
                 if (mounted) {
                     console.error('Error loading data:', err);
@@ -603,13 +629,13 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
     }, [forceUpdate, session?.user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
     // Depends on session.email rather than session itself because it only changes on login state
 
-    // Detect conflicts whenever classes change
+    // Detect conflicts whenever a conflict-related property changes on any class
     useEffect(() => {
         if (state.classes.all.length > 0) {
             const conflicts = detectClassConflicts(state.classes.all);
             dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
         }
-    }, [state.classes.all]);
+    }, [state.conflictyPropertyChanged]);
 
     // Memoize context value to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({
@@ -635,6 +661,15 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         error: state.status.error,
 
         // Actions
+        toggleConflictPropertyChanged: () => {
+            console.log('CONFLICT_PROPERTY_CHANGED');
+            dispatch({
+                type: 'TOGGLE_CONFLICT_PROPERTY_CHANGED',
+                payload: !state.conflictyPropertyChanged
+            })
+        },
+
+
         updateFaculty: (faculty: FacultyType[], doMerge: boolean): Promise<boolean> => {
             console.log('UPDATE_FACULTY');
 
@@ -702,18 +737,17 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         updateAllClasses: (classes: CombinedClass[]) => {
             // console.time("updateAllClasses");
-            const payload = { classes, tags: state.tags, currentCalendar: state.currentCalendar, faculty: state.faculty };
-            console.log('INITIALIZE_DATA', classes);
-            dispatch({ type: 'INITIALIZE_DATA', payload });
+            console.log('UPDATE_ALL_CLASSES', classes);
+            dispatch({ type: 'UPDATE_ALL_CLASSES', payload: classes });
             // console.timeEnd("updateAllClasses");
         },
 
-        detectConflicts: () => {
-            console.log("ALLL CLASSESSSS: ", state.classes.all);
-            const conflicts = detectClassConflicts(state.classes.all); // Changed this from state.classes.display to state.classes.all
-            console.log("CONFLICTS: ", conflicts);
-            dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
-        },
+        // detectConflicts: () => {
+        //     console.log("ALLL CLASSESSSS: ", state.classes.all);
+        //     const conflicts = detectClassConflicts(state.classes.all); // Changed this from state.classes.display to state.classes.all
+        //     console.log("CONFLICTS: ", conflicts);
+        //     dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
+        // },
 
         unlinkTagFromClass: (tagId: string, classId: string) => {
             console.log('UNLINK_TAG_FROM_CLASS');

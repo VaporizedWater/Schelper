@@ -8,14 +8,14 @@ import { useEffect, useState } from "react";
 import { ConflictType } from "@/lib/types";
 
 const ViewConflicts = () => {
-    const { detectConflicts, conflicts, displayClasses } = useCalendarContext();
+    const { conflicts, displayClasses } = useCalendarContext();
     const [isLoading, setIsLoading] = useState(true);
     const [visibleConflicts, setVisibleConflicts] = useState<ConflictType[]>([]);
     const [hiddenConflicts, setHiddenConflicts] = useState<ConflictType[]>([]);
 
     useEffect(() => {
         const loadConflicts = async () => {
-            await detectConflicts();
+            // await detectConflicts();
             setIsLoading(false);
         };
         loadConflicts();

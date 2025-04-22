@@ -186,4 +186,5 @@ export const initialCalendarState: CalendarState = {
     user: null,
     currentCalendar: newDefaultEmptyCalendar(),
     faculty: [newDefaultEmptyFaculty()],
+    conflictyPropertyChanged: false
 };
