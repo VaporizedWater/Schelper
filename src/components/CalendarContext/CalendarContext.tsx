@@ -590,8 +590,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         loadFaculty()
                     ]);
 
-                    console.log("ALL TAGS", allTags);
-                    console.log("FACULTY", faculty);
+                    // console.log("ALL TAGS", allTags);
+                    // console.log("FACULTY", faculty);
 
                     const classes = calendar.classes;
                     calendar.classes = [];
@@ -737,7 +737,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         updateAllClasses: (classes: CombinedClass[]) => {
             // console.time("updateAllClasses");
-            console.log('UPDATE_ALL_CLASSES', classes);
+            console.log('UPDATE_ALL_CLASSES');
             dispatch({ type: 'UPDATE_ALL_CLASSES', payload: classes });
             // console.timeEnd("updateAllClasses");
         },

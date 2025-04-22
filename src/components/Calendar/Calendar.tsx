@@ -81,9 +81,9 @@ const Calendar = () => {
     }, []);
 
     // Log events when they change
-    useEffect(() => {
-        console.log(`Events updated: ${events.length} total events`);
-    }, [events]);
+    // useEffect(() => {
+    //     console.log(`Events updated: ${events.length} total events`);
+    // }, [events]);
 
     // Enhanced findClass that uses our eventMap for better performance
     function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {

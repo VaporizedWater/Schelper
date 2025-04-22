@@ -119,6 +119,9 @@ const ViewConflicts = () => {
                                     conflictLabel = "Cohort";
                                 }
 
+                                const class1data = conflict.class1.data;
+                                const class2data = conflict.class2.data;
+
                                 return (
                                     <li key={`${title}-conflict-${index}`}>
                                         <DropDown
@@ -126,7 +129,7 @@ const ViewConflicts = () => {
                                             renderButton={(isOpen) => (
                                                 <div className={`flex justify-between items-center p-2 ${bgColor} rounded-sm cursor-pointer`}>
                                                     <span className={textColor}>
-                                                        {conflict.class1.data.title} ⚡ {conflict.class2.data.title}
+                                                        {class1data.course_subject + class1data.course_num + " Section " + class1data.section + ": " + class1data.title} ⚡ {class2data.course_subject + class2data.course_num + " Section " + class2data.section + ": " + class2data.title}
                                                     </span>
                                                     <div className="flex items-center">
                                                         <span className="mr-2 text-sm font-medium">{conflictLabel}</span>
