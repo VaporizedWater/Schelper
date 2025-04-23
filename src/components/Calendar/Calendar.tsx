@@ -7,7 +7,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { createEventsFromCombinedClass, dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
+import { createEventsFromCombinedClass, darkenRGBColor, dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
 import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
@@ -34,6 +34,8 @@ const Calendar = () => {
 
     // Create events efficiently when displayClasses changes
     useEffect(() => {
+
+
         const displayClasses = allClasses.filter(cls => cls.visible);
 
         if (!displayClasses || displayClasses.length === 0) {
@@ -118,6 +120,10 @@ const Calendar = () => {
         selectedEvents.forEach(element => {
             if (element) {
                 element.style.backgroundColor = defaultBackgroundColor;
+                element.style.outlineColor = defaultBackgroundColor;
+                if (element.parentElement) {
+                    element.parentElement.style.zIndex = '1';
+                }
             }
         });
 
@@ -126,12 +132,16 @@ const Calendar = () => {
 
     function selectEvent(element: HTMLElement) {
         element.style.backgroundColor = selectedBackgroundColor;
+        element.style.outlineColor = selectedBackgroundColor;
+        if (element.parentElement) {
+            element.parentElement.style.zIndex = '9999';
+        }
         selectedEvents.push(element);
     }
 
     const handleEventClick = (info: EventClickArg) => {
         unselectAll();
-        selectEvent(info.el);
+        // selectEvent(info.el);
 
         const foundClass = findClass(info);
 
@@ -142,7 +152,7 @@ const Calendar = () => {
             }
 
             setCurrentClass(foundClass);
-            console.log("Current class: ", foundClass);
+            // console.log("Current class: ", foundClass);
 
             // Use the instructor's email to find the matching Faculty record
             const instructorEmail = foundClass.properties.instructor_email;
@@ -292,9 +302,12 @@ const Calendar = () => {
             html: `<div style="
                     background-color: ${backgroundColor}; 
                     color: white;
-                    padding: 2px 4px;
-                    border-radius: 2px;
-                    font-size: 1rem; /* Medium font size for events */
+                    padding: 2px 2px;
+                    border-radius: 1px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    font-size: 0.875rem; /* Medium font size for events */
                 ">
                     ${eventInfo.event.title}
                 </div>`
@@ -352,6 +365,19 @@ const Calendar = () => {
                 eventClassNames={eventClassNames}
                 eventDidMount={eventMounted}
                 businessHours={businessHours}
+            // eventOrder={(a, b) => {
+            //     const aClass = (a as any).combinedClassId;
+            //     const bClass = (b as any).combinedClassId;
+
+            //     const aIsSelected = aClass === currentCombinedClass?._id;
+            //     const bIsSelected = bClass === currentCombinedClass?._id;
+
+            //     if (aIsSelected && !bIsSelected) return 1; // a goes on top
+            //     if (!aIsSelected && bIsSelected) return -1;  // b goes on top
+            //     return -1; // keep original order
+            // }}
+            // eventOrderStrict={true}
+
             />
 
             {/* Add custom CSS for calendar font sizes */}

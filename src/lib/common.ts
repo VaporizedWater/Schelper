@@ -118,6 +118,9 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
 
         const dateStringStart = `${convertedDay}T${startTime}`;
         const dateStringEnd = `${convertedDay}T${endTime}`;
+        const nameSplit = combinedClass.properties.instructor_name.split(',');
+        const lastName = nameSplit.length > 1 ? nameSplit[0].trim() : "";
+
 
         events.push({
             display: "auto",
@@ -125,13 +128,14 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
                 combinedClass.data.course_subject +
                     combinedClass.data.course_num +
                     "\n" +
-                    combinedClass.properties.instructor_name || "",
+                    lastName,
             start: dateStringStart || "",
             end: dateStringEnd || "",
             backgroundColor: defaultBackgroundColor,
             extendedProps: {
                 combinedClassId: combinedClass._id,
             },
+            priority: "b"
         });
     });
 
@@ -188,3 +192,14 @@ export const initialCalendarState: CalendarState = {
     faculty: [newDefaultEmptyFaculty()],
     conflictyPropertyChanged: false
 };
+
+export const darkenRGBColor = (color: string, amount: number = 0.2): string => {
+    const hex = color.replace('#', '');
+    const num = parseInt(hex, 16);
+
+    const r = Math.max(0, (num >> 16) - Math.round(255 * amount));
+    const g = Math.max(0, ((num >> 8) & 0x00ff) - Math.round(255 * amount));
+    const b = Math.max(0, (num & 0x0000ff) - Math.round(255 * amount));
+
+    return `rgb(${r}, ${g}, ${b})`;
+}
