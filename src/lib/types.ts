@@ -89,10 +89,6 @@ export type ButtonDropDownProps = {
     type: string;
 };
 
-export type ModalNavigationProps = {
-    CloseModal: () => void;
-}
-
 export type CalendarOpenProps = {
     toggleCalendar: (isOpen: boolean) => void;
 };

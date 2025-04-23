@@ -635,7 +635,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             const conflicts = detectClassConflicts(state.classes.all);
             dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
         }
-    }, [state.conflictyPropertyChanged]);
+    }, [state.conflictyPropertyChanged]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Memoize context value to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({
