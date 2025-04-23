@@ -12,11 +12,24 @@ import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
 
-
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
     const { faculty, allClasses, setCurrentClass, updateOneClass, toggleConflictPropertyChanged, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
     const [events, setEvents] = useState<EventInput[]>([]);
+
+    // Update selected events when currentCombinedClass changes
+    useEffect(() => {
+        if (currentCombinedClass?._id) {
+            unselectAll();
+            const elements = document.getElementsByClassName(`event-${currentCombinedClass._id}`);
+            for (let i = 0; i < elements.length; i++) {
+                selectEvent(elements[i] as HTMLElement);
+            }
+        } else {
+            unselectAll();
+        }
+    }, [currentCombinedClass]);
+
     const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
     // Create events efficiently when displayClasses changes
@@ -55,6 +68,8 @@ const Calendar = () => {
         // detectConflicts();
 
     }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
 
     // Update events for a single class (much more efficient)
     const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {
