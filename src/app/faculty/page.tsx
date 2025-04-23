@@ -71,7 +71,7 @@ const FacultyForm = () => {
     const days: (keyof FacultyType["unavailability"])[] = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
     return (
-        <div className="p-8 mx-auto">
+        <div className="p-8 mx-auto bg-white dark:bg-white text-black dark:text-black">
             <h2 className="font-semibold mb-6">Manage Faculty Availability</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <input

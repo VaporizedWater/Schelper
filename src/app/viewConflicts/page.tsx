@@ -132,7 +132,7 @@ const ViewConflicts = () => {
                                 const class2properties = conflict.class2.properties;
 
                                 return (
-                                    <li key={`${title}-conflict-${index}`}>
+                                    <li className="bg-white dark:bg-white text-black dark:text-black" key={`${title}-conflict-${index}`}>
                                         <DropDown
                                             buttonClassName="w-full"
                                             renderButton={(isOpen) => (

@@ -61,3 +61,19 @@ html, body, div, a, i, button, select, option, optgroup, hr, br {
   -ms-user-select: none;
   user-select: none;
 }
+
+/* If the user prefers dark mode, 
+we of course apply color-scheme: dark, as usual */
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+/* If the user prefers light mode, 
+we apply color-scheme: light, as usual */
+@media (prefers-color-scheme: light) {
+  html {
+    color-scheme: dark;
+  }
+}

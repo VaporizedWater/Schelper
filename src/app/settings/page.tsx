@@ -156,7 +156,7 @@ function ProfileSettings() {
 
 function AppearanceSettings() {
     return (
-        <div>
+        <div className=" bg-white dark:bg-white text-black dark:text-black">
             <h2 className="text-2xl font-semibold mb-6">Appearance</h2>
             <div className="mb-4">
                 <label className="block mb-2 font-medium text-gray-700">Theme</label>

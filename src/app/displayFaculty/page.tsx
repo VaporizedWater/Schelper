@@ -117,7 +117,7 @@ const FacultyDisplayPage = () => {
     }
 
     return (
-        <div className="p-8 mx-auto">
+        <div className="p-8 mx-auto bg-white dark:bg-white text-black dark:text-black">
             <div className="flex justify-center">
                 <h1 className="text-2xl font-semibold mb-6">Faculty Unavailability</h1>
             </div>

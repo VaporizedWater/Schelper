@@ -8,7 +8,7 @@ const ManageTags = () => {
     const { unlinkAllTagsFromAllClasses } = useCalendarContext();
 
     return (
-        <div className="flex flex-col items-right">
+        <div className="flex flex-col items-right  bg-white dark:bg-white text-black dark:text-black">
             <h1 className="text-4xl text-bold py-6 text-center">Manage Tags</h1>
 
             {/* Tag Menu */}

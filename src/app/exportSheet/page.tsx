@@ -173,7 +173,7 @@ const ExportSheet = () => {
     };
 
     return (
-        <div className="p-4">
+        <div className="p-4 bg-white dark:bg-white text-black dark:text-black">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold mb-1">Export Schedule</h1>
                 <span className="text-lg text-gray-600 font-medium">Spring 2025</span>

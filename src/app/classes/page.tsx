@@ -117,7 +117,7 @@ const NewClassForm = () => {
     };
 
     return (
-        <div className="p-8 mx-auto">
+        <div className="p-8 mx-auto bg-white dark:bg-white text-black dark:text-black">
             <h2 className="text-2xl font-semibold mb-6">Create New Class</h2>
             <div className="">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4" onReset={clearState}>

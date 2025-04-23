@@ -7,7 +7,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
 import { useRef, useEffect, useState, useCallback } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { createEventsFromCombinedClass, darkenRGBColor, dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
+import { createEventsFromCombinedClass, dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
 import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
