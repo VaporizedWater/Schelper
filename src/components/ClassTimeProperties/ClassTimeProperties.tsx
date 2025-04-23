@@ -30,8 +30,8 @@ const ClassTimeProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.days = updatedDays;
-            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 
@@ -47,8 +47,8 @@ const ClassTimeProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.start_time = newVal;
             modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
-            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 
@@ -59,8 +59,8 @@ const ClassTimeProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.end_time = newVal;
             modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
-            toggleConflictPropertyChanged();
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 

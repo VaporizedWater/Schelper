@@ -252,8 +252,8 @@ const Calendar = () => {
             updateEventsForClass(updatedClass);
 
             // Then update in context/database
-            toggleConflictPropertyChanged();
             updateOneClass(updatedClass);
+            toggleConflictPropertyChanged();
         }
     }
 
