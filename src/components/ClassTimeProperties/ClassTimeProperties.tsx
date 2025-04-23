@@ -36,8 +36,11 @@ const ClassTimeProperties = () => {
     };
 
     const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // const oldVal = startTime;
+        const oldVal = startTime;
         const newVal = e.target.value;
+
+        console.log('Start Time Changed', { oldVal, newVal });
+
         // const changedTime = Number(newVal) - Number(oldVal);
         setStartTime(newVal);
         if (currentCombinedClass) {
