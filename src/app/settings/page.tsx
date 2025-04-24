@@ -47,7 +47,7 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="flex h-full relative" onKeyDown={(e) => {
+        <div className="flex h-full relative bg-white dark:bg-white text-black dark:text-black" onKeyDown={(e) => {
             if (e.key === 'Escape') {
                 handleEscClick();
             }
@@ -116,7 +116,7 @@ export default function SettingsPage() {
 // Existing settings components
 function ProfileSettings() {
     return (
-        <div>
+        <div className='bg-white dark:bg-white text-black dark:text-black'>
             <h2 className="text-2xl font-semibold mb-6">User Profile</h2>
             <form>
                 <div className="mb-4">
@@ -180,25 +180,25 @@ function AppearanceSettings() {
 }
 
 function NotificationSettings() {
-    return <h2 className="text-2xl font-semibold mb-6">Notification Settings</h2>;
+    return <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Notification Settings</h2>;
 }
 
 function PrivacySettings() {
-    return <h2 className="text-2xl font-semibold mb-6">Privacy Settings</h2>;
+    return <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Privacy Settings</h2>;
 }
 
 function SecuritySettings() {
-    return <h2 className="text-2xl font-semibold mb-6">Security Settings</h2>;
+    return <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Security Settings</h2>;
 }
 
 function AdvancedSettings() {
-    return <h2 className="text-2xl font-semibold mb-6">Advanced Settings</h2>;
+    return <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Advanced Settings</h2>;
 }
 
 // New calendar-related settings components
 function CalendarSettings() {
     return (
-        <div>
+        <div className='bg-white dark:bg-white text-black dark:text-black'>
             <h2 className="text-2xl font-semibold mb-6">Calendar Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
@@ -254,6 +254,7 @@ function CohortSettings() {
     interface CohortCourses {
         Fall: string[];
         Spring: string[];
+        Summer?: string[];
     }
 
     // Transform function remains the same
@@ -336,7 +337,7 @@ function CohortSettings() {
             };
 
             // Map courses to the appropriate year based on semester
-            if (currentCalendar.semester === 'FA') {
+            if (currentCalendar.info.semester === 'FA') {
                 // Assuming the first entry is freshman courses, second is sophomore, etc.
                 const cohortEntries = Object.entries(parsedCohorts);
                 if (cohortEntries.length >= 1) newCohort.freshman = cohortEntries[0][1].Fall;
@@ -344,7 +345,7 @@ function CohortSettings() {
                 if (cohortEntries.length >= 3) newCohort.junior = cohortEntries[2][1].Fall;
                 if (cohortEntries.length >= 4) newCohort.senior = cohortEntries[3][1].Fall;
 
-            } else if (currentCalendar.semester === 'SP') {
+            } else if (currentCalendar.info.semester === 'SP') {
                 const cohortEntries = Object.entries(parsedCohorts);
                 if (cohortEntries.length >= 1) newCohort.freshman = cohortEntries[0][1].Spring;
                 if (cohortEntries.length >= 2) newCohort.sophomore = cohortEntries[1][1].Spring;
@@ -393,7 +394,7 @@ function CohortSettings() {
     };
 
     return (
-        <div className='flex-1'>
+        <div className='flex-1 bg-white dark:bg-white text-black dark:text-black'>
             <h2 className="text-2xl font-semibold mb-6">Cohorts Settings</h2>
 
             {/* File upload input */}
@@ -494,7 +495,7 @@ function CohortSettings() {
 
 function SheetSettings() {
     return (
-        <div>
+        <div className='bg-white dark:bg-white text-black dark:text-black'>
             <h2 className="text-2xl font-semibold mb-6">Sheet Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
@@ -535,7 +536,7 @@ function SheetSettings() {
 function ExportSettings() {
     return (
         <div>
-            <h2 className="text-2xl font-semibold mb-6">Export Settings</h2>
+            <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Export Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
                     <label htmlFor="export-format" className="block mb-1 font-medium text-gray-700">Default Export Format</label>
@@ -557,7 +558,7 @@ function ExportSettings() {
 function ImportSettings() {
     return (
         <div>
-            <h2 className="text-2xl font-semibold mb-6">Import Settings</h2>
+            <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Import Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
                     <label className="block mb-1 font-medium text-gray-700">When Importing Duplicates</label>
@@ -584,7 +585,7 @@ function ImportSettings() {
 function ConflictsSettings() {
     return (
         <div>
-            <h2 className="text-2xl font-semibold mb-6">Conflict Settings</h2>
+            <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Conflict Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
                     <label className="block mb-1 font-medium text-gray-700">When Events Conflict</label>
@@ -611,7 +612,7 @@ function ConflictsSettings() {
 function TagsSettings() {
     return (
         <div>
-            <h2 className="text-2xl font-semibold mb-6">Tags Settings</h2>
+            <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Tags Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
                     <label className="block mb-1 font-medium text-gray-700">Manage Tags</label>

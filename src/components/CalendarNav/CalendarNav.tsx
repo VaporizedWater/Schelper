@@ -9,7 +9,7 @@ import { AlertTriangleIcon, FacultyIcon } from "@/lib/icons";
 import { IoMdSettings } from "react-icons/io";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
-    const { displayClasses } = useCalendarContext();
+    const { displayClasses, currentCalendar } = useCalendarContext();
     // const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
     const [calendarActive, setActive] = useState(true);
 
@@ -30,7 +30,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                     </button>
                     {/* <Link href="/faculty">Faculty</Link> */}
 
-                    <p className="text-lg text-lightblack text-center font-semibold">Spring 25</p>
+                    <ButtonDropDown title={currentCalendar.info.name} items={createDropList} type=""></ButtonDropDown>
                     {/* Show number of classes */}
                     <p className="text-sm text-gray-400">{(() => {
                         return displayClasses.length + " Class" + (displayClasses.length !== 1 ? 'es' : '')

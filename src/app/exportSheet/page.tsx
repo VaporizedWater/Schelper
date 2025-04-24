@@ -233,6 +233,7 @@ const ExportSheet = () => {
                                     </th>
                                     <th className="p-2 border text-left">Subject</th>
                                     <th className="p-2 border text-left">Number</th>
+                                    <th className="p-2 border text-left">Section</th>
                                     <th className="p-2 border text-left">Catalog</th>
                                     <th className="p-2 border text-left">Title</th>
                                     <th className="p-2 border text-left">Instructor</th>
@@ -241,7 +242,6 @@ const ExportSheet = () => {
                                     <th className="p-2 border text-left">Days</th>
                                     <th className="p-2 border text-left">Start</th>
                                     <th className="p-2 border text-left">End</th>
-                                    <th className="p-2 border text-left">Conflicts</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
@@ -277,6 +277,7 @@ const ExportSheet = () => {
                                             </td>
                                             <td className="p-2 border">{classItem.data.course_subject}</td>
                                             <td className="p-2 border">{classItem.data.course_num}</td>
+                                            <td className="p-2 border">{classItem.data.section}</td>
                                             <td className="p-2 border">{classItem.data.catalog_num || ''}</td>
                                             <td className="p-2 border">{classItem.data.title}</td>
                                             <td className="p-2 border">{classItem.properties.instructor_name}</td>
@@ -285,7 +286,6 @@ const ExportSheet = () => {
                                             <td className="p-2 border">{classItem.properties.days.join(', ')}</td>
                                             <td className="p-2 border">{classItem.properties.start_time}</td>
                                             <td className="p-2 border">{classItem.properties.end_time}</td>
-                                            <td className="p-2 border font-medium">{conflictLabel}</td>
                                         </tr>
                                     );
                                 })}

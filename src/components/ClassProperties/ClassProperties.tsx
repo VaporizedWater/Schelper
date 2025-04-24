@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { Class, ClassProperty, CombinedClass } from '@/lib/types';
+import { ClassData, ClassProperty, CombinedClass } from '@/lib/types';
 import { newDefaultEmptyClass } from '@/lib/common';
 
 // Cohort options constant
@@ -9,7 +9,7 @@ const COHORT_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior"];
 const ClassProperties = () => {
     // const {tagList, deleteClass, setCurrentClass} = useCalendarContext();
     const { currentCombinedClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
-    const initialData: Class = currentCombinedClass?.data || {} as Class;
+    const initialData: ClassData = currentCombinedClass?.data || {} as ClassData;
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
     const [courseSubject, setCourseSubject] = useState(initialData.course_subject || '');

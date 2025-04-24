@@ -1,9 +1,9 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CalendarState, CalendarType, Class, ClassProperty, CombinedClass, FacultyType, tagType } from "./types";
+import { CalendarState, CalendarType, ClassData, ClassProperty, CombinedClass, FacultyType, tagType } from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
-export function documentToClass(doc: Document): Class {
+export function documentToClass(doc: Document): ClassData {
     return {
         catalog_num: doc.catalog_num,
         class_num: doc.class_num,
@@ -80,9 +80,12 @@ export function newDefaultEmptyClass() {
 export function newDefaultEmptyCalendar(): CalendarType {
     return {
         _id: "",
-        semester: "",
-        year: "",
-        classes: [],
+        info: {
+            semester: "",
+            year: "",
+            name: "Select a Calendar"
+        },
+        classes: []
     };
 }
 

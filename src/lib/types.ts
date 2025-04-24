@@ -26,7 +26,7 @@ export type EventInfo = {
     view: any; // FullCalendar "View Object"
 };
 
-export type Class = {
+export type ClassData = {
     // unchanging identifiers
     catalog_num: string;
     class_num: string;
@@ -57,17 +57,22 @@ export type ClassProperty = {
 
 export type CombinedClass = {
     _id: string;
-    data: Class;
+    data: ClassData;
     properties: ClassProperty;
     events: EventInput | undefined;
     visible: boolean;
 };
 
+export type CalendarInfo = {
+    name: string;
+    semester: string;
+    year: string;
+}
+
 // This serves as a type to transport the calendar/class data from the API to the calendar context via LoadCalendar (previously LoadCombinedClasses)
 export type CalendarType = {
     _id: string;
-    semester: string;
-    year: string;
+    info: CalendarInfo;
     classes: CombinedClass[];
 };
 
