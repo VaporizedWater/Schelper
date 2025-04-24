@@ -70,11 +70,10 @@ const ExportSheet = () => {
         const classesToExport = allClasses.filter(cls => selectedClasses.has(getUniqueClassId(cls)));
 
         const wsData = classesToExport.map(classItem => {
-            const { conflictLabel } = classConflictColors.get(classItem._id) || { conflictLabel: '' };
-
             return {
                 'Course Subject': classItem.data.course_subject,
                 'Course Number': classItem.data.course_num,
+                'Section': classItem.data.section,
                 'Catalog Number': classItem.data.catalog_num || '',
                 'Title': classItem.data.title,
                 'Instructor': classItem.properties.instructor_name,
@@ -82,8 +81,7 @@ const ExportSheet = () => {
                 'Room': classItem.properties.room,
                 'Days': classItem.properties.days.join(', '),
                 'Start Time': classItem.properties.start_time,
-                'End Time': classItem.properties.end_time,
-                'Conflicts': conflictLabel
+                'End Time': classItem.properties.end_time
             };
         });
 
@@ -119,11 +117,10 @@ const ExportSheet = () => {
         doc.text("Class Schedule", 14, 15);
 
         const tableData = classesToExport.map(classItem => {
-            const { conflictLabel } = classConflictColors.get(classItem._id) || { conflictLabel: '' };
-
             return [
                 classItem.data.course_subject,
                 classItem.data.course_num,
+                classItem.data.section,
                 classItem.data.catalog_num || '',
                 classItem.data.title,
                 classItem.properties.instructor_name,
@@ -131,14 +128,13 @@ const ExportSheet = () => {
                 classItem.properties.room,
                 classItem.properties.days.join(', '),
                 classItem.properties.start_time,
-                classItem.properties.end_time,
-                conflictLabel
+                classItem.properties.end_time
             ];
         });
 
         // Optimize column widths based on content type
         autoTable(doc, {
-            head: [['Subject', 'Number', 'Catalog', 'Title', 'Instructor', 'Email', 'Room', 'Loc', 'Days', 'Start', 'End', 'Conflicts']],
+            head: [['Subject', 'Number', 'Section', 'Catalog', 'Title', 'Instructor', 'Email', 'Room', 'Days', 'Start', 'End']],
             body: tableData,
             startY: 20,
             styles: {
@@ -164,7 +160,6 @@ const ExportSheet = () => {
                 8: { cellWidth: 25 },    // Days
                 9: { cellWidth: 12 },    // Start
                 10: { cellWidth: 12 },   // End
-                11: { cellWidth: 25 }    // Conflicts
             },
             margin: { top: 25 }
         });
@@ -247,8 +242,7 @@ const ExportSheet = () => {
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {allClasses.map((classItem, index) => {
                                     const uniqueId = getUniqueClassId(classItem);
-                                    const { color, textColor, conflictLabel } = classConflictColors.get(classItem._id) ||
-                                        { color: 'transparent', textColor: 'inherit', conflictLabel: '' };
+                                    const { color, textColor } = classConflictColors.get(classItem._id) || { color: 'transparent', textColor: 'inherit' };
 
                                     return (
                                         <tr
