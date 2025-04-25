@@ -635,8 +635,10 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
     // Detect conflicts whenever a conflict-related property changes on any class
     useEffect(() => {
         if (state.classes.all.length > 0) {
+            console.log("DETECTING CONFLICTS");
             const conflicts = detectClassConflicts(state.classes.all);
             dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
+            console.log("DETECTED CONFLICTS");
         }
     }, [state.conflictyPropertyChanged]);
 
