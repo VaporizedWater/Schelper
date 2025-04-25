@@ -12,15 +12,30 @@ import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
 
-
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { faculty, allClasses, setCurrentClass, updateOneClass, detectConflicts, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
+    const { faculty, allClasses, setCurrentClass, updateOneClass, toggleConflictPropertyChanged, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
     const [events, setEvents] = useState<EventInput[]>([]);
+
+    // Update selected events when currentCombinedClass changes
+    useEffect(() => {
+        if (currentCombinedClass?._id) {
+            unselectAll();
+            const elements = document.getElementsByClassName(`event-${currentCombinedClass._id}`);
+            for (let i = 0; i < elements.length; i++) {
+                selectEvent(elements[i] as HTMLElement);
+            }
+        } else {
+            unselectAll();
+        }
+    }, [currentCombinedClass]);
+
     const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
     // Create events efficiently when displayClasses changes
     useEffect(() => {
+
+
         const displayClasses = allClasses.filter(cls => cls.visible);
 
         if (!displayClasses || displayClasses.length === 0) {
@@ -50,10 +65,13 @@ const Calendar = () => {
 
         setEvents(newEvents);
 
+        // No reason to call this when its already in a useEffect in the context, this will end up running it twice
         // Only run conflict detection if conflict-relevant data has changed
-        detectConflicts();
+        // detectConflicts();
 
     }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
+
+
 
     // Update events for a single class (much more efficient)
     const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {
@@ -80,9 +98,9 @@ const Calendar = () => {
     }, []);
 
     // Log events when they change
-    useEffect(() => {
-        console.log(`Events updated: ${events.length} total events`);
-    }, [events]);
+    // useEffect(() => {
+    //     console.log(`Events updated: ${events.length} total events`);
+    // }, [events]);
 
     // Enhanced findClass that uses our eventMap for better performance
     function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {
@@ -102,6 +120,10 @@ const Calendar = () => {
         selectedEvents.forEach(element => {
             if (element) {
                 element.style.backgroundColor = defaultBackgroundColor;
+                element.style.outlineColor = defaultBackgroundColor;
+                if (element.parentElement) {
+                    element.parentElement.style.zIndex = '1';
+                }
             }
         });
 
@@ -110,12 +132,16 @@ const Calendar = () => {
 
     function selectEvent(element: HTMLElement) {
         element.style.backgroundColor = selectedBackgroundColor;
+        element.style.outlineColor = selectedBackgroundColor;
+        if (element.parentElement) {
+            element.parentElement.style.zIndex = '9999';
+        }
         selectedEvents.push(element);
     }
 
     const handleEventClick = (info: EventClickArg) => {
         unselectAll();
-        selectEvent(info.el);
+        // selectEvent(info.el);
 
         const foundClass = findClass(info);
 
@@ -126,7 +152,7 @@ const Calendar = () => {
             }
 
             setCurrentClass(foundClass);
-            console.log("Current class: ", foundClass);
+            // console.log("Current class: ", foundClass);
 
             // Use the instructor's email to find the matching Faculty record
             const instructorEmail = foundClass.properties.instructor_email;
@@ -198,6 +224,7 @@ const Calendar = () => {
             updateEventsForClass(updatedClass);
 
             // Then update in context/database
+            toggleConflictPropertyChanged();
             updateOneClass(updatedClass);
         }
     }
@@ -226,6 +253,7 @@ const Calendar = () => {
 
             // Then update in context/database
             updateOneClass(updatedClass);
+            toggleConflictPropertyChanged();
         }
     }
 
@@ -244,13 +272,13 @@ const Calendar = () => {
 
         if (classConflicts.length > 0) {
             // Add debug logging to see what conflicts are found
-            console.log(`Class ${eventInfo.event.title} has ${classConflicts.length} conflicts:`,
-                classConflicts.map(c => ({
-                    with: c.class1._id === classId ?
-                        c.class2 : c.class1,
-                    type: c.conflictType
-                }))
-            );
+            // console.log(`Class ${eventInfo.event.title} has ${classConflicts.length} conflicts:`,
+            //     classConflicts.map(c => ({
+            //         with: c.class1._id === classId ?
+            //             c.class2 : c.class1,
+            //         type: c.conflictType
+            //     }))
+            // );
 
             // Determine most severe conflict type (all > room + instructor > room + cohort > instructor + cohort > room > instructor > cohort)
             const hasAllConflict = classConflicts.some(c => c.conflictType === "all");
@@ -274,9 +302,12 @@ const Calendar = () => {
             html: `<div style="
                     background-color: ${backgroundColor}; 
                     color: white;
-                    padding: 2px 4px;
-                    border-radius: 2px;
-                    font-size: 1rem; /* Medium font size for events */
+                    padding: 2px 2px;
+                    border-radius: 1px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    font-size: 0.875rem; /* Medium font size for events */
                 ">
                     ${eventInfo.event.title}
                 </div>`
@@ -334,6 +365,19 @@ const Calendar = () => {
                 eventClassNames={eventClassNames}
                 eventDidMount={eventMounted}
                 businessHours={businessHours}
+            // eventOrder={(a, b) => {
+            //     const aClass = (a as any).combinedClassId;
+            //     const bClass = (b as any).combinedClassId;
+
+            //     const aIsSelected = aClass === currentCombinedClass?._id;
+            //     const bIsSelected = bClass === currentCombinedClass?._id;
+
+            //     if (aIsSelected && !bIsSelected) return 1; // a goes on top
+            //     if (!aIsSelected && bIsSelected) return -1;  // b goes on top
+            //     return -1; // keep original order
+            // }}
+            // eventOrderStrict={true}
+
             />
 
             {/* Add custom CSS for calendar font sizes */}
@@ -359,3 +403,4 @@ const Calendar = () => {
 };
 
 export default Calendar;
+

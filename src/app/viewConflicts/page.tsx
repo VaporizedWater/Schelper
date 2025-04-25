@@ -5,17 +5,24 @@ import { useCalendarContext } from "@/components/CalendarContext/CalendarContext
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useEffect, useState } from "react";
-import { ConflictType } from "@/lib/types";
+import { CombinedClass, ConflictType } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 const ViewConflicts = () => {
-    const { detectConflicts, conflicts, displayClasses } = useCalendarContext();
+    const { conflicts, displayClasses, setCurrentClass } = useCalendarContext();
     const [isLoading, setIsLoading] = useState(true);
     const [visibleConflicts, setVisibleConflicts] = useState<ConflictType[]>([]);
     const [hiddenConflicts, setHiddenConflicts] = useState<ConflictType[]>([]);
 
+    const router = useRouter();
+    const showClassOnCalendar = (cls: CombinedClass) => {
+        setCurrentClass(cls);
+        router.back();
+    }
+
     useEffect(() => {
         const loadConflicts = async () => {
-            await detectConflicts();
+            // await detectConflicts();
             setIsLoading(false);
         };
         loadConflicts();
@@ -119,14 +126,19 @@ const ViewConflicts = () => {
                                     conflictLabel = "Cohort";
                                 }
 
+                                const class1data = conflict.class1.data;
+                                const class2data = conflict.class2.data;
+                                const class1properties = conflict.class1.properties;
+                                const class2properties = conflict.class2.properties;
+
                                 return (
-                                    <li key={`${title}-conflict-${index}`}>
+                                    <li className="bg-white dark:bg-white text-black dark:text-black" key={`${title}-conflict-${index}`}>
                                         <DropDown
                                             buttonClassName="w-full"
                                             renderButton={(isOpen) => (
                                                 <div className={`flex justify-between items-center p-2 ${bgColor} rounded-sm cursor-pointer`}>
                                                     <span className={textColor}>
-                                                        {conflict.class1.data.title} ⚡ {conflict.class2.data.title}
+                                                        {class1data.course_subject + class1data.course_num + " Section " + class1data.section + ": " + class1data.title} ⚡ {class2data.course_subject + class2data.course_num + " Section " + class2data.section + ": " + class2data.title}
                                                     </span>
                                                     <div className="flex items-center">
                                                         <span className="mr-2 text-sm font-medium">{conflictLabel}</span>
@@ -139,22 +151,43 @@ const ViewConflicts = () => {
                                                 <div className="bg-white border rounded-sm shadow-lg p-4">
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div className="space-y-2">
-                                                            <h3 className="font-semibold">{conflict.class1.data.title}</h3>
-                                                            <p>Days: {conflict.class1.properties.days.join(", ")}</p>
-                                                            <p>Time: {conflict.class1.properties.start_time} - {conflict.class1.properties.end_time}</p>
-                                                            <p>Instructor: {conflict.class1.properties.instructor_name}</p>
-                                                            <p>Email: {conflict.class1.properties.instructor_email}</p>
-                                                            <p>Room: {conflict.class1.properties.room}</p>
-                                                            <p>Cohort: {conflict.class1.properties.cohort}</p>
+                                                            <h3 className="font-semibold">{class1data.course_subject + class1data.course_num + " Section " + class1data.section + ": " + class1data.title}</h3>
+                                                            {
+                                                                defaultOpen ?
+                                                                <button 
+                                                                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75" 
+                                                                    onClick={() => showClassOnCalendar(conflict.class1)}
+                                                                >Show Class on Calendar</button>
+                                                                :
+                                                                <></>
+                                                            }
+                                                            
+                                                            
+                                                            <p>Days: {class1properties.days.join(", ")}</p>
+                                                            <p>Time: {class1properties.start_time} - {class1properties.end_time}</p>
+                                                            <p>Instructor: {class1properties.instructor_name}</p>
+                                                            <p>Email: {class1properties.instructor_email}</p>
+                                                            <p>Room: {class1properties.room}</p>
+                                                            <p>Cohort: {class1properties.cohort}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <h3 className="font-semibold">{conflict.class2.data.title}</h3>
-                                                            <p>Days: {conflict.class2.properties.days.join(", ")}</p>
-                                                            <p>Time: {conflict.class2.properties.start_time} - {conflict.class2.properties.end_time}</p>
-                                                            <p>Instructor: {conflict.class2.properties.instructor_name}</p>
-                                                            <p>Email: {conflict.class2.properties.instructor_email}</p>
-                                                            <p>Room: {conflict.class2.properties.room}</p>
-                                                            <p>Cohort: {conflict.class2.properties.cohort}</p>
+                                                            <h3 className="font-semibold">{class2data.course_subject + class2data.course_num + " Section " + class2data.section + ": " + class2data.title}</h3>
+                                                            {
+                                                                defaultOpen ?
+                                                                <button 
+                                                                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                                                                    onClick={() => showClassOnCalendar(conflict.class2)}
+                                                                >Show Class on Calendar</button>
+                                                                :
+                                                                <></>
+                                                            }
+                                                            
+                                                            <p>Days: {class2properties.days.join(", ")}</p>
+                                                            <p>Time: {class2properties.start_time} - {class2properties.end_time}</p>
+                                                            <p>Instructor: {class2properties.instructor_name}</p>
+                                                            <p>Email: {class2properties.instructor_email}</p>
+                                                            <p>Room: {class2properties.room}</p>
+                                                            <p>Cohort: {class2properties.cohort}</p>
                                                         </div>
                                                     </div>
                                                 </div>

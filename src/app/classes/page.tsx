@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Class, ClassProperty, tagType } from "@/lib/types";
+import { ClassData, ClassProperty, tagType } from "@/lib/types";
 import { useLocalStorage } from 'usehooks-ts'
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
@@ -20,7 +20,7 @@ const NewClassForm = () => {
     const [startTime, setStartTime, clearStartTime] = useLocalStorage("startTime", "", { initializeWithValue: false });
     const [endTime, setEndTime, clearEndTime] = useLocalStorage("endTime", "", { initializeWithValue: false });
 
-    const [classInfo, setClassInfo] = useLocalStorage<Class>("classInfo", {
+    const [classInfo, setClassInfo] = useLocalStorage<ClassData>("classInfo", {
         // title: '',
         // catalog_num: '',
         // class_num: '',
@@ -30,7 +30,7 @@ const NewClassForm = () => {
         section: '',
         // enrollment_cap: '',
         // waitlist_cap: ''
-    } as Class, { initializeWithValue: false });
+    } as ClassData, { initializeWithValue: false });
 
     const [classProperties, setClassProperties] = useLocalStorage<ClassProperty>("classProperties", {
         days: ["Mon"],
@@ -57,7 +57,7 @@ const NewClassForm = () => {
             course_subject: '',
             course_num: '',
             section: '',
-        } as Class);
+        } as ClassData);
         setClassProperties({
             days: ["Mon"],
             class_status: '',
@@ -117,7 +117,7 @@ const NewClassForm = () => {
     };
 
     return (
-        <div className="p-8 mx-auto">
+        <div className="p-8 mx-auto bg-white dark:bg-white text-black dark:text-black">
             <h2 className="text-2xl font-semibold mb-6">Create New Class</h2>
             <div className="">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-4" onReset={clearState}>
@@ -126,7 +126,7 @@ const NewClassForm = () => {
                         type="text"
                         placeholder="Class Title"
                         value={title}
-                        onChange={(e) => { setTitle(e.target.value); setClassInfo({ ...classInfo, title: e.target.value } as Class) }}
+                        onChange={(e) => { setTitle(e.target.value); setClassInfo({ ...classInfo, title: e.target.value } as ClassData) }}
                         className="p-2 border rounded-sm"
                     />
 
@@ -170,7 +170,7 @@ const NewClassForm = () => {
                         type="number"
                         placeholder="Catalog Number"
                         value={classInfo.catalog_num || ''}
-                        onChange={(e) => setClassInfo({ ...classInfo, catalog_num: e.target.value } as Class)}
+                        onChange={(e) => setClassInfo({ ...classInfo, catalog_num: e.target.value } as ClassData)}
                         onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
@@ -178,7 +178,7 @@ const NewClassForm = () => {
                         type="number"
                         placeholder="Class Number"
                         value={classInfo.class_num || ''}
-                        onChange={(e) => setClassInfo({ ...classInfo, class_num: e.target.value } as Class)}
+                        onChange={(e) => setClassInfo({ ...classInfo, class_num: e.target.value } as ClassData)}
                         onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
@@ -186,7 +186,7 @@ const NewClassForm = () => {
                         type="number"
                         placeholder="Session"
                         value={classInfo.session || ''}
-                        onChange={(e) => setClassInfo({ ...classInfo, session: e.target.value } as Class)}
+                        onChange={(e) => setClassInfo({ ...classInfo, session: e.target.value } as ClassData)}
                         onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
@@ -194,7 +194,7 @@ const NewClassForm = () => {
                         type="text"
                         placeholder="Course Subject"
                         value={classInfo.course_subject || ''}
-                        onChange={(e) => setClassInfo({ ...classInfo, course_subject: e.target.value } as Class)}
+                        onChange={(e) => setClassInfo({ ...classInfo, course_subject: e.target.value } as ClassData)}
                         onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
@@ -202,21 +202,21 @@ const NewClassForm = () => {
                         type="text"
                         placeholder="Course Number"
                         value={classInfo.course_num}
-                        onChange={(e) => setClassInfo({ ...classInfo, course_num: e.target.value } as Class)}
+                        onChange={(e) => setClassInfo({ ...classInfo, course_num: e.target.value } as ClassData)}
                         className="p-2 border rounded-sm"
                     />
                     <input
                         type="text"
                         placeholder="Section"
                         value={classInfo.section}
-                        onChange={(e) => setClassInfo({ ...classInfo, section: e.target.value } as Class)}
+                        onChange={(e) => setClassInfo({ ...classInfo, section: e.target.value } as ClassData)}
                         className="p-2 border rounded-sm"
                     />
                     <input
                         type="number"
                         placeholder="Enrollment Capacity"
                         value={classInfo.enrollment_cap || ''}
-                        onChange={(e) => setClassInfo({ ...classInfo, enrollment_cap: e.target.value } as Class)}
+                        onChange={(e) => setClassInfo({ ...classInfo, enrollment_cap: e.target.value } as ClassData)}
                         onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />
@@ -224,7 +224,7 @@ const NewClassForm = () => {
                         type="number"
                         placeholder="Waitlist Capacity"
                         value={classInfo.waitlist_cap || ''}
-                        onChange={(e) => setClassInfo({ ...classInfo, waitlist_cap: e.target.value } as Class)}
+                        onChange={(e) => setClassInfo({ ...classInfo, waitlist_cap: e.target.value } as ClassData)}
                         onWheel={preventWheelChange}
                         className="p-2 border rounded-sm"
                     />

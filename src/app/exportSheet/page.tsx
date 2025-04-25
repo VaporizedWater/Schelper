@@ -70,11 +70,10 @@ const ExportSheet = () => {
         const classesToExport = allClasses.filter(cls => selectedClasses.has(getUniqueClassId(cls)));
 
         const wsData = classesToExport.map(classItem => {
-            const { conflictLabel } = classConflictColors.get(classItem._id) || { conflictLabel: '' };
-
             return {
                 'Course Subject': classItem.data.course_subject,
                 'Course Number': classItem.data.course_num,
+                'Section': classItem.data.section,
                 'Catalog Number': classItem.data.catalog_num || '',
                 'Title': classItem.data.title,
                 'Instructor': classItem.properties.instructor_name,
@@ -82,8 +81,7 @@ const ExportSheet = () => {
                 'Room': classItem.properties.room,
                 'Days': classItem.properties.days.join(', '),
                 'Start Time': classItem.properties.start_time,
-                'End Time': classItem.properties.end_time,
-                'Conflicts': conflictLabel
+                'End Time': classItem.properties.end_time
             };
         });
 
@@ -119,11 +117,10 @@ const ExportSheet = () => {
         doc.text("Class Schedule", 14, 15);
 
         const tableData = classesToExport.map(classItem => {
-            const { conflictLabel } = classConflictColors.get(classItem._id) || { conflictLabel: '' };
-
             return [
                 classItem.data.course_subject,
                 classItem.data.course_num,
+                classItem.data.section,
                 classItem.data.catalog_num || '',
                 classItem.data.title,
                 classItem.properties.instructor_name,
@@ -131,14 +128,13 @@ const ExportSheet = () => {
                 classItem.properties.room,
                 classItem.properties.days.join(', '),
                 classItem.properties.start_time,
-                classItem.properties.end_time,
-                conflictLabel
+                classItem.properties.end_time
             ];
         });
 
         // Optimize column widths based on content type
         autoTable(doc, {
-            head: [['Subject', 'Number', 'Catalog', 'Title', 'Instructor', 'Email', 'Room', 'Loc', 'Days', 'Start', 'End', 'Conflicts']],
+            head: [['Subject', 'Number', 'Section', 'Catalog', 'Title', 'Instructor', 'Email', 'Room', 'Days', 'Start', 'End']],
             body: tableData,
             startY: 20,
             styles: {
@@ -164,7 +160,6 @@ const ExportSheet = () => {
                 8: { cellWidth: 25 },    // Days
                 9: { cellWidth: 12 },    // Start
                 10: { cellWidth: 12 },   // End
-                11: { cellWidth: 25 }    // Conflicts
             },
             margin: { top: 25 }
         });
@@ -173,7 +168,7 @@ const ExportSheet = () => {
     };
 
     return (
-        <div className="p-4">
+        <div className="p-4 bg-white dark:bg-white text-black dark:text-black">
             <div className="mb-8">
                 <h1 className="text-2xl font-bold mb-1">Export Schedule</h1>
                 <span className="text-lg text-gray-600 font-medium">Spring 2025</span>
@@ -233,6 +228,7 @@ const ExportSheet = () => {
                                     </th>
                                     <th className="p-2 border text-left">Subject</th>
                                     <th className="p-2 border text-left">Number</th>
+                                    <th className="p-2 border text-left">Section</th>
                                     <th className="p-2 border text-left">Catalog</th>
                                     <th className="p-2 border text-left">Title</th>
                                     <th className="p-2 border text-left">Instructor</th>
@@ -241,14 +237,12 @@ const ExportSheet = () => {
                                     <th className="p-2 border text-left">Days</th>
                                     <th className="p-2 border text-left">Start</th>
                                     <th className="p-2 border text-left">End</th>
-                                    <th className="p-2 border text-left">Conflicts</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {allClasses.map((classItem, index) => {
                                     const uniqueId = getUniqueClassId(classItem);
-                                    const { color, textColor, conflictLabel } = classConflictColors.get(classItem._id) ||
-                                        { color: 'transparent', textColor: 'inherit', conflictLabel: '' };
+                                    const { color, textColor } = classConflictColors.get(classItem._id) || { color: 'transparent', textColor: 'inherit' };
 
                                     return (
                                         <tr
@@ -277,6 +271,7 @@ const ExportSheet = () => {
                                             </td>
                                             <td className="p-2 border">{classItem.data.course_subject}</td>
                                             <td className="p-2 border">{classItem.data.course_num}</td>
+                                            <td className="p-2 border">{classItem.data.section}</td>
                                             <td className="p-2 border">{classItem.data.catalog_num || ''}</td>
                                             <td className="p-2 border">{classItem.data.title}</td>
                                             <td className="p-2 border">{classItem.properties.instructor_name}</td>
@@ -285,7 +280,6 @@ const ExportSheet = () => {
                                             <td className="p-2 border">{classItem.properties.days.join(', ')}</td>
                                             <td className="p-2 border">{classItem.properties.start_time}</td>
                                             <td className="p-2 border">{classItem.properties.end_time}</td>
-                                            <td className="p-2 border font-medium">{conflictLabel}</td>
                                         </tr>
                                     );
                                 })}

@@ -15,6 +15,30 @@ const FacultyDisplayPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [openDropdownEmail, setOpenDropdownEmail] = useState<string | null>(null);
 
+    const [showAddSlot, setShowAddSlot] = useState<Record<
+        string,
+        Record<keyof FacultyType["unavailability"], boolean>
+    >>({});
+
+    useEffect(() => {
+        const initial: typeof showAddSlot = {};
+        facultyData.forEach(f => {
+            initial[f.email] = { 
+                Mon: false, 
+                Tue: false, 
+                Wed: false, 
+                Thu: false, 
+                Fri: false };
+        });
+        setShowAddSlot(initial);
+    }, [facultyData]);
+
+    // draft new slots per faculty per day
+    const [newSlotTimes, setNewSlotTimes] = useState<Record<
+        string,
+        Record<keyof FacultyType["unavailability"], { start: string; end: string }>
+    >>({});
+
     useEffect(() => {
         // If faculty data has been loaded from context
         if (faculty) {
@@ -26,7 +50,102 @@ const FacultyDisplayPage = () => {
         }
     }, [faculty, contextLoading]);
 
-    // Handler to delete an entire faculty record.
+    // initialize empty drafts whenever facultyData changes
+    useEffect(() => {
+        const initShow: typeof showAddSlot = {};
+        const initial: typeof newSlotTimes = {};
+        facultyData.forEach(f => {
+            initShow[f.email] = {
+                Mon: false,
+                Tue: false,
+                Wed: false,
+                Thu: false,
+                Fri: false
+            };
+            initial[f.email] = {
+                Mon: { start: "", end: "" },
+                Tue: { start: "", end: "" },
+                Wed: { start: "", end: "" },
+                Thu: { start: "", end: "" },
+                Fri: { start: "", end: "" },
+            };
+        });
+        setShowAddSlot(initShow);
+        setNewSlotTimes(initial);
+    }, [facultyData]);
+
+    const toggleAddSlot = (
+        email: string,
+        day: keyof FacultyType["unavailability"]
+    ) => {
+        setShowAddSlot(prev => ({
+            ...prev,
+            [email]: {
+                ...prev[email],
+                [day]: !prev[email][day],
+            }
+        }));
+    };
+
+    // update a draft time
+    const handleNewSlotChange = (
+        email: string,
+        day: keyof FacultyType["unavailability"],
+        field: "start" | "end",
+        value: string
+    ) => {
+        setNewSlotTimes(prev => ({
+            ...prev,
+            [email]: {
+                ...prev[email],
+                [day]: {
+                    ...prev[email][day],
+                    [field]: value,
+                }
+            }
+        }));
+    };
+
+    // add the new slot into context + local state
+    const handleAddTimeSlot = async (
+        email: string,
+        day: keyof FacultyType["unavailability"]
+    ) => {
+        const { start, end } = newSlotTimes[email][day];
+        if (!start || !end) return;
+
+        const existing = facultyData.find(f => f.email === email);
+        if (!existing) return;
+
+        const modified: FacultyType = {
+            ...existing,
+            unavailability: {
+                ...existing.unavailability,
+                [day]: [
+                    ...existing.unavailability[day],
+                    { start, end }
+                ]
+            }
+        };
+
+        const others = facultyData.filter(f => f.email !== email);
+        const success = await updateFaculty([...others, modified], false);
+        if (success) {
+            setFacultyData([...others, modified]);
+            // clear the draft
+            setNewSlotTimes(prev => ({
+                ...prev,
+                [email]: {
+                    ...prev[email],
+                    [day]: { start: "", end: "" }
+                }
+            }));
+        } else {
+            setError("Failed to add time slot");
+        }
+    };
+
+    // Handler to delete an entire faculty record
     const handleDeleteFaculty = async (facultyEmail: string) => {
         const confirmed = window.confirm("Are you sure you want to delete this faculty record?");
         if (!confirmed) return;
@@ -117,7 +236,7 @@ const FacultyDisplayPage = () => {
     }
 
     return (
-        <div className="p-8 mx-auto">
+        <div className="p-8 mx-auto bg-white dark:bg-white text-black dark:text-black">
             <div className="flex justify-center">
                 <h1 className="text-2xl font-semibold mb-6">Faculty Unavailability</h1>
             </div>
@@ -160,10 +279,19 @@ const FacultyDisplayPage = () => {
                                         </div>
                                     )}
                                     renderDropdown={() => (
-                                        <div className="grid grid-cols-5 w-full -mt-2 p-3 bg-white">
+                                        <div className="grid grid-cols-5 gap-4 w-full -mt-2 p-3 bg-white">
                                             {(Object.entries(faculty.unavailability) as [keyof FacultyType["unavailability"], EventInput[]][]).map(([day, slots]) => (
                                                 <div key={day}>
-                                                    <h3 className="capitalize font-semibold py-2">{day}</h3>
+                                                    <div className="flex justify-between items-center py-2">
+                                                        <h3 className="capitalize font-semibold">{day}</h3>
+                                                        <button
+                                                            onClick={() => toggleAddSlot(faculty.email, day)}
+                                                            className={`font-bold ${showAddSlot[faculty.email]?.[day] ? "text-red-600" : "text-blue-600"}`}
+                                                        >
+                                                            {showAddSlot[faculty.email]?.[day] ? '–' : '+'}
+                                                        </button>
+                                                    </div>
+
                                                     {slots.length > 0 ? (
                                                         slots.map((slot, index) => (
                                                             <div key={index} className="py-1 flex flex-row items-center">
@@ -185,6 +313,32 @@ const FacultyDisplayPage = () => {
                                                         ))
                                                     ) : (
                                                         <div className="text-gray-400">-</div>
+                                                    )}
+
+                                                    {showAddSlot[faculty.email]?.[day] && (
+                                                        <div className="mt-2">
+                                                            <div className="flex flex-col gap-2 mt-2">
+                                                                <input
+                                                                    type="time"
+                                                                    value={newSlotTimes[faculty.email!]?.[day]?.start || ""}
+                                                                    onChange={e => handleNewSlotChange(faculty.email!, day, "start", e.target.value)}
+                                                                    className="p-1 border rounded-sm"
+                                                                />
+                                                                <span>to</span>
+                                                                <input
+                                                                    type="time"
+                                                                    value={newSlotTimes[faculty.email!]?.[day]?.end || ""}
+                                                                    onChange={e => handleNewSlotChange(faculty.email!, day, "end", e.target.value)}
+                                                                    className="p-1 border rounded-sm"
+                                                                />
+                                                            </div>
+                                                            <button
+                                                                onClick={() => handleAddTimeSlot(faculty.email!, day)}
+                                                                className="text-green-600 ml-2"
+                                                            >
+                                                                Add
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </div>
                                             ))}

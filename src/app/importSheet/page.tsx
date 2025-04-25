@@ -382,7 +382,7 @@ const ImportSheet = () => {
         : 0;
 
     return (
-        <div className="p-4">
+        <div className="p-4 bg-white dark:bg-white text-black dark:text-black">
             <h1 className="text-2xl font-bold mb-4">Import Sheet</h1>
             <div className="space-y-4">
                 <div className='max-h-fit'>

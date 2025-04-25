@@ -1,9 +1,9 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CalendarState, CalendarType, Class, ClassProperty, CombinedClass, FacultyType, tagType } from "./types";
+import { CalendarState, CalendarType, ClassData, ClassProperty, CombinedClass, FacultyType, tagType } from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
-export function documentToClass(doc: Document): Class {
+export function documentToClass(doc: Document): ClassData {
     return {
         catalog_num: doc.catalog_num,
         class_num: doc.class_num,
@@ -80,9 +80,12 @@ export function newDefaultEmptyClass() {
 export function newDefaultEmptyCalendar(): CalendarType {
     return {
         _id: "",
-        semester: "",
-        year: "",
-        classes: [],
+        info: {
+            semester: "",
+            year: "",
+            name: "Select a Calendar"
+        },
+        classes: []
     };
 }
 
@@ -118,6 +121,9 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
 
         const dateStringStart = `${convertedDay}T${startTime}`;
         const dateStringEnd = `${convertedDay}T${endTime}`;
+        const nameSplit = combinedClass.properties.instructor_name.split(',');
+        const lastName = nameSplit.length > 1 ? nameSplit[0].trim() : "";
+
 
         events.push({
             display: "auto",
@@ -125,13 +131,14 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
                 combinedClass.data.course_subject +
                     combinedClass.data.course_num +
                     "\n" +
-                    combinedClass.properties.instructor_name || "",
+                    lastName,
             start: dateStringStart || "",
             end: dateStringEnd || "",
             backgroundColor: defaultBackgroundColor,
             extendedProps: {
                 combinedClassId: combinedClass._id,
             },
+            priority: "b"
         });
     });
 
@@ -186,4 +193,16 @@ export const initialCalendarState: CalendarState = {
     user: null,
     currentCalendar: newDefaultEmptyCalendar(),
     faculty: [newDefaultEmptyFaculty()],
+    conflictyPropertyChanged: false
 };
+
+export const darkenRGBColor = (color: string, amount: number = 0.2): string => {
+    const hex = color.replace('#', '');
+    const num = parseInt(hex, 16);
+
+    const r = Math.max(0, (num >> 16) - Math.round(255 * amount));
+    const g = Math.max(0, ((num >> 8) & 0x00ff) - Math.round(255 * amount));
+    const b = Math.max(0, (num & 0x0000ff) - Math.round(255 * amount));
+
+    return `rgb(${r}, ${g}, ${b})`;
+}

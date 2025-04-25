@@ -25,8 +25,8 @@ export default function RootLayout(
     { children }: Readonly<{ children: React.ReactNode; }>
 ) {
     return (
-        <html lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen`}>
+        <html className="dark" lang="en">
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen bg-white dark:bg-white text-black dark:text-black`}>
                 <SessionProvider>
                     <CalendarProvider>
                         <NavWrapper />

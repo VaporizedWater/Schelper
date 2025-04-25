@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { Class, ClassProperty, CombinedClass } from '@/lib/types';
+import { ClassData, ClassProperty, CombinedClass } from '@/lib/types';
 import { newDefaultEmptyClass } from '@/lib/common';
 
 // Cohort options constant
@@ -8,8 +8,8 @@ const COHORT_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior"];
 
 const ClassProperties = () => {
     // const {tagList, deleteClass, setCurrentClass} = useCalendarContext();
-    const { currentCombinedClass, updateOneClass } = useCalendarContext();
-    const initialData: Class = currentCombinedClass?.data || {} as Class;
+    const { currentCombinedClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
+    const initialData: ClassData = currentCombinedClass?.data || {} as ClassData;
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
     const [courseSubject, setCourseSubject] = useState(initialData.course_subject || '');
@@ -41,6 +41,7 @@ const ClassProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.data.course_subject = newVal;
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 
@@ -51,6 +52,7 @@ const ClassProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.data.course_num = newVal;
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 
@@ -61,6 +63,7 @@ const ClassProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.data.title = newVal;
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 
@@ -71,6 +74,7 @@ const ClassProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.instructor_name = newVal;
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 
@@ -81,6 +85,7 @@ const ClassProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.instructor_email = newVal;
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 
@@ -91,6 +96,7 @@ const ClassProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.room = newVal;
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 
@@ -101,6 +107,7 @@ const ClassProperties = () => {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.cohort = newVal;
             updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
         }
     };
 

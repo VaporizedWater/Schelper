@@ -1,7 +1,7 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
-import { Class, ClassProperty, CombinedClass } from "@/lib/types";
+import { ClassData, ClassProperty, CombinedClass } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { Collection, Document, ObjectId, OptionalId } from "mongodb";
 
@@ -45,8 +45,11 @@ export async function GET(request: Request) {
             {
                 $project: {
                     _id: "$current_calendar",
-                    semester: "$calendarDetails.semester",
-                    year: "$calendarDetails.year",
+                    info: {
+                        semester: "$calendarDetails.info.semester",
+                        year: "$calendarDetails.info.year",
+                        name: "$calendarDetails.info.name",
+                    },
                     classes: {
                         $map: {
                             input: "$classDetails",
@@ -55,7 +58,7 @@ export async function GET(request: Request) {
                                 _id: { $toString: "$$class._id" },
                                 data: "$$class.data",
                                 properties: "$$class.properties",
-                                visible: true,
+                                visible: false,
                             },
                         },
                     },
@@ -82,7 +85,7 @@ export async function POST(request: Request) {
 
         const documents:
             | OptionalId<Document>[]
-            | { data: Class; properties: ClassProperty; events: EventInput | undefined }[] = [];
+            | { data: ClassData; properties: ClassProperty; events: EventInput | undefined }[] = [];
 
         classes.forEach((cls: CombinedClass) => {
             const { _id, ...updateData } = cls; // eslint-disable-line @typescript-eslint/no-unused-vars
