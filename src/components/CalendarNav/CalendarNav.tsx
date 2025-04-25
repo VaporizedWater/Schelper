@@ -1,15 +1,16 @@
 import { LuFileSpreadsheet } from "react-icons/lu";
 import { MdCalendarMonth, MdFileDownload, MdFileUpload } from "react-icons/md";
-import { useState } from "react";
+import { JSX, ReactNode, useMemo, useState } from "react";
 import { CalendarOpenProps } from "@/lib/types";
 import ButtonDropDown from "../ButtonDropDown/ButtonDropDown";
 import Link from "next/link";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { AlertTriangleIcon, FacultyIcon } from "@/lib/icons";
 import { IoMdSettings } from "react-icons/io";
+import CalendarDropDown from "../CalendarSelectionDropDown/CalendarSelection";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
-    const { displayClasses, currentCalendar } = useCalendarContext();
+    const { displayClasses, currentCalendar, calendarInfoList } = useCalendarContext();
     // const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
     const [calendarActive, setActive] = useState(true);
 
@@ -30,7 +31,7 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
                     </button>
                     {/* <Link href="/faculty">Faculty</Link> */}
 
-                    <ButtonDropDown title={currentCalendar.info.name} items={createDropList} type=""></ButtonDropDown>
+                    <CalendarDropDown title={currentCalendar.info.name} />
                     {/* Show number of classes */}
                     <p className="text-sm text-gray-400">{(() => {
                         return displayClasses.length + " Class" + (displayClasses.length !== 1 ? 'es' : '')

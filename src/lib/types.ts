@@ -64,6 +64,7 @@ export type CombinedClass = {
 };
 
 export type CalendarInfo = {
+    _id: string;
     name: string;
     semester: string;
     year: string;
@@ -75,6 +76,11 @@ export type CalendarType = {
     info: CalendarInfo;
     classes: CombinedClass[];
 };
+
+export type CalendarPayload = {
+    calendar: CalendarType;
+    calendars: CalendarInfo[];
+}
 
 export type DropDownProps = {
     /** Function to render the button content */
@@ -119,6 +125,7 @@ export type CalendarContextType = {
     faculty: FacultyType[];
 
     currentCalendar: CalendarType;
+    calendarInfoList: CalendarInfo[];
 
     allClasses: CombinedClass[];
     displayClasses: CombinedClass[];
@@ -135,13 +142,13 @@ export type CalendarContextType = {
 
     resetContextToEmpty: () => void;
 
+    setContextToOtherCalendar: (newCalendarId: string) => void;
+
     setCurrentClass: (newClasses: CombinedClass) => void;
 
     updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
 
     updateAllClasses: (newClasses: CombinedClass[]) => void;
-
-    // detectConflicts: () => void;
 
     unlinkTagFromClass: (tagId: string, classId: string) => void;
 
@@ -182,6 +189,7 @@ export type CalendarState = {
     conflicts: ConflictType[];
     user: Session | null;
     currentCalendar: CalendarType;
+    calendars: CalendarInfo[];
     faculty: FacultyType[];
     conflictyPropertyChanged: boolean;
 };
@@ -189,7 +197,7 @@ export type CalendarState = {
 export type CalendarAction =
     | {
         type: "INITIALIZE_DATA";
-        payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType; faculty: FacultyType[] };
+        payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType; calendars: CalendarInfo[]; faculty: FacultyType[] };
     }
     | { type: "TOGGLE_CONFLICT_PROPERTY_CHANGED"; payload: boolean }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }

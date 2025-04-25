@@ -2,10 +2,11 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty } from '@/lib/DatabaseUtils';
+import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew } from '@/lib/DatabaseUtils';
 import { initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
+import { ObjectId } from 'mongodb';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -584,7 +585,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
                 if (session?.user?.email) {
-                    const [calendar, allTags, faculty] = await Promise.all([
+                    const [calendarPayload, allTags, faculty] = await Promise.all([
                         loadCalendar(session?.user?.email),
                         loadTags(),
                         loadFaculty()
@@ -592,20 +593,22 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
                     // console.log("ALL TAGS", allTags);
                     // console.log("FACULTY", faculty);
+                    console.log("CALENDARS:",calendarPayload);
 
+                    const calendar = calendarPayload.calendar;
                     const classes = calendar.classes;
                     calendar.classes = [];
 
                     if (mounted) {
                         dispatch({
                             type: 'INITIALIZE_DATA',
-                            payload: { classes: classes, tags: allTags, currentCalendar: calendar, faculty: faculty }
+                            payload: { classes: classes, tags: allTags, currentCalendar: calendar, calendars: calendarPayload.calendars, faculty: faculty }
                         });
                     }
                 } else {
                     dispatch({
                         type: 'INITIALIZE_DATA',
-                        payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar, faculty: state.faculty }
+                        payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar, calendars: state.calendars, faculty: state.faculty }
                     });
                 }
 
@@ -644,6 +647,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         // Calendar ID
         currentCalendar: state.currentCalendar,
+        calendarInfoList: state.calendars,
 
         // Classes
         allClasses: state.classes.all,
@@ -709,9 +713,16 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     ],
                     tags: new Map(),
                     currentCalendar: newDefaultEmptyCalendar(),
-                    faculty: state.faculty
+                    calendars: [],
+                    faculty: []
                 }
             });
+        },
+
+        setContextToOtherCalendar: async ( calendarId: string ) => {
+            console.log('SETTING CONTEXT TO OTHER CALENDAR');
+            await setCurrentCalendarToNew(calendarId);
+            setForceUpdate(Date.now().toString());
         },
 
         setCurrentClass: (cls: CombinedClass) => {
@@ -741,13 +752,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             dispatch({ type: 'UPDATE_ALL_CLASSES', payload: classes });
             // console.timeEnd("updateAllClasses");
         },
-
-        // detectConflicts: () => {
-        //     console.log("ALLL CLASSESSSS: ", state.classes.all);
-        //     const conflicts = detectClassConflicts(state.classes.all); // Changed this from state.classes.display to state.classes.all
-        //     console.log("CONFLICTS: ", conflicts);
-        //     dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
-        // },
 
         unlinkTagFromClass: (tagId: string, classId: string) => {
             console.log('UNLINK_TAG_FROM_CLASS');

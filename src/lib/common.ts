@@ -1,4 +1,4 @@
-import { EventInput } from "@fullcalendar/core/index.js";
+import { Calendar, EventInput } from "@fullcalendar/core/index.js";
 import { CalendarState, CalendarType, ClassData, ClassProperty, CombinedClass, FacultyType, tagType } from "./types";
 import { Document } from "mongodb";
 
@@ -81,6 +81,7 @@ export function newDefaultEmptyCalendar(): CalendarType {
     return {
         _id: "",
         info: {
+            _id: "",
             semester: "",
             year: "",
             name: "Select a Calendar"
@@ -192,6 +193,7 @@ export const initialCalendarState: CalendarState = {
     conflicts: [],
     user: null,
     currentCalendar: newDefaultEmptyCalendar(),
+    calendars: [],
     faculty: [newDefaultEmptyFaculty()],
     conflictyPropertyChanged: false
 };

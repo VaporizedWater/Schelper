@@ -1,6 +1,6 @@
 // import { headers } from "next/headers";
 import { newDefaultEmptyCalendar } from "./common";
-import { CalendarType, CohortType, CombinedClass, FacultyType, tagCategory, tagListType, tagType } from "./types";
+import { CalendarInfo, CalendarPayload, CalendarType, CohortType, CombinedClass, FacultyType, tagCategory, tagListType, tagType } from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -62,31 +62,59 @@ export async function loadTags(): Promise<tagListType> {
     }
 }
 
-export async function loadCalendar(userEmail: string): Promise<CalendarType> {
+export async function loadCalendar(userEmail: string): Promise<CalendarPayload> {
     if (userEmail === "") {
         console.error("Calendar ID is undefined");
-        return newDefaultEmptyCalendar();
+        return {
+            calendar: newDefaultEmptyCalendar(),
+            calendars: []
+        };
     }
 
     try {
-        const classResponse = await fetchWithTimeout(
+        // const calendarInfoRequest = fetchWithTimeout(
+        //     "./api/calendars",
+        //     {
+        //         headers: {
+        //             userEmail: userEmail,
+        //         },
+        //     },
+        //     15000
+        // );
+
+        const classRequest = fetchWithTimeout(
             "./api/combined_classes",
             {
                 headers: {
                     userEmail: userEmail,
                 },
             },
-            50000
+            15000
         );
 
+        // const calendarInfoResponse = await calendarInfoRequest;
+        const classResponse = await classRequest;
+
         if (classResponse.ok) {
-            return parseJsonResponse<CalendarType>(classResponse);
+            const currentCalendar = await parseJsonResponse<CalendarType>(classResponse);
+            // const calendarList = await parseJsonResponse<CalendarInfo[]>(calendarInfoResponse);
+            return {
+                calendar: currentCalendar,
+                calendars: [] as CalendarInfo[]
+            } as CalendarPayload;
         }
 
-        return newDefaultEmptyCalendar();
+        return {
+            calendar: newDefaultEmptyCalendar(),
+            calendars: []
+        };
+
     } catch (error) {
         console.error("Failed to load combined classes:", error);
-        return newDefaultEmptyCalendar();
+        return {
+            calendar: newDefaultEmptyCalendar(),
+            calendars: []
+        };
     }
 }
 
@@ -180,6 +208,11 @@ export async function insertCohort(userEmail: string, cohort: CohortType): Promi
 
 // --------
 // PUTS/UPDATES
+export async function setCurrentCalendarToNew(calendarId: string) {
+    console.log("CALENAR ID: ", calendarId);
+}
+
+
 export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
     try {
         // Create a deep copy to avoid mutating the original objects

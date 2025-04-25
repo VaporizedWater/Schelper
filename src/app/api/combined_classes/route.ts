@@ -46,6 +46,7 @@ export async function GET(request: Request) {
                 $project: {
                     _id: "$current_calendar",
                     info: {
+                        _id: { $toString: "$calendarDetails.info._id" },
                         semester: "$calendarDetails.info.semester",
                         year: "$calendarDetails.info.year",
                         name: "$calendarDetails.info.name",
@@ -67,6 +68,8 @@ export async function GET(request: Request) {
         ];
 
         const data = await collection.aggregate(pipeline).toArray();
+
+        console.log(data);
 
         if (!data.length) {
             return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
