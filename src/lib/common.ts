@@ -1,4 +1,4 @@
-import { Calendar, EventInput } from "@fullcalendar/core/index.js";
+import { EventInput } from "@fullcalendar/core/index.js";
 import { CalendarState, CalendarType, ClassData, ClassProperty, CombinedClass, FacultyType, tagType } from "./types";
 import { Document } from "mongodb";
 

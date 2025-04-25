@@ -105,3 +105,15 @@
 //         });
 //     }
 // }
+
+
+
+export async function GET(request: Request): Promise<Response> {
+    console.warn("Request: ",request);
+    throw new Error("Not Implemented");
+}
+
+export async function PUT(request: Request): Promise<Response> {
+    console.warn("Request: ",request);
+    throw new Error("Not Implemented");
+}

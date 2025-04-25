@@ -6,7 +6,6 @@ import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, l
 import { initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
-import { ObjectId } from 'mongodb';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -640,7 +639,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
             console.log("DETECTED CONFLICTS");
         }
-    }, [state.conflictyPropertyChanged]);
+    }, [state.conflictyPropertyChanged]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Memoize context value to prevent unnecessary re-renders
     const contextValue = useMemo(() => ({

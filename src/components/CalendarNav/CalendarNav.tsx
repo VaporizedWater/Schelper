@@ -1,6 +1,6 @@
 import { LuFileSpreadsheet } from "react-icons/lu";
 import { MdCalendarMonth, MdFileDownload, MdFileUpload } from "react-icons/md";
-import { JSX, ReactNode, useMemo, useState } from "react";
+import { useState } from "react";
 import { CalendarOpenProps } from "@/lib/types";
 import ButtonDropDown from "../ButtonDropDown/ButtonDropDown";
 import Link from "next/link";
@@ -10,7 +10,7 @@ import { IoMdSettings } from "react-icons/io";
 import CalendarDropDown from "../CalendarSelectionDropDown/CalendarSelection";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
-    const { displayClasses, currentCalendar, calendarInfoList } = useCalendarContext();
+    const { displayClasses, currentCalendar } = useCalendarContext();
     // const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
     const [calendarActive, setActive] = useState(true);
 

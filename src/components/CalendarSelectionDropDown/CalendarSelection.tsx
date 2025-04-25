@@ -1,15 +1,9 @@
-import { IoMdArrowDropdown, IoMdArrowDropup, IoMdSettings } from "react-icons/io";
+import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import DropDown from "../DropDown/DropDown";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 
 const CalendarDropDown = ({ title }: { title:string }) => {
     const { setContextToOtherCalendar, calendarInfoList } = useCalendarContext();
-
-    const createDropList = [
-        { content: "Class", link: "/classes" },
-        { content: "Tag", link: "/addTag" },
-        { content: "Faculty", link: "/faculty" },
-    ];
 
     return (
         <DropDown
