@@ -59,7 +59,7 @@ export async function GET(request: Request) {
                                 _id: { $toString: "$$class._id" },
                                 data: "$$class.data",
                                 properties: "$$class.properties",
-                                visible: false,
+                                visible: true,
                             },
                         },
                     },
@@ -68,8 +68,6 @@ export async function GET(request: Request) {
         ];
 
         const data = await collection.aggregate(pipeline).toArray();
-
-        console.log(data);
 
         if (!data.length) {
             return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
@@ -127,6 +125,9 @@ export async function POST(request: Request) {
 export async function PUT(request: Request): Promise<Response> {
     try {
         const { calendarId, classes } = (await request.json()) as { calendarId?: string; classes: CombinedClass[] };
+
+        console.log(calendarId+"CALENDAR");
+        console.log(classes);
 
         // First, find IDs of documents that already exist without an _id field
         const classesWithIds = classes.filter((cls) => cls._id && cls._id !== "");
