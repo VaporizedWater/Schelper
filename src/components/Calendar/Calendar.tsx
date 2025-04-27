@@ -14,7 +14,7 @@ const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, conflictPropertyChanged, setCurrentClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
+    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
     // const [events, setEvents] = useState<EventInput[]>([]);
     const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
@@ -335,7 +335,7 @@ const Calendar = () => {
             eventDidMount={eventMounted}
             businessHours={businessHours}
         />);
-    }, [allClasses]);
+    }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isLoading) {
         return (
