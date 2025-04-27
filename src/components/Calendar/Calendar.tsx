@@ -316,7 +316,7 @@ const Calendar = () => {
                 editable
                 expandRows
                 selectable={false}
-                events={displayEvents} // Use local events instead of displayEvents
+                events={displayEvents}
                 slotDuration={'00:30:00'}
                 slotMinTime={'08:00:00'}
                 slotMaxTime={'21:00:00'}
@@ -342,7 +342,7 @@ const Calendar = () => {
             editable
             expandRows
             selectable={false}
-            events={displayEvents} // Use local events instead of displayEvents
+            events={displayEvents}
             slotDuration={'00:30:00'}
             slotMinTime={'08:00:00'}
             slotMaxTime={'21:00:00'}
