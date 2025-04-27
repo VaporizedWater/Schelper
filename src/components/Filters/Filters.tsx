@@ -4,7 +4,7 @@ import { MdModeEdit } from "react-icons/md";
 import { BiChevronUp, BiChevronDown } from "react-icons/bi";
 import Link from "next/link";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import DropDown from "../DropDown/DropDown";
 import { useSearchParams } from "next/navigation";
 
@@ -87,7 +87,7 @@ const Filters = () => {
     }, [tagList, cohortParam]);
 
     // Function to update list of tags based on selected tags
-    const updateTags = (event: React.ChangeEvent<HTMLInputElement>, tagMap: Map<string, Set<string>>) => {
+    const updateTags = useCallback((event: React.ChangeEvent<HTMLInputElement>, tagMap: Map<string, Set<string>>) => {
         let newSelectedTags: Set<string>;
         const mapTags = Array.from(tagMap.keys());
 
@@ -121,10 +121,10 @@ const Filters = () => {
         });
 
         updateAllClasses(updatedClasses);
-    };
+    }, [allClasses, selectedTags, updateAllClasses]);
 
     // Add a function to handle toggling all filters at once
-    const toggleAllFilters = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const toggleAllFilters = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const allTags = new Map([
             ...cohortTags, ...roomTags, ...instructorTags, ...levelTags, ...subjectTags, ...userTags
         ]);
@@ -145,14 +145,10 @@ const Filters = () => {
         });
 
         updateAllClasses(updatedClasses);
-    };
+    }, [cohortTags, roomTags, instructorTags, levelTags, subjectTags, userTags, allClasses, updateAllClasses]);
 
     // Helper function to render a tag category dropdown
-    const renderTagSection = (
-        title: string,
-        tagMap: Map<string, Set<string>>,
-        categoryId: string
-    ) => (
+    const renderTagSection = useCallback((title: string, tagMap: Map<string, Set<string>>, categoryId: string) => (
         <DropDown
             renderButton={(isOpen) => (
                 <span className="font-light text-gray-700 flex flex-row items-center justify-between">
@@ -201,7 +197,7 @@ const Filters = () => {
             dropdownClassName="relative shadow-none w-full"
             alwaysOpen={true}
         />
-    );
+    ), [selectedTags, updateTags]);
 
     return (
         <div className="flex flex-col">

@@ -1,9 +1,22 @@
 import { IoMdArrowDropdown, IoMdArrowDropup } from "react-icons/io";
 import DropDown from "../DropDown/DropDown";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
+import { useMemo } from "react";
 
 const CalendarDropDown = ({ title }: { title:string }) => {
     const { setContextToOtherCalendar, calendarInfoList } = useCalendarContext();
+
+    const calendarInfoListMap = useMemo(() => {
+        return calendarInfoList.map((item, index) => (
+            <li key={index} className={`${index !== calendarInfoList.length - 1 ? 'border-b border-gray-100' : ''}`}>
+                <button onClick={() => {
+                    setContextToOtherCalendar(item._id);
+                }} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors duration-150">
+                    {item.name}
+                </button>
+            </li>
+        ))
+    }, [calendarInfoList, setContextToOtherCalendar]);
 
     return (
         <DropDown
@@ -21,15 +34,7 @@ const CalendarDropDown = ({ title }: { title:string }) => {
             )}
             renderDropdown={() => (
                 <ul className="w-full rounded-lg shadow-md border border-gray-200 bg-white overflow-hidden">
-                    {calendarInfoList.map((item, index) => (
-                        <li key={index} className={`${index !== calendarInfoList.length - 1 ? 'border-b border-gray-100' : ''}`}>
-                            <button onClick={() => {
-                                setContextToOtherCalendar(item._id);
-                            }} className="block px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors duration-150">
-                                {item.name}
-                            </button>
-                        </li>
-                    ))}
+                    {calendarInfoListMap}
                 </ul>
             )}
         />

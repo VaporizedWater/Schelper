@@ -1,6 +1,6 @@
 import { ClassProperty, CombinedClass } from "@/lib/types";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createEventsFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from "@/lib/common";
 
 const ClassTimeProperties = () => {
@@ -21,7 +21,7 @@ const ClassTimeProperties = () => {
         }
     }, [currentCombinedClass]);
 
-    const handleDaysChange = (day: string, isChecked: boolean) => {
+    const handleDaysChange = useCallback((day: string, isChecked: boolean) => {
         const updatedDays = isChecked
             ? [...days, day]
             : days.filter(d => d !== day);
@@ -33,26 +33,25 @@ const ClassTimeProperties = () => {
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, days, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleStartTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const oldVal = startTime;
+    const handleStartTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        // const oldVal = startTime;
         const newVal = e.target.value;
+        // const diffTime = Number(newVal) - Number(oldVal);
 
-        console.log('Start Time Changed', { oldVal, newVal });
-
-        // const changedTime = Number(newVal) - Number(oldVal);
         setStartTime(newVal);
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.start_time = newVal;
+            // modifiedClass.properties.end_time += diffTime;
             modifiedClass.events = createEventsFromCombinedClass(modifiedClass);
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleEndTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleEndTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setEndTime(newVal);
         if (currentCombinedClass) {
@@ -62,7 +61,7 @@ const ClassTimeProperties = () => {
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     return (
         <div className="h-full w-full flex flex-col">

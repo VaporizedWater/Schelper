@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ClassProperty, CombinedClass, tagType } from "@/lib/types";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { newDefaultEmptyClass } from "@/lib/common";
@@ -16,7 +16,7 @@ const Tags = () => {
         }
     }, [currentCombinedClass]);
 
-    const handleTagCheck = (tag: tagType, isChecked: boolean) => {
+    const handleTagCheck = useCallback((tag: tagType, isChecked: boolean) => {
         const updatedTags = isChecked
             ? [...tags, tag]
             : tags.filter(t => t.tagName !== tag.tagName);
@@ -27,7 +27,7 @@ const Tags = () => {
             modifiedClass.properties.tags = updatedTags;
             updateOneClass(modifiedClass);
         }
-    };
+    }, [currentCombinedClass, tags, updateOneClass]);
 
     return (
         <div className="h-full w-full overflow-y-auto scrollbar-thin flex flex-col">

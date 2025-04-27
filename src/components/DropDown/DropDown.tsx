@@ -1,5 +1,5 @@
 import { DropDownProps } from "@/lib/types";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClassName, alwaysOpen = false, defaultOpen = false }: DropDownProps) => {
     // Initialize isOpen based on alwaysOpen prop
@@ -25,10 +25,10 @@ const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClass
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [alwaysOpen]);
 
-    const toggleDropdown = () => {
+    const toggleDropdown = useCallback(() => {
         // Allow toggling regardless of alwaysOpen setting
         setIsOpen((prev) => !prev);
-    };
+    }, []);
 
     return (
         <div ref={dropdownRef} className="relative">

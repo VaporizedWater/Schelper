@@ -129,6 +129,7 @@ export type CalendarContextType = {
 
     allClasses: CombinedClass[];
     displayClasses: CombinedClass[];
+    displayEvents: EventInput[];
     currentCombinedClass?: CombinedClass | undefined;
 
     tagList: tagListType; // Map of tags to a set of class ids
@@ -137,6 +138,7 @@ export type CalendarContextType = {
     error: string | null;
 
     conflicts: ConflictType[];
+    conflictPropertyChanged: boolean;
 
     toggleConflictPropertyChanged: () => void;
 
@@ -191,7 +193,7 @@ export type CalendarState = {
     currentCalendar: CalendarType;
     calendars: CalendarInfo[];
     faculty: FacultyType[];
-    conflictyPropertyChanged: boolean;
+    conflictPropertyChanged: boolean;
 };
 
 export type CalendarAction =

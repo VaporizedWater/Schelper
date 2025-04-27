@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { ClassData, ClassProperty, CombinedClass } from '@/lib/types';
 import { newDefaultEmptyClass } from '@/lib/common';
@@ -32,9 +32,9 @@ const ClassProperties = () => {
             setRoom(newProps.room || '');
             setCohort(newProps.cohort || '');
         }
-    }, [currentCombinedClass]);
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleCourseSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCourseSubjectChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setCourseSubject(newVal);
         if (currentCombinedClass) {
@@ -43,9 +43,9 @@ const ClassProperties = () => {
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleCourseNumChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleCourseNumChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setCourseNum(newVal);
         if (currentCombinedClass) {
@@ -54,9 +54,9 @@ const ClassProperties = () => {
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setTitle(newVal);
         if (currentCombinedClass) {
@@ -65,9 +65,9 @@ const ClassProperties = () => {
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleInstructorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInstructorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setInstructor(newVal);
         if (currentCombinedClass) {
@@ -76,9 +76,9 @@ const ClassProperties = () => {
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setEmail(newVal);
         if (currentCombinedClass) {
@@ -87,9 +87,9 @@ const ClassProperties = () => {
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleRoomChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleRoomChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         const newVal = e.target.value;
         setRoom(newVal);
         if (currentCombinedClass) {
@@ -98,9 +98,9 @@ const ClassProperties = () => {
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleCohortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleCohortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         const newVal = e.target.value;
         setCohort(newVal);
         if (currentCombinedClass) {
@@ -109,7 +109,13 @@ const ClassProperties = () => {
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
-    };
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
+
+    const cohortOptionsMap = useMemo(() => {
+        return COHORT_OPTIONS.map(option => (
+            <option key={option} value={option}>{option}</option>
+        ))
+    }, []);
 
     return (
         <div className="h-full w-full overflow-y-auto scrollbar-thin flex flex-col">
@@ -184,9 +190,7 @@ const ClassProperties = () => {
                                 onChange={handleCohortChange}
                             >
                                 <option value="" className=''>Select Cohort</option>
-                                {COHORT_OPTIONS.map(option => (
-                                    <option key={option} value={option}>{option}</option>
-                                ))}
+                                {cohortOptionsMap}
                             </select>
                         </li>
                     </ul>

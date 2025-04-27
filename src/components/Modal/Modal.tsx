@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
 interface ModalProps {
@@ -10,9 +10,9 @@ interface ModalProps {
 export default function Modal({ children }: ModalProps) {
     const router = useRouter();
 
-    const closeModal = () => {
+    const closeModal = useCallback(() => {
         router.back(); // Navigate back to the previous route
-    };
+    }, [router]);
 
     return (
         <div

@@ -5,107 +5,21 @@ import interactionPlugin, { EventResizeStopArg } from "@fullcalendar/interaction
 import timeGridPlugin from "@fullcalendar/timegrid";
 
 import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
-import { useRef, useEffect, useState, useCallback } from "react";
+import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { createEventsFromCombinedClass, dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
+import { dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
 import { CombinedClass } from "@/lib/types";
 
 const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
     const calendarRef = useRef<FullCalendar>(null);
-    const { faculty, allClasses, setCurrentClass, updateOneClass, toggleConflictPropertyChanged, currentCombinedClass, conflicts, isLoading } = useCalendarContext();
-    const [events, setEvents] = useState<EventInput[]>([]);
-
-    // Update selected events when currentCombinedClass changes
-    useEffect(() => {
-        if (currentCombinedClass?._id) {
-            unselectAll();
-            const elements = document.getElementsByClassName(`event-${currentCombinedClass._id}`);
-            for (let i = 0; i < elements.length; i++) {
-                selectEvent(elements[i] as HTMLElement);
-            }
-        } else {
-            unselectAll();
-        }
-    }, [currentCombinedClass]);
-
+    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, conflictPropertyChanged, setCurrentClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
+    // const [events, setEvents] = useState<EventInput[]>([]);
     const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
-    // Create events efficiently when displayClasses changes
-    useEffect(() => {
-
-
-        const displayClasses = allClasses.filter(cls => cls.visible);
-
-        if (!displayClasses || displayClasses.length === 0) {
-            setEvents([]);
-            return;
-        }
-
-        const newEvents: EventInput[] = [];
-
-        displayClasses.forEach(cls => {
-            if (cls._id) {
-                const classEvents = createEventsFromCombinedClass(cls);
-
-                // Add class reference to each event's extendedProps
-                classEvents.forEach(event => {
-                    if (!event.extendedProps) event.extendedProps = {};
-                    event.extendedProps.combinedClass = cls; // Store the actual class reference
-                });
-
-                // Store for reference
-                cls.events = classEvents;
-
-                // Add to our collections
-                newEvents.push(...classEvents);
-            }
-        });
-
-        setEvents(newEvents);
-
-        // No reason to call this when its already in a useEffect in the context, this will end up running it twice
-        // Only run conflict detection if conflict-relevant data has changed
-        // detectConflicts();
-
-    }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
-
-
-
-    // Update events for a single class (much more efficient)
-    const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {
-        if (!updatedClass._id) return;
-
-        const newClassEvents = createEventsFromCombinedClass(updatedClass);
-
-        // Add class reference to each event's extendedProps
-        newClassEvents.forEach(event => {
-            if (!event.extendedProps) event.extendedProps = {};
-            event.extendedProps.combinedClass = updatedClass; // Store the actual class reference
-        });
-
-        // Update the events array by replacing only events for this class
-        setEvents(prev => {
-            // Remove previous events for this class
-            const filteredEvents = prev.filter(
-                event => event.extendedProps?.combinedClassId !== updatedClass._id
-            );
-
-            // Add the new events
-            return [...filteredEvents, ...newClassEvents];
-        });
-    }, []);
-
-    // Log events when they change
-    // useEffect(() => {
-    //     console.log(`Events updated: ${events.length} total events`);
-    // }, [events]);
-
     // Enhanced findClass that uses our eventMap for better performance
-    function findClass(info: EventClickArg | EventDropArg | EventResizeStopArg) {
-        const displayClasses = allClasses.filter(cls => cls.visible);
-
+    const findClass = useCallback((info: EventClickArg | EventDropArg | EventResizeStopArg) => {
         // Get the class directly from the event's extendedProps
         if (info.event.extendedProps?.combinedClass) {
             return info.event.extendedProps.combinedClass as CombinedClass;
@@ -114,9 +28,9 @@ const Calendar = () => {
         // Fallback to lookup by ID if class reference is not available
         const classId = info.event.extendedProps.combinedClassId;
         return displayClasses.find(cls => cls._id === classId);
-    }
+    }, [displayClasses]);
 
-    function unselectAll() {
+    const unselectAll = useCallback(() => {
         selectedEvents.forEach(element => {
             if (element) {
                 element.style.backgroundColor = defaultBackgroundColor;
@@ -128,18 +42,39 @@ const Calendar = () => {
         });
 
         selectedEvents.length = 0;
-    }
+    }, []);
 
-    function selectEvent(element: HTMLElement) {
+    const selectEvent = useCallback((element: HTMLElement) => {
         element.style.backgroundColor = selectedBackgroundColor;
         element.style.outlineColor = selectedBackgroundColor;
         if (element.parentElement) {
             element.parentElement.style.zIndex = '9999';
         }
         selectedEvents.push(element);
-    }
+    }, []);
 
-    const handleEventClick = (info: EventClickArg) => {
+    // Update events for a single class (much more efficient)
+    // const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {
+    //     if (!updatedClass._id) return;
+
+    //     const newClassEvents = createEventsFromCombinedClass(updatedClass);
+
+    //     // Add class reference to each event's extendedProps
+    //     newClassEvents.forEach(event => {
+    //         if (!event.extendedProps) event.extendedProps = {};
+    //         event.extendedProps.combinedClass = updatedClass; // Store the actual class reference
+    //     });
+
+    //     // // Update the events array by replacing only events for this class
+    //     setEvents(prev => {
+    //         const filteredEvents = prev.filter(
+    //             event => event.extendedProps?.combinedClassId !== updatedClass._id
+    //         );
+    //         return [...filteredEvents, ...newClassEvents];
+    //     });
+    // }, [createEventsFromCombinedClass]);
+
+    const handleEventClick = useCallback((info: EventClickArg) => {
         unselectAll();
         // selectEvent(info.el);
 
@@ -169,7 +104,7 @@ const Calendar = () => {
                         newBusinessHours.push({
                             daysOfWeek: [dayIndex[dayKey]],
                             startTime: event.start,
-                            endTime: event.end,
+                            endTime: event.end
                         });
                     });
                 });
@@ -182,16 +117,16 @@ const Calendar = () => {
         } else {
             console.log("Class not found");
         }
-    }
+    }, [faculty, findClass, selectEvent, setCurrentClass, unselectAll]);
 
     // This triggers when clicking on any date/time slot that isn't an event
-    const handleDateClick = () => {
+    const handleDateClick = useCallback(() => {
         unselectAll();
         setCurrentClass(newDefaultEmptyClass());
         setBusinessHours([]);
-    };
+    }, [unselectAll, setCurrentClass, setBusinessHours]);
 
-    const handleEventDrop = (info: EventDropArg) => {
+    const handleEventDrop = useCallback((info: EventDropArg) => {
         // Update the class in the context
         const foundClass = findClass(info);
 
@@ -220,16 +155,15 @@ const Calendar = () => {
                 }
             };
 
-            // Update locally first for immediate UI feedback
-            updateEventsForClass(updatedClass);
+            // updateEventsForClass(updatedClass);
 
             // Then update in context/database
             toggleConflictPropertyChanged();
             updateOneClass(updatedClass);
         }
-    }
+    }, [findClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleEventResize = (info: EventResizeStopArg) => {
+    const handleEventResize = useCallback((info: EventResizeStopArg) => {
         const foundClass = findClass(info);
 
         if (foundClass) {
@@ -248,14 +182,13 @@ const Calendar = () => {
                 }
             };
 
-            // Update locally first for immediate UI feedback
-            updateEventsForClass(updatedClass);
+            // updateEventsForClass(updatedClass);
 
             // Then update in context/database
             updateOneClass(updatedClass);
             toggleConflictPropertyChanged();
         }
-    }
+    }, [findClass, toggleConflictPropertyChanged, updateOneClass]);
 
     // Memoize the event content renderer
     const eventContent = useCallback((eventInfo: EventInput) => {
@@ -316,16 +249,93 @@ const Calendar = () => {
 
     // EventInfo in types defines possibilities, but fullcalendar doesn't support typescript, so dont use it as the type here
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const eventClassNames = (eventInfo: any) => {
+    const eventClassNames = useCallback((eventInfo: any) => {
         return `event-${eventInfo.event.extendedProps?.combinedClassId}`;
-    };
+    }, []);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const eventMounted = (eventInfo: any) => {
+    const eventMounted = useCallback((eventInfo: any) => {
         if (eventInfo.event.extendedProps?.combinedClassId === currentCombinedClass?._id) {
             selectEvent(eventInfo.el);
         }
-    }
+    }, [currentCombinedClass, selectEvent]);
+
+    // Update selected events when currentCombinedClass changes
+    useEffect(() => {
+        if (currentCombinedClass?._id) {
+            unselectAll();
+            const elements = document.getElementsByClassName(`event-${currentCombinedClass._id}`);
+            for (let i = 0; i < elements.length; i++) {
+                selectEvent(elements[i] as HTMLElement);
+            }
+        } else {
+            unselectAll();
+        }
+    }, [currentCombinedClass, selectEvent, unselectAll]);
+
+    // // Create events efficiently when displayClasses changes
+    // useEffect(() => {
+    //     if (!displayClasses || displayClasses.length === 0) {
+    //         setEvents([]);
+    //         return;
+    //     }
+
+    //     const newEvents: EventInput[] = [];
+
+    //     displayClasses.forEach(cls => {
+    //         if (cls._id) {
+    //             const classEvents = createEventsFromCombinedClass(cls);
+
+    //             // Add class reference to each event's extendedProps
+    //             classEvents.forEach(event => {
+    //                 if (!event.extendedProps) event.extendedProps = {};
+    //                 event.extendedProps.combinedClass = cls; // Store the actual class reference
+    //             });
+
+    //             // Store for reference
+    //             cls.events = classEvents;
+
+    //             // Add to our collections
+    //             newEvents.push(...classEvents);
+    //         }
+    //     });
+
+    //     setEvents(newEvents);
+
+    //     // No reason to call this when its already in a useEffect in the context, this will end up running it twice
+    //     // Only run conflict detection if conflict-relevant data has changed
+    //     // detectConflicts();
+
+    // }, [displayClasses]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const fullcalendarComponent = useMemo(() => {
+        return (<FullCalendar
+            ref={calendarRef}
+            plugins={[timeGridPlugin, interactionPlugin]}
+            editable
+            expandRows
+            selectable={false}
+            events={displayEvents} // Use local events instead of displayEvents
+            slotDuration={'00:30:00'}
+            slotMinTime={'08:00:00'}
+            slotMaxTime={'21:00:00'}
+            snapDuration={'00:05:00'}
+            eventClick={handleEventClick}
+            allDaySlot={false}
+            initialView='viewFiveDays'
+            views={viewFiveDays}
+            headerToolbar={false}
+            height={'100%'}
+            dayHeaderFormat={{ 'weekday': 'long' }}
+            eventDrop={handleEventDrop}
+            eventResize={handleEventResize}
+            dateClick={handleDateClick}
+            eventContent={eventContent}
+            eventClassNames={eventClassNames}
+            eventDidMount={eventMounted}
+            businessHours={businessHours}
+        />);
+    }, [allClasses]);
 
     if (isLoading) {
         return (
@@ -340,45 +350,7 @@ const Calendar = () => {
 
     return (
         <div className="h-full text-sm">
-            <FullCalendar
-                ref={calendarRef}
-                plugins={[timeGridPlugin, interactionPlugin]}
-                editable
-                expandRows
-                selectable={false}
-                events={events} // Use local events instead of displayEvents
-                slotDuration={'00:30:00'}
-                slotMinTime={'08:00:00'}
-                slotMaxTime={'21:00:00'}
-                snapDuration={'00:05:00'}
-                eventClick={handleEventClick}
-                allDaySlot={false}
-                initialView='viewFiveDays'
-                views={viewFiveDays}
-                headerToolbar={false}
-                height={'100%'}
-                dayHeaderFormat={{ 'weekday': 'long' }}
-                eventDrop={handleEventDrop}
-                eventResize={handleEventResize}
-                dateClick={handleDateClick}
-                eventContent={eventContent}
-                eventClassNames={eventClassNames}
-                eventDidMount={eventMounted}
-                businessHours={businessHours}
-            // eventOrder={(a, b) => {
-            //     const aClass = (a as any).combinedClassId;
-            //     const bClass = (b as any).combinedClassId;
-
-            //     const aIsSelected = aClass === currentCombinedClass?._id;
-            //     const bIsSelected = bClass === currentCombinedClass?._id;
-
-            //     if (aIsSelected && !bIsSelected) return 1; // a goes on top
-            //     if (!aIsSelected && bIsSelected) return -1;  // b goes on top
-            //     return -1; // keep original order
-            // }}
-            // eventOrderStrict={true}
-
-            />
+            {fullcalendarComponent}
 
             {/* Add custom CSS for calendar font sizes */}
             <style jsx global>{`

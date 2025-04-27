@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
 import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew } from '@/lib/DatabaseUtils';
-import { initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
+import { createEventsFromCombinedClass, initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
 
@@ -271,14 +271,14 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 user: state.user,
                 currentCalendar: action.payload.currentCalendar,
                 faculty: action.payload.faculty || state.faculty,
-                conflictyPropertyChanged: !state.conflictyPropertyChanged
+                conflictPropertyChanged: !state.conflictPropertyChanged
             };
         }
 
         case 'TOGGLE_CONFLICT_PROPERTY_CHANGED': {
             return {
                 ...state,
-                conflictyPropertyChanged: action.payload
+                conflictPropertyChanged: action.payload
             }
         }
 
@@ -516,7 +516,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     current: state.classes.current
                 },
                 tags: newMapping,
-                conflictyPropertyChanged: !state.conflictyPropertyChanged
+                conflictPropertyChanged: !state.conflictPropertyChanged
             };
         }
 
@@ -559,7 +559,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     current: newCurrentClass
                 },
                 tags: newMapping,
-                conflictyPropertyChanged: !state.conflictyPropertyChanged
+                conflictPropertyChanged: !state.conflictPropertyChanged
             };
         }
 
@@ -567,6 +567,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             return state;
     }
 }
+
+
 
 export const CalendarProvider = ({ children }: ReactNodeChildren) => {
     const [state, dispatch] = useReducer(calendarReducer, initialCalendarState);
@@ -639,10 +641,35 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             dispatch({ type: 'SET_CONFLICTS', payload: conflicts });
             console.log("DETECTED CONFLICTS");
         }
-    }, [state.conflictyPropertyChanged]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [state.conflictPropertyChanged]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // const displayEvents = useMemo(() => {
+        
+    // }, []);
 
     // Memoize context value to prevent unnecessary re-renders
-    const contextValue = useMemo(() => ({
+    const contextValue = useMemo(() => {
+        const displayEvents = [] as EventInput[];
+        const displayClasses = state.classes.all.filter(c => c.visible);
+        displayClasses.forEach(cls => {
+            if (cls._id) {
+                const classEvents = createEventsFromCombinedClass(cls);
+
+                // Add class reference to each event's extendedProps
+                classEvents.forEach(event => {
+                    if (!event.extendedProps) event.extendedProps = {};
+                    event.extendedProps.combinedClass = cls; // Store the actual class reference
+                });
+
+                // Store for reference
+                cls.events = classEvents;
+
+                // Add to our collections
+                displayEvents.push(...classEvents);
+            }
+        });
+
+        return {
         // Faculty
         faculty: state.faculty,
 
@@ -652,7 +679,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         // Classes
         allClasses: state.classes.all,
-        displayClasses: state.classes.all.filter(c => c.visible),
+        displayClasses: displayClasses,
+        displayEvents: displayEvents,
         currentCombinedClass: state.classes.current,
 
         // Tags
@@ -660,6 +688,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
         // Conflicts
         conflicts: state.conflicts,
+        conflictPropertyChanged: state.conflictPropertyChanged,
 
         // Status
         isLoading: state.status.loading,
@@ -670,7 +699,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             console.log('CONFLICT_PROPERTY_CHANGED');
             dispatch({
                 type: 'TOGGLE_CONFLICT_PROPERTY_CHANGED',
-                payload: !state.conflictyPropertyChanged
+                payload: !state.conflictPropertyChanged
             })
         },
 
@@ -898,7 +927,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 return false;
             }
         }
-    }), [state]);
+    }}, [state]);
 
     return (
         <CalendarContext.Provider value={contextValue}>

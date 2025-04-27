@@ -1,10 +1,11 @@
 import { newDefaultEmptyClass } from "@/lib/common";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
+import { useCallback } from "react";
 
 const DeleteClass = () => {
     const { currentCombinedClass, deleteClass, setCurrentClass } = useCalendarContext();
 
-    const handleDeleteClass = () => {
+    const handleDeleteClass = useCallback(() => {
         if (!currentCombinedClass || !currentCombinedClass._id) return;
 
         // Confirmation dialog
@@ -22,7 +23,7 @@ const DeleteClass = () => {
                 console.log("Error deleting class:", error);
             }
         }
-    };
+    }, [currentCombinedClass, deleteClass, setCurrentClass]);
 
     return (
         <div className="w-full h-full flex flex-col">

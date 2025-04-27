@@ -195,7 +195,7 @@ export const initialCalendarState: CalendarState = {
     currentCalendar: newDefaultEmptyCalendar(),
     calendars: [],
     faculty: [newDefaultEmptyFaculty()],
-    conflictyPropertyChanged: false
+    conflictPropertyChanged: false
 };
 
 export const darkenRGBColor = (color: string, amount: number = 0.2): string => {

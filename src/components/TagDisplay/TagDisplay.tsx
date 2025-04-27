@@ -3,47 +3,38 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import DropDown from "../DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 // import AddClassToTag from "../AddClassToTag/AddClassToTag";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { BiUnlink } from "react-icons/bi";
 import AddClassToTag from "../AddClassToTag/AddClassToTag";
 import { tagType } from "@/lib/types";
+
+const unlinkedTags = [] as tagType[];
 
 const TagDisplay = () => {
     const { tagList, allClasses, unlinkTagFromClass, unlinkAllClassesFromTag } = useCalendarContext();
     const [hoveredTagId, setHoveredTagId] = useState<string | null>(null);
     const [hoveredTagClassId, setHoveredTagClassId] = useState<string[] | null>(null);
 
-    // Get the IDs of tags that are linked to classes.
-    // const linkedTagIds = new Set(Array.from(tagList).map(([tagId]) => tagId));
+    useEffect(() => {
+        tagList.entries().forEach(([tag, tagCategoryAndClassIds]) => {
+            const classIds = tagCategoryAndClassIds.classIds;
+            if (tagCategoryAndClassIds.tagCategory === "user" && classIds.size === 0) {
+                unlinkedTags.push({ tagName: tag, tagCategory: tagCategoryAndClassIds.tagCategory });
+            }
+        });
+    }, [tagList]);
+    
 
-    // interface TagObject {
-    //     _id: string;
-    // }
-
-    // // Filter allTags to get unlinked tags; if tag is an object, use its _id as key
-    // const unlinkedTags = Array.from(tagList.keys()).filter((tag: string | TagObject) => {
-    //     // When tag is an object, compare using tag._id; otherwise, use the tag value directly.
-    //     return typeof tag === "object" ? !linkedTagIds.has(tag._id) : !linkedTagIds.has(tag);
-    // });
-
-    const unlinkedTags = [] as tagType[];
-    tagList.entries().forEach(([tag, tagCategoryAndClassIds]) => {
-        const classIds = tagCategoryAndClassIds.classIds;
-        if (tagCategoryAndClassIds.tagCategory === "user" && classIds.size === 0) {
-            unlinkedTags.push({ tagName: tag, tagCategory: tagCategoryAndClassIds.tagCategory });
-        }
-    });
-
-    const handleTagUnlink = (tagName: string) => {
+    const handleTagUnlink = useCallback((tagName: string) => {
         const isConfirmed = window.confirm(`unlink tag "${tagName}" from all its classes?`);
 
         if (isConfirmed) {
             unlinkAllClassesFromTag(tagName);
             tagList.delete(tagName);
         }
-    }
+    }, [tagList, unlinkAllClassesFromTag]);
 
-    const handleClassUnlink = (tagId: string, classId: string) => {
+    const handleClassUnlink = useCallback((tagId: string, classId: string) => {
         // Get class name from id
         const className = allClasses.find((cls) => String(cls._id) === classId)?.data.title;
 
@@ -53,7 +44,7 @@ const TagDisplay = () => {
         if (isConfirmed) {
             unlinkTagFromClass(tagId, classId);
         }
-    }
+    }, [allClasses, unlinkTagFromClass]);
 
     return (
         <div>

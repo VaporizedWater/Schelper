@@ -1,33 +1,28 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { CombinedClass } from "@/lib/types";
 
 export default function CalendarSheet() {
-    const { allClasses, setCurrentClass, currentCombinedClass, isLoading } = useCalendarContext();
+    const { displayClasses, setCurrentClass, currentCombinedClass, isLoading } = useCalendarContext();
     const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
-
-    // Filtered visible classes - compute only once
-    const visibleClasses = useMemo(() =>
-        allClasses.filter(cls => cls.visible),
-        [allClasses]);
 
     // Update selected row when currentClass changes
     useEffect(() => {
         if (currentCombinedClass) {
-            const rowIndex = visibleClasses.findIndex(cls => cls._id === currentCombinedClass._id);
+            const rowIndex = displayClasses.findIndex(cls => cls._id === currentCombinedClass._id);
             if (rowIndex !== -1) {
                 setSelectedRowIndex(rowIndex);
             }
         }
-    }, [currentCombinedClass, visibleClasses]);
+    }, [currentCombinedClass, displayClasses]);
 
     // Handle row selection
-    const handleRowClick = (item: CombinedClass, index: number) => {
+    const handleRowClick = useCallback((item: CombinedClass, index: number) => {
         setCurrentClass(item);
         setSelectedRowIndex(index);
-    };
+    }, [setCurrentClass]);
 
     if (isLoading) {
         return (
@@ -68,7 +63,7 @@ export default function CalendarSheet() {
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
-                    {visibleClasses.map((item, index) => (
+                    {displayClasses.map((item, index) => (
                         <tr
                             key={item._id}
                             className={`${index === selectedRowIndex ? 'bg-blue-100' : (index % 2 === 0 ? 'bg-white' : 'bg-gray-50')
