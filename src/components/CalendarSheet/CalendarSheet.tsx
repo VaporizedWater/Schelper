@@ -89,7 +89,7 @@ export default function CalendarSheet() {
                 </table>
             </div>
         );
-    }, [allClasses]);
+    }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isLoading) {
         return (
