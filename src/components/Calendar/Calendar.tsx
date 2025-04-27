@@ -309,6 +309,33 @@ const Calendar = () => {
     // }, [displayClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fullcalendarComponent = useMemo(() => {
+        if (displayEvents.length === 0) {
+            return (<FullCalendar
+                ref={calendarRef}
+                plugins={[timeGridPlugin, interactionPlugin]}
+                editable
+                expandRows
+                selectable={false}
+                events={displayEvents} // Use local events instead of displayEvents
+                slotDuration={'00:30:00'}
+                slotMinTime={'08:00:00'}
+                slotMaxTime={'21:00:00'}
+                snapDuration={'00:05:00'}
+                eventClick={handleEventClick}
+                allDaySlot={false}
+                initialView='viewFiveDays'
+                views={viewFiveDays}
+                headerToolbar={false}
+                height={'100%'}
+                dayHeaderFormat={{ 'weekday': 'long' }}
+                eventDrop={handleEventDrop}
+                eventResize={handleEventResize}
+                dateClick={handleDateClick}
+                eventContent={eventContent}
+                eventClassNames={eventClassNames}
+                eventDidMount={eventMounted}
+            />);
+        }
         return (<FullCalendar
             ref={calendarRef}
             plugins={[timeGridPlugin, interactionPlugin]}
@@ -335,7 +362,8 @@ const Calendar = () => {
             eventDidMount={eventMounted}
             businessHours={businessHours}
         />);
-    }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
+        
+    }, [businessHours, allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isLoading) {
         return (
