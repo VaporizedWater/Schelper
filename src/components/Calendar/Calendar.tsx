@@ -81,10 +81,12 @@ const Calendar = () => {
         const foundClass = findClass(info);
 
         if (foundClass) {
+            console.time("start");
             const elements = document.getElementsByClassName(`event-${foundClass?._id}`);
             for (let i = 0; i < elements.length; i++) {
                 selectEvent(elements[i] as HTMLElement);
             }
+            console.timeEnd("start");
 
             setCurrentClass(foundClass);
             // console.log("Current class: ", foundClass);
@@ -362,7 +364,7 @@ const Calendar = () => {
             eventDidMount={eventMounted}
             businessHours={businessHours}
         />);
-        
+
     }, [businessHours, allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isLoading) {

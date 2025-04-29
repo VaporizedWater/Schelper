@@ -154,15 +154,15 @@ const ViewConflicts = () => {
                                                             <h3 className="font-semibold">{class1data.course_subject + class1data.course_num + " Section " + class1data.section + ": " + class1data.title}</h3>
                                                             {
                                                                 defaultOpen ?
-                                                                <button 
-                                                                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75" 
-                                                                    onClick={() => showClassOnCalendar(conflict.class1)}
-                                                                >Show Class on Calendar</button>
-                                                                :
-                                                                <></>
+                                                                    <button
+                                                                        className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                                                                        onClick={() => showClassOnCalendar(conflict.class1)}
+                                                                    >Show Class on Calendar</button>
+                                                                    :
+                                                                    <></>
                                                             }
-                                                            
-                                                            
+
+
                                                             <p>Days: {class1properties.days.join(", ")}</p>
                                                             <p>Time: {class1properties.start_time} - {class1properties.end_time}</p>
                                                             <p>Instructor: {class1properties.instructor_name}</p>
@@ -174,14 +174,14 @@ const ViewConflicts = () => {
                                                             <h3 className="font-semibold">{class2data.course_subject + class2data.course_num + " Section " + class2data.section + ": " + class2data.title}</h3>
                                                             {
                                                                 defaultOpen ?
-                                                                <button 
-                                                                    className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
-                                                                    onClick={() => showClassOnCalendar(conflict.class2)}
-                                                                >Show Class on Calendar</button>
-                                                                :
-                                                                <></>
+                                                                    <button
+                                                                        className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75"
+                                                                        onClick={() => showClassOnCalendar(conflict.class2)}
+                                                                    >Show Class on Calendar</button>
+                                                                    :
+                                                                    <></>
                                                             }
-                                                            
+
                                                             <p>Days: {class2properties.days.join(", ")}</p>
                                                             <p>Time: {class2properties.start_time} - {class2properties.end_time}</p>
                                                             <p>Instructor: {class2properties.instructor_name}</p>
@@ -212,7 +212,7 @@ const ViewConflicts = () => {
             </h2>
 
             {renderConflictsList(visibleConflicts, "Conflicts in Visible Classes", true, true)}
-            {renderConflictsList(hiddenConflicts, "Conflicts in Hidden Classes")}
+            {renderConflictsList(hiddenConflicts, "Conflicts in Hidden Classes", true)}
 
             {visibleConflicts.length === 0 && hiddenConflicts.length === 0 && (
                 <div className="text-gray-500 text-center mt-4">
