@@ -74,11 +74,7 @@ const ExportSheet = () => {
                 'Course Subject': classItem.data.course_subject,
                 'Course Number': classItem.data.course_num,
                 'Section': classItem.data.section,
-<<<<<<< HEAD
-                'Catalog Number': classItem.data.class_num || '',
-=======
                 'Class Number': classItem.data.class_num || '',
->>>>>>> refs/remotes/origin/main
                 'Title': classItem.data.title,
                 'Instructor': classItem.properties.instructor_name,
                 'Instructor Email': classItem.properties.instructor_email || '',
