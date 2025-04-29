@@ -65,7 +65,7 @@ const ExportSheet = () => {
         return conflictMap;
     }, [allClasses, conflicts]);
 
-    const exportToXLSX = () => {
+    const exportToXLSX = useCallback(() => {
         // Filter classes based on selection
         const classesToExport = allClasses.filter(cls => selectedClasses.has(getUniqueClassId(cls)));
 
@@ -74,7 +74,7 @@ const ExportSheet = () => {
                 'Course Subject': classItem.data.course_subject,
                 'Course Number': classItem.data.course_num,
                 'Section': classItem.data.section,
-                'Catalog Number': classItem.data.catalog_num || '',
+                'Class Number': classItem.data.class_num || '',
                 'Title': classItem.data.title,
                 'Instructor': classItem.properties.instructor_name,
                 'Instructor Email': classItem.properties.instructor_email || '',
@@ -100,9 +100,9 @@ const ExportSheet = () => {
 
         XLSX.utils.book_append_sheet(wb, ws, "Schedule");
         XLSX.writeFile(wb, `${filename}.xlsx`);
-    };
+    }, [allClasses, filename, getUniqueClassId, selectedClasses]);
 
-    const exportToPDF = () => {
+    const exportToPDF = useCallback(() => {
         // Filter classes based on selection
         const classesToExport = allClasses.filter(cls => selectedClasses.has(getUniqueClassId(cls)));
 
@@ -121,7 +121,7 @@ const ExportSheet = () => {
                 classItem.data.course_subject,
                 classItem.data.course_num,
                 classItem.data.section,
-                classItem.data.catalog_num || '',
+                classItem.data.class_num || '',
                 classItem.data.title,
                 classItem.properties.instructor_name,
                 classItem.properties.instructor_email || '',
@@ -134,7 +134,7 @@ const ExportSheet = () => {
 
         // Optimize column widths based on content type
         autoTable(doc, {
-            head: [['Subject', 'Number', 'Section', 'Catalog', 'Title', 'Instructor', 'Email', 'Room', 'Days', 'Start', 'End']],
+            head: [['Subject', 'Number', 'Section', 'Class Num', 'Title', 'Instructor', 'Email', 'Room', 'Days', 'Start', 'End']],
             body: tableData,
             startY: 20,
             styles: {
@@ -165,7 +165,7 @@ const ExportSheet = () => {
         });
 
         doc.save(`${filename}.pdf`);
-    };
+    }, [allClasses,filename,getUniqueClassId, selectedClasses]);
 
     return (
         <div className="p-4 bg-white dark:bg-white text-black dark:text-black">
@@ -229,7 +229,7 @@ const ExportSheet = () => {
                                     <th className="p-2 border text-left">Subject</th>
                                     <th className="p-2 border text-left">Number</th>
                                     <th className="p-2 border text-left">Section</th>
-                                    <th className="p-2 border text-left">Catalog</th>
+                                    <th className="p-2 border text-left">Class Num</th>
                                     <th className="p-2 border text-left">Title</th>
                                     <th className="p-2 border text-left">Instructor</th>
                                     <th className="p-2 border text-left">Email</th>
@@ -272,7 +272,7 @@ const ExportSheet = () => {
                                             <td className="p-2 border">{classItem.data.course_subject}</td>
                                             <td className="p-2 border">{classItem.data.course_num}</td>
                                             <td className="p-2 border">{classItem.data.section}</td>
-                                            <td className="p-2 border">{classItem.data.catalog_num || ''}</td>
+                                            <td className="p-2 border">{classItem.data.class_num || ''}</td>
                                             <td className="p-2 border">{classItem.data.title}</td>
                                             <td className="p-2 border">{classItem.properties.instructor_name}</td>
                                             <td className="p-2 border">{classItem.properties.instructor_email || ''}</td>

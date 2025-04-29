@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FacultyType } from "@/lib/types";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
@@ -19,14 +19,14 @@ const FacultyForm = () => {
     const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
 
-    const addTimeSlot = (day: keyof FacultyType["unavailability"]) => {
+    const addTimeSlot = useCallback((day: keyof FacultyType["unavailability"]) => {
         setUnavailability((prev) => ({
             ...prev,
             [day]: [...prev[day], { start: "", end: "" }],
         }));
-    };
+    }, []);
 
-    const updateTimeSlot = (
+    const updateTimeSlot = useCallback((
         day: keyof FacultyType["unavailability"],
         index: number,
         field: "start" | "end",
@@ -38,16 +38,16 @@ const FacultyForm = () => {
             );
             return { ...prev, [day]: updatedSlots };
         });
-    };
+    }, []);
 
-    const removeTimeSlot = (day: keyof FacultyType["unavailability"], index: number) => {
+    const removeTimeSlot = useCallback((day: keyof FacultyType["unavailability"], index: number) => {
         setUnavailability((prev) => {
             const updatedSlots = prev[day].filter((_, i) => i !== index);
             return { ...prev, [day]: updatedSlots };
         });
-    };
+    }, []);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = useCallback(async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!email) {
@@ -66,7 +66,7 @@ const FacultyForm = () => {
             alert("Faculty updated successfully!");
             router.back();
         }
-    };
+    }, [email,router,unavailability, updateFaculty]);
 
     const days: (keyof FacultyType["unavailability"])[] = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
