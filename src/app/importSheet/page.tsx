@@ -101,7 +101,7 @@ const ImportSheet = () => {
         return `${cls.data.class_num}-${cls.data.section}-${cls.properties.room}-${cls.properties.instructor_name}-${cls.properties.days.join(',')}-${cls.properties.start_time}`;
     }, []);
 
-    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
         if (!selectedFile) return;
 
@@ -294,9 +294,9 @@ const ImportSheet = () => {
         setSelectedClasses(new Set(combinedClasses.map(c => getUniqueClassId(c))));
         setCohortSelections(initialCohortSelections);
         setIsLoading(false);
-    };
+    }, [currentCohort, getUniqueClassId, isCurrentCohortValid]);
 
-    const handleImport = async () => {
+    const handleImport = useCallback(async () => {
         // Track all unique tags that need to be created
         const tagsToCreate: tagType[] = [];
         const tagTracker = new Map<string, boolean>(); // To avoid duplicates
@@ -375,7 +375,7 @@ const ImportSheet = () => {
         // Then upload the classes with tags
         uploadNewClasses(classesToImport);
         router.back();
-    };
+    }, [cohortSelections,getUniqueClassId,parsedClasses,router,selectedClasses, uploadNewClasses]);
 
     const autoAssignedCount = (isCurrentCohortValid) ? parsedClasses.filter(cls =>
         assignCohort(cls, currentCohort) !== null).length

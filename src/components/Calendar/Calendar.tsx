@@ -93,9 +93,7 @@ const Calendar = () => {
 
             // Use the instructor's email to find the matching Faculty record
             const instructorEmail = foundClass.properties.instructor_email;
-            const matchedFaculty = faculty.find(
-                (faculty) => faculty.email === instructorEmail
-            );
+            const matchedFaculty = faculty.find(faculty => faculty.email === instructorEmail);
 
             if (matchedFaculty) {
                 console.log("Matched Faculty: ", matchedFaculty);
@@ -274,41 +272,6 @@ const Calendar = () => {
             unselectAll();
         }
     }, [currentCombinedClass, selectEvent, unselectAll]);
-
-    // // Create events efficiently when displayClasses changes
-    // useEffect(() => {
-    //     if (!displayClasses || displayClasses.length === 0) {
-    //         setEvents([]);
-    //         return;
-    //     }
-
-    //     const newEvents: EventInput[] = [];
-
-    //     displayClasses.forEach(cls => {
-    //         if (cls._id) {
-    //             const classEvents = createEventsFromCombinedClass(cls);
-
-    //             // Add class reference to each event's extendedProps
-    //             classEvents.forEach(event => {
-    //                 if (!event.extendedProps) event.extendedProps = {};
-    //                 event.extendedProps.combinedClass = cls; // Store the actual class reference
-    //             });
-
-    //             // Store for reference
-    //             cls.events = classEvents;
-
-    //             // Add to our collections
-    //             newEvents.push(...classEvents);
-    //         }
-    //     });
-
-    //     setEvents(newEvents);
-
-    //     // No reason to call this when its already in a useEffect in the context, this will end up running it twice
-    //     // Only run conflict detection if conflict-relevant data has changed
-    //     // detectConflicts();
-
-    // }, [displayClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const fullcalendarComponent = useMemo(() => {
         if (displayEvents.length === 0) {

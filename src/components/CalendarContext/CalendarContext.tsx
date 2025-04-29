@@ -643,10 +643,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         }
     }, [state.conflictPropertyChanged]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // const displayEvents = useMemo(() => {
-        
-    // }, []);
-
     // Memoize context value to prevent unnecessary re-renders
     const contextValue = useMemo(() => {
         const displayEvents = [] as EventInput[];

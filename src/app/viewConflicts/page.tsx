@@ -4,7 +4,7 @@ import { CiCircleCheck } from "react-icons/ci";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CombinedClass, ConflictType } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
@@ -13,67 +13,15 @@ const ViewConflicts = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [visibleConflicts, setVisibleConflicts] = useState<ConflictType[]>([]);
     const [hiddenConflicts, setHiddenConflicts] = useState<ConflictType[]>([]);
-
     const router = useRouter();
-    const showClassOnCalendar = (cls: CombinedClass) => {
+
+    const showClassOnCalendar = useCallback((cls: CombinedClass) => {
         setCurrentClass(cls);
         router.back();
-    }
-
-    useEffect(() => {
-        const loadConflicts = async () => {
-            // await detectConflicts();
-            setIsLoading(false);
-        };
-        loadConflicts();
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-    // Filter conflicts whenever the list of conflicts or visible classes changes
-    useEffect(() => {
-        if (conflicts.length && displayClasses) {
-            // Get IDs of visible classes for quick lookup
-            const visibleClassIds = new Set(displayClasses.map(cls => cls._id));
-
-            // Filter conflicts into two categories
-            const visible = conflicts.filter(conflict =>
-                visibleClassIds.has(conflict.class1._id) || visibleClassIds.has(conflict.class2._id)
-            );
-
-            const hidden = conflicts.filter(conflict =>
-                !visibleClassIds.has(conflict.class1._id) && !visibleClassIds.has(conflict.class2._id)
-            );
-
-            setVisibleConflicts(visible);
-            setHiddenConflicts(hidden);
-        } else {
-            setVisibleConflicts([]);
-            setHiddenConflicts([]);
-        }
-    }, [conflicts, displayClasses]);
-
-    if (isLoading) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full w-full">
-                <div className="text-center text-gray-400 flex flex-row items-center gap-1">
-                    <p>Checking for conflicts...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (conflicts.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center h-full w-full">
-                <div className="text-center text-gray-400 flex flex-row items-center gap-1">
-                    <p>No Conflicts Yet</p>
-                    <CiCircleCheck />
-                </div>
-            </div>
-        );
-    }
+    }, [router, setCurrentClass]);
 
     // Helper function to render a conflict list
-    const renderConflictsList = (conflictsList: ConflictType[], title: string, alwaysOpen?: boolean, defaultOpen?: boolean) => {
+    const renderConflictsList = useCallback((conflictsList: ConflictType[], title: string, alwaysOpen?: boolean, defaultOpen?: boolean) => {
         if (conflictsList.length === 0) {
             return null;
         }
@@ -203,7 +151,59 @@ const ViewConflicts = () => {
                 />
             </div>
         );
-    };
+    }, [showClassOnCalendar]);
+
+    useEffect(() => {
+        const loadConflicts = async () => {
+            // await detectConflicts();
+            setIsLoading(false);
+        };
+        loadConflicts();
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Filter conflicts whenever the list of conflicts or visible classes changes
+    useEffect(() => {
+        if (conflicts.length && displayClasses) {
+            // Get IDs of visible classes for quick lookup
+            const visibleClassIds = new Set(displayClasses.map(cls => cls._id));
+
+            // Filter conflicts into two categories
+            const visible = conflicts.filter(conflict =>
+                visibleClassIds.has(conflict.class1._id) || visibleClassIds.has(conflict.class2._id)
+            );
+
+            const hidden = conflicts.filter(conflict =>
+                !visibleClassIds.has(conflict.class1._id) && !visibleClassIds.has(conflict.class2._id)
+            );
+
+            setVisibleConflicts(visible);
+            setHiddenConflicts(hidden);
+        } else {
+            setVisibleConflicts([]);
+            setHiddenConflicts([]);
+        }
+    }, [conflicts, displayClasses]);
+
+    if (isLoading) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full w-full">
+                <div className="text-center text-gray-400 flex flex-row items-center gap-1">
+                    <p>Checking for conflicts...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (conflicts.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-full w-full">
+                <div className="text-center text-gray-400 flex flex-row items-center gap-1">
+                    <p>No Conflicts Yet</p>
+                    <CiCircleCheck />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="flex flex-col w-full h-full p-4 min-h-130">

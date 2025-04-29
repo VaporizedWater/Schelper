@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import Footer from '@/components/Footer/Footer';
 import Image from 'next/image';
 import Link from "next/link";
@@ -49,35 +49,32 @@ const Home = () => {
         </div>
     );
 
-    return (
-        session?.user == undefined ?
-            <>
-                {currentBackground}
-                {nextBackground}
-                <div className="flex flex-col h-screen">
-                    <div className="h-full w-full">
-                        <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
-                            <h1 className='text-lightblue text-shadow-lg text-8xl font-bold flex items-center justify-center gap-4'>
-                                Schelper
-                            </h1>
-                            <h2 className='pt-4 text-3xl text-shadow-lg text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
-                            <p className='pt-4 text-xl text-shadow-lg text-graybg drop-shadow-lg'>Please log in to continue</p>
-                            <div className="mt-4">
-                                {/* <button onClick={async () => {
+    const loggedOut = useMemo(() => {
+        return (
+            <div className="flex flex-col h-screen">
+                <div className="h-full w-full">
+                    <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
+                        <h1 className='text-lightblue text-shadow-lg text-8xl font-bold flex items-center justify-center gap-4'>
+                            Schelper
+                        </h1>
+                        <h2 className='pt-4 text-3xl text-shadow-lg text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
+                        <p className='pt-4 text-xl text-shadow-lg text-graybg drop-shadow-lg'>Please log in to continue</p>
+                        <div className="mt-4">
+                            {/* <button onClick={async () => {
                                     await signIn("microsoft-entra-id");
                                 }} className="p-2 border rounded-full bg-white">Log in</button> */}
-                                <SignIn></SignIn>
-                            </div>
+                            <SignIn></SignIn>
                         </div>
                     </div>
-                    <Footer />
                 </div>
-            </>
-            :
-            <>
-                {currentBackground}
-                {nextBackground}
-                <div className='flex flex-col h-screen'>
+                <Footer />
+            </div>
+        );
+    }, []);
+
+    const loggedIn = useMemo(() => {
+        return (
+            <div className='flex flex-col h-screen'>
                     <div className="h-full w-full">
                         <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
                             <h1 className='text-lightblue text-shadow-lg text-8xl font-bold flex items-center justify-center gap-4'>
@@ -105,6 +102,19 @@ const Home = () => {
                     </div>
                     <Footer />
                 </div>
+        );
+    }, []);
+
+    return (
+        session?.user == undefined ? 
+            <>
+                {currentBackground}
+                {nextBackground}
+                {loggedOut}
+            </> : <>
+                {currentBackground}
+                {nextBackground}
+                {loggedIn}
             </>
     );
 };
