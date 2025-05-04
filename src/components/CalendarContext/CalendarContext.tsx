@@ -271,7 +271,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 user: state.user,
                 currentCalendar: action.payload.currentCalendar,
                 faculty: action.payload.faculty || state.faculty,
-                conflictPropertyChanged: !state.conflictPropertyChanged
+                conflictPropertyChanged: !state.conflictPropertyChanged,
+                calendars: action.payload.calendars
             };
         }
 
@@ -594,7 +595,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
                     // console.log("ALL TAGS", allTags);
                     // console.log("FACULTY", faculty);
-                    console.log("CALENDARS:",calendarPayload);
+                    // console.log("CALENDARS:",calendarPayload);
 
                     const calendar = calendarPayload.calendar;
                     const classes = calendar.classes;
