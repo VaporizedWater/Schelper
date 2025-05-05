@@ -72,15 +72,15 @@ export async function loadCalendar(userEmail: string): Promise<CalendarPayload> 
     }
 
     try {
-        // const calendarInfoRequest = fetchWithTimeout(
-        //     "./api/calendars",
-        //     {
-        //         headers: {
-        //             userEmail: userEmail,
-        //         },
-        //     },
-        //     15000
-        // );
+        const calendarInfoRequest = fetchWithTimeout(
+            "./api/calendars",
+            {
+                headers: {
+                    userEmail: userEmail,
+                },
+            },
+            15000
+        );
 
         const classRequest = fetchWithTimeout(
             "./api/combined_classes",
@@ -92,15 +92,16 @@ export async function loadCalendar(userEmail: string): Promise<CalendarPayload> 
             15000
         );
 
-        // const calendarInfoResponse = await calendarInfoRequest;
+        const calendarInfoResponse = await calendarInfoRequest;
         const classResponse = await classRequest;
 
         if (classResponse.ok) {
             const currentCalendar = await parseJsonResponse<CalendarType>(classResponse);
-            // const calendarList = await parseJsonResponse<CalendarInfo[]>(calendarInfoResponse);
+            const calendarList = await parseJsonResponse<CalendarInfo[]>(calendarInfoResponse);
+
             return {
                 calendar: currentCalendar,
-                calendars: [] as CalendarInfo[]
+                calendars: calendarList
             } as CalendarPayload;
         }
 

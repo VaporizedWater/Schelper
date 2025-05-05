@@ -182,7 +182,6 @@ export const dayIndex: { [key: string]: number } = {
 export const initialCalendarState: CalendarState = {
     classes: {
         all: [],
-        // display: [],
         current: undefined,
     },
     tags: new Map(),

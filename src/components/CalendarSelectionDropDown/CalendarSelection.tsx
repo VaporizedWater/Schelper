@@ -7,6 +7,8 @@ const CalendarDropDown = ({ title }: { title:string }) => {
     const { setContextToOtherCalendar, calendarInfoList } = useCalendarContext();
 
     const calendarInfoListMap = useMemo(() => {
+        console.log(calendarInfoList);
+
         return calendarInfoList.map((item, index) => (
             <li key={index} className={`${index !== calendarInfoList.length - 1 ? 'border-b border-gray-100' : ''}`}>
                 <button onClick={() => {

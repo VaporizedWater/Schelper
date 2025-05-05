@@ -165,7 +165,7 @@ const ExportSheet = () => {
         });
 
         doc.save(`${filename}.pdf`);
-    }, [allClasses, filename, getUniqueClassId, selectedClasses]);
+    }, [allClasses,filename,getUniqueClassId, selectedClasses]);
 
     return (
         <div className="p-4 bg-white dark:bg-white text-black dark:text-black">

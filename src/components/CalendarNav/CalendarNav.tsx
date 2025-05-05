@@ -10,7 +10,7 @@ import { IoMdSettings } from "react-icons/io";
 import CalendarDropDown from "../CalendarSelectionDropDown/CalendarSelection";
 
 const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
-    const { displayClasses, currentCalendar } = useCalendarContext();
+    const { displayClasses, currentCalendar, calendarInfoList } = useCalendarContext();
     // const listString: string = "border border-gray-500 duration-50 rounded-full", listString2: string = "border border-gray-500 duration-50 rounded-full";
     const [calendarActive, setActive] = useState(true);
 
