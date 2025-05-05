@@ -74,7 +74,7 @@ const ExportSheet = () => {
                 'Course Subject': classItem.data.course_subject,
                 'Course Number': classItem.data.course_num,
                 'Section': classItem.data.section,
-                'Class Number': classItem.data.class_num || '',
+                'Class': classItem.data.class_num || '',
                 'Title': classItem.data.title,
                 'Instructor': classItem.properties.instructor_name,
                 'Instructor Email': classItem.properties.instructor_email || '',
