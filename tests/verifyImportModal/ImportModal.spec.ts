@@ -1,3 +1,40 @@
+// tests/importSheet.spec.ts
+import { test, expect } from '@playwright/test';
+import path from 'path';
+
+const file = '../../public/SP25QuerySample.xlsx';
+
+test.describe('SFR-07: Spreadsheet Import', () => {
+    test('should parse spreadsheet and generate class list', async ({ page }) => {
+        // Navigate to import sheet page
+        await page.goto('/importSheet');
+
+        // Find file input and upload test spreadsheet
+        const fileInput = await page.locator('input[type="file"]');
+        const filePath = path.resolve(__dirname, file);
+        await fileInput.setInputFiles(filePath);
+
+        // Wait for parsing and rendering
+        await expect(page.getByText('EMCH').first()).toBeVisible();
+    });
+});
+
+test.describe('SFR-08: Class Selection', () => {
+    test('should display checkboxes for selecting classes', async ({ page }) => {
+        await page.goto('/importSheet');
+
+        const fileInput = await page.locator('input[type="file"]');
+        const filePath = path.resolve(__dirname, file);
+        await fileInput.setInputFiles(filePath);
+
+        // Check that at least one checkbox exists
+        const checkboxes = await page.locator('input[type="checkbox"]');
+        await expect(checkboxes.first()).toBeVisible();
+    });
+});
+
+
+// outdated tests:
 // import { test, expect, Page } from "@playwright/test";
 // import path from "path";
 
@@ -120,3 +157,5 @@
 //         await page.waitForURL((url) => !url.pathname.endsWith("/importSheet"));
 //     });
 // });
+
+

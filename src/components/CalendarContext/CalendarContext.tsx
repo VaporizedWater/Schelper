@@ -614,7 +614,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     });
                 }
 
-                
+
             } catch (err) {
                 if (mounted) {
                     console.error('Error loading data:', err);
@@ -667,264 +667,269 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         });
 
         return {
-        // Faculty
-        faculty: state.faculty,
+            // Faculty
+            faculty: state.faculty,
 
-        // Calendar ID
-        currentCalendar: state.currentCalendar,
-        calendarInfoList: state.calendars,
+            // Calendar ID
+            currentCalendar: state.currentCalendar,
+            calendarInfoList: state.calendars,
 
-        // Classes
-        allClasses: state.classes.all,
-        displayClasses: displayClasses,
-        displayEvents: displayEvents,
-        currentCombinedClass: state.classes.current,
+            // Classes
+            allClasses: state.classes.all,
+            displayClasses: displayClasses,
+            displayEvents: displayEvents,
+            currentCombinedClass: state.classes.current,
 
-        // Tags
-        tagList: state.tags,
+            // Tags
+            tagList: state.tags,
 
-        // Conflicts
-        conflicts: state.conflicts,
-        conflictPropertyChanged: state.conflictPropertyChanged,
+            // Conflicts
+            conflicts: state.conflicts,
+            conflictPropertyChanged: state.conflictPropertyChanged,
 
-        // Status
-        isLoading: state.status.loading,
-        error: state.status.error,
+            // Status
+            isLoading: state.status.loading,
+            error: state.status.error,
 
-        // Actions
-        toggleConflictPropertyChanged: () => {
-            console.log('CONFLICT_PROPERTY_CHANGED');
-            dispatch({
-                type: 'TOGGLE_CONFLICT_PROPERTY_CHANGED',
-                payload: !state.conflictPropertyChanged
-            })
-        },
+            // Actions
+            toggleConflictPropertyChanged: () => {
+                console.log('CONFLICT_PROPERTY_CHANGED');
+                dispatch({
+                    type: 'TOGGLE_CONFLICT_PROPERTY_CHANGED',
+                    payload: !state.conflictPropertyChanged
+                })
+            },
 
 
-        updateFaculty: (faculty: FacultyType[], doMerge: boolean): Promise<boolean> => {
-            console.log('UPDATE_FACULTY');
+            updateFaculty: (faculty: FacultyType[], doMerge: boolean): Promise<boolean> => {
+                console.log('UPDATE_FACULTY');
 
-            // Merge the new faculty data with existing state
-            let mergedFaculty: FacultyType[] = [];
+                // Merge the new faculty data with existing state
+                let mergedFaculty: FacultyType[] = [];
 
-            if (doMerge) {
-                // Merge faculty entries if doMerge is true
-                mergedFaculty = mergeFacultyEntries(state.faculty, faculty);
-            } else {
-                // Just use the new faculty data as is
-                mergedFaculty = faculty;
-            }
-
-            // Return a promise to allow proper async handling
-            return new Promise((resolve) => {
-                // Update faculty in the database
-                updateFaculty(mergedFaculty)
-                    .then(() => {
-                        console.log("Faculty updated successfully!");
-                        dispatch({ type: 'UPDATE_FACULTY', payload: mergedFaculty });
-                        resolve(true);
-                    })
-                    .catch((error) => {
-                        console.error("Error updating faculty:", error);
-                        resolve(false);
-                    });
-            });
-        },
-
-        resetContextToEmpty: () => {
-            console.log('LOGGING OUT, SETTING CONTEXT TO EMPTY');
-            dispatch({
-                type: 'INITIALIZE_DATA', payload: {
-                    classes: [
-                        newDefaultEmptyClass()
-                    ],
-                    tags: new Map(),
-                    currentCalendar: newDefaultEmptyCalendar(),
-                    calendars: [],
-                    faculty: []
+                if (doMerge) {
+                    // Merge faculty entries if doMerge is true
+                    mergedFaculty = mergeFacultyEntries(state.faculty, faculty);
+                } else {
+                    // Just use the new faculty data as is
+                    mergedFaculty = faculty;
                 }
-            });
-        },
 
-        setContextToOtherCalendar: async ( calendarId: string ) => {
-            console.log('SETTING CONTEXT TO OTHER CALENDAR');
-            await setCurrentCalendarToNew(calendarId);
-            setForceUpdate(Date.now().toString());
-        },
-
-        setCurrentClass: (cls: CombinedClass) => {
-            console.log('SET_CURRENT_CLASS');
-            dispatch({ type: 'SET_CURRENT_CLASS', payload: cls });
-        },
-
-        updateOneClass: async (cls: CombinedClass) => {
-            console.log("This is the class: ", cls);
-            try {
-                console.log('UPDATE_CLASS');
-
-                await updateCombinedClasses([cls], state.currentCalendar._id);
-
-                dispatch({ type: 'UPDATE_CLASS', payload: cls });
-
-                return true;
-            } catch (error) {
-                console.error("Failed to update class:", error);
-                return false;
-            }
-        },
-
-        updateAllClasses: (classes: CombinedClass[]) => {
-            // console.time("updateAllClasses");
-            console.log('UPDATE_ALL_CLASSES');
-            dispatch({ type: 'UPDATE_ALL_CLASSES', payload: classes });
-            // console.timeEnd("updateAllClasses");
-        },
-
-        unlinkTagFromClass: (tagId: string, classId: string) => {
-            console.log('UNLINK_TAG_FROM_CLASS');
-            dispatch({ type: 'UNLINK_TAG_FROM_CLASS', payload: { tagId, classId } });
-
-            // Find and update the class in the database
-            const classToUpdate = state.classes.all.find(c => c._id === classId);
-            if (classToUpdate) {
-                const updatedClass = {
-                    ...classToUpdate,
-                    properties: {
-                        ...classToUpdate.properties,
-                        tags: classToUpdate.properties.tags.filter(t => t.tagName !== tagId)
-                    }
-                };
-                updateCombinedClasses([updatedClass], state.currentCalendar._id);
-            }
-        },
-
-        unlinkAllTagsFromClass: (classId: string) => {
-            console.log('UNLINK_ALL_TAGS_FROM_CLASS');
-            dispatch({ type: 'UNLINK_ALL_TAGS_FROM_CLASS', payload: classId });
-
-            // Find and update the class in the database
-            const classToUpdate = state.classes.all.find(c => c._id === classId);
-            if (classToUpdate) {
-                const updatedClass = {
-                    ...classToUpdate,
-                    properties: {
-                        ...classToUpdate.properties,
-                        tags: []
-                    }
-                };
-                updateCombinedClasses([updatedClass], state.currentCalendar._id);
-            }
-        },
-
-        unlinkAllClassesFromTag: (tagId: string) => {
-            console.log('UNLINK_ALL_CLASSES_FROM_TAG');
-            dispatch({ type: 'UNLINK_ALL_CLASSES_FROM_TAG', payload: tagId });
-
-            // Update all affected classes in the database
-            const classIds = state.tags.get(tagId)?.classIds;
-            if (classIds) {
-                state.classes.all
-                    .filter(c => classIds.has(c._id))
-                    .forEach(c => {
-                        const updatedClass = {
-                            ...c,
-                            properties: {
-                                ...c.properties,
-                                tags: c.properties.tags.filter(t => t.tagName !== tagId)
-                            }
-                        };
-                        updateCombinedClasses([updatedClass], state.currentCalendar._id);
-                    });
-            }
-        },
-
-        unlinkAllTagsFromAllClasses: () => {
-            console.log('UNLINK_ALL_TAGS_FROM_ALL_CLASSES');
-            dispatch({ type: 'UNLINK_ALL_TAGS_FROM_ALL_CLASSES' });
-
-            // Update all classes in the database
-            state.classes.all.forEach(c => {
-                const updatedClass = {
-                    ...c,
-                    properties: {
-                        ...c.properties,
-                        tags: []
-                    }
-                };
-                updateCombinedClasses([updatedClass], state.currentCalendar._id);
-            });
-        },
-
-        uploadNewClasses: (classes: CombinedClass[]) => {
-            // console.time("uploadNewClasses");
-
-            // Set loading state immediately
-            dispatch({ type: 'SET_LOADING', payload: true });
-
-            // Use bulk update instead of individual updates
-            updateCombinedClasses(classes, state.currentCalendar._id).then(() => {
-                // Update local state
-                console.log('UPLOAD_CLASSES');
-                dispatch({ type: 'UPLOAD_CLASSES', payload: classes });
-
-                // Force refresh data from server
-                setForceUpdate(Date.now().toString());
-            })
-                .catch(error => {
-                    console.error("Error uploading classes:", error);
-                    console.log('SET_ERROR');
-                    dispatch({
-                        type: 'SET_ERROR',
-                        payload: 'Failed to upload classes. Please try again.'
-                    });
-
-                    // Make sure to set loading to false if there's an error
-                    dispatch({ type: 'SET_LOADING', payload: false });
+                // Return a promise to allow proper async handling
+                return new Promise((resolve) => {
+                    // Update faculty in the database
+                    updateFaculty(mergedFaculty)
+                        .then(() => {
+                            console.log("Faculty updated successfully!");
+                            dispatch({ type: 'UPDATE_FACULTY', payload: mergedFaculty });
+                            resolve(true);
+                        })
+                        .catch((error) => {
+                            console.error("Error updating faculty:", error);
+                            resolve(false);
+                        });
                 });
+            },
 
+            resetContextToEmpty: () => {
+                console.log('LOGGING OUT, SETTING CONTEXT TO EMPTY');
+                dispatch({
+                    type: 'INITIALIZE_DATA', payload: {
+                        classes: [
+                            newDefaultEmptyClass()
+                        ],
+                        tags: new Map(),
+                        currentCalendar: newDefaultEmptyCalendar(),
+                        calendars: [],
+                        faculty: []
+                    }
+                });
+            },
 
-            // console.timeEnd("uploadNewClasses");
-        },
-
-        deleteClass: async (classId: string) => {
-            try {
-                const success = await deleteCombinedClasses(classId, state.currentCalendar._id);
-
-                if (!success) {
-                    // If API call fails, reload data to restore state
-                    console.error("Failed to delete class, reloading data");
-                    setForceUpdate(Date.now().toString());
-                }
-
-                dispatch({ type: 'DELETE_CLASS', payload: classId });
-
-                return success;
-            } catch (error) {
-                console.error("Error deleting class:", error);
-                // Reload data to restore state
+            setContextToOtherCalendar: async (calendarId: string) => {
+                console.log('SETTING CONTEXT TO OTHER CALENDAR');
+                await setCurrentCalendarToNew(calendarId);
                 setForceUpdate(Date.now().toString());
-                return false;
-            }
-        },
+            },
 
-        deleteFaculty: (facultyToDeleteEmail: string) => {
-            try {
-                console.log('DELETE_FACULTY');
-                if (facultyToDeleteEmail) {
-                    deleteStoredFaculty(facultyToDeleteEmail);
+            setCurrentClass: (cls: CombinedClass) => {
+                console.log('SET_CURRENT_CLASS');
+                dispatch({ type: 'SET_CURRENT_CLASS', payload: cls });
+            },
+
+            updateOneClass: async (cls: CombinedClass) => {
+                console.log("This is the class: ", cls);
+                try {
+                    console.log('UPDATE_CLASS');
+
+                    await updateCombinedClasses([cls], state.currentCalendar._id);
+
+                    dispatch({ type: 'UPDATE_CLASS', payload: cls });
+
+                    return true;
+                } catch (error) {
+                    console.error("Failed to update class:", error);
+                    return false;
                 }
+            },
 
-                const updatedFaculty = state.faculty.filter(faculty => faculty.email !== facultyToDeleteEmail);
-                dispatch({ type: 'UPDATE_FACULTY', payload: updatedFaculty });
+            updateAllClasses: (classes: CombinedClass[]) => {
+                // console.time("updateAllClasses");
+                console.log('UPDATE_ALL_CLASSES');
+                dispatch({ type: 'UPDATE_ALL_CLASSES', payload: classes });
+                // console.timeEnd("updateAllClasses");
+            },
 
-                window.alert(`Faculty ${facultyToDeleteEmail} deleted successfully.`);
-                return true;
-            } catch (error) {
-                console.error("Error deleting faculty:", error);
-                return false;
+            unlinkTagFromClass: (tagId: string, classId: string) => {
+                console.log('UNLINK_TAG_FROM_CLASS');
+                dispatch({ type: 'UNLINK_TAG_FROM_CLASS', payload: { tagId, classId } });
+
+                // Find and update the class in the database
+                const classToUpdate = state.classes.all.find(c => c._id === classId);
+                if (classToUpdate) {
+                    const updatedClass = {
+                        ...classToUpdate,
+                        properties: {
+                            ...classToUpdate.properties,
+                            tags: classToUpdate.properties.tags.filter(t => t.tagName !== tagId)
+                        }
+                    };
+                    updateCombinedClasses([updatedClass], state.currentCalendar._id);
+                }
+            },
+
+            unlinkAllTagsFromClass: (classId: string) => {
+                console.log('UNLINK_ALL_TAGS_FROM_CLASS');
+                dispatch({ type: 'UNLINK_ALL_TAGS_FROM_CLASS', payload: classId });
+
+                // Find and update the class in the database
+                const classToUpdate = state.classes.all.find(c => c._id === classId);
+                if (classToUpdate) {
+                    const updatedClass = {
+                        ...classToUpdate,
+                        properties: {
+                            ...classToUpdate.properties,
+                            tags: []
+                        }
+                    };
+                    updateCombinedClasses([updatedClass], state.currentCalendar._id);
+                }
+            },
+
+            unlinkAllClassesFromTag: (tagId: string) => {
+                console.log('UNLINK_ALL_CLASSES_FROM_TAG');
+                dispatch({ type: 'UNLINK_ALL_CLASSES_FROM_TAG', payload: tagId });
+
+                // Update all affected classes in the database
+                const classIds = state.tags.get(tagId)?.classIds;
+                if (classIds) {
+                    state.classes.all
+                        .filter(c => classIds.has(c._id))
+                        .forEach(c => {
+                            const updatedClass = {
+                                ...c,
+                                properties: {
+                                    ...c.properties,
+                                    tags: c.properties.tags.filter(t => t.tagName !== tagId)
+                                }
+                            };
+                            updateCombinedClasses([updatedClass], state.currentCalendar._id);
+                        });
+                }
+            },
+
+            unlinkAllTagsFromAllClasses: () => {
+                console.log('UNLINK_ALL_TAGS_FROM_ALL_CLASSES');
+                dispatch({ type: 'UNLINK_ALL_TAGS_FROM_ALL_CLASSES' });
+
+                // Update all classes in the database
+                state.classes.all.forEach(c => {
+                    const updatedClass = {
+                        ...c,
+                        properties: {
+                            ...c.properties,
+                            tags: []
+                        }
+                    };
+                    updateCombinedClasses([updatedClass], state.currentCalendar._id);
+                });
+            },
+
+            uploadNewClasses: (classes: CombinedClass[]) => {
+                // console.time("uploadNewClasses");
+
+                // Set loading state immediately
+                dispatch({ type: 'SET_LOADING', payload: true });
+
+                // Use bulk update instead of individual updates
+                updateCombinedClasses(classes, state.currentCalendar._id).then(() => {
+                    // Update local state
+                    console.log('UPLOAD_CLASSES');
+                    dispatch({ type: 'UPLOAD_CLASSES', payload: classes });
+
+                    // Force refresh data from server
+                    setForceUpdate(Date.now().toString());
+                })
+                    .catch(error => {
+                        console.error("Error uploading classes:", error);
+                        console.log('SET_ERROR');
+                        dispatch({
+                            type: 'SET_ERROR',
+                            payload: 'Failed to upload classes. Please try again.'
+                        });
+
+                        // Make sure to set loading to false if there's an error
+                        dispatch({ type: 'SET_LOADING', payload: false });
+                    });
+
+
+                // console.timeEnd("uploadNewClasses");
+            },
+
+            deleteClass: async (classId: string) => {
+                try {
+                    const success = await deleteCombinedClasses(classId, state.currentCalendar._id);
+
+                    if (!success) {
+                        // If API call fails, reload data to restore state
+                        console.error("Failed to delete class, reloading data");
+                        setForceUpdate(Date.now().toString());
+                    }
+
+                    dispatch({ type: 'DELETE_CLASS', payload: classId });
+
+                    return success;
+                } catch (error) {
+                    console.error("Error deleting class:", error);
+                    // Reload data to restore state
+                    setForceUpdate(Date.now().toString());
+                    return false;
+                }
+            },
+
+            deleteFaculty: (facultyToDeleteEmail: string) => {
+                try {
+                    console.log('DELETE_FACULTY');
+                    if (facultyToDeleteEmail) {
+                        deleteStoredFaculty(facultyToDeleteEmail);
+                    }
+
+                    const updatedFaculty = state.faculty.filter(faculty => faculty.email !== facultyToDeleteEmail);
+                    dispatch({ type: 'UPDATE_FACULTY', payload: updatedFaculty });
+
+                    window.alert(`Faculty ${facultyToDeleteEmail} deleted successfully.`);
+                    return true;
+                } catch (error) {
+                    console.error("Error deleting faculty:", error);
+                    return false;
+                }
             }
         }
-    }}, [state]);
+    }, [state]);
+
+    if (typeof window !== 'undefined') {
+        (window as any).__calendarContext__ = contextValue;
+    }
 
     return (
         <CalendarContext.Provider value={contextValue}>
