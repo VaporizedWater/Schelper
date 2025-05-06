@@ -42,7 +42,7 @@ export async function GET(request: Request): Promise<Response> {
                         { $sort: { yearSort: -1, semesterSort: -1 } },
                         { $replaceRoot: { newRoot: "$info" } }
                     ],
-                    as: "skibidi" // Have to prepare this app for a possible future new-gen senior design team, also... will anyone see this? -Moth
+                    as: "skibidi" // Have to prepare this app for a possible future new-gen senior design team, also... will anyone see this?
                 }
             },
             { $unwind: "$skibidi" },

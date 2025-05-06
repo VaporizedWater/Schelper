@@ -25,11 +25,14 @@ test.describe("Authentication Functionality", () => {
         const logoutButton = page.getByRole("button", { name: "Log Out" });
 
         if (await loginButton.isVisible()) {
+            const microsoftRegex = /.*microsoft.*/i;
+
             // Click the login button and wait for navigation
-            await Promise.all([page.waitForNavigation(), loginButton.click()]);
+            await Promise.all([loginButton.click(), page.waitForURL(microsoftRegex)]);
 
             // Check if redirected to Microsoft authentication page
             const currentUrl = page.url();
+            console.log(currentUrl);
             expect(currentUrl).toContain("microsoft");
         } else if (await logoutButton.isVisible()) {
             expect(true).toBe(true);
