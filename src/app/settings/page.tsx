@@ -12,11 +12,6 @@ import { useSession } from 'next-auth/react';
 const SETTINGS_SECTIONS = [
     { id: 'profile', label: 'User Profile', group: 'user' },
     { id: 'appearance', label: 'Appearance', group: 'user' },
-    { id: 'notifications', label: 'Notifications', group: 'user' },
-    { id: 'privacy', label: 'Privacy & Safety', group: 'user' },
-    { id: 'security', label: 'Security', group: 'user' },
-    { id: 'advanced', label: 'Advanced', group: 'user' },
-    { id: 'calendar', label: 'Calendar', group: 'calendar' },
     { id: 'cohorts', label: 'Cohorts', group: 'calendar' },
     { id: 'sheet', label: 'Sheet', group: 'calendar' },
     { id: 'export', label: 'Export', group: 'calendar' },
@@ -82,11 +77,6 @@ export default function SettingsPage() {
                 <div className="p-8">
                     {activeSection === 'profile' && <ProfileSettings />}
                     {activeSection === 'appearance' && <AppearanceSettings />}
-                    {activeSection === 'notifications' && <NotificationSettings />}
-                    {activeSection === 'privacy' && <PrivacySettings />}
-                    {activeSection === 'security' && <SecuritySettings />}
-                    {activeSection === 'advanced' && <AdvancedSettings />}
-                    {activeSection === 'calendar' && <CalendarSettings />}
                     {activeSection === 'cohorts' && <CohortSettings />}
                     {activeSection === 'sheet' && <SheetSettings />}
                     {activeSection === 'export' && <ExportSettings />}
@@ -179,53 +169,7 @@ function AppearanceSettings() {
     );
 }
 
-function NotificationSettings() {
-    return <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Notification Settings</h2>;
-}
-
-function PrivacySettings() {
-    return <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Privacy Settings</h2>;
-}
-
-function SecuritySettings() {
-    return <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Security Settings</h2>;
-}
-
-function AdvancedSettings() {
-    return <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Advanced Settings</h2>;
-}
-
 // New calendar-related settings components
-function CalendarSettings() {
-    return (
-        <div className='bg-white dark:bg-white text-black dark:text-black'>
-            <h2 className="text-2xl font-semibold mb-6">Calendar Settings</h2>
-            <div className="space-y-4">
-                <div className="mb-3">
-                    <label htmlFor="default-view" className="block mb-1 font-medium text-gray-700">Default View</label>
-                    <select id="default-view" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option>Month</option>
-                        <option>Week</option>
-                        <option>Day</option>
-                        <option>Agenda</option>
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="start-day" className="block mb-1 font-medium text-gray-700">Week Starts On</label>
-                    <select id="start-day" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option>Sunday</option>
-                        <option>Monday</option>
-                    </select>
-                </div>
-                <div className="flex items-center mb-3">
-                    <input type="checkbox" id="show-weekends" className="mr-2" />
-                    <label htmlFor="show-weekends" className="font-medium text-gray-700">Show weekends</label>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 function CohortSettings() {
     // State to store loaded cohorts
     const [cohorts, setCohorts] = useState<CohortType[]>([]);
