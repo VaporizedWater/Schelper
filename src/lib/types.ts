@@ -68,7 +68,7 @@ export type CalendarInfo = {
     name: string;
     semester: string;
     year: string;
-}
+};
 
 // This serves as a type to transport the calendar/class data from the API to the calendar context via LoadCalendar (previously LoadCombinedClasses)
 export type CalendarType = {
@@ -80,7 +80,7 @@ export type CalendarType = {
 export type CalendarPayload = {
     calendar: CalendarType;
     calendars: CalendarInfo[];
-}
+};
 
 export type DropDownProps = {
     /** Function to render the button content */
@@ -167,6 +167,8 @@ export type CalendarContextType = {
     updateFaculty: (faculty: FacultyType[], doMerge: boolean) => Promise<boolean>;
 
     deleteFaculty: (faculty: string) => void;
+
+    removeCohort: (email: string, cohortId: string) => void;
 };
 
 export type UserType = {
@@ -198,9 +200,15 @@ export type CalendarState = {
 
 export type CalendarAction =
     | {
-        type: "INITIALIZE_DATA";
-        payload: { classes: CombinedClass[]; tags: tagListType; currentCalendar: CalendarType; calendars: CalendarInfo[]; faculty: FacultyType[] };
-    }
+          type: "INITIALIZE_DATA";
+          payload: {
+              classes: CombinedClass[];
+              tags: tagListType;
+              currentCalendar: CalendarType;
+              calendars: CalendarInfo[];
+              faculty: FacultyType[];
+          };
+      }
     | { type: "TOGGLE_CONFLICT_PROPERTY_CHANGED"; payload: boolean }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }

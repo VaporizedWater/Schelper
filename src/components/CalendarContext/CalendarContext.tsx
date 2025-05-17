@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew } from '@/lib/DatabaseUtils';
+import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort } from '@/lib/DatabaseUtils';
 import { createEventsFromCombinedClass, initialCalendarState, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
@@ -923,12 +923,32 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     console.error("Error deleting faculty:", error);
                     return false;
                 }
+            },
+
+            removeCohort: async (email: string, cohortId: string) => {
+                try {
+                    // console.log('DELETE_COHORT');
+                    console.log(email, cohortId);
+                    const success = await deleteCohort(email, cohortId);
+
+                    if (!success) {
+                        console.error("Failed to delete cohort");
+                    }
+
+                    // Reload data to restore state
+                    setForceUpdate(Date.now().toString());
+
+                    return success;
+                } catch (error) {
+                    console.error("Error deleting cohort:", error);
+                    return false;
+                }
             }
         }
     }, [state]);
 
     if (typeof window !== 'undefined') {
-        (window as any).__calendarContext__ = contextValue;
+        (window as any).__calendarContext__ = contextValue; // eslint-disable-line @typescript-eslint/no-explicit-any
     }
 
     return (

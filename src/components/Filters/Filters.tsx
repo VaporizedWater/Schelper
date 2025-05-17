@@ -1,8 +1,6 @@
 // Child (sub-component) of left menu
 
-import { MdModeEdit } from "react-icons/md";
 import { BiChevronUp, BiChevronDown } from "react-icons/bi";
-import Link from "next/link";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useCallback, useEffect, useState } from "react";
 import DropDown from "../DropDown/DropDown";
@@ -213,9 +211,6 @@ const Filters = () => {
                         onChange={toggleAllFilters}
                     />
                     <div className="text-bold">Filters</div>
-                    <Link href={'./tags'}>
-                        <div className="rounded-lg px-2"><MdModeEdit className="size-4" /></div>
-                    </Link>
                 </div>
             </div>
 

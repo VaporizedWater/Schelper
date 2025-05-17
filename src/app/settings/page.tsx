@@ -7,10 +7,13 @@ import { useCalendarContext } from '@/components/CalendarContext/CalendarContext
 import { insertCohort, loadCohorts } from '@/lib/DatabaseUtils';
 import { CohortType } from '@/lib/types';
 import { useSession } from 'next-auth/react';
+import AddTagButton from "@/components/AddTagButton/AddTagButton";
+import TagDisplay from "@/components/TagDisplay/TagDisplay";
+import { BiUnlink } from "react-icons/bi";
+import { MdDelete } from 'react-icons/md';
 
 // Define settings sections
 const SETTINGS_SECTIONS = [
-    { id: 'profile', label: 'User Profile', group: 'user' },
     { id: 'appearance', label: 'Appearance', group: 'user' },
     { id: 'cohorts', label: 'Cohorts', group: 'calendar' },
     { id: 'sheet', label: 'Sheet', group: 'calendar' },
@@ -29,7 +32,7 @@ const SECTION_GROUPS = [
 
 export default function SettingsPage() {
     const router = useRouter();
-    const [activeSection, setActiveSection] = useState('profile');
+    const [activeSection, setActiveSection] = useState('appearance');
 
     // Group sections for display
     const groupedSections = SECTION_GROUPS.map(group => ({
@@ -75,7 +78,6 @@ export default function SettingsPage() {
             {/* Right content - independently scrollable with padding for the ESC button */}
             <div className="flex-1 overflow-y-auto pr-16">
                 <div className="p-8">
-                    {activeSection === 'profile' && <ProfileSettings />}
                     {activeSection === 'appearance' && <AppearanceSettings />}
                     {activeSection === 'cohorts' && <CohortSettings />}
                     {activeSection === 'sheet' && <SheetSettings />}
@@ -104,46 +106,6 @@ export default function SettingsPage() {
 }
 
 // Existing settings components
-function ProfileSettings() {
-    return (
-        <div className='bg-white dark:bg-white text-black dark:text-black'>
-            <h2 className="text-2xl font-semibold mb-6">User Profile</h2>
-            <form>
-                <div className="mb-4">
-                    <label htmlFor="display-name" className="block mb-2 font-medium text-gray-700">Display Name</label>
-                    <input
-                        type="text"
-                        id="display-name"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="email" className="block mb-2 font-medium text-gray-700">Email</label>
-                    <input
-                        type="email"
-                        id="email"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label htmlFor="bio" className="block mb-2 font-medium text-gray-700">Bio</label>
-                    <textarea
-                        id="bio"
-                        rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    ></textarea>
-                </div>
-                <button
-                    type="button"
-                    className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                    Save Changes
-                </button>
-            </form>
-        </div>
-    );
-}
-
 function AppearanceSettings() {
     return (
         <div className=" bg-white dark:bg-white text-black dark:text-black">
@@ -186,7 +148,7 @@ function CohortSettings() {
     }, []);
 
 
-    const { currentCalendar } = useCalendarContext();
+    const { currentCalendar, removeCohort } = useCalendarContext();
     const { data: session } = useSession();
     console.log('Current Calendar:', currentCalendar);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -320,6 +282,8 @@ function CohortSettings() {
             const result = await insertCohort(session.user.email, cohort);
             if (result) {
                 alert("Cohort saved successfully!");
+
+                setCohort(null); // Reset the cohort state
             } else {
                 alert("Failed to save cohort");
             }
@@ -336,6 +300,25 @@ function CohortSettings() {
             fileInputRef.current.value = '';
         }
     };
+
+    const handleDeleteCohort = async (cohortId: string) => {
+        if (!session?.user?.email) {
+            alert("User email is not available");
+            return;
+        }
+
+        try {
+            // Confirm deletion
+            const isConfirmed = window.confirm("Are you sure you want to delete this cohort?");
+            if (!isConfirmed) return;
+
+            // Call the removeCohort function
+            await removeCohort(session.user.email, cohortId);
+        } catch (error) {
+            console.error("Error deleting cohort:", error);
+            alert("An error occurred while deleting the cohort");
+        }
+    }
 
     return (
         <div className='flex-1 bg-white dark:bg-white text-black dark:text-black'>
@@ -381,28 +364,28 @@ function CohortSettings() {
                 <div className="mt-5">
                     <h3 className="font-semibold">Parsed Data Preview:</h3>
                     <div className="mt-2 p-4 bg-gray-100 rounded-md overflow-auto">
-                        <h4 className="font-medium">Freshman Courses:</h4>
+                        <h4 className="font-bold">Freshman ({cohort.freshman.length})</h4>
                         <ul className="list-disc ml-5">
                             {cohort.freshman.map((course, index) => (
                                 <li key={`freshman-${index}`}>{course}</li>
                             ))}
                         </ul>
 
-                        <h4 className="font-medium mt-3">Sophomore Courses:</h4>
+                        <h4 className="font-bold mt-3">Sophomore ({cohort.sophomore.length})</h4>
                         <ul className="list-disc ml-5">
                             {cohort.sophomore.map((course, index) => (
                                 <li key={`sophomore-${index}`}>{course}</li>
                             ))}
                         </ul>
 
-                        <h4 className="font-medium mt-3">Junior Courses:</h4>
+                        <h4 className="font-bold mt-3">Junior ({cohort.junior.length})</h4>
                         <ul className="list-disc ml-5">
                             {cohort.junior.map((course, index) => (
                                 <li key={`junior-${index}`}>{course}</li>
                             ))}
                         </ul>
 
-                        <h4 className="font-medium mt-3">Senior Courses:</h4>
+                        <h4 className="font-bold mt-3">Senior ({cohort.senior.length})</h4>
                         <ul className="list-disc ml-5">
                             {cohort.senior.map((course, index) => (
                                 <li key={`senior-${index}`}>{course}</li>
@@ -414,17 +397,39 @@ function CohortSettings() {
 
             {/* Display all existing cohorts neatly */}
             <div className="mt-5">
-                <h3 className="font-semibold">Existing Cohorts:</h3>
+                <h3 className="font-semibold">My Cohorts</h3>
                 {cohorts.length > 0 ? (
-                    <div className="mt-2 p-4 bg-gray-100 rounded-md overflow-auto">
+                    <div className="mt-2 overflow-auto">
                         {cohorts.map((cohort, index) => (
-                            <div key={index} className="mb-4">
-                                <h4 className="font-medium">Cohort {index + 1}:</h4>
-                                <ul className="list-disc ml-5">
-                                    <li>Freshman: {cohort.freshman.join(', ')}</li>
-                                    <li>Sophomore: {cohort.sophomore.join(', ')}</li>
-                                    <li>Junior: {cohort.junior.join(', ')}</li>
-                                    <li>Senior: {cohort.senior.join(', ')}</li>
+                            <div key={index} className="mb-4 bg-gray-100 p-4 rounded-md" onClick={() => { console.log(cohort) }}>
+                                <div className='flex justify-between items-center'>
+                                    <h4 className="font-semibold mb-1">Cohort {index + 1}</h4>
+                                    {cohort._id &&
+                                        <div
+                                            onClick={() => handleDeleteCohort(cohort._id as string)}
+                                            className="p-2 cursor-pointer flex justify-center items-center rounded-md mx-2 text-red-600 hover:bg-gray-200"
+                                        >
+                                            <MdDelete size={14} />
+                                        </div>
+                                    }
+                                </div>
+                                <ul className="ml-4">
+                                    <li className='flex flex-col mb-1'>
+                                        <p className='font-semibold'>Freshman</p>
+                                        <p>{cohort.freshman.join(', ')}</p>
+                                    </li>
+                                    <li className='flex flex-col mb-1'>
+                                        <p className='font-semibold'>Sophomore</p>
+                                        <p>{cohort.sophomore.join(', ')}</p>
+                                    </li>
+                                    <li className='flex flex-col mb-1'>
+                                        <p className='font-semibold'>Junior</p>
+                                        <p>{cohort.junior.join(', ')}</p>
+                                    </li>
+                                    <li className='flex flex-col mb-1'>
+                                        <p className='font-semibold'>Senior</p>
+                                        <p>{cohort.senior.join(', ')}</p>
+                                    </li>
                                 </ul>
                             </div>
                         ))}
@@ -554,14 +559,15 @@ function ConflictsSettings() {
 }
 
 function TagsSettings() {
+    const { unlinkAllTagsFromAllClasses } = useCalendarContext();
+
     return (
         <div>
-            <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Tags Settings</h2>
+            {/* <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Tags Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
                     <label className="block mb-1 font-medium text-gray-700">Manage Tags</label>
                     <div className="border border-gray-300 rounded-md p-2 mb-2 max-h-60 overflow-y-auto">
-                        {/* Sample tag items */}
                         <div className="flex items-center justify-between p-2 hover:bg-gray-100 rounded">
                             <div className="flex items-center">
                                 <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
@@ -597,6 +603,37 @@ function TagsSettings() {
                             Add
                         </button>
                     </div>
+                </div>
+            </div> */}
+
+            <div className="flex flex-col items-right  bg-white dark:bg-white text-black dark:text-black">
+                <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Tags Settings</h2>
+
+                {/* Tag Menu */}
+                <div className="flex justify-center pb-4 gap-2">
+                    <AddTagButton />
+
+                    <button
+                        className="flex gap-2 items-center justify-center bg-white px-2 shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit"
+                        onClick={() => {
+                            // Get confirmation from user
+                            const isConfirmed = window.confirm("Are you sure you want to unlink all tags from all classes?\n (This will not delete any tags)");
+                            if (!isConfirmed) return;
+
+                            // unlink all tags
+                            unlinkAllTagsFromAllClasses();
+                        }}
+                    >
+                        <BiUnlink className="text-xl" />
+                        <span className="pr-2">Unlink All</span>
+                    </button>
+                </div>
+
+
+                {/* Display all tags*/}
+
+                <div className="px-10 w-full flex flex-col gap-3 pb-10">
+                    <TagDisplay />
                 </div>
             </div>
         </div>

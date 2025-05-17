@@ -1,6 +1,16 @@
 // import { headers } from "next/headers";
 import { newDefaultEmptyCalendar } from "./common";
-import { CalendarInfo, CalendarPayload, CalendarType, CohortType, CombinedClass, FacultyType, tagCategory, tagListType, tagType } from "./types";
+import {
+    CalendarInfo,
+    CalendarPayload,
+    CalendarType,
+    CohortType,
+    CombinedClass,
+    FacultyType,
+    tagCategory,
+    tagListType,
+    tagType,
+} from "./types";
 
 /**
  * Helper to parse JSON response from a fetch request
@@ -67,7 +77,7 @@ export async function loadCalendar(userEmail: string): Promise<CalendarPayload> 
         console.error("Calendar ID is undefined");
         return {
             calendar: newDefaultEmptyCalendar(),
-            calendars: []
+            calendars: [],
         };
     }
 
@@ -101,20 +111,19 @@ export async function loadCalendar(userEmail: string): Promise<CalendarPayload> 
 
             return {
                 calendar: currentCalendar,
-                calendars: calendarList
+                calendars: calendarList,
             } as CalendarPayload;
         }
 
         return {
             calendar: newDefaultEmptyCalendar(),
-            calendars: []
+            calendars: [],
         };
-
     } catch (error) {
         console.error("Failed to load combined classes:", error);
         return {
             calendar: newDefaultEmptyCalendar(),
-            calendars: []
+            calendars: [],
         };
     }
 }
@@ -212,7 +221,6 @@ export async function insertCohort(userEmail: string, cohort: CohortType): Promi
 export async function setCurrentCalendarToNew(calendarId: string) {
     console.log("CALENAR ID: ", calendarId);
 }
-
 
 export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
     try {
@@ -319,6 +327,24 @@ export async function deleteStoredFaculty(facultyEmail: string): Promise<boolean
         return result.success;
     } catch (error) {
         console.error("Failed to delete faculty:", error);
+        return false;
+    }
+}
+
+export async function deleteCohort(email: string, cohortId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout(`api/cohorts`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ cohortId: cohortId, userEmail: email }),
+        });
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete cohort:", error);
         return false;
     }
 }

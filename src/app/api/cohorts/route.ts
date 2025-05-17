@@ -3,7 +3,7 @@
 import clientPromise from "@/lib/mongodb";
 import { UserType } from "@/lib/types";
 // import { Collection, Document, ObjectId } from "mongodb";
-import { Document } from "mongodb";
+import { Document, ObjectId } from "mongodb";
 
 const client = await clientPromise;
 // const collection = client.db("class-scheduling-app").collection("cohorts") as Collection<Document>;
@@ -174,3 +174,94 @@ export async function POST(request: Request) {
 //         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
 //     }
 // }
+
+export async function DELETE(request: Request) {
+    try {
+        const session = client.startSession();
+
+        const { cohortId, userEmail } = await request.json();
+
+        console.log("userEmail", userEmail);
+
+        if (!userEmail || userEmail.split("@").length !== 2) {
+            return new Response(JSON.stringify("Header: 'userEmail' is missing or invalid"), { status: 400 });
+        }
+
+        if (!cohortId) {
+            return new Response(JSON.stringify({ error: "Cohort ID is required" }), { status: 400 });
+        }
+
+        try {
+            session.startTransaction();
+
+            const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
+            const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
+
+            // Step 2: Update the user document to delete the cohort ID and remove from current
+            const updateResult = await usersCollection.findOneAndUpdate(
+                { email: userEmail },
+                [
+                    // Remove the cohort ID from the user's cohorts array
+                    {
+                        $set: {
+                            cohorts: {
+                                $filter: {
+                                    input: "$cohorts",
+                                    as: "cohort",
+                                    cond: { $ne: ["$$cohort", new ObjectId(cohortId)] }, // Remove the cohort ID
+                                },
+                            },
+                        },
+                    },
+                    {
+                        $set: {
+                            current_cohort: {
+                                // set current cohort only if the current_cohort is the one being deleted
+                                $cond: {
+                                    if: { $eq: ["$current_cohort", new ObjectId(cohortId)] },
+                                    then: {
+                                        $cond: {
+                                            if: { $gt: [{ $size: "$cohorts" }, 0] },
+                                            then: { $arrayElemAt: ["$cohorts", -1] }, // Set to the last cohort in the array
+                                            else: null,
+                                        },
+                                    },
+                                    else: "$current_cohort",
+                                },
+                            },
+                        },
+                    },
+                ],
+                { session, returnDocument: "after" }
+            );
+
+            if (!updateResult) {
+                // User not found, abort transaction
+                await session.abortTransaction();
+                return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+            }
+
+            const result = await cohortsCollection.deleteOne({ _id: new ObjectId(cohortId) });
+
+            if (result.deletedCount === 0) {
+                // Cohort not found, abort transaction
+                await session.abortTransaction();
+                return new Response(JSON.stringify({ error: "Cohort not found" }), { status: 404 });
+            }
+
+            // Commit the transaction
+            await session.commitTransaction();
+
+            return new Response(JSON.stringify({ message: "Cohort deleted successfully", success: true }), { status: 200 });
+        } catch (error) {
+            // Any error will abort the transaction
+            await session.abortTransaction();
+            throw error;
+        } finally {
+            await session.endSession();
+        }
+    } catch (error) {
+        console.error("Error in DELETE /api/cohorts:", error);
+        return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    }
+}
