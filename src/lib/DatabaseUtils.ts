@@ -1,5 +1,6 @@
 // import { headers } from "next/headers";
-import { newDefaultEmptyCalendar } from "./common";
+import { EventInput } from "@fullcalendar/core/index.js";
+import { mergeFacultyEntries, newDefaultEmptyCalendar } from "./common";
 import {
     CalendarInfo,
     CalendarPayload,
@@ -222,6 +223,87 @@ export async function setCurrentCalendarToNew(calendarId: string) {
     console.log("CALENAR ID: ", calendarId);
 }
 
+export function getUnavailabilityFromClass(cls: CombinedClass, currentUnavailability?: FacultyType): FacultyType {
+    const unavailability = {
+        Mon: [] as EventInput[],
+        Tue: [] as EventInput[],
+        Wed: [] as EventInput[],
+        Thu: [] as EventInput[],
+        Fri: [] as EventInput[],
+    };
+
+    for (const day of cls.properties.days) {
+        if (day === "Mon") {
+            unavailability.Mon.push({
+                start: cls.properties.start_time,
+                end: cls.properties.end_time,
+            });
+        } else if (day === "Tue") {
+            unavailability.Tue.push({
+                start: cls.properties.start_time,
+                end: cls.properties.end_time,
+            });
+        } else if (day === "Wed") {
+            unavailability.Wed.push({
+                start: cls.properties.start_time,
+                end: cls.properties.end_time,
+            });
+        } else if (day === "Thu") {
+            unavailability.Thu.push({
+                start: cls.properties.start_time,
+                end: cls.properties.end_time,
+            });
+        } else if (day === "Fri") {
+            unavailability.Fri.push({
+                start: cls.properties.start_time,
+                end: cls.properties.end_time,
+            });
+        }
+    }
+
+    if (currentUnavailability) {
+        return mergeFacultyEntries(
+            [{ email: cls.properties.instructor_email, unavailability: unavailability }] as FacultyType[],
+            [currentUnavailability]
+        )[0];
+    }
+
+    return { email: cls.properties.instructor_email, unavailability: unavailability } as FacultyType;
+}
+
+// Helper function to get professor unavailability from classes
+export function getProfessorsUnavailability(classes: CombinedClass[]): FacultyType[] {
+    // Compute professor unavailability
+    // Start by creating a map of professors to their unavailability
+    const professorsUnavailability = new Map<string, FacultyType>();
+
+    // Iterate through each class
+    for (const cls of classes) {
+        // Check if the class has a professor
+        if (cls.properties.instructor_email) {
+            // If the professor is not already in the map, add them
+            if (!professorsUnavailability.has(cls.properties.instructor_email)) {
+                // Initialize the professor's unavailability
+                professorsUnavailability.set(cls.properties.instructor_email, getUnavailabilityFromClass(cls));
+            }
+
+            // Add the class to the professor's unavailability list
+            const currentUnavailability = professorsUnavailability.get(cls.properties.instructor_email);
+
+            if (currentUnavailability) {
+                professorsUnavailability.set(
+                    cls.properties.instructor_email,
+                    getUnavailabilityFromClass(cls, currentUnavailability)
+                );
+            }
+        }
+    }
+
+    return professorsUnavailability.size > 0
+        ? (Array.from(professorsUnavailability.values()) as FacultyType[])
+        : ([] as FacultyType[]);
+}
+
 export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
     try {
         // Create a deep copy to avoid mutating the original objects
@@ -236,6 +318,7 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[], ca
         const payload = {
             calendarId: calendarId,
             classes: classesToSend,
+            facultyData: getProfessorsUnavailability(combinedClasses),
         };
 
         const response = await fetchWithTimeout("api/combined_classes", {
