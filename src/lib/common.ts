@@ -1,5 +1,14 @@
 import { EventInput } from "@fullcalendar/core/index.js";
-import { CalendarState, CalendarType, ClassData, ClassProperty, CombinedClass, FacultyType, tagType } from "./types";
+import {
+    CalendarState,
+    CalendarType,
+    ClassData,
+    ClassProperty,
+    CombinedClass,
+    FacultyType,
+    tagListType,
+    tagType,
+} from "./types";
 import { Document } from "mongodb";
 
 /// FUNCTIONS
@@ -84,9 +93,9 @@ export function newDefaultEmptyCalendar(): CalendarType {
             _id: "",
             semester: "",
             year: "",
-            name: "Select a Calendar"
+            name: "Select a Calendar",
         },
-        classes: []
+        classes: [],
     };
 }
 
@@ -99,8 +108,8 @@ export function newDefaultEmptyFaculty(): FacultyType {
             Tue: [],
             Wed: [],
             Thu: [],
-            Fri: []
-        }
+            Fri: [],
+        },
     };
 }
 
@@ -122,29 +131,148 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
 
         const dateStringStart = `${convertedDay}T${startTime}`;
         const dateStringEnd = `${convertedDay}T${endTime}`;
-        const nameSplit = combinedClass.properties.instructor_name.split(',');
+        const nameSplit = combinedClass.properties.instructor_name.split(",");
         const lastName = nameSplit.length > 1 ? nameSplit[0].trim() : "";
-
 
         events.push({
             display: "auto",
-            title:
-                combinedClass.data.course_subject +
-                    combinedClass.data.course_num +
-                    "\n" +
-                    lastName,
+            title: combinedClass.data.course_subject + combinedClass.data.course_num + "\n" + lastName,
             start: dateStringStart || "",
             end: dateStringEnd || "",
             backgroundColor: defaultBackgroundColor,
             extendedProps: {
                 combinedClassId: combinedClass._id,
             },
-            priority: "b"
+            priority: "b",
         });
     });
 
     return events;
 }
+
+// HELPER FUNCTIONS
+// Helper functions
+export const buildTagMapping = (classes: CombinedClass[], existingMapping?: tagListType): tagListType => {
+    const mapping: tagListType = existingMapping || new Map();
+
+    classes.forEach((cls) => {
+        cls.properties.tags?.forEach((tag) => {
+            if (!mapping.has(tag.tagName)) {
+                mapping.set(tag.tagName, { tagCategory: tag.tagCategory, classIds: new Set() });
+            }
+            mapping.get(tag.tagName)?.classIds.add(cls._id);
+        });
+    });
+
+    return mapping;
+};
+
+// Helper function to merge faculty entries
+export const mergeFacultyEntries = (existingFaculty: FacultyType[] = [], newFaculty: FacultyType[] = []): FacultyType[] => {
+    // Create a map of existing faculty for quick lookups
+    const facultyMap = new Map<string, FacultyType>();
+    existingFaculty.forEach((faculty) => {
+        if (faculty.email) {
+            facultyMap.set(faculty.email, { ...faculty });
+        }
+    });
+
+    // Process each new faculty entry
+    newFaculty.forEach((newEntry) => {
+        if (!newEntry.email) return;
+
+        if (facultyMap.has(newEntry.email)) {
+            // Merge with existing entry
+            const existingEntry = facultyMap.get(newEntry.email)!;
+            facultyMap.set(newEntry.email, {
+                ...existingEntry,
+                unavailability: {
+                    Mon: mergeDaySlots(existingEntry.unavailability.Mon, newEntry.unavailability.Mon),
+                    Tue: mergeDaySlots(existingEntry.unavailability.Tue, newEntry.unavailability.Tue),
+                    Wed: mergeDaySlots(existingEntry.unavailability.Wed, newEntry.unavailability.Wed),
+                    Thu: mergeDaySlots(existingEntry.unavailability.Thu, newEntry.unavailability.Thu),
+                    Fri: mergeDaySlots(existingEntry.unavailability.Fri, newEntry.unavailability.Fri),
+                },
+            });
+        } else {
+            // Add new entry
+            facultyMap.set(newEntry.email, { ...newEntry });
+        }
+    });
+
+    // Convert the map back to an array
+    return Array.from(facultyMap.values());
+};
+
+// Helper function to merge time slots for a specific day
+const mergeDaySlots = (existingSlots: EventInput[] = [], newSlots: EventInput[] = []): EventInput[] => {
+    // If either array is empty, just return the other (or empty if both empty)
+    if (existingSlots.length === 0) return [...newSlots];
+    if (newSlots.length === 0) return [...existingSlots];
+
+    // Helper function to convert time string "HH:MM" to minutes for easier comparison
+    const timeToMinutes = (timeStr: string | undefined): number => {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(":").map(Number);
+        return hours * 60 + minutes;
+    };
+
+    // Helper function to convert minutes back to time string "HH:MM"
+    const minutesToTime = (minutes: number): string => {
+        const hours = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+    };
+
+    // Create a type-safe array of interval objects for processing
+    type TimeInterval = { start: number; end: number; originalSlot: EventInput };
+
+    // Combine all slots and convert to interval objects with numeric values
+    const intervals: TimeInterval[] = [
+        ...existingSlots.map((slot) => ({
+            start: timeToMinutes(slot.start as string),
+            end: timeToMinutes(slot.end as string),
+            originalSlot: slot,
+        })),
+        ...newSlots.map((slot) => ({
+            start: timeToMinutes(slot.start as string),
+            end: timeToMinutes(slot.end as string),
+            originalSlot: slot,
+        })),
+    ];
+
+    // Sort by start time
+    intervals.sort((a, b) => a.start - b.start);
+
+    // Merge overlapping intervals
+    const mergedIntervals: TimeInterval[] = [];
+
+    for (const interval of intervals) {
+        // If this is the first interval or if it doesn't overlap with the last merged interval
+        if (mergedIntervals.length === 0 || interval.start > mergedIntervals[mergedIntervals.length - 1].end) {
+            mergedIntervals.push(interval);
+        } else {
+            // Overlapping case: extend the end time of the last merged interval if needed
+            mergedIntervals[mergedIntervals.length - 1].end = Math.max(
+                mergedIntervals[mergedIntervals.length - 1].end,
+                interval.end
+            );
+        }
+    }
+
+    // Convert back to EventInput format
+    return mergedIntervals.map((interval) => {
+        // Start with properties from one of the original slots
+        const baseSlot = { ...interval.originalSlot };
+
+        // Update only the start and end times
+        return {
+            ...baseSlot,
+            start: minutesToTime(interval.start),
+            end: minutesToTime(interval.end),
+        };
+    });
+};
 
 /// CONSTANTS
 export const defaultBackgroundColor = "#001e443f";
@@ -194,11 +322,11 @@ export const initialCalendarState: CalendarState = {
     currentCalendar: newDefaultEmptyCalendar(),
     calendars: [],
     faculty: [newDefaultEmptyFaculty()],
-    conflictPropertyChanged: false
+    conflictPropertyChanged: false,
 };
 
 export const darkenRGBColor = (color: string, amount: number = 0.2): string => {
-    const hex = color.replace('#', '');
+    const hex = color.replace("#", "");
     const num = parseInt(hex, 16);
 
     const r = Math.max(0, (num >> 16) - Math.round(255 * amount));
@@ -206,4 +334,4 @@ export const darkenRGBColor = (color: string, amount: number = 0.2): string => {
     const b = Math.max(0, (num & 0x0000ff) - Math.round(255 * amount));
 
     return `rgb(${r}, ${g}, ${b})`;
-}
+};

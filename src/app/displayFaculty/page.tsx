@@ -23,12 +23,13 @@ const FacultyDisplayPage = () => {
     useEffect(() => {
         const initial: typeof showAddSlot = {};
         facultyData.forEach(f => {
-            initial[f.email] = { 
-                Mon: false, 
-                Tue: false, 
-                Wed: false, 
-                Thu: false, 
-                Fri: false };
+            initial[f.email] = {
+                Mon: false,
+                Tue: false,
+                Wed: false,
+                Thu: false,
+                Fri: false
+            };
         });
         setShowAddSlot(initial);
     }, [facultyData]);
@@ -129,7 +130,7 @@ const FacultyDisplayPage = () => {
         };
 
         const others = facultyData.filter(f => f.email !== email);
-        const success = await updateFaculty([...others, modified], false);
+        const success = await updateFaculty([...others, modified], true); // Merge with existing data
         if (success) {
             setFacultyData([...others, modified]);
             // clear the draft

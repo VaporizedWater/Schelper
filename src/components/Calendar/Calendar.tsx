@@ -1,7 +1,7 @@
 "use client";
 
 import FullCalendar from "@fullcalendar/react";
-import interactionPlugin, { EventResizeStopArg } from "@fullcalendar/interaction";
+import interactionPlugin, { DateClickArg, EventResizeStopArg } from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 
 import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
@@ -78,6 +78,8 @@ const Calendar = () => {
         unselectAll();
         // selectEvent(info.el);
 
+        console.log("Event clicked: ", info);
+
         const foundClass = findClass(info);
 
         if (foundClass) {
@@ -97,16 +99,50 @@ const Calendar = () => {
 
             if (matchedFaculty) {
                 console.log("Matched Faculty: ", matchedFaculty);
+
+                const fullDayStart = "08:00";
+                const fullDayEnd = "21:00";
                 const newBusinessHours: BusinessHoursInput = [] as EventInput[];
 
+                // Iterate through the unavailability slots and create available time slots
                 Object.entries(matchedFaculty.unavailability).forEach(([dayKey, slots]) => {
-                    slots.forEach(event => {
+                    // Normalize and sort the blocks by start time
+                    const blocks = slots
+                        .map(s => ({ start: s.start, end: s.end }))
+                        .sort((a, b) => String(a.start).localeCompare(String(b.start)));
+
+
+                    // Deal with first block from 8:00 to the first unavailability
+                    if (blocks.length === 0 || blocks[0].start && blocks[0].start > fullDayStart) {
                         newBusinessHours.push({
                             daysOfWeek: [dayIndex[dayKey]],
-                            startTime: event.start,
-                            endTime: event.end
+                            startTime: fullDayStart,
+                            endTime: blocks[0]?.start ?? fullDayEnd
                         });
-                    });
+                    }
+
+                    // Deal with middle blocks
+                    for (let i = 0; i < blocks.length - 1; i++) {
+                        const endPrev = blocks[i].end;
+                        const startNext = blocks[i + 1].start;
+                        if (startNext && endPrev && startNext > endPrev) {
+                            newBusinessHours.push({
+                                daysOfWeek: [dayIndex[dayKey]],
+                                startTime: endPrev,
+                                endTime: startNext
+                            });
+                        }
+                    }
+
+                    // Deal with last block from the last unavailability to 21:00
+                    const lastEnd = blocks[blocks.length - 1]?.end;
+                    if (lastEnd && lastEnd < fullDayEnd) {
+                        newBusinessHours.push({
+                            daysOfWeek: [dayIndex[dayKey]],
+                            startTime: lastEnd,
+                            endTime: fullDayEnd
+                        });
+                    }
                 });
 
                 setBusinessHours(newBusinessHours);
@@ -120,7 +156,8 @@ const Calendar = () => {
     }, [faculty, findClass, selectEvent, setCurrentClass, unselectAll]);
 
     // This triggers when clicking on any date/time slot that isn't an event
-    const handleDateClick = useCallback(() => {
+    const handleDateClick = useCallback((info: DateClickArg) => {
+        console.log("Date clicked: ", info);
         unselectAll();
         setCurrentClass(newDefaultEmptyClass());
         setBusinessHours([]);
@@ -347,22 +384,22 @@ const Calendar = () => {
 
             {/* Add custom CSS for calendar font sizes */}
             <style jsx global>{`
-                /* Keep time slots and headers small */
-                .fc .fc-timegrid-slot-label,
-                .fc .fc-col-header-cell {
-                    font-size: 0.875rem; /* text-sm */
-                }
-                
-                /* Make event content medium sized */
-                .fc-event-main {
-                    font-size: 1rem !important; /* text-md */
-                }
+  /* Keep time slots and headers small */
+  .fc .fc-timegrid-slot-label,
+  .fc .fc-col-header-cell {
+    font-size: 0.875rem; /* text-sm */
+  }
+  
+  /* Make event content medium sized */
+  .fc-event-main {
+    font-size: 1rem !important; /* text-md */
+  }
 
-                .fc .fc-non-business {
-                    background-color: rgba(0, 100, 255, 0.3) !important; /* semi-transparent light blue */
-                    background-image: none !important;
-                }
-            `}</style>
+  /* non‑business slots get a lighter tint */
+  .fc .fc-non-business {
+    background-color: rgba(250, 0, 0, 0.1) !important;
+  }
+`}</style>
         </div>
     );
 };

@@ -16,6 +16,7 @@ const TagDisplay = () => {
     const [hoveredTagClassId, setHoveredTagClassId] = useState<string[] | null>(null);
 
     useEffect(() => {
+        unlinkedTags.length = 0; // Reset unlinked tags on component mount
         tagList.entries().forEach(([tag, tagCategoryAndClassIds]) => {
             const classIds = tagCategoryAndClassIds.classIds;
             if (tagCategoryAndClassIds.tagCategory === "user" && classIds.size === 0) {
@@ -23,7 +24,7 @@ const TagDisplay = () => {
             }
         });
     }, [tagList]);
-    
+
 
     const handleTagUnlink = useCallback((tagName: string) => {
         const isConfirmed = window.confirm(`unlink tag "${tagName}" from all its classes?`);
@@ -124,10 +125,6 @@ const TagDisplay = () => {
                 }
                 {
                     unlinkedTags.map((tag: tagType, index) => {
-                        // const keyValue =
-                        //     typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
-                        // const displayValue =
-                        //     typeof tag === "object" && tag._id ? tag._id.toString() : tag.toString();
                         return (
                             <li
                                 key={`unlinked-${tag}-${index}`}

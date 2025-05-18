@@ -1,7 +1,7 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
-import { ClassData, ClassProperty, CombinedClass } from "@/lib/types";
+import { ClassData, ClassProperty, CombinedClass, FacultyType } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { Collection, Document, ObjectId, OptionalId } from "mongodb";
 
@@ -124,9 +124,13 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request): Promise<Response> {
     try {
-        const { calendarId, classes } = (await request.json()) as { calendarId?: string; classes: CombinedClass[] };
+        const { calendarId, classes, facultyData } = (await request.json()) as {
+            calendarId?: string;
+            classes: CombinedClass[];
+            facultyData?: FacultyType[];
+        };
 
-        console.log(calendarId+"CALENDAR");
+        console.log(calendarId + "CALENDAR");
         console.log(classes);
 
         // First, find IDs of documents that already exist without an _id field
@@ -227,6 +231,22 @@ export async function PUT(request: Request): Promise<Response> {
                     { $addToSet: { classes: { $each: allIds } } },
                     { upsert: true }
                 );
+        }
+
+        //Update faculty data if provided
+        if (facultyData && facultyData.length > 0) {
+            const facultyCollection = client.db("class-scheduling-app").collection<FacultyType>("faculty");
+            const facultyBulkOperations = facultyData.map((faculty) => ({
+                updateOne: {
+                    filter: { email: faculty.email },
+                    update: { $set: { ...faculty } },
+                    upsert: true,
+                },
+            }));
+
+            const facultyResult = await facultyCollection.bulkWrite(facultyBulkOperations);
+
+            console.log("Faculty data:", facultyResult);
         }
 
         return new Response(
