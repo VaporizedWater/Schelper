@@ -1,6 +1,6 @@
 cd /opt/Schelper/db-json/chunks
 
-for f in *.js; do
+for f in *.json; do
   echo "Skibidizing $f…"
   collection="${f%%_*}"
 
