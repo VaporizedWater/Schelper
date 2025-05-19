@@ -1,0 +1,11 @@
+use class-scheduling-app
+db.tags.insertMany([
+{"_id":"tau,sethallen","category":"instructor"},
+{"_id":"pier,allison","category":"instructor"},
+{"_id":"mattern,angelamarie","category":"instructor"},
+{"_id":"chiappazzi,nick","category":"instructor"},
+{"_id":"offtrack","category":"user"},
+{"_id":"mynewtag","category":"user"},
+{"_id":"demotag","category":"user"},
+{"_id":"thistagiscool","category":"user"}
+])
