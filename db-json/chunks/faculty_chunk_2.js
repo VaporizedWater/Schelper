@@ -1,4 +1,4 @@
-db = db.getSiblingDB(class-scheduling-app);
+db = db.getSiblingDB("class-scheduling-app");
 db.faculty.insertMany([
 {"_id":{"$oid":"6828a4ac6267ad1f39b4013e"},"email":"jch5943@psu.edu","unavailability":{"Mon":[],"Tue":[{"start":"18:00","end":"19:15"}],"Wed":[],"Thu":[{"start":"18:00","end":"19:15"}],"Fri":[]}},
 {"_id":{"$oid":"6828a4ac6267ad1f39b4013f"},"email":"yuh201@psu.edu","unavailability":{"Mon":[],"Tue":[],"Wed":[],"Thu":[{"start":"13:35","end":"14:50"}],"Fri":[]}},
