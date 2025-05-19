@@ -1,5 +1,4 @@
-[
-{"_id":"divins,denise","category":"instructor"},
+[{"_id":"divins,denise","category":"instructor"},
 {"_id":"merino,tammielynn","category":"instructor"},
 {"_id":"nikhare,chetanp","category":"instructor"},
 {"_id":"sanei,seyedhamidreza","category":"instructor"},
@@ -248,5 +247,4 @@
 {"_id":"wfs","category":"subject"},
 {"_id":"wmnst","category":"subject"},
 {"_id":"truncale,nicholasp.","category":"instructor"},
-{"_id":"bartell,robertdale","category":"instructor"}
-]
+{"_id":"bartell,robertdale","category":"instructor"}]
