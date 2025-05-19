@@ -1,3 +1,4 @@
+[
 {"_id":"sweng","category":"subject"},
 {"_id":"senior","category":"cohort"},
 {"_id":"gened","category":"user"},
@@ -248,3 +249,4 @@
 {"_id":"luttfring,sarad","category":"instructor"},
 {"_id":"fogle,elizabeth","category":"instructor"},
 {"_id":"ringle,evanl","category":"instructor"}
+]

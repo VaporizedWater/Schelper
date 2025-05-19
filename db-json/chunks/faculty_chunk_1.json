@@ -1,3 +1,4 @@
+[
 {"_id":{"$oid":"6807b395b979a47383691f37"},"email":"cpn10@psu.edu","unavailability":{"Mon":[],"Tue":[{"start":"10:35","end":"11:50"},{"start":"12:05","end":"12:55"}],"Wed":[{"start":"13:35","end":"14:50"}],"Thu":[{"start":"10:35","end":"11:50"},{"start":"12:05","end":"12:55"}],"Fri":[{"start":"11:15","end":"13:05"}]}},
 {"_id":{"$oid":"680a4afcb979a47383697d07"},"email":"bus360@psu.edu","unavailability":{"Mon":[{"start":"09:05","end":"09:55"},{"start":"12:20","end":"13:10"}],"Tue":[],"Wed":[{"start":"09:05","end":"09:55"},{"start":"12:20","end":"13:10"}],"Thu":[],"Fri":[{"start":"09:05","end":"09:55"},{"start":"12:20","end":"14:10"}]}},
 {"_id":{"$oid":"682842816267ad1f39b3f39b"},"email":"pti100@psu.edu","unavailability":{"Mon":[{"start":"09:05","end":"09:55"},{"start":"11:15","end":"12:05"},{"start":"13:25","end":"14:15"},{"start":"14:30","end":"15:20"}],"Tue":[],"Wed":[{"start":"09:05","end":"09:55"},{"start":"11:15","end":"12:05"},{"start":"13:25","end":"14:15"},{"start":"14:30","end":"15:20"}],"Thu":[],"Fri":[{"start":"09:05","end":"09:55"},{"start":"11:15","end":"12:05"},{"start":"13:25","end":"14:15"},{"start":"14:30","end":"16:20"}]}},
@@ -248,3 +249,4 @@
 {"_id":{"$oid":"6828a4ac6267ad1f39b4013b"},"email":"mds33@psu.edu","unavailability":{"Mon":[],"Tue":[{"start":"18:00","end":"19:15"}],"Wed":[],"Thu":[{"start":"18:00","end":"19:15"}],"Fri":[]}},
 {"_id":{"$oid":"6828a4ac6267ad1f39b4013c"},"email":"nhw3@psu.edu","unavailability":{"Mon":[],"Tue":[{"start":"10:35","end":"11:50"}],"Wed":[],"Thu":[{"start":"10:35","end":"11:50"}],"Fri":[]}},
 {"_id":{"$oid":"6828a4ac6267ad1f39b4013d"},"email":"jmn6065@psu.edu","unavailability":{"Mon":[],"Tue":[{"start":"10:35","end":"11:50"},{"start":"12:05","end":"13:20"}],"Wed":[],"Thu":[{"start":"10:35","end":"11:50"},{"start":"12:05","end":"13:20"}],"Fri":[]}}
+]
