@@ -1,4 +1,4 @@
-use class-scheduling-app
+db = db.getSiblingDB(class-scheduling-app);
 db.tags.insertMany([
 {"_id":"tau,sethallen","category":"instructor"},
 {"_id":"pier,allison","category":"instructor"},

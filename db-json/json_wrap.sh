@@ -47,7 +47,7 @@ for src in ${INPUT_PREFIX}*.json; do
     out="${OUTPUT_DIR}/${coll}_chunk_${num}.js"
 
     {
-      echo "use $DB"
+      echo "db = db.getSiblingDB("$DB");"
       echo "db.$coll.insertMany(["
       # append a comma to every line, then strip the last comma
       awk '{ print $0 "," }' "$chunk" | sed '$ s/,$//'
