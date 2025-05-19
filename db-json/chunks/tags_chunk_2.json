@@ -1,5 +1,3 @@
-db = db.getSiblingDB("class-scheduling-app");
-db.tags.insertMany([
 {"_id":"divins,denise","category":"instructor"},
 {"_id":"merino,tammielynn","category":"instructor"},
 {"_id":"nikhare,chetanp","category":"instructor"},
@@ -250,4 +248,3 @@ db.tags.insertMany([
 {"_id":"wmnst","category":"subject"},
 {"_id":"truncale,nicholasp.","category":"instructor"},
 {"_id":"bartell,robertdale","category":"instructor"}
-])

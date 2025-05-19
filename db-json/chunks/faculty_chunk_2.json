@@ -1,5 +1,3 @@
-db = db.getSiblingDB("class-scheduling-app");
-db.faculty.insertMany([
 {"_id":{"$oid":"6828a4ac6267ad1f39b4013e"},"email":"jch5943@psu.edu","unavailability":{"Mon":[],"Tue":[{"start":"18:00","end":"19:15"}],"Wed":[],"Thu":[{"start":"18:00","end":"19:15"}],"Fri":[]}},
 {"_id":{"$oid":"6828a4ac6267ad1f39b4013f"},"email":"yuh201@psu.edu","unavailability":{"Mon":[],"Tue":[],"Wed":[],"Thu":[{"start":"13:35","end":"14:50"}],"Fri":[]}},
 {"_id":{"$oid":"6828a4ac6267ad1f39b40140"},"email":"yxc673@psu.edu","unavailability":{"Mon":[],"Tue":[{"start":"09:05","end":"10:20"}],"Wed":[],"Thu":[{"start":"09:05","end":"10:20"}],"Fri":[]}},
@@ -14,4 +12,3 @@ db.faculty.insertMany([
 {"_id":{"$oid":"6828a4ac6267ad1f39b40149"},"email":"wxw18@psu.edu","unavailability":{"Mon":[{"start":"14:30","end":"15:20"}],"Tue":[{"start":"14:30","end":"16:20"}],"Wed":[{"start":"14:30","end":"15:20"}],"Thu":[],"Fri":[]}},
 {"_id":{"$oid":"6828a4ac6267ad1f39b4014a"},"email":"ekc5108@psu.edu","unavailability":{"Mon":[],"Tue":[{"start":"10:35","end":"11:50"},{"start":"13:35","end":"14:50"}],"Wed":[],"Thu":[{"start":"10:35","end":"11:50"},{"start":"13:35","end":"14:50"}],"Fri":[]}},
 {"_id":{"$oid":"6828a4ac6267ad1f39b4014b"},"email":"bjd5696@psu.edu","unavailability":{"Mon":[{"start":"14:30","end":"15:45"},{"start":"16:00","end":"17:15"}],"Tue":[],"Wed":[],"Thu":[],"Fri":[]}}
-])
