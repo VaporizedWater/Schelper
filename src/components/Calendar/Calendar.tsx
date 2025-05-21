@@ -363,6 +363,7 @@ const Calendar = () => {
             eventClassNames={eventClassNames}
             eventDidMount={eventMounted}
             businessHours={businessHours}
+            eventBackgroundColor="#242424"
         />);
 
     }, [businessHours, allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
