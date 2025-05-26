@@ -193,6 +193,12 @@ const ClassProperties = () => {
                                 {cohortOptionsMap}
                             </select>
                         </li>
+                        <li className="flex flex-col py-1 px-2 items-center">
+                            <span className='w-full text-start font-semibold'>Owners</span>
+                            <ul className="flex-1 pl-1 w-full text-gray-700 list-inside">
+                                <li>{initialProps.owners || "Not specified"}</li>
+                            </ul>
+                        </li>
                     </ul>
                 ) : (
                     <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">

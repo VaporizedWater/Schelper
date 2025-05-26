@@ -54,6 +54,7 @@ export type ClassProperty = {
     total_waitlisted: string;
     cohort: string;
     tags: tagType[];
+    owners: string[];
 };
 
 export type CombinedClass = {
