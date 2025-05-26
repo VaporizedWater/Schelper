@@ -96,6 +96,20 @@ export function newDefaultEmptyCalendar(): CalendarType {
             name: "Select a Calendar",
         },
         classes: [],
+        settings: {
+            conflicts: {
+                all: "#ff0000",
+                "room + instructor": "#f97316",
+                "room + cohort": "#f97316",
+                "instructor + cohort": "#f97316",
+                room: "#f59e0b",
+                instructor: "#f59e0b",
+                cohort: "#f59e0b",
+            },
+            export: {},
+            import: {},
+            sheet: {},
+        },
     };
 }
 

@@ -12,6 +12,7 @@ import TagDisplay from "@/components/TagDisplay/TagDisplay";
 import { BiUnlink } from "react-icons/bi";
 import { MdDelete } from 'react-icons/md';
 
+
 // Define settings sections
 const SETTINGS_SECTIONS = [
     { id: 'appearance', label: 'Appearance', group: 'user' },
@@ -532,27 +533,136 @@ function ImportSettings() {
 }
 
 function ConflictsSettings() {
+    // Define state for conflict colors with default values matching the ones in Calendar.tsx
+    const [conflictColors, setConflictColors] = useState({
+        "all": "#ff0000", // red
+        "room + instructor": "#f97316", // orange
+        "room + cohort": "#f97316", // orange
+        "instructor + cohort": "#f97316", // orange 
+        "room": "#f59e0b", // amber
+        "instructor": "#f59e0b", // amber
+        "cohort": "#f59e0b" // amber
+    });
+
+    // Handle color change
+    const handleColorChange = (conflictType: string, color: string) => {
+        setConflictColors(prev => ({
+            ...prev,
+            [conflictType]: color
+        }));
+    };
+
     return (
         <div>
             <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Conflict Settings</h2>
-            <div className="space-y-4">
-                <div className="mb-3">
-                    <label className="block mb-1 font-medium text-gray-700">When Events Conflict</label>
-                    <div className="space-y-1">
-                        <div className="flex items-center">
-                            <input type="radio" name="conflict-action" value="warn" className="mr-2" />
-                            <span>Show warning</span>
-                        </div>
-                        <div className="flex items-center">
-                            <input type="radio" name="conflict-action" value="allow" className="mr-2" />
-                            <span>Allow conflicts</span>
-                        </div>
-                    </div>
-                </div>
-                <div className="flex items-center mb-3">
-                    <input type="checkbox" id="highlight-conflicts" className="mr-2" />
-                    <label htmlFor="highlight-conflicts" className="font-medium text-gray-700">Highlight conflicts in calendar</label>
-                </div>
+
+            {/* Conflict color table */}
+            <div className="border rounded-md overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Conflict Type
+                            </th>
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Color
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                All (Room + Instructor + Cohort)
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <input
+                                    type="color"
+                                    value={conflictColors["all"]}
+                                    onChange={(e) => handleColorChange("all", e.target.value)}
+                                    className="w-10 h-8"
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Room + Instructor
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <input
+                                    type="color"
+                                    value={conflictColors["room + instructor"]}
+                                    onChange={(e) => handleColorChange("room + instructor", e.target.value)}
+                                    className="w-10 h-8"
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Room + Cohort
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <input
+                                    type="color"
+                                    value={conflictColors["room + cohort"]}
+                                    onChange={(e) => handleColorChange("room + cohort", e.target.value)}
+                                    className="w-10 h-8"
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Instructor + Cohort
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <input
+                                    type="color"
+                                    value={conflictColors["instructor + cohort"]}
+                                    onChange={(e) => handleColorChange("instructor + cohort", e.target.value)}
+                                    className="w-10 h-8"
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Room only
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <input
+                                    type="color"
+                                    value={conflictColors["room"]}
+                                    onChange={(e) => handleColorChange("room", e.target.value)}
+                                    className="w-10 h-8"
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Instructor only
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <input
+                                    type="color"
+                                    value={conflictColors["instructor"]}
+                                    onChange={(e) => handleColorChange("instructor", e.target.value)}
+                                    className="w-10 h-8"
+                                />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                Cohort only
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <input
+                                    type="color"
+                                    value={conflictColors["cohort"]}
+                                    onChange={(e) => handleColorChange("cohort", e.target.value)}
+                                    className="w-10 h-8"
+                                />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     );

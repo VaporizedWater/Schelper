@@ -1,6 +1,7 @@
 import { EventInput } from "@fullcalendar/core/index.js";
 import { ObjectId } from "mongodb";
 import { Session } from "next-auth";
+import { exitCode } from "process";
 import { ReactNode } from "react";
 
 export type SVGProps = {
@@ -75,6 +76,7 @@ export type CalendarType = {
     _id: string;
     info: CalendarInfo;
     classes: CombinedClass[];
+    settings: CalendarSettingType;
 };
 
 export type CalendarPayload = {
@@ -242,4 +244,27 @@ export type CohortType = {
     sophomore: string[];
     junior: string[];
     senior: string[];
+};
+
+export type ConflictColor = {
+    all: string;
+    "room + instructor": string;
+    "room + cohort": string;
+    "instructor + cohort": string;
+    room: string;
+    instructor: string;
+    cohort: string;
+};
+
+export type ExportSettingType = {};
+
+export type ImportSettingType = {};
+
+export type SheetSettingType = {};
+
+export type CalendarSettingType = {
+    export: ExportSettingType;
+    import: ImportSettingType;
+    sheet: SheetSettingType;
+    conflicts: ConflictColor;
 };

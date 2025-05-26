@@ -10,7 +10,7 @@ export async function GET(request: Request): Promise<Response> {
 
         const pipeline = [
             {
-                $match: { email: userEmail }
+                $match: { email: userEmail },
             },
             {
                 $lookup: {
@@ -19,8 +19,8 @@ export async function GET(request: Request): Promise<Response> {
                     pipeline: [
                         {
                             $match: {
-                                $expr: { $in: ["$_id", "$$calendarIds"] }
-                            }
+                                $expr: { $in: ["$_id", "$$calendarIds"] },
+                            },
                         },
                         {
                             $project: {
@@ -30,23 +30,23 @@ export async function GET(request: Request): Promise<Response> {
                                         branches: [
                                             { case: { $eq: ["$info.semester", "Spring"] }, then: 1 },
                                             { case: { $eq: ["$info.semester", "Summer"] }, then: 1.5 },
-                                            { case: { $eq: ["$info.semester", "Fall"] }, then: 2 }
+                                            { case: { $eq: ["$info.semester", "Fall"] }, then: 2 },
                                         ],
-                                        default: 0
-                                    }
+                                        default: 0,
+                                    },
                                 },
                                 yearSort: { $toInt: "$info.year" },
-                                _id: 0
-                            }
+                                _id: 0,
+                            },
                         },
                         { $sort: { yearSort: -1, semesterSort: -1 } },
-                        { $replaceRoot: { newRoot: "$info" } }
+                        { $replaceRoot: { newRoot: "$info" } },
                     ],
-                    as: "skibidi" // Have to prepare this app for a possible future new-gen senior design team, also... will anyone see this?
-                }
+                    as: "skibidi", // Have to prepare this app for a possible future new-gen senior design team, also... will anyone see this?
+                },
             },
             { $unwind: "$skibidi" },
-            { $replaceRoot: { newRoot: "$skibidi" } }
+            { $replaceRoot: { newRoot: "$skibidi" } },
         ];
 
         const data = await collection.aggregate(pipeline).toArray();
@@ -68,7 +68,7 @@ export async function GET(request: Request): Promise<Response> {
 
 export async function PUT(request: Request): Promise<Response> {
     try {
-        const { userId, calendarId } = (await request.json()) as { userId: string, calendarId: string; };
+        const { userId, calendarId } = (await request.json()) as { userId: string; calendarId: string };
 
         if (ObjectId.isValid(calendarId) && ObjectId.isValid(userId)) {
             const calendar = new ObjectId(calendarId);
@@ -80,13 +80,10 @@ export async function PUT(request: Request): Promise<Response> {
             );
         }
 
-        return new Response(
-            JSON.stringify({ success: true }),
-            {
-                status: 200,
-                headers: { "Content-Type": "application/json" },
-            }
-        );
+        return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
     } catch (error) {
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
@@ -95,15 +92,3 @@ export async function PUT(request: Request): Promise<Response> {
         });
     }
 }
-
-
-
-// export async function GET(request: Request): Promise<Response> {
-//     console.warn("Request: ",request);
-//     throw new Error("Not Implemented");
-// }
-
-// export async function PUT(request: Request): Promise<Response> {
-//     console.warn("Request: ",request);
-//     throw new Error("Not Implemented");
-// }
