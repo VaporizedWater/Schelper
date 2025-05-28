@@ -11,7 +11,7 @@ import AddTagButton from "@/components/AddTagButton/AddTagButton";
 import TagDisplay from "@/components/TagDisplay/TagDisplay";
 import { BiUnlink } from "react-icons/bi";
 import { MdDelete } from 'react-icons/md';
-
+import ThemeToggle from '@/components/ThemeToggle/ThemeToggle';
 
 // Define settings sections
 const SETTINGS_SECTIONS = [
@@ -46,24 +46,24 @@ export default function SettingsPage() {
     };
 
     return (
-        <div className="flex h-full relative bg-white dark:bg-white text-black dark:text-black" onKeyDown={(e) => {
+        <div className="flex h-full relative bg-white dark:bg-zinc-800 text-black dark:text-gray-200" onKeyDown={(e) => {
             if (e.key === 'Escape') {
                 handleEscClick();
             }
         }}>
             {/* Left sidebar - independently scrollable */}
-            <div className="w-60 bg-gray-100 overflow-y-auto border-r border-gray-200 sticky top-15 self-start h-full">
+            <div className="w-60 bg-gray-100 dark:bg-zinc-700 overflow-y-auto border-r border-gray-200 dark:border-zinc-600 sticky top-15 self-start h-full">
                 <div className="p-4">
-                    <h2 className="mb-4 pb-2 border-b border-gray-200 font-semibold text-lg">Settings</h2>
+                    <h2 className="mb-4 pb-2 border-b border-gray-200 dark:border-zinc-600 font-semibold text-lg">Settings</h2>
                     <nav>
                         {groupedSections.map((group) => (
                             <div key={group.id} className="mb-3">
-                                <h3 className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-1 px-1">{group.label}</h3>
+                                <h3 className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold mb-1 px-1">{group.label}</h3>
                                 <div className="space-y-0.5">
                                     {group.items.map((section) => (
                                         <button
                                             key={section.id}
-                                            className={`block w-full text-left py-1.5 px-3 rounded-md text-sm hover:bg-gray-200 ${activeSection === section.id ? 'bg-gray-200 font-semibold' : ''}`}
+                                            className={`block w-full text-left py-1.5 px-3 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-zinc-600 ${activeSection === section.id ? 'bg-gray-200 dark:bg-zinc-600 font-semibold' : ''}`}
                                             onClick={() => setActiveSection(section.id)}
                                         >
                                             {section.label}
@@ -77,7 +77,7 @@ export default function SettingsPage() {
             </div>
 
             {/* Right content - independently scrollable with padding for the ESC button */}
-            <div className="flex-1 overflow-y-auto pr-16">
+            <div className="flex-1 overflow-y-auto pr-16 dark:bg-zinc-800">
                 <div className="p-8">
                     {activeSection === 'appearance' && <AppearanceSettings />}
                     {activeSection === 'cohorts' && <CohortSettings />}
@@ -93,14 +93,14 @@ export default function SettingsPage() {
             <div className="fixed mt-15 right-4 top-4 flex flex-col items-center">
                 <button
                     onClick={handleEscClick}
-                    className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-8 h-8 bg-gray-200 dark:bg-zinc-600 rounded-full flex items-center justify-center hover:bg-gray-300 dark:hover:bg-zinc-500 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     aria-label="Go back"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-black dark:text-gray-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
-                <span className="text-xs mt-1 text-gray-600">ESC</span>
+                <span className="text-xs mt-1 text-gray-600 dark:text-gray-400">ESC</span>
             </div>
         </div>
     );
@@ -109,24 +109,11 @@ export default function SettingsPage() {
 // Existing settings components
 function AppearanceSettings() {
     return (
-        <div className=" bg-white dark:bg-white text-black dark:text-black">
+        <div className="text-black dark:text-gray-300">
             <h2 className="text-2xl font-semibold mb-6">Appearance</h2>
             <div className="mb-4">
-                <label className="block mb-2 font-medium text-gray-700">Theme</label>
-                <div className="space-y-2">
-                    <label className="flex items-center">
-                        <input type="radio" name="theme" value="light" className="mr-2" />
-                        <span>Light</span>
-                    </label>
-                    <label className="flex items-center">
-                        <input type="radio" name="theme" value="dark" className="mr-2" />
-                        <span>Dark</span>
-                    </label>
-                    <label className="flex items-center">
-                        <input type="radio" name="theme" value="system" className="mr-2" />
-                        <span>System Default</span>
-                    </label>
-                </div>
+                <label className="block mb-2 font-medium text-gray-700 dark:text-gray-400">Theme</label>
+                <ThemeToggle />
             </div>
         </div>
     );
@@ -322,12 +309,12 @@ function CohortSettings() {
     }
 
     return (
-        <div className='flex-1 bg-white dark:bg-white text-black dark:text-black'>
+        <div className='flex-1 text-black dark:text-gray-300'>
             <h2 className="text-2xl font-semibold mb-6">Cohorts Settings</h2>
 
             {/* File upload input */}
             <div className="mb-3">
-                <label htmlFor="cohort-file" className="block mb-1 font-medium text-gray-700">
+                <label htmlFor="cohort-file" className="block mb-1 font-medium text-gray-700 dark:text-gray-400">
                     Upload Cohort Spreadsheet
                 </label>
                 <input
@@ -336,9 +323,9 @@ function CohortSettings() {
                     id="cohort-file"
                     accept=".csv, .xlsx, .xls"
                     onChange={handleFileUpload}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4
-                     file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700
-                     hover:file:bg-blue-100"
+                    className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4
+                     file:rounded-full file:border-0 file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-400
+                     hover:file:bg-blue-100 dark:hover:file:bg-blue-900/40"
                 />
             </div>
 
@@ -347,13 +334,13 @@ function CohortSettings() {
                 <div className="flex space-x-3 mt-4">
                     <button
                         onClick={handleSaveCohort}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                        className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-150"
                     >
                         Save Cohort
                     </button>
                     <button
                         onClick={handleCancel}
-                        className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
+                        className="px-4 py-2 bg-gray-200 dark:bg-zinc-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-500 transition-colors duration-150"
                     >
                         Cancel
                     </button>
@@ -364,7 +351,7 @@ function CohortSettings() {
             {cohort && (
                 <div className="mt-5">
                     <h3 className="font-semibold">Parsed Data Preview:</h3>
-                    <div className="mt-2 p-4 bg-gray-100 rounded-md overflow-auto">
+                    <div className="mt-2 p-4 bg-gray-100 dark:bg-zinc-700 rounded-md overflow-auto">
                         <h4 className="font-bold">Freshman ({cohort.freshman.length})</h4>
                         <ul className="list-disc ml-5">
                             {cohort.freshman.map((course, index) => (
@@ -402,13 +389,13 @@ function CohortSettings() {
                 {cohorts.length > 0 ? (
                     <div className="mt-2 overflow-auto">
                         {cohorts.map((cohort, index) => (
-                            <div key={index} className="mb-4 bg-gray-100 p-4 rounded-md" onClick={() => { console.log(cohort) }}>
+                            <div key={index} className="mb-4 bg-gray-100 dark:bg-zinc-700 p-4 rounded-md" onClick={() => { console.log(cohort) }}>
                                 <div className='flex justify-between items-center'>
                                     <h4 className="font-semibold mb-1">Cohort {index + 1}</h4>
                                     {cohort._id &&
                                         <div
                                             onClick={() => handleDeleteCohort(cohort._id as string)}
-                                            className="p-2 cursor-pointer flex justify-center items-center rounded-md mx-2 text-red-600 hover:bg-gray-200"
+                                            className="p-2 cursor-pointer flex justify-center items-center rounded-md mx-2 text-red-600 dark:text-red-400 hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150"
                                         >
                                             <MdDelete size={14} />
                                         </div>
@@ -445,11 +432,11 @@ function CohortSettings() {
 
 function SheetSettings() {
     return (
-        <div className='bg-white dark:bg-white text-black dark:text-black'>
+        <div className='bg-white dark:bg-zinc-800 text-black dark:text-gray-200'>
             <h2 className="text-2xl font-semibold mb-6">Sheet Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
-                    <label className="block mb-1 font-medium text-gray-700">Default Sheet View</label>
+                    <label className="block mb-1 font-medium text-gray-700 dark:text-gray-300">Default Sheet View</label>
                     <div className="flex space-x-4">
                         <label className="flex items-center">
                             <input type="radio" name="sheet-view" value="compact" className="mr-2" />
@@ -462,7 +449,7 @@ function SheetSettings() {
                     </div>
                 </div>
                 <div className="mb-3">
-                    <label htmlFor="columns" className="block mb-1 font-medium text-gray-700">Visible Columns</label>
+                    <label htmlFor="columns" className="block mb-1 font-medium text-gray-700 dark:text-gray-300">Visible Columns</label>
                     <div className="space-y-1">
                         <div className="flex items-center">
                             <input type="checkbox" id="col-name" checked className="mr-2" />
@@ -485,12 +472,12 @@ function SheetSettings() {
 
 function ExportSettings() {
     return (
-        <div>
-            <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Export Settings</h2>
+        <div className="bg-white dark:bg-zinc-800 text-black dark:text-gray-200">
+            <h2 className="text-2xl font-semibold mb-6">Export Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
-                    <label htmlFor="export-format" className="block mb-1 font-medium text-gray-700">Default Export Format</label>
-                    <select id="export-format" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label htmlFor="export-format" className="block mb-1 font-medium text-gray-700 dark:text-gray-300">Default Export Format</label>
+                    <select id="export-format" className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option>iCalendar (.ics)</option>
                         <option>CSV</option>
                         <option>JSON</option>
@@ -498,7 +485,7 @@ function ExportSettings() {
                 </div>
                 <div className="flex items-center mb-3">
                     <input type="checkbox" id="include-tags" className="mr-2" />
-                    <label htmlFor="include-tags" className="font-medium text-gray-700">Include tags in exports</label>
+                    <label htmlFor="include-tags" className="font-medium text-gray-700 dark:text-gray-300">Include tags in exports</label>
                 </div>
             </div>
         </div>
@@ -507,11 +494,11 @@ function ExportSettings() {
 
 function ImportSettings() {
     return (
-        <div>
-            <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Import Settings</h2>
+        <div className="bg-white dark:bg-zinc-800 text-black dark:text-gray-200">
+            <h2 className="text-2xl font-semibold mb-6">Import Settings</h2>
             <div className="space-y-4">
                 <div className="mb-3">
-                    <label className="block mb-1 font-medium text-gray-700">When Importing Duplicates</label>
+                    <label className="block mb-1 font-medium text-gray-700 dark:text-gray-300">When Importing Duplicates</label>
                     <div className="space-y-1">
                         <div className="flex items-center">
                             <input type="radio" name="duplicate-action" value="skip" className="mr-2" />
@@ -553,28 +540,28 @@ function ConflictsSettings() {
     };
 
     return (
-        <div>
-            <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Conflict Settings</h2>
+        <div className="bg-white dark:bg-zinc-800 text-black dark:text-gray-200">
+            <h2 className="text-2xl font-semibold mb-6">Conflict Settings</h2>
 
             {/* Conflict color table */}
-            <div className="border rounded-md overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+            <div className="border dark:border-zinc-600 rounded-md overflow-hidden">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-600">
+                    <thead className="bg-gray-50 dark:bg-zinc-700">
                         <tr>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Conflict Type
                             </th>
-                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 Color
                             </th>
                         </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-zinc-700">
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 All (Room + Instructor + Cohort)
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
                                     value={conflictColors["all"]}
@@ -584,10 +571,10 @@ function ConflictsSettings() {
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Room + Instructor
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
                                     value={conflictColors["room + instructor"]}
@@ -597,10 +584,10 @@ function ConflictsSettings() {
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Room + Cohort
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
                                     value={conflictColors["room + cohort"]}
@@ -610,10 +597,10 @@ function ConflictsSettings() {
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Instructor + Cohort
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
                                     value={conflictColors["instructor + cohort"]}
@@ -623,10 +610,10 @@ function ConflictsSettings() {
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Room only
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
                                     value={conflictColors["room"]}
@@ -636,10 +623,10 @@ function ConflictsSettings() {
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Instructor only
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
                                     value={conflictColors["instructor"]}
@@ -649,10 +636,10 @@ function ConflictsSettings() {
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Cohort only
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
                                     value={conflictColors["cohort"]}
@@ -673,78 +660,31 @@ function TagsSettings() {
 
     return (
         <div>
-            {/* <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Tags Settings</h2>
-            <div className="space-y-4">
-                <div className="mb-3">
-                    <label className="block mb-1 font-medium text-gray-700">Manage Tags</label>
-                    <div className="border border-gray-300 rounded-md p-2 mb-2 max-h-60 overflow-y-auto">
-                        <div className="flex items-center justify-between p-2 hover:bg-gray-100 rounded">
-                            <div className="flex items-center">
-                                <div className="w-4 h-4 bg-blue-500 rounded-full mr-2"></div>
-                                <span>Important</span>
-                            </div>
-                            <button className="text-gray-500 hover:text-gray-700">✕</button>
-                        </div>
-                        <div className="flex items-center justify-between p-2 hover:bg-gray-100 rounded">
-                            <div className="flex items-center">
-                                <div className="w-4 h-4 bg-green-500 rounded-full mr-2"></div>
-                                <span>Class</span>
-                            </div>
-                            <button className="text-gray-500 hover:text-gray-700">✕</button>
-                        </div>
-                        <div className="flex items-center justify-between p-2 hover:bg-gray-100 rounded">
-                            <div className="flex items-center">
-                                <div className="w-4 h-4 bg-red-500 rounded-full mr-2"></div>
-                                <span>Exam</span>
-                            </div>
-                            <button className="text-gray-500 hover:text-gray-700">✕</button>
-                        </div>
-                    </div>
-                    <div className="flex mt-2">
-                        <input
-                            type="text"
-                            placeholder="New tag name"
-                            className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <button
-                            type="button"
-                            className="px-3 py-2 bg-blue-600 text-white font-medium rounded-r-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            Add
-                        </button>
-                    </div>
-                </div>
-            </div> */}
+            <h2 className="text-2xl font-semibold mb-6 bg-transparent dark:text-gray-200">Tags Settings</h2>
 
-            <div className="flex flex-col items-right  bg-white dark:bg-white text-black dark:text-black">
-                <h2 className="text-2xl font-semibold mb-6 bg-white dark:bg-white text-black dark:text-black">Tags Settings</h2>
+            {/* Tag Menu */}
+            <div className="flex justify-center pb-4 gap-2">
+                <AddTagButton />
 
-                {/* Tag Menu */}
-                <div className="flex justify-center pb-4 gap-2">
-                    <AddTagButton />
+                <button
+                    className="flex gap-2 items-center justify-center bg-white dark:bg-zinc-700 px-2 shadow-lg border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-600 transition-colors duration-150 w-fit text-black dark:text-gray-200"
+                    onClick={() => {
+                        // Get confirmation from user
+                        const isConfirmed = window.confirm("Are you sure you want to unlink all tags from all classes?\n (This will not delete any tags)");
+                        if (!isConfirmed) return;
 
-                    <button
-                        className="flex gap-2 items-center justify-center bg-white px-2 shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit"
-                        onClick={() => {
-                            // Get confirmation from user
-                            const isConfirmed = window.confirm("Are you sure you want to unlink all tags from all classes?\n (This will not delete any tags)");
-                            if (!isConfirmed) return;
+                        // unlink all tags
+                        unlinkAllTagsFromAllClasses();
+                    }}
+                >
+                    <BiUnlink className="text-xl" />
+                    <span className="pr-2">Unlink All</span>
+                </button>
+            </div>
 
-                            // unlink all tags
-                            unlinkAllTagsFromAllClasses();
-                        }}
-                    >
-                        <BiUnlink className="text-xl" />
-                        <span className="pr-2">Unlink All</span>
-                    </button>
-                </div>
-
-
-                {/* Display all tags*/}
-
-                <div className="px-10 w-full flex flex-col gap-3 pb-10">
-                    <TagDisplay />
-                </div>
+            {/* Display all tags*/}
+            <div className="px-10 w-full flex flex-col gap-3 pb-10">
+                <TagDisplay />
             </div>
         </div>
     );

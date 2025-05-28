@@ -1,7 +1,7 @@
 import { DropDownProps } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClassName, alwaysOpen = false, defaultOpen = false }: DropDownProps) => {
+const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClassName, alwaysOpen = false, defaultOpen = false, darkClass = "" }: DropDownProps) => {
     // Initialize isOpen based on alwaysOpen prop
     const [isOpen, setIsOpen] = useState(alwaysOpen);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -45,7 +45,7 @@ const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClass
 
             {isOpen && (
                 <div
-                    className={`absolute w-full rounded-md mt-2 bg-white shadow-md z-10 ${dropdownClassName}`}
+                    className={`absolute w-full rounded-lg mt-2 bg-white shadow-md z-10 ${dropdownClassName} ${darkClass}`}
                     data-testid="dropdown-content"
                     role="listbox"
                 >

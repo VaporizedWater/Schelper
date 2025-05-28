@@ -21,11 +21,11 @@ export default function Modal({ children }: ModalProps) {
         >
             {/* Modal Content */}
             <div
-                className="bg-white min-w-fit w-[85%] md:w-[60%] rounded-lg relative max-h-[85vh] min-h-[50vh] flex flex-col pb-8 pt-4"
+                className="bg-white dark:bg-zinc-800 min-w-fit w-[85%] md:w-[60%] rounded-lg relative max-h-[85vh] min-h-[50vh] flex flex-col pb-8 pt-4"
                 onClick={(e) => e.stopPropagation()} // Prevent click propagation
             >
                 <button
-                    className="absolute top-3 right-4 text-gray-500 hover:text-gray-700 z-10 cursor-pointer"
+                    className="absolute top-3 right-4 text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 z-10 cursor-pointer"
                     onClick={closeModal}
                 >
                     &#x2715;

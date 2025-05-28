@@ -228,51 +228,54 @@ const FacultyDisplayPage = () => {
     // If there's an error, display it
     if (error) {
         return (
-            <div className="p-8 mx-auto">
+            <div className="p-8 mx-auto dark:text-gray-300">
                 <div className="flex justify-center items-center h-40">
-                    <p className="text-red-500">{error}</p>
+                    <p className="text-red-500 dark:text-red-400">{error}</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="p-8 mx-auto bg-white dark:bg-white text-black dark:text-black">
+        <div className="p-8 mx-auto text-black dark:text-gray-300">
             <div className="flex justify-center">
                 <h1 className="text-2xl font-semibold mb-6">Faculty Unavailability</h1>
             </div>
 
             {isLoading ? (
                 <div className="flex justify-center items-center h-40">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 dark:border-blue-400"></div>
                 </div>
             ) : facultyData.length === 0 ? (
                 <div className="flex justify-center items-center h-full">
-                    <p className="text-lg text-gray-400">No Faculty Data Available</p>
+                    <p className="text-lg text-gray-400 dark:text-gray-500">No Faculty Data Available</p>
                 </div>
             ) : (
                 facultyData
                     .sort((a, b) => a.email.localeCompare(b.email))
                     .map((faculty) => (
                         <div key={faculty.email} className="py-2">
-                            <div className="bg-gray-100">
+                            <div className="overflow-hidden">
                                 {/* Using the DropDown component */}
                                 <DropDown
                                     buttonClassName="w-full"
-                                    dropdownClassName="relative mt-0 shadow-none"
+                                    dropdownClassName="relative mt-0 shadow-none rounded-lg"
                                     alwaysOpen={openDropdownEmail === faculty.email}
                                     renderButton={(isOpen) => (
                                         <div
-                                            className="hover:bg-grayblue flex justify-between items-center p-2 bg-gray-100 rounded-sm cursor-pointer"
+                                            className="flex justify-between items-center p-2 bg-gray-100 dark:bg-zinc-700 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150"
                                             onClick={() => handleDropdownToggle(faculty.email, isOpen)}
                                         >
                                             <h2 className="font-medium">{faculty.email}</h2>
 
                                             <div className="flex items-center gap-2">
-                                                <div className="px-2 text-red-500 hover:bg-gray-300 p-1 rounded-sm cursor-pointer" onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDeleteFaculty(faculty.email)
-                                                }}>
+                                                <div
+                                                    className="px-2 text-red-500 dark:text-red-400 hover:bg-gray-300 dark:hover:bg-zinc-500 p-1 rounded-lg cursor-pointer transition-colors"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteFaculty(faculty.email)
+                                                    }}
+                                                >
                                                     <LuUserRoundX size={18} />
                                                 </div>
                                                 {isOpen ? <MdExpandLess /> : <MdExpandMore />}
@@ -280,14 +283,17 @@ const FacultyDisplayPage = () => {
                                         </div>
                                     )}
                                     renderDropdown={() => (
-                                        <div className="grid grid-cols-5 gap-4 w-full -mt-2 p-3 bg-white">
+                                        <div className="grid grid-cols-5 gap-4 w-full -mt-2 p-3 bg-white dark:bg-zinc-800">
                                             {(Object.entries(faculty.unavailability) as [keyof FacultyType["unavailability"], EventInput[]][]).map(([day, slots]) => (
                                                 <div key={day}>
                                                     <div className="flex justify-between items-center py-2">
                                                         <h3 className="capitalize font-semibold">{day}</h3>
                                                         <button
                                                             onClick={() => toggleAddSlot(faculty.email, day)}
-                                                            className={`font-bold ${showAddSlot[faculty.email]?.[day] ? "text-red-600" : "text-blue-600"}`}
+                                                            className={`font-bold px-2 py-1 rounded-md transition-colors ${showAddSlot[faculty.email]?.[day]
+                                                                ? "text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/20"
+                                                                : "text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/20"
+                                                                }`}
                                                         >
                                                             {showAddSlot[faculty.email]?.[day] ? '–' : '+'}
                                                         </button>
@@ -295,7 +301,7 @@ const FacultyDisplayPage = () => {
 
                                                     {slots.length > 0 ? (
                                                         slots.map((slot, index) => (
-                                                            <div key={index} className="py-1 flex flex-row items-center">
+                                                            <div key={index} className="py-1 flex flex-row items-center justify-between">
                                                                 <div>
                                                                     {slot.start as string || "-"} to {slot.end as string || "-"}
                                                                 </div>
@@ -306,14 +312,14 @@ const FacultyDisplayPage = () => {
                                                                         slot.start as string,
                                                                         slot.end as string
                                                                     )}
-                                                                    className="text-red-500"
+                                                                    className="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1 rounded-md hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                                                                 >
                                                                     <MdDelete size={20} />
                                                                 </button>
                                                             </div>
                                                         ))
                                                     ) : (
-                                                        <div className="text-gray-400">-</div>
+                                                        <div className="text-gray-400 dark:text-gray-500">-</div>
                                                     )}
 
                                                     {showAddSlot[faculty.email]?.[day] && (
@@ -323,19 +329,19 @@ const FacultyDisplayPage = () => {
                                                                     type="time"
                                                                     value={newSlotTimes[faculty.email!]?.[day]?.start || ""}
                                                                     onChange={e => handleNewSlotChange(faculty.email!, day, "start", e.target.value)}
-                                                                    className="p-1 border rounded-sm"
+                                                                    className="p-1 border rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 border-gray-300 dark:border-zinc-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
                                                                 />
                                                                 <span>to</span>
                                                                 <input
                                                                     type="time"
                                                                     value={newSlotTimes[faculty.email!]?.[day]?.end || ""}
                                                                     onChange={e => handleNewSlotChange(faculty.email!, day, "end", e.target.value)}
-                                                                    className="p-1 border rounded-sm"
+                                                                    className="p-1 border rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 border-gray-300 dark:border-zinc-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
                                                                 />
                                                             </div>
                                                             <button
                                                                 onClick={() => handleAddTimeSlot(faculty.email!, day)}
-                                                                className="text-green-600 ml-2"
+                                                                className="mt-2 px-3 py-1 bg-green-500 dark:bg-green-600 text-white rounded-md hover:bg-green-600 dark:hover:bg-green-500 transition-colors"
                                                             >
                                                                 Add
                                                             </button>

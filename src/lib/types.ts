@@ -1,7 +1,6 @@
 import { EventInput } from "@fullcalendar/core/index.js";
 import { ObjectId } from "mongodb";
 import { Session } from "next-auth";
-import { exitCode } from "process";
 import { ReactNode } from "react";
 
 export type SVGProps = {
@@ -95,6 +94,7 @@ export type DropDownProps = {
     dropdownClassName?: string;
     alwaysOpen?: boolean;
     defaultOpen?: boolean;
+    darkClass?: string; // Class to apply dark mode styles
 };
 
 export type ButtonDropDownProps = {
@@ -257,11 +257,11 @@ export type ConflictColor = {
     cohort: string;
 };
 
-export type ExportSettingType = {};
+export type ExportSettingType = string[]; //temp
 
-export type ImportSettingType = {};
+export type ImportSettingType = string[]; //temp
 
-export type SheetSettingType = {};
+export type SheetSettingType = string[]; //temp
 
 export type CalendarSettingType = {
     export: ExportSettingType;

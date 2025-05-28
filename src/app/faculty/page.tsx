@@ -66,12 +66,12 @@ const FacultyForm = () => {
             alert("Faculty updated successfully!");
             router.back();
         }
-    }, [email,router,unavailability, updateFaculty]);
+    }, [email, router, unavailability, updateFaculty]);
 
     const days: (keyof FacultyType["unavailability"])[] = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
     return (
-        <div className="p-8 mx-auto bg-white dark:bg-white text-black dark:text-black">
+        <div className="p-8 mx-auto text-black dark:text-gray-300">
             <h2 className="font-semibold mb-6">Manage Faculty Availability</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <input
@@ -79,7 +79,7 @@ const FacultyForm = () => {
                     placeholder="Faculty email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="p-2 border rounded-sm"
+                    className="p-2 border rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 border-gray-300 dark:border-zinc-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
                 />
 
                 {/* Unavailability for each day */}
@@ -94,19 +94,19 @@ const FacultyForm = () => {
                                         type="time"
                                         value={slot.start?.toString()}
                                         onChange={(e) => updateTimeSlot(day, index, "start", e.target.value)}
-                                        className="p-2 border rounded-sm"
+                                        className="p-2 border rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 border-gray-300 dark:border-zinc-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
                                     />
                                     <span>to</span>
                                     <input
                                         type="time"
                                         value={slot.end?.toString()}
                                         onChange={(e) => updateTimeSlot(day, index, "end", e.target.value)}
-                                        className="p-2 border rounded-sm"
+                                        className="p-2 border rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 border-gray-300 dark:border-zinc-500 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => removeTimeSlot(day, index)}
-                                        className="text-red-500"
+                                        className="text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors duration-150 px-2 py-1 rounded-md"
                                     >
                                         Remove
                                     </button>
@@ -115,7 +115,7 @@ const FacultyForm = () => {
                             <button
                                 type="button"
                                 onClick={() => addTimeSlot(day)}
-                                className="bg-gray-300 text-black p-2 rounded-sm"
+                                className="bg-gray-300 dark:bg-zinc-600 text-black dark:text-gray-200 p-2 rounded-md hover:bg-gray-400 dark:hover:bg-zinc-500 transition-colors duration-150"
                             >
                                 Add Time Slot
                             </button>
@@ -130,11 +130,14 @@ const FacultyForm = () => {
                             // setName("");
                             setUnavailability(initialUnavailability);
                         }}
-                        className="bg-gray-300 text-black p-2 rounded-sm grow"
+                        className="bg-gray-300 dark:bg-zinc-600 text-black dark:text-gray-200 p-2 rounded-md hover:bg-gray-400 dark:hover:bg-zinc-500 transition-colors duration-150 grow"
                     >
                         Clear
                     </button>
-                    <button type="submit" className="bg-blue-500 text-white p-2 rounded-sm grow">
+                    <button
+                        type="submit"
+                        className="bg-blue-500 dark:bg-blue-600 text-white p-2 rounded-md hover:bg-blue-600 dark:hover:bg-blue-500 transition-colors duration-150 grow"
+                    >
                         Save
                     </button>
                 </div>

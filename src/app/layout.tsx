@@ -3,7 +3,8 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { CalendarProvider } from "@/components/CalendarContext/CalendarContext";
 import NavWrapper from "@/components/NavWrapper/NavWrapper";
-import { SessionProvider } from "next-auth/react"
+import { SessionProvider } from "next-auth/react";
+import ThemeProvider from "@/components/ThemeProvider/ThemeProvider";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -25,16 +26,18 @@ export default function RootLayout(
     { children }: Readonly<{ children: React.ReactNode; }>
 ) {
     return (
-        <html className="dark" lang="en">
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen bg-white dark:bg-white text-black dark:text-black`}>
-                <SessionProvider>
-                    <CalendarProvider>
-                        <NavWrapper />
-                        <div className="flex-1">
-                            {children}
-                        </div>
-                    </CalendarProvider>
-                </SessionProvider>
+        <html lang="en" suppressHydrationWarning>
+            <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen`}>
+                <ThemeProvider>
+                    <SessionProvider>
+                        <CalendarProvider>
+                            <NavWrapper />
+                            <div className="flex-1">
+                                {children}
+                            </div>
+                        </CalendarProvider>
+                    </SessionProvider>
+                </ThemeProvider>
             </body>
         </html>
     );

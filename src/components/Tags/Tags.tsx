@@ -31,7 +31,7 @@ const Tags = () => {
 
     return (
         <div className="h-full w-full overflow-y-auto scrollbar-thin flex flex-col">
-            <div className="w-full text-left py-2 font-bold text-gray-700">
+            <div className="w-full text-left py-2 font-bold text-gray-700 dark:text-gray-300">
                 Tags
             </div>
             <div className="h-full">
@@ -47,7 +47,7 @@ const Tags = () => {
                                             type="checkbox"
                                             checked={tags.map(tag => tag.tagName).includes(tag)}
                                             onChange={(e) => handleTagCheck({ tagName: tag, tagCategory: tagList.get(tag)?.tagCategory || "user" }, e.target.checked)}
-                                            className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-ylue-600"
+                                            className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
                                         />
                                         <span>{tag}</span>
                                     </label>

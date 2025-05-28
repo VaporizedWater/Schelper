@@ -149,7 +149,7 @@ const Filters = () => {
     const renderTagSection = useCallback((title: string, tagMap: Map<string, Set<string>>, categoryId: string) => (
         <DropDown
             renderButton={(isOpen) => (
-                <span className="font-light text-gray-700 flex flex-row items-center justify-between">
+                <span className="font-light text-gray-700 dark:text-gray-300 flex flex-row items-center justify-between">
                     <div className="flex items-center">
                         <input
                             type="checkbox"
@@ -194,12 +194,13 @@ const Filters = () => {
             buttonClassName="w-full text-left mt-1"
             dropdownClassName="relative shadow-none w-full"
             alwaysOpen={true}
+            darkClass="dark:bg-zinc-800"
         />
     ), [selectedTags, updateTags]);
 
     return (
         <div className="flex flex-col">
-            <div className="font-bold text-gray-700 flex flex-row items-center justify-between py-2">
+            <div className="font-bold text-gray-700 dark:text-gray-300 flex flex-row items-center justify-between py-2">
                 <div className="flex flex-row items-center">
                     <input
                         type="checkbox"

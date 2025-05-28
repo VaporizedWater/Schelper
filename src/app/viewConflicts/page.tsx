@@ -31,8 +31,8 @@ const ViewConflicts = () => {
                 <DropDown
                     buttonClassName="w-full"
                     renderButton={(isOpen) => (
-                        <div className={`flex justify-between items-center p-2 bg-gray-100 hover:bg-gray-50 rounded-sm cursor-pointer`}>
-                            <span className="text-gray-800 font-semibold">{title}</span>
+                        <div className={`flex justify-between items-center p-2 bg-gray-100 hover:bg-gray-50 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:text-gray-300 rounded-sm cursor-pointer`}>
+                            <span className="text-gray-800 dark:text-gray-300 font-semibold">{title}</span>
                             <div className="flex items-center">
                                 <span className="mr-2 text-sm font-medium">{conflictsList.length} conflicts</span>
                                 {isOpen ? <MdExpandLess /> : <MdExpandMore />}
@@ -80,7 +80,7 @@ const ViewConflicts = () => {
                                 const class2properties = conflict.class2.properties;
 
                                 return (
-                                    <li className="bg-white dark:bg-white text-black dark:text-black" key={`${title}-conflict-${index}`}>
+                                    <li className="text-black dark:text-gray-300" key={`${title}-conflict-${index}`}>
                                         <DropDown
                                             buttonClassName="w-full"
                                             renderButton={(isOpen) => (
@@ -89,14 +89,14 @@ const ViewConflicts = () => {
                                                         {class1data.course_subject + class1data.course_num + " Section " + class1data.section + ": " + class1data.title} ⚡ {class2data.course_subject + class2data.course_num + " Section " + class2data.section + ": " + class2data.title}
                                                     </span>
                                                     <div className="flex items-center">
-                                                        <span className="mr-2 text-sm font-medium">{conflictLabel}</span>
+                                                        <span className="mr-2 text-sm font-medium text-gray-500">{conflictLabel}</span>
                                                         {isOpen ? <MdExpandLess /> : <MdExpandMore />}
                                                     </div>
                                                 </div>
                                             )}
                                             dropdownClassName="w-full mt-1"
                                             renderDropdown={() => (
-                                                <div className="bg-white border rounded-sm shadow-lg p-4">
+                                                <div className="border rounded-sm shadow-lg p-4">
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div className="space-y-2">
                                                             <h3 className="font-semibold">{class1data.course_subject + class1data.course_num + " Section " + class1data.section + ": " + class1data.title}</h3>
@@ -140,6 +140,7 @@ const ViewConflicts = () => {
                                                     </div>
                                                 </div>
                                             )}
+                                            darkClass="dark:bg-zinc-800"
                                         />
                                     </li>
                                 );
@@ -148,6 +149,7 @@ const ViewConflicts = () => {
                     )}
                     alwaysOpen={alwaysOpen}
                     defaultOpen={defaultOpen}
+                    darkClass="dark:bg-zinc-800"
                 />
             </div>
         );
@@ -187,7 +189,7 @@ const ViewConflicts = () => {
     if (isLoading) {
         return (
             <div className="flex flex-col items-center justify-center h-full w-full">
-                <div className="text-center text-gray-400 flex flex-row items-center gap-1">
+                <div className="text-center text-gray-400 dark:text-gray-300 flex flex-row items-center gap-1">
                     <p>Checking for conflicts...</p>
                 </div>
             </div>
@@ -197,7 +199,7 @@ const ViewConflicts = () => {
     if (conflicts.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-full w-full">
-                <div className="text-center text-gray-400 flex flex-row items-center gap-1">
+                <div className="text-center text-gray-400 dark:text-gray-300 flex flex-row items-center gap-1">
                     <p>No Conflicts Yet</p>
                     <CiCircleCheck />
                 </div>
@@ -207,7 +209,7 @@ const ViewConflicts = () => {
 
     return (
         <div className="flex flex-col w-full h-full p-4 min-h-130">
-            <h2 className="text-lg font-semibold mb-4 text-red-600">
+            <h2 className="text-lg font-semibold mb-4 text-red-600 dark:text-red-400">
                 Found {conflicts.length} conflict{conflicts.length > 1 ? 's' : ''}
             </h2>
 
@@ -215,7 +217,7 @@ const ViewConflicts = () => {
             {renderConflictsList(hiddenConflicts, "Conflicts in Hidden Classes", true)}
 
             {visibleConflicts.length === 0 && hiddenConflicts.length === 0 && (
-                <div className="text-gray-500 text-center mt-4">
+                <div className="text-gray-500 dark:text-gray-300 text-center mt-4">
                     No conflicts to display. Try adjusting your filters.
                 </div>
             )}

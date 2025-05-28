@@ -10,7 +10,7 @@ const TopNav = () => {
 
     const loggedOut = useMemo(() => {
         return (
-            <header className="flex flex-row bg-psublue sticky top-0 z-50 pl-6 md:pl-8 lg:pl-10">
+            <header className="flex flex-row bg-psublue dark:bg-zinc-800 border-b border-gray-300 dark:border-gray-600 sticky top-0 z-50 pl-6 md:pl-8 lg:pl-10">
                 <Link href="/" className="">
                     <div className='py-2'>
                         <Image
@@ -30,7 +30,7 @@ const TopNav = () => {
 
     const loggedIn = useMemo(() => {
         return (
-            <header className="flex flex-row bg-psublue sticky top-0 z-50 pl-6 md:pl-8 lg:pl-10">
+            <header className="flex flex-row bg-psublue dark:bg-zinc-800 dark:border-b dark:border-gray-600 sticky top-0 z-50 pl-6 md:pl-8 lg:pl-10">
                 <Link href="/" className="">
                     <div className='py-2'>
                         <Image

@@ -16,11 +16,11 @@ const LeftMenu = () => {
     return (
         <div className="flex h-full">
             {/* Icon sidebar */}
-            <div className="flex-none flex flex-col py-4 bg-gray-100 border-r border-gray-300 w-12">
+            <div className="flex-none flex flex-col py-4 bg-gray-100 dark:bg-dark border-r border-gray-300 dark:border-gray-600 w-12">
                 <div
                     className={`p-2 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'filters'
                         ? 'bg-blue-600 text-white shadow-lg'
-                        : 'hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-700 hover:text-white'
                         }`}
                     onClick={() => setActiveComponent('filters')}
                     title="Filters"
@@ -30,7 +30,7 @@ const LeftMenu = () => {
                 <div
                     className={`p-2 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'properties'
                         ? 'bg-blue-600 text-white shadow-lg'
-                        : 'hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-700 hover:text-white'
                         }`}
                     onClick={() => setActiveComponent('properties')}
                     title="Class Properties"
@@ -40,17 +40,17 @@ const LeftMenu = () => {
                 <div
                     className={`p-2 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'timeProperties'
                         ? 'bg-blue-600 text-white shadow-lg'
-                        : 'hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-700 hover:text-white'
                         }`}
                     onClick={() => setActiveComponent('timeProperties')}
-                    title="Class Properties"
+                    title="Time Properties"
                 >
                     <FaClock size={14} />
                 </div>
                 <div
                     className={`p-2 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'tags'
                         ? 'bg-blue-600 text-white shadow-lg'
-                        : 'hover:bg-gray-700 hover:text-white'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-700 hover:text-white'
                         }`}
                     onClick={() => setActiveComponent('tags')}
                     title="Tags"
@@ -58,9 +58,9 @@ const LeftMenu = () => {
                     <FaTag size={14} />
                 </div>
                 <div
-                    className={`p-2 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 text-yellow-500 ${activeComponent === 'conflicts'
+                    className={`p-2 mb-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'conflicts'
                         ? 'bg-blue-600 text-white shadow-lg'
-                        : 'hover:bg-gray-700 hover:text-white'
+                        : 'text-yellow-500 hover:bg-gray-700 hover:text-white'
                         }`}
                     onClick={() => setActiveComponent('conflicts')}
                     title="Conflicts"
@@ -68,12 +68,11 @@ const LeftMenu = () => {
                     <div className="">
                         <MdWarning size={14} />
                     </div>
-
                 </div>
                 <div
-                    className={`p-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 text-red-600 ${activeComponent === 'delete'
+                    className={`p-2 cursor-pointer flex justify-center items-center rounded-md mx-2 transition-all duration-200 ${activeComponent === 'delete'
                         ? 'bg-blue-600 text-white shadow-lg'
-                        : 'hover:bg-gray-700 hover:text-white'
+                        : 'text-red-600 hover:bg-gray-700 hover:text-white'
                         }`}
                     onClick={() => setActiveComponent('delete')}
                     title="Delete Class"
@@ -85,7 +84,7 @@ const LeftMenu = () => {
             </div>
 
             {/* Content area with consistent sizing */}
-            <div className="flex-1 min-w-0 relative overflow-hidden">
+            <div className="flex-1 min-w-0 relative overflow-hidden bg-white dark:bg-dark text-black dark:text-gray-300">
                 <div className={`absolute inset-0 transition-opacity duration-200 ${activeComponent === 'filters' ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
                     }`}>
                     <div className="h-full pl-4 pr-2 py-3 overflow-auto">

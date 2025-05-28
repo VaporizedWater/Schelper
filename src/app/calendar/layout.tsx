@@ -6,9 +6,15 @@ const Layout = ({
     children: React.ReactNode
 }) => {
     return (
-        <div className="w-full h-full bg-white dark:bg-white text-black dark:text-black">
-            <div className="">{modals}</div>
-            <div className="w-full h-full">{children}</div>
+        <div className="w-full h-full bg-white dark:bg-dark text-gray-800 dark:text-gray-300">
+            {/* Modal container with backdrop blur effect */}
+            <div className="relative z-50">{modals}</div>
+
+            {/* Main content with subtle gradient and border effects */}
+            <div className="w-full h-full bg-white
+                dark:bg-dark shadow-inner">
+                {children}
+            </div>
         </div>
     )
 }

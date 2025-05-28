@@ -165,24 +165,24 @@ const ExportSheet = () => {
         });
 
         doc.save(`${filename}.pdf`);
-    }, [allClasses,filename,getUniqueClassId, selectedClasses]);
+    }, [allClasses, filename, getUniqueClassId, selectedClasses]);
 
     return (
-        <div className="p-4 bg-white dark:bg-white text-black dark:text-black">
+        <div className="p-4 min-h-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300">
             <div className="mb-8">
-                <h1 className="text-2xl font-bold mb-1">Export Schedule</h1>
-                <span className="text-lg text-gray-600 font-medium">Spring 2025</span>
+                <h1 className="text-2xl font-bold mb-1 dark:text-gray-200">Export Schedule</h1>
+                <span className="text-lg text-gray-600 dark:text-gray-400 font-medium">Spring 2025</span>
             </div>
 
             <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     File Name
                 </label>
                 <input
                     type="text"
                     value={filename}
                     onChange={(e) => setFilename(e.target.value)}
-                    className="w-full p-2 border rounded-md"
+                    className="w-full p-2 border rounded-md dark:border-zinc-500 dark:bg-zinc-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                     placeholder="Enter file name"
                 />
             </div>
@@ -190,13 +190,13 @@ const ExportSheet = () => {
             <div className="flex gap-4">
                 <button
                     onClick={exportToXLSX}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                    className="bg-blue-500 dark:bg-blue-600 dark:text-gray-100 text-white px-4 py-2 rounded-md hover:bg-blue-600 dark:hover:bg-blue-500"
                 >
                     Export to Excel ({selectedClasses.size})
                 </button>
                 <button
                     onClick={exportToPDF}
-                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 dark:hover:bg-red-500 dark:bg-red-600 dark:text-gray-100"
                 >
                     Export to PDF ({selectedClasses.size})
                 </button>
@@ -208,11 +208,11 @@ const ExportSheet = () => {
                     <div className="flex justify-between items-center mb-2">
                         <h2 className="text-xl font-semibold">Classes to Export ({selectedClasses.size})</h2>
                     </div>
-                    <div className="overflow-auto max-h-[60vh] border rounded-md">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50 sticky top-0">
-                                <tr>
-                                    <th className="p-2 border text-center">
+                    <div className="overflow-auto max-h-[60vh] border dark:bg-zinc-500 dark:border-zinc-500 rounded-md">
+                        <table className="min-w-full table-fixed border-collapse divide-y divide-gray-200 dark:divide-zinc-500">
+                            <thead className="bg-gray-50 dark:bg-zinc-600 sticky top-0 dark:text-gray-300 dark:border-zinc-500">
+                                <tr className="">
+                                    <th className="p-2 dark:border-zinc-500 text-center">
                                         <input
                                             type="checkbox"
                                             checked={selectedClasses.size === allClasses.length && allClasses.length > 0}
@@ -226,20 +226,20 @@ const ExportSheet = () => {
                                             className="h-4 w-4"
                                         />
                                     </th>
-                                    <th className="p-2 border text-left">Subject</th>
-                                    <th className="p-2 border text-left">Number</th>
-                                    <th className="p-2 border text-left">Section</th>
-                                    <th className="p-2 border text-left">Class Num</th>
-                                    <th className="p-2 border text-left">Title</th>
-                                    <th className="p-2 border text-left">Instructor</th>
-                                    <th className="p-2 border text-left">Email</th>
-                                    <th className="p-2 border text-left">Room</th>
-                                    <th className="p-2 border text-left">Days</th>
-                                    <th className="p-2 border text-left">Start</th>
-                                    <th className="p-2 border text-left">End</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Subject</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Number</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Section</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Class Num</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Title</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Instructor</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Email</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Room</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Days</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Start</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">End</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="bg-white dark:bg-zinc-700 divide-y divide-gray-200">
                                 {allClasses.map((classItem, index) => {
                                     const uniqueId = getUniqueClassId(classItem);
                                     const { color, textColor } = classConflictColors.get(classItem._id) || { color: 'transparent', textColor: 'inherit' };
@@ -253,7 +253,7 @@ const ExportSheet = () => {
                                                 color: textColor
                                             }}
                                         >
-                                            <td className="p-2 border text-center">
+                                            <td className="p-2 border dark:border-zinc-500 text-center">
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedClasses.has(uniqueId)}
@@ -269,17 +269,17 @@ const ExportSheet = () => {
                                                     className="h-4 w-4"
                                                 />
                                             </td>
-                                            <td className="p-2 border">{classItem.data.course_subject}</td>
-                                            <td className="p-2 border">{classItem.data.course_num}</td>
-                                            <td className="p-2 border">{classItem.data.section}</td>
-                                            <td className="p-2 border">{classItem.data.class_num || ''}</td>
-                                            <td className="p-2 border">{classItem.data.title}</td>
-                                            <td className="p-2 border">{classItem.properties.instructor_name}</td>
-                                            <td className="p-2 border">{classItem.properties.instructor_email || ''}</td>
-                                            <td className="p-2 border">{classItem.properties.room}</td>
-                                            <td className="p-2 border">{classItem.properties.days.join(', ')}</td>
-                                            <td className="p-2 border">{classItem.properties.start_time}</td>
-                                            <td className="p-2 border">{classItem.properties.end_time}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.data.course_subject}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.data.course_num}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.data.section}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.data.class_num || ''}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.data.title}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.instructor_name}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.instructor_email || ''}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.room}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.days.join(', ')}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.start_time}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.end_time}</td>
                                         </tr>
                                     );
                                 })}
@@ -290,8 +290,8 @@ const ExportSheet = () => {
             )}
 
             {allClasses.length === 0 && (
-                <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-md">
-                    <p className="text-yellow-700">No classes to export. Please add classes to your schedule first.</p>
+                <div className="mt-8 p-4 bg-yellow-50 dark:bg-zinc-700 border border-yellow-200 dark:border-zinc-600 rounded-md">
+                    <p className="text-yellow-700 dark:text-gray-300">No classes to export. Please add classes to your schedule first.</p>
                 </div>
             )}
         </div>

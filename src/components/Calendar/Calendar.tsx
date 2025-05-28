@@ -370,17 +370,17 @@ const Calendar = () => {
 
     if (isLoading) {
         return (
-            <div className="h-full flex items-center justify-center bg-white bg-opacity-80">
+            <div className="h-full flex items-center justify-center bg-white dark:bg-dark bg-opacity-80 dark:bg-opacity-100">
                 <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-                    <p className="mt-4 text-lg font-medium text-gray-700">Loading classes...</p>
+                    <p className="mt-4 text-lg font-medium text-gray-700 dark:text-gray-400">Loading classes...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="h-full text-sm">
+        <div className="h-full text-sm pb-2">
             {fullcalendarComponent}
 
             {/* Add custom CSS for calendar font sizes */}
@@ -399,6 +399,53 @@ const Calendar = () => {
   /* non‑business slots get a lighter tint */
   .fc .fc-non-business {
     background-color: rgba(250, 0, 0, 0.1) !important;
+  }
+
+  .dark .fc .fc-non-business {
+    background-color: rgba(255, 130, 130, 0.4) !important;
+  }
+
+  
+  
+  /* Add dark gray borders for dark mode */
+  .dark .fc-theme-standard .fc-scrollgrid,
+  .dark .fc-theme-standard td,
+  .dark .fc-theme-standard th {
+    border-color: #4b5563 !important; /* gray-500 */
+  }
+
+  .dark .fc-timegrid-slot,
+  .dark .fc-timegrid-axis,
+  .dark .fc-col-header-cell {
+    border-color: #4b5563 !important; /* gray-500 */
+  }
+
+  .dark .fc-scrollgrid-section,
+  .dark .fc-scrollgrid-section table {
+    border-color: #4b5563 !important; /* gray-500 */
+  }
+
+  .dark .fc .fc-timegrid-divider {
+    background-color: #4b5563 !important; /* gray-500 */
+  }
+  
+  /* Event borders in dark mode */
+  .dark .fc-event,
+  .dark .fc-event-main,
+  .dark .fc-h-event,
+  .dark .fc-v-event {
+    border-color: #9ca3af !important; /* gray-500 */
+  }
+  
+  /* Selected event border/highlight color */
+  .dark .fc-event.selected,
+  .dark .fc-event:focus {
+    outline-color: #9ca3af !important;
+    border-color: #9ca3af !important;
+  }
+
+  .dark .fc-timegrid-event-harness-inset .fc-timegrid-event, .fc-timegrid-event.fc-event-mirror, .fc-timegrid-more-link {
+    box-shadow: none !important; 
   }
 `}</style>
         </div>

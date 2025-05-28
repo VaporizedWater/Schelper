@@ -65,12 +65,12 @@ const ClassTimeProperties = () => {
 
     return (
         <div className="h-full w-full flex flex-col">
-            <div className="w-full text-left py-2 font-bold text-gray-700">Time Properties</div>
+            <div className="w-full text-left py-2 font-bold text-gray-700 dark:text-gray-300">Time Properties</div>
             <div className="h-full">
 
                 {currentCombinedClass?._id ? (
                     <ul className="flex flex-col w-full">
-                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50">
                             <span className='w-full text-start font-semibold'>Start Time</span>
                             <input
                                 type="time"
@@ -79,7 +79,7 @@ const ClassTimeProperties = () => {
                                 onChange={handleStartTimeChange}
                             />
                         </li>
-                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50">
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50">
                             <span className='w-full text-start font-semibold'>End Time</span>
                             <input
                                 type="time"
@@ -89,8 +89,8 @@ const ClassTimeProperties = () => {
                             />
                         </li>
                         {/* Days Section */}
-                        <li className="flex flex-col py-1 px-2 focus-within:bg-blue-50">
-                            <div className="font-bold text-gray-700 min-w-20 flex flex-row items-center justify-between">
+                        <li className="flex flex-col py-1 px-2 focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50">
+                            <div className="font-bold text-gray-700 dark:text-gray-300 min-w-20 flex flex-row items-center justify-between">
                                 Days
                             </div>
                             <div>
@@ -101,7 +101,7 @@ const ClassTimeProperties = () => {
                                                 type="checkbox"
                                                 checked={days.includes(day)}
                                                 onChange={(e) => handleDaysChange(day, e.target.checked)}
-                                                className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-ylue-600"
+                                                className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
                                             />
                                             <span>{day}</span>
                                         </label>

@@ -14,9 +14,9 @@ const ConflictProperties = () => {
                 : conflict.class1.data.course_subject + " " + conflict.class1.data.course_num;
 
             return (
-                <li key={index} className="p-3 bg-red-50 border border-red-200 rounded-md">
-                    <span className="font-medium">Conflict with class: {conflictingClass}</span>
-                    <p className="capitalize text-sm text-red-600 pt-1">
+                <li key={index} className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md">
+                    <span className="font-medium dark:text-gray-200">Conflict with class: {conflictingClass}</span>
+                    <p className="capitalize text-sm text-red-600 dark:text-red-400 pt-1">
                         {conflict.conflictType}
                     </p>
                 </li>
@@ -26,11 +26,11 @@ const ConflictProperties = () => {
 
     return (
         <div className="h-full w-full flex flex-col">
-            <div className="w-full text-left py-2 font-bold text-gray-700">Class Conflicts</div>
+            <div className="w-full text-left py-2 font-bold text-gray-700 dark:text-gray-300">Class Conflicts</div>
             <div className="h-full">
                 {currentCombinedClass?._id ?
                     (conflicts && conflicts.length > 0 && (
-                        <ul className="space-y-2 flex flex-col ">
+                        <ul className="space-y-2 flex flex-col">
                             {conflictFilterMapThing}
                         </ul>
                     )) : (

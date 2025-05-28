@@ -12,7 +12,7 @@ import { useSession } from 'next-auth/react';
 const convertTime = (excelTime: string): string => {
     const [time, period] = excelTime.split(' ');
     const [hours, minutes] = time.split(':').map(num => parseInt(num, 10));
-    
+
     let adjustedHours = hours;
     if (period?.toLowerCase() === 'pm' && hours < 12) {
         adjustedHours += 12;
@@ -375,22 +375,22 @@ const ImportSheet = () => {
         // Then upload the classes with tags
         uploadNewClasses(classesToImport);
         router.back();
-    }, [cohortSelections,getUniqueClassId,parsedClasses,router,selectedClasses, uploadNewClasses]);
+    }, [cohortSelections, getUniqueClassId, parsedClasses, router, selectedClasses, uploadNewClasses]);
 
     const autoAssignedCount = (isCurrentCohortValid) ? parsedClasses.filter(cls =>
         assignCohort(cls, currentCohort) !== null).length
         : 0;
 
     return (
-        <div className="p-4 bg-white dark:bg-white text-black dark:text-black">
-            <h1 className="text-2xl font-bold mb-4">Import Sheet</h1>
+        <div className="p-4 bg-white dark:bg-zinc-800 h-full w-full text-black dark:text-gray-300">
+            <h1 className="text-2xl font-bold mb-4 ">Import Sheet</h1>
             <div className="space-y-4">
-                <div className='max-h-fit'>
+                <div className=''>
                     <input
                         type="file"
                         accept=".csv,.xlsx,.xls"
                         onChange={handleFileChange}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                         disabled={isLoading}
                     />
                 </div>
@@ -398,11 +398,11 @@ const ImportSheet = () => {
                 {isLoading && (
                     <div className="mt-4 p-6 flex flex-col items-center justify-center">
                         <div className="flex items-center space-x-2">
-                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700"></div>
-                            <span className="text-lg font-medium text-gray-700">Processing file...</span>
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-700 dark:border-blue-400"></div>
+                            <span className="text-lg font-medium text-gray-700 dark:text-gray-200">Processing file...</span>
                         </div>
                         {fileName && (
-                            <div className="mt-2 text-sm text-gray-500">
+                            <div className="mt-2 text-sm text-gray-500 dark:text-gray-400">
                                 {fileName}
                             </div>
                         )}
@@ -416,24 +416,24 @@ const ImportSheet = () => {
                         <div>
                             <h2 className="text-xl font-semibold">Classes to Import ({selectedClasses.size})</h2>
                             {autoAssignedCount > 0 && (
-                                <p className="text-sm text-blue-600">
+                                <p className="text-sm text-blue-600 dark:text-blue-400">
                                     {autoAssignedCount} classes with auto-assigned cohorts
                                 </p>
                             )}
                         </div>
                         <button
                             onClick={handleImport}
-                            className="px-4 py-2 bg-green-500 text-white rounded-sm hover:bg-green-600"
+                            className="px-4 py-2 bg-green-500 dark:bg-green-600 text-white rounded-sm hover:bg-green-600 dark:hover:bg-green-500"
                             data-testid="import-selected-classes"
                         >
                             Import Selected Classes ({selectedClasses.size})
                         </button>
                     </div>
-                    <div className="overflow-auto max-h-[50vh]">
-                        <table className="min-w-full border">
-                            <thead className="bg-gray-50">
+                    <div className="overflow-auto max-h-[50vh] bg-gray-50 dark:bg-zinc-800">
+                        <table className="min-w-full">
+                            <thead className="bg-gray-50 dark:bg-zinc-800 sticky top-0">
                                 <tr>
-                                    <th className="p-2 border text-center">
+                                    <th className="p-2  text-center">
                                         <input
                                             type="checkbox"
                                             checked={selectedClasses.size === parsedClasses.length && parsedClasses.length > 0}
@@ -447,15 +447,15 @@ const ImportSheet = () => {
                                             }}
                                         />
                                     </th>
-                                    <th className="p-2 border">Class #</th>
-                                    <th className="p-2 border">Course</th>
-                                    <th className="p-2 border">Title</th>
-                                    <th className="p-2 border">Days</th>
-                                    <th className="p-2 border">Start</th>
-                                    <th className="p-2 border">End</th>
-                                    <th className="p-2 border">Instructor</th>
-                                    <th className="p-2 border">Room</th>
-                                    <th className="p-2 border">Cohort</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Class #</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Course</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Title</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Days</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Start</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">End</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Instructor</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Room</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Cohort</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -464,9 +464,9 @@ const ImportSheet = () => {
                                     return (
                                         <tr
                                             key={uniqueId}
-                                            className="hover:bg-gray-50"
+                                            className="hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
                                         >
-                                            <td className="p-2 border text-center">
+                                            <td className="p-2 border dark:border-zinc-700 text-center">
                                                 <input
                                                     type="checkbox"
                                                     checked={selectedClasses.has(uniqueId)}
@@ -482,23 +482,23 @@ const ImportSheet = () => {
                                                     }}
                                                 />
                                             </td>
-                                            <td className="p-2 border">{cls.data.class_num}</td>
-                                            <td className="p-2 border">
+                                            <td className="p-2 border dark:border-zinc-700">{cls.data.class_num}</td>
+                                            <td className="p-2 border dark:border-zinc-700">
                                                 {cls.data.course_subject} {cls.data.course_num}
                                             </td>
-                                            <td className="p-2 border">{cls.data.title}</td>
-                                            <td className="p-2 border">{cls.properties.days.join(', ')}</td>
-                                            <td className="p-2 border">
+                                            <td className="p-2 border dark:border-zinc-700">{cls.data.title}</td>
+                                            <td className="p-2 border dark:border-zinc-700">{cls.properties.days.join(', ')}</td>
+                                            <td className="p-2 border dark:border-zinc-700">
                                                 {cls.properties.start_time}
                                             </td>
-                                            <td className="p-2 border">
+                                            <td className="p-2 border dark:border-zinc-700">
                                                 {cls.properties.end_time}
                                             </td>
-                                            <td className="p-2 border">{cls.properties.instructor_name}</td>
-                                            <td className="p-2 border">{cls.properties.room}</td>
+                                            <td className="p-2 border dark:border-zinc-700">{cls.properties.instructor_name}</td>
+                                            <td className="p-2 border dark:border-zinc-700">{cls.properties.room}</td>
 
                                             {/* Cohort which is based on selection + cohort list*/}
-                                            <td className="p-2 border min-w-32">
+                                            <td className="p-2 border dark:border-zinc-700 min-w-32">
                                                 <select
                                                     value={cohortSelections[uniqueId] || ''}
                                                     onChange={(e) => {
@@ -508,7 +508,7 @@ const ImportSheet = () => {
                                                         });
                                                     }}
 
-                                                    className={`w-full p-1 border rounded ${isCurrentCohortValid && assignCohort(cls, currentCohort) ? 'bg-blue-50' : ''
+                                                    className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohort) ? 'bg-blue-50 dark:bg-gray-700' : ''
                                                         }`}
                                                     data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohort)}
                                                 >
@@ -519,10 +519,9 @@ const ImportSheet = () => {
                                                     <option value="Senior">Senior</option>
                                                 </select>
                                                 {isCurrentCohortValid && assignCohort(cls, currentCohort) && (
-                                                    <div className="text-xs text-blue-600 mt-1">Auto-assigned</div>
+                                                    <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Auto-assigned</div>
                                                 )}
                                             </td>
-
                                         </tr>
                                     )
                                 })}

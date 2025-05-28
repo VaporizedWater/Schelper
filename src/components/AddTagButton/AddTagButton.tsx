@@ -31,10 +31,10 @@ const AddTagButton = () => {
 
     const renderDropDown = useCallback(() => {
         return (
-            <div className="p-3">
+            <div className="p-3 bg-white dark:bg-zinc-700">
                 <input
                     type="text"
-                    className="border px-2 py-1 rounded-md w-full"
+                    className="border dark:border-zinc-600 px-2 py-1 rounded-md w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-200 focus:outline-none focus:border-blue-500 dark:focus:border-blue-400"
                     placeholder="Enter tag name"
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
@@ -47,8 +47,8 @@ const AddTagButton = () => {
     }, [inputValue, handleAddTag]);
 
     const renderButton = useCallback((isOpen: boolean) => (
-        <div className="flex flex-row bg-white gap-2 p-2 items-center shadow-lg border border-gray rounded-lg hover:bg-grayblue duration-100 w-fit">
-            <MdAdd className="size-7 text-lightblack" />
+        <div className="flex flex-row bg-white dark:bg-zinc-700 gap-2 p-2 items-center shadow-lg border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-600 transition-colors duration-150 w-fit text-black dark:text-gray-200">
+            <MdAdd className="size-7 text-lightblack dark:text-gray-200" />
             <span>Create Tag</span>
             <div className="ml-auto">
                 {isOpen ? <MdExpandLess /> : <MdExpandMore />}
@@ -61,7 +61,7 @@ const AddTagButton = () => {
             renderButton={renderButton}
             renderDropdown={renderDropDown}
             buttonClassName=""
-            dropdownClassName="absolute left-auto right-0 mt-2 bg-white border border-gray-300 rounded-md shadow-md"
+            dropdownClassName="absolute left-auto right-0 mt-2 bg-white dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 rounded-md shadow-md"
         />
     );
 };

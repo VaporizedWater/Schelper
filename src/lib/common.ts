@@ -22,7 +22,7 @@ export function documentToClass(doc: Document): ClassData {
         section: doc.section,
         title: doc.title,
         enrollment_cap: doc.enrollment_cap,
-        waitlist_cap: doc.waitlist_cap
+        waitlist_cap: doc.waitlist_cap,
     };
 }
 
@@ -50,7 +50,7 @@ export function documentToClassProperty(doc: Document): ClassProperty {
         total_waitlisted: doc.total_waitlisted,
         cohort: doc.cohort,
         tags: doc.tags,
-        owners: doc.owners
+        owners: doc.owners,
     };
 }
 
@@ -107,9 +107,9 @@ export function newDefaultEmptyCalendar(): CalendarType {
                 instructor: "#f59e0b",
                 cohort: "#f59e0b",
             },
-            export: {},
-            import: {},
-            sheet: {},
+            export: [],
+            import: [],
+            sheet: [],
         },
     };
 }

@@ -27,7 +27,7 @@ const DeleteClass = () => {
 
     return (
         <div className="w-full h-full flex flex-col">
-            <div className="w-full text-left py-2 font-bold text-gray-700">
+            <div className="w-full text-left py-2 font-bold text-gray-700 dark:text-gray-300">
                 Delete Class
             </div>
             <div className="h-full">
