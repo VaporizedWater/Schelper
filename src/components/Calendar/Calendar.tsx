@@ -398,7 +398,7 @@ const Calendar = () => {
 
   /* non‑business slots get a lighter tint */
   .fc .fc-non-business {
-    background-color: rgba(250, 0, 0, 0.1) !important;
+    background-color: rgba(250, 0, 0, 0.2) !important;
   }
 
   .dark .fc .fc-non-business {

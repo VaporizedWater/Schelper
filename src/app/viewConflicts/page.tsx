@@ -90,7 +90,9 @@ const ViewConflicts = () => {
                                                     </span>
                                                     <div className="flex items-center">
                                                         <span className="mr-2 text-sm font-medium text-gray-500">{conflictLabel}</span>
-                                                        {isOpen ? <MdExpandLess /> : <MdExpandMore />}
+                                                        <span className=" text-gray-400 dark:text-gray-500">
+                                                            {isOpen ? <MdExpandLess /> : <MdExpandMore />}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             )}

@@ -56,8 +56,8 @@ export default function CalendarSheet() {
                         {displayClasses.map((item, index) => (
                             <tr
                                 key={item._id}
-                                className={`${index === selectedRowIndex ? 'bg-blue-100 dark:bg-blue-900' : (index % 2 === 0 ? 'bg-white dark:bg-zinc-800' : 'bg-gray-50 dark:bg-zinc-700')
-                                    } hover:bg-gray-100 dark:hover:bg-zinc-600 transition-colors duration-150`}
+                                className={`${index === selectedRowIndex || item._id === currentCombinedClass?._id ? 'bg-blue-200 dark:bg-blue-900 hover:bg-blue-300 dark:hover:bg-blue-800' : ((index % 2 === 0 ? 'bg-white dark:bg-zinc-800' : 'bg-gray-50 dark:bg-zinc-700') + ' hover:bg-gray-100 dark:hover:bg-zinc-600')
+                                    }  transition-colors duration-150`}
                                 onClick={() => handleRowClick(item, index)}
                                 style={{ cursor: 'pointer' }}
                                 role="row"
@@ -89,7 +89,7 @@ export default function CalendarSheet() {
                 </table>
             </div>
         );
-    }, [allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [allClasses, currentCombinedClass]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isLoading) {
         return (
