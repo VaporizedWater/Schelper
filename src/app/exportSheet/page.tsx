@@ -11,6 +11,17 @@ const ExportSheet = () => {
     const { allClasses, conflicts } = useCalendarContext();
     const [filename, setFilename] = useState('schedule');
 
+    allClasses.sort((a, b) => {
+        // Sort by course subject, then course number, then section
+        if (a.data.course_subject < b.data.course_subject) return -1;
+        if (a.data.course_subject > b.data.course_subject) return 1;
+        if (a.data.course_num < b.data.course_num) return -1;
+        if (a.data.course_num > b.data.course_num) return 1;
+        if (a.data.section < b.data.section) return -1;
+        if (a.data.section > b.data.section) return 1;
+        return 0; // Equal
+    });
+
     // Create a unique identifier for each class
     const getUniqueClassId = useCallback((cls: CombinedClass): string => {
         return `${cls.data.class_num || ''}-${cls.data.section || ''}-${cls.properties.room}-${cls.properties.instructor_name}-${cls.properties.days.join(',')}-${cls.properties.start_time}`;

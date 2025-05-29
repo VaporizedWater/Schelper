@@ -381,6 +381,17 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             // console.time("UPLOAD_CLASSES");
             const newClasses = [...state.classes.all, ...action.payload];
             const newMapping = buildTagMapping(newClasses);
+
+            // newClasses.sort((a, b) => {
+            //     // Sort by course subject and number, then by section
+            //     if (a.data.course_subject < b.data.course_subject) return -1;
+            //     if (a.data.course_subject > b.data.course_subject) return 1;
+            //     if (a.data.course_num < b.data.course_num) return -1;
+            //     if (a.data.course_num > b.data.course_num) return 1;
+            //     if (a.data.section < b.data.section) return -1;
+            //     if (a.data.section > b.data.section) return 1;
+            //     return 0; // Equal
+            // });
             // console.timeEnd("UPLOAD_CLASSES");
 
             return {
@@ -521,7 +532,16 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
     // Memoize context value to prevent unnecessary re-renders
     const contextValue = useMemo(() => {
         const displayEvents = [] as EventInput[];
-        const displayClasses = state.classes.all.filter(c => c.visible);
+        const displayClasses = state.classes.all.filter(c => c.visible).sort((a, b) => {
+            // Sort by course subject and number, then by section
+            if (a.data.course_subject < b.data.course_subject) return -1;
+            if (a.data.course_subject > b.data.course_subject) return 1;
+            if (a.data.course_num < b.data.course_num) return -1;
+            if (a.data.course_num > b.data.course_num) return 1;
+            if (a.data.section < b.data.section) return -1;
+            if (a.data.section > b.data.section) return 1;
+            return 0; // Equal
+        });
         displayClasses.forEach(cls => {
             if (cls._id) {
                 const classEvents = createEventsFromCombinedClass(cls);

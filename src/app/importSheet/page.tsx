@@ -372,6 +372,18 @@ const ImportSheet = () => {
             await insertTags(tagsToCreate);
         }
 
+        // Sort by course subject and number, then by section
+        classesToImport.sort((a, b) => {
+            // Sort by course subject and number, then by section
+            if (a.data.course_subject < b.data.course_subject) return -1;
+            if (a.data.course_subject > b.data.course_subject) return 1;
+            if (a.data.course_num < b.data.course_num) return -1;
+            if (a.data.course_num > b.data.course_num) return 1;
+            if (a.data.section < b.data.section) return -1;
+            if (a.data.section > b.data.section) return 1;
+            return 0; // Equal
+        });
+
         // Then upload the classes with tags
         uploadNewClasses(classesToImport);
         router.back();
@@ -459,72 +471,145 @@ const ImportSheet = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {parsedClasses.map((cls) => {
-                                    const uniqueId = getUniqueClassId(cls);
-                                    return (
-                                        <tr
-                                            key={uniqueId}
-                                            className="hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
-                                        >
-                                            <td className="p-2 border dark:border-zinc-700 text-center">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedClasses.has(uniqueId)}
-                                                    onChange={(e) => {
-                                                        const newSelected = new Set(selectedClasses);
-                                                        if (e.target.checked) {
-                                                            newSelected.add(uniqueId);
-                                                        } else {
-                                                            newSelected.delete(uniqueId);
-                                                        }
-                                                        setSelectedClasses(newSelected);
-                                                        console.log(selectedClasses.size);
-                                                    }}
-                                                />
-                                            </td>
-                                            <td className="p-2 border dark:border-zinc-700">{cls.data.class_num}</td>
-                                            <td className="p-2 border dark:border-zinc-700">
-                                                {cls.data.course_subject} {cls.data.course_num}
-                                            </td>
-                                            <td className="p-2 border dark:border-zinc-700">{cls.data.title}</td>
-                                            <td className="p-2 border dark:border-zinc-700">{cls.properties.days.join(', ')}</td>
-                                            <td className="p-2 border dark:border-zinc-700">
-                                                {cls.properties.start_time}
-                                            </td>
-                                            <td className="p-2 border dark:border-zinc-700">
-                                                {cls.properties.end_time}
-                                            </td>
-                                            <td className="p-2 border dark:border-zinc-700">{cls.properties.instructor_name}</td>
-                                            <td className="p-2 border dark:border-zinc-700">{cls.properties.room}</td>
+                                {/* Classes with auto-assigned cohorts */}
+                                {parsedClasses
+                                    .filter(cls => assignCohort(cls, currentCohort))
+                                    .map((cls) => {
+                                        const uniqueId = getUniqueClassId(cls);
+                                        return (
+                                            <tr
+                                                key={uniqueId}
+                                                className="hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
+                                            >
+                                                <td className="p-2 border dark:border-zinc-700 text-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedClasses.has(uniqueId)}
+                                                        onChange={(e) => {
+                                                            const newSelected = new Set(selectedClasses);
+                                                            if (e.target.checked) {
+                                                                newSelected.add(uniqueId);
+                                                            } else {
+                                                                newSelected.delete(uniqueId);
+                                                            }
+                                                            setSelectedClasses(newSelected);
+                                                            console.log(selectedClasses.size);
+                                                        }}
+                                                    />
+                                                </td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.data.class_num}</td>
+                                                <td className="p-2 border dark:border-zinc-700">
+                                                    {cls.data.course_subject} {cls.data.course_num}
+                                                </td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.data.title}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.days.join(', ')}</td>
+                                                <td className="p-2 border dark:border-zinc-700">
+                                                    {cls.properties.start_time}
+                                                </td>
+                                                <td className="p-2 border dark:border-zinc-700">
+                                                    {cls.properties.end_time}
+                                                </td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.instructor_name}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.room}</td>
 
-                                            {/* Cohort which is based on selection + cohort list*/}
-                                            <td className="p-2 border dark:border-zinc-700 min-w-32">
-                                                <select
-                                                    value={cohortSelections[uniqueId] || ''}
-                                                    onChange={(e) => {
-                                                        setCohortSelections({
-                                                            ...cohortSelections,
-                                                            [uniqueId]: e.target.value
-                                                        });
-                                                    }}
+                                                {/* Cohort which is based on selection + cohort list*/}
+                                                <td className="p-2 border dark:border-zinc-700 min-w-32">
+                                                    <select
+                                                        value={cohortSelections[uniqueId] || ''}
+                                                        onChange={(e) => {
+                                                            setCohortSelections({
+                                                                ...cohortSelections,
+                                                                [uniqueId]: e.target.value
+                                                            });
+                                                        }}
 
-                                                    className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohort) ? 'bg-blue-50 dark:bg-gray-700' : ''
-                                                        }`}
-                                                    data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohort)}
-                                                >
-                                                    <option value="None"></option>
-                                                    <option value="Freshman">Freshman</option>
-                                                    <option value="Sophomore">Sophomore</option>
-                                                    <option value="Junior">Junior</option>
-                                                    <option value="Senior">Senior</option>
-                                                </select>
-                                                {isCurrentCohortValid && assignCohort(cls, currentCohort) && (
-                                                    <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Auto-assigned</div>
-                                                )}
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
+                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohort) ? 'bg-blue-50 dark:bg-gray-700' : ''
+                                                            }`}
+                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohort)}
+                                                    >
+                                                        <option value="None"></option>
+                                                        <option value="Freshman">Freshman</option>
+                                                        <option value="Sophomore">Sophomore</option>
+                                                        <option value="Junior">Junior</option>
+                                                        <option value="Senior">Senior</option>
+                                                    </select>
+                                                    {isCurrentCohortValid && assignCohort(cls, currentCohort) && (
+                                                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Auto-assigned</div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
+
+                                {/* Classes without autoassigned cohorts */}
+                                {parsedClasses
+                                    .filter(cls => !assignCohort(cls, currentCohort))
+                                    .map((cls) => {
+                                        const uniqueId = getUniqueClassId(cls);
+                                        return (
+                                            <tr
+                                                key={uniqueId}
+                                                className="hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
+                                            >
+                                                <td className="p-2 border dark:border-zinc-700 text-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedClasses.has(uniqueId)}
+                                                        onChange={(e) => {
+                                                            const newSelected = new Set(selectedClasses);
+                                                            if (e.target.checked) {
+                                                                newSelected.add(uniqueId);
+                                                            } else {
+                                                                newSelected.delete(uniqueId);
+                                                            }
+                                                            setSelectedClasses(newSelected);
+                                                            console.log(selectedClasses.size);
+                                                        }}
+                                                    />
+                                                </td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.data.class_num}</td>
+                                                <td className="p-2 border dark:border-zinc-700">
+                                                    {cls.data.course_subject} {cls.data.course_num}
+                                                </td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.data.title}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.days.join(', ')}</td>
+                                                <td className="p-2 border dark:border-zinc-700">
+                                                    {cls.properties.start_time}
+                                                </td>
+                                                <td className="p-2 border dark:border-zinc-700">
+                                                    {cls.properties.end_time}
+                                                </td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.instructor_name}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.room}</td>
+
+                                                {/* Cohort which is based on selection + cohort list*/}
+                                                <td className="p-2 border dark:border-zinc-700 min-w-32">
+                                                    <select
+                                                        value={cohortSelections[uniqueId] || ''}
+                                                        onChange={(e) => {
+                                                            setCohortSelections({
+                                                                ...cohortSelections,
+                                                                [uniqueId]: e.target.value
+                                                            });
+                                                        }}
+
+                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohort) ? 'bg-blue-50 dark:bg-gray-700' : ''
+                                                            }`}
+                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohort)}
+                                                    >
+                                                        <option value="None"></option>
+                                                        <option value="Freshman">Freshman</option>
+                                                        <option value="Sophomore">Sophomore</option>
+                                                        <option value="Junior">Junior</option>
+                                                        <option value="Senior">Senior</option>
+                                                    </select>
+                                                    {isCurrentCohortValid && assignCohort(cls, currentCohort) && (
+                                                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Auto-assigned</div>
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        )
+                                    })}
                             </tbody>
                         </table>
                     </div>
