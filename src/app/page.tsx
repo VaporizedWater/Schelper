@@ -80,19 +80,19 @@ const Home = () => {
                         <h2 className='pt-4 text-3xl text-graybg text-shadow-lg drop-shadow-lg'>The Class Scheduling App</h2>
 
                         {/* Main navigation options */}
-                        <div className='mt-10 flex flex-col items-center justify-center drop-shadow-lg'>
+                        <div className='mt-10 flex flex-col items-center justify-center'>
                             <Link className="overflow-hidden"
                                 href='/calendar'>
-                                <Image
-                                    src="/calendar1.png"
-                                    alt="Edit Calendar"
-                                    width={240}
-                                    height={96}
-                                    className="cursor-pointer transition rounded-t-lg"
-                                />
-                                <div className="w-full rounded-b-lg bg-lightblue2 bg-opacity-100 text-graybg text-lg font-semibold opacity-100">
-                                    Edit Calendar
-                                </div>
+                                <button className="inline-flex gap-2 items-center px-6 py-3 rounded-lg bg-psublue/50 hover:bg-psublue/60 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/40 text-white font-semibold cursor-pointer transition transform duration-200">
+                                    <Image
+                                        src="/calendar1.png"
+                                        alt="Edit Calendar"
+                                        width={30}
+                                        height={12}
+                                        className="cursor-pointer transition rounded-md"
+                                    />
+                                    Calendar
+                                </button>
                             </Link>
                         </div>
                     </div>

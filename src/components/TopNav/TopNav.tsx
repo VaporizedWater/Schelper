@@ -4,6 +4,7 @@ import { HorizontalTextPSULogo } from "@/lib/icons";
 import SignIn from "../SignIn/SignIn";
 import { useSession } from "next-auth/react";
 import { useMemo } from "react";
+import Profile from "../Profile/Profile";
 
 const TopNav = () => {
     const { data: session } = useSession();
@@ -30,7 +31,7 @@ const TopNav = () => {
 
     const loggedIn = useMemo(() => {
         return (
-            <header className="flex flex-row bg-psublue dark:bg-zinc-800 dark:border-b dark:border-gray-600 sticky top-0 z-50 pl-6 md:pl-8 lg:pl-10">
+            <header className="flex flex-row items-center bg-psublue dark:bg-zinc-800 dark:border-b dark:border-gray-600 sticky top-0 z-50 pl-6 md:pl-8 lg:pl-10">
                 <Link href="/" className="">
                     <div className='py-2'>
                         <Image
@@ -43,9 +44,17 @@ const TopNav = () => {
 
                 <div className="p-4 ml-auto text-white flex flex-row">
                     <Link href={'/calendar'}>
-                        <button className="px-5 rounded-md h-full w-full sm:min-w-max text-white hover:opacity-75 duration-100">Calendar</button>
+                        <button className="px-5 rounded-md h-full w-full sm:min-w-max text-white hover:opacity-75 duration-100">
+                            <Image
+                                src="/calendar1.png"
+                                alt="Edit Calendar"
+                                width={25}
+                                height={10}
+                                className="cursor-pointer transition rounded-sm"
+                            />
+                        </button>
                     </Link>
-                    <SignIn></SignIn>
+                    <Profile></Profile>
                 </div>
             </header>
         );

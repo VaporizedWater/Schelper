@@ -10,18 +10,26 @@ const SignIn = () => {
 
     if (session?.user) {
         return (
-            <div className="flex flex-row items-center">
-                <button className="px-5 border rounded-full text-white hover:opacity-75 duration-100" onClick={() => {
+            <button
+                className="w-full px-4 py-2 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/50 text-sm font-medium transition-colors"
+                onClick={() => {
                     resetContextToEmpty();
                     signOut()
-                }}>Log Out</button>
-                <div className="text-white text-sm ml-2">{session.user.email?.split('@')[0]}</div>
-            </div>
+                }}
+            >
+                Log Out
+            </button>
         )
     }
-    return <button className="px-5 border rounded-full text-white hover:opacity-75 duration-100" onClick={() => signIn("microsoft-entra-id")}>Log In</button>
+
+    return (
+        <button
+            className="px-4 py-2 rounded-md bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800/50 text-sm font-medium transition-colors"
+            onClick={() => signIn("microsoft-entra-id")}
+        >
+            Log In
+        </button>
+    )
 }
 
 export default SignIn;
-
-// className="px-5 rounded-md h-full w-full sm:min-w-max text-white "

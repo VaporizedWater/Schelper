@@ -18,7 +18,7 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-    title: "Class Scheduling App",
+    title: "Schelper | The Class Scheduling App",
     description: "Schedule and manage classes",
 };
 
