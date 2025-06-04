@@ -4,7 +4,7 @@ import FullCalendar from "@fullcalendar/react";
 import interactionPlugin, { DateClickArg, EventResizeStopArg } from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 
-import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput } from "@fullcalendar/core";
+import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput, EventMountArg } from "@fullcalendar/core";
 import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
@@ -47,8 +47,10 @@ const Calendar = () => {
     const selectEvent = useCallback((element: HTMLElement) => {
         element.style.backgroundColor = selectedBackgroundColor;
         element.style.outlineColor = selectedBackgroundColor;
-        if (element.parentElement) {
-            element.parentElement.style.zIndex = '9999';
+        const parent = element.parentElement;
+
+        if (parent) {
+            parent.style.zIndex = '9999';
         }
         selectedEvents.push(element);
     }, []);
@@ -291,9 +293,28 @@ const Calendar = () => {
     }, []);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const eventMounted = useCallback((eventInfo: any) => {
-        if (eventInfo.event.extendedProps?.combinedClassId === currentCombinedClass?._id) {
-            selectEvent(eventInfo.el);
+    const eventMounted = useCallback((eventInfo: EventMountArg) => {
+        const _id = eventInfo.event.extendedProps.combinedClassId;
+        if (currentCombinedClass) {
+            if (_id === currentCombinedClass._id) {
+                selectEvent(eventInfo.el);
+
+                if (currentCombinedClass) {
+                    const props = currentCombinedClass.properties;
+                    const text = `<p style="font-size: 0.875rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${props.start_time}-${props.end_time}</p>`;
+                    const parent = eventInfo.el.parentElement as HTMLElement;
+                    const column = parent?.parentElement as HTMLElement;
+                    
+                    if (parent && column) {
+                        const element = parent.getElementsByClassName("fc-event-main")[0];
+                        element.innerHTML += text; // Add time
+
+                        // Expand event to column width
+                        parent.style.setProperty("width", `${column.clientWidth}px`, "important");
+                        parent.style.setProperty("left", "0%", "important");
+                    }
+                }
+            }
         }
     }, [currentCombinedClass, selectEvent]);
 
