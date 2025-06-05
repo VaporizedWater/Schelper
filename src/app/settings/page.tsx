@@ -123,26 +123,41 @@ function AppearanceSettings() {
 function CohortSettings() {
     // State to store loaded cohorts
     const [cohorts, setCohorts] = useState<CohortType[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [uploadStatus, setUploadStatus] = useState<{
+        message: string;
+        type: 'success' | 'error' | 'info' | null;
+    }>({ message: '', type: null });
 
     // Load cohorts when component mounts
     useEffect(() => {
         async function fetchCohorts() {
-            const result = await loadCohorts(session?.user?.email || '', 'true');
-            setCohorts(result);
-            console.log('Loaded cohorts:', result);
+            setIsLoading(true);
+            try {
+                const result = await loadCohorts(session?.user?.email || '', 'true');
+                setCohorts(result);
+                console.log('Loaded cohorts:', result);
+            } catch (error) {
+                console.error('Error loading cohorts:', error);
+                setUploadStatus({
+                    message: 'Failed to load cohorts',
+                    type: 'error'
+                });
+            } finally {
+                setIsLoading(false);
+            }
         }
         fetchCohorts();
         // eslint-disable-next-line
     }, []);
 
-
     const { currentCalendar, removeCohort } = useCalendarContext();
     const { data: session } = useSession();
-    console.log('Current Calendar:', currentCalendar);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Update state type to match CohortType
     const [cohort, setCohort] = useState<CohortType | null>(null);
+    const [fileName, setFileName] = useState<string>('');
 
     // Define a type for the structured cohort data
     interface CohortCourses {
@@ -207,6 +222,10 @@ function CohortSettings() {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        setFileName(file.name);
+        setUploadStatus({ message: 'Processing file...', type: 'info' });
+        setIsLoading(true);
+
         try {
             const data = await file.arrayBuffer();
             const workbook: WorkBook = xlsx.read(data, { type: 'array' });
@@ -215,7 +234,8 @@ function CohortSettings() {
             const rawRows: (string | number | null | undefined)[][] = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
 
             if (!rawRows || rawRows.length === 0) {
-                alert("No data found in the uploaded file.");
+                setUploadStatus({ message: 'No data found in the uploaded file', type: 'error' });
+                setIsLoading(false);
                 return;
             }
 
@@ -249,40 +269,58 @@ function CohortSettings() {
             }
 
             setCohort(newCohort);
-            console.log('Parsed cohort:', newCohort);
+            setUploadStatus({ message: 'File processed successfully', type: 'success' });
         } catch (error) {
             console.error('Error reading file:', error);
+            setUploadStatus({ message: 'Failed to process file', type: 'error' });
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleSaveCohort = async () => {
         if (!cohort) {
-            alert("Missing cohort data");
+            setUploadStatus({ message: 'Missing cohort data', type: 'error' });
             return;
         }
 
+        setIsLoading(true);
         try {
             if (!session?.user?.email) {
-                alert("User email is not available");
+                setUploadStatus({ message: 'User email is not available', type: 'error' });
                 return;
             }
 
             const result = await insertCohort(session.user.email, cohort);
             if (result) {
-                alert("Cohort saved successfully!");
+                setUploadStatus({ message: 'Cohort saved successfully!', type: 'success' });
+
+                // Refresh cohorts list
+                const updatedCohorts = await loadCohorts(session.user.email, 'true');
+                setCohorts(updatedCohorts);
 
                 setCohort(null); // Reset the cohort state
+                setFileName(''); // Clear filename
+
+                // Reset file input
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
             } else {
-                alert("Failed to save cohort");
+                setUploadStatus({ message: 'Failed to save cohort', type: 'error' });
             }
         } catch (error) {
             console.error("Error saving cohort:", error);
-            alert("An error occurred while saving the cohort");
+            setUploadStatus({ message: 'An error occurred while saving the cohort', type: 'error' });
+        } finally {
+            setIsLoading(false);
         }
     };
 
     const handleCancel = () => {
         setCohort(null);
+        setFileName('');
+        setUploadStatus({ message: '', type: null });
 
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -291,7 +329,7 @@ function CohortSettings() {
 
     const handleDeleteCohort = async (cohortId: string) => {
         if (!session?.user?.email) {
-            alert("User email is not available");
+            setUploadStatus({ message: 'User email is not available', type: 'error' });
             return;
         }
 
@@ -300,132 +338,240 @@ function CohortSettings() {
             const isConfirmed = window.confirm("Are you sure you want to delete this cohort?");
             if (!isConfirmed) return;
 
+            setIsLoading(true);
             // Call the removeCohort function
             await removeCohort(session.user.email, cohortId);
+
+            // Update the cohorts list
+            const updatedCohorts = await loadCohorts(session.user.email, 'true');
+            setCohorts(updatedCohorts);
+
+            setUploadStatus({ message: 'Cohort deleted successfully', type: 'success' });
         } catch (error) {
             console.error("Error deleting cohort:", error);
-            alert("An error occurred while deleting the cohort");
+            setUploadStatus({ message: 'An error occurred while deleting the cohort', type: 'error' });
+        } finally {
+            setIsLoading(false);
         }
     }
+
+    // Helper function to count courses in a cohort
+    const countTotalCourses = (cohort: CohortType): number => {
+        return [
+            ...(cohort.freshman || []),
+            ...(cohort.sophomore || []),
+            ...(cohort.junior || []),
+            ...(cohort.senior || [])
+        ].length;
+    };
 
     return (
         <div className='flex-1 text-black dark:text-gray-300'>
             <h2 className="text-2xl font-semibold mb-6">Cohorts Settings</h2>
 
-            {/* File upload input */}
-            <div className="mb-3">
-                <label htmlFor="cohort-file" className="block mb-1 font-medium text-gray-700 dark:text-gray-400">
-                    Upload Cohort Spreadsheet
-                </label>
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    id="cohort-file"
-                    accept=".csv, .xlsx, .xls"
-                    onChange={handleFileUpload}
-                    className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4
-                     file:rounded-full file:border-0 file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-400
-                     hover:file:bg-blue-100 dark:hover:file:bg-blue-900/40"
-                />
-            </div>
-
-            {/* Save and Cancel buttons */}
-            {cohort && (
-                <div className="flex space-x-3 mt-4">
-                    <button
-                        onClick={handleSaveCohort}
-                        className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-150"
-                    >
-                        Save Cohort
-                    </button>
-                    <button
-                        onClick={handleCancel}
-                        className="px-4 py-2 bg-gray-200 dark:bg-zinc-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-500 transition-colors duration-150"
-                    >
-                        Cancel
-                    </button>
+            {/* Status message */}
+            {uploadStatus.type && (
+                <div className={`mb-4 p-3 border rounded-lg ${uploadStatus.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-800 text-green-700 dark:text-green-400' :
+                    uploadStatus.type === 'error' ? 'bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-800 text-red-700 dark:text-red-400' :
+                        'bg-blue-100 dark:bg-blue-900/30 border-blue-400 dark:border-blue-800 text-blue-700 dark:text-blue-400'
+                    }`}>
+                    {uploadStatus.message}
                 </div>
             )}
 
-            {/* Display parsed data */}
+            {/* Upload section with improved styling */}
+            <div className="bg-gray-50 dark:bg-zinc-700 p-5 rounded-lg shadow-sm mb-6">
+                <h3 className="text-lg font-medium mb-3">Upload Cohort Spreadsheet</h3>
+
+                <div className="mb-3">
+                    <div className="relative">
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            id="cohort-file"
+                            accept=".csv, .xlsx, .xls"
+                            onChange={handleFileUpload}
+                            className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/40"
+                            disabled={isLoading}
+                        />
+                        {isLoading && (
+                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-700 dark:border-blue-400"></div>
+                            </div>
+                        )}
+                    </div>
+
+                    {fileName && (
+                        <div className="mt-2 text-sm text-gray-600 dark:text-gray-400 flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            {fileName}
+                        </div>
+                    )}
+                </div>
+
+                {/* Save and Cancel buttons */}
+                {cohort && (
+                    <div className="flex space-x-3 mt-4">
+                        <button
+                            onClick={handleSaveCohort}
+                            disabled={isLoading}
+                            className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isLoading ? 'Saving...' : 'Save Cohort'}
+                        </button>
+                        <button
+                            onClick={handleCancel}
+                            disabled={isLoading}
+                            className="px-4 py-2 bg-gray-200 dark:bg-zinc-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-500 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* Display parsed data with improved styling */}
             {cohort && (
-                <div className="mt-5">
-                    <h3 className="font-semibold">Parsed Data Preview:</h3>
-                    <div className="mt-2 p-4 bg-gray-100 dark:bg-zinc-700 rounded-md overflow-auto">
-                        <h4 className="font-bold">Freshman ({cohort.freshman.length})</h4>
-                        <ul className="list-disc ml-5">
-                            {cohort.freshman.map((course, index) => (
-                                <li key={`freshman-${index}`}>{course}</li>
+                <div className="mt-5 mb-8">
+                    <h3 className="text-lg font-medium mb-3">Cohort Preview</h3>
+                    <div className="bg-gray-50 dark:bg-zinc-700 rounded-lg shadow-sm overflow-hidden">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
+                            {[
+                                { title: 'Freshman', data: cohort.freshman },
+                                { title: 'Sophomore', data: cohort.sophomore },
+                                { title: 'Junior', data: cohort.junior },
+                                { title: 'Senior', data: cohort.senior }
+                            ].map((section, idx) => (
+                                <div key={section.title} className={`p-4 ${idx < 3 ? 'border-b md:border-b-0 md:border-r dark:border-zinc-600' : ''}`}>
+                                    <h4 className="font-semibold text-base mb-2 flex items-center">
+                                        {section.title}
+                                        <span className="ml-2 bg-gray-200 dark:bg-zinc-600 px-2 py-0.5 rounded-full text-xs">
+                                            {section.data.length}
+                                        </span>
+                                    </h4>
+                                    {section.data.length > 0 ? (
+                                        <div className="max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+                                            <ul className="space-y-1">
+                                                {section.data.map((course, i) => (
+                                                    <li key={i} className="text-sm py-1 border-b border-gray-100 dark:border-zinc-600 last:border-b-0">
+                                                        {course}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    ) : (
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 italic">No courses</p>
+                                    )}
+                                </div>
                             ))}
-                        </ul>
-
-                        <h4 className="font-bold mt-3">Sophomore ({cohort.sophomore.length})</h4>
-                        <ul className="list-disc ml-5">
-                            {cohort.sophomore.map((course, index) => (
-                                <li key={`sophomore-${index}`}>{course}</li>
-                            ))}
-                        </ul>
-
-                        <h4 className="font-bold mt-3">Junior ({cohort.junior.length})</h4>
-                        <ul className="list-disc ml-5">
-                            {cohort.junior.map((course, index) => (
-                                <li key={`junior-${index}`}>{course}</li>
-                            ))}
-                        </ul>
-
-                        <h4 className="font-bold mt-3">Senior ({cohort.senior.length})</h4>
-                        <ul className="list-disc ml-5">
-                            {cohort.senior.map((course, index) => (
-                                <li key={`senior-${index}`}>{course}</li>
-                            ))}
-                        </ul>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Display all existing cohorts neatly */}
-            <div className="mt-5">
-                <h3 className="font-semibold">My Cohorts</h3>
-                {cohorts.length > 0 ? (
-                    <div className="mt-2 overflow-auto">
+            {/* Display all existing cohorts with card layout */}
+            <div className="mt-8">
+                <h3 className="text-lg font-medium mb-4">My Cohorts</h3>
+
+                {isLoading && !cohort ? (
+                    <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 dark:border-blue-400"></div>
+                    </div>
+                ) : cohorts.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {cohorts.map((cohort, index) => (
-                            <div key={index} className="mb-4 bg-gray-100 dark:bg-zinc-700 p-4 rounded-md" onClick={() => { console.log(cohort) }}>
-                                <div className='flex justify-between items-center'>
-                                    <h4 className="font-semibold mb-1">Cohort {index + 1}</h4>
-                                    {cohort._id &&
-                                        <div
-                                            onClick={() => handleDeleteCohort(cohort._id as string)}
-                                            className="p-2 cursor-pointer flex justify-center items-center rounded-md mx-2 text-red-600 dark:text-red-400 hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150"
-                                        >
-                                            <MdDelete size={14} />
+                            <div key={cohort._id || index} className="bg-white dark:bg-zinc-700 rounded-lg shadow-sm overflow-hidden">
+                                <div className="p-4 border-b dark:border-zinc-600">
+                                    <div className='flex justify-between items-center'>
+                                        <div>
+                                            <h4 className="font-semibold text-lg">Cohort {index + 1}</h4>
+                                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                {countTotalCourses(cohort)} courses total
+                                            </p>
                                         </div>
-                                    }
+                                        {cohort._id &&
+                                            <button
+                                                onClick={() => handleDeleteCohort(cohort._id as string)}
+                                                disabled={isLoading}
+                                                className="p-2 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-150"
+                                                aria-label="Delete cohort"
+                                            >
+                                                <MdDelete size={20} />
+                                            </button>
+                                        }
+                                    </div>
                                 </div>
-                                <ul className="ml-4">
-                                    <li className='flex flex-col mb-1'>
-                                        <p className='font-semibold'>Freshman</p>
-                                        <p>{cohort.freshman.join(', ')}</p>
-                                    </li>
-                                    <li className='flex flex-col mb-1'>
-                                        <p className='font-semibold'>Sophomore</p>
-                                        <p>{cohort.sophomore.join(', ')}</p>
-                                    </li>
-                                    <li className='flex flex-col mb-1'>
-                                        <p className='font-semibold'>Junior</p>
-                                        <p>{cohort.junior.join(', ')}</p>
-                                    </li>
-                                    <li className='flex flex-col mb-1'>
-                                        <p className='font-semibold'>Senior</p>
-                                        <p>{cohort.senior.join(', ')}</p>
-                                    </li>
-                                </ul>
+
+                                <div className="p-4">
+                                    <div className="space-y-3">
+                                        <div>
+                                            <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Freshman</h5>
+                                            <p className="text-sm line-clamp-2">{cohort.freshman.length > 0 ?
+                                                cohort.freshman.join(', ') :
+                                                <span className="italic text-gray-500 dark:text-gray-400">No courses</span>}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Sophomore</h5>
+                                            <p className="text-sm line-clamp-2">{cohort.sophomore.length > 0 ?
+                                                cohort.sophomore.join(', ') :
+                                                <span className="italic text-gray-500 dark:text-gray-400">No courses</span>}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Junior</h5>
+                                            <p className="text-sm line-clamp-2">{cohort.junior.length > 0 ?
+                                                cohort.junior.join(', ') :
+                                                <span className="italic text-gray-500 dark:text-gray-400">No courses</span>}
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Senior</h5>
+                                            <p className="text-sm line-clamp-2">{cohort.senior.length > 0 ?
+                                                cohort.senior.join(', ') :
+                                                <span className="italic text-gray-500 dark:text-gray-400">No courses</span>}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <p>No existing cohorts found.</p>
+                    <div className="bg-gray-50 dark:bg-zinc-700 rounded-lg p-8 text-center">
+                        <div className="inline-block p-3 bg-gray-100 dark:bg-zinc-600 rounded-full mb-3">
+                            <svg className="h-8 w-8 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h4 className="text-lg font-medium mb-1">No Cohorts Found</h4>
+                        <p className="text-gray-600 dark:text-gray-400">Upload a cohort spreadsheet to get started.</p>
+                    </div>
                 )}
             </div>
+
+            {/* Custom scrollbar styles */}
+            <style jsx global>{`
+                .custom-scrollbar::-webkit-scrollbar {
+                    width: 6px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-track {
+                    background: rgba(0, 0, 0, 0.05);
+                    border-radius: 3px;
+                }
+                .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(0, 0, 0, 0.15);
+                    border-radius: 3px;
+                }
+                .dark .custom-scrollbar::-webkit-scrollbar-track {
+                    background: rgba(255, 255, 255, 0.05);
+                }
+                .dark .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.15);
+                }
+            `}</style>
         </div>
     );
 }

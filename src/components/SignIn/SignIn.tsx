@@ -11,7 +11,7 @@ const SignIn = () => {
     if (session?.user) {
         return (
             <button
-                className="w-full px-4 py-2 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/50 text-sm font-medium transition-colors"
+                className="w-full px-4 py-2 rounded-md bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 hover:bg-red-200 dark:hover:bg-red-800/50 text-sm font-medium transition-colors cursor-pointer"
                 onClick={() => {
                     resetContextToEmpty();
                     signOut()

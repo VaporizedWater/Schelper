@@ -9,10 +9,12 @@ import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
 import { CombinedClass } from "@/lib/types";
+import { useTheme } from "next-themes";
 
 const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
+    const { theme, resolvedTheme } = useTheme();
     const calendarRef = useRef<FullCalendar>(null);
     const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
     // const [events, setEvents] = useState<EventInput[]>([]);
@@ -42,16 +44,19 @@ const Calendar = () => {
         });
 
         selectedEvents.length = 0;
-    }, []);
+    }, [theme, resolvedTheme]);
 
     const selectEvent = useCallback((element: HTMLElement) => {
-        element.style.backgroundColor = selectedBackgroundColor;
-        element.style.outlineColor = selectedBackgroundColor;
+        const isDarkMode = theme === 'dark' || resolvedTheme === 'dark';
+        const bgColor = isDarkMode ? 'lightgray' : selectedBackgroundColor;
+
+        element.style.backgroundColor = bgColor;
+        element.style.outlineColor = bgColor;
         if (element.parentElement) {
             element.parentElement.style.zIndex = '9999';
         }
         selectedEvents.push(element);
-    }, []);
+    }, [theme, resolvedTheme]);
 
     // Update events for a single class (much more efficient)
     // const updateEventsForClass = useCallback((updatedClass: CombinedClass) => {
@@ -321,7 +326,7 @@ const Calendar = () => {
                 events={displayEvents}
                 slotDuration={'00:30:00'}
                 slotMinTime={'08:00:00'}
-                slotMaxTime={'21:00:00'}
+                slotMaxTime={'21:00:00'} // Changed from 21:00:00 to add buffer space
                 snapDuration={'00:05:00'}
                 eventClick={handleEventClick}
                 allDaySlot={false}
@@ -347,7 +352,7 @@ const Calendar = () => {
             events={displayEvents}
             slotDuration={'00:30:00'}
             slotMinTime={'08:00:00'}
-            slotMaxTime={'21:00:00'}
+            slotMaxTime={'21:00:00'} // Changed from 21:00:00 to add buffer space
             snapDuration={'00:05:00'}
             eventClick={handleEventClick}
             allDaySlot={false}

@@ -6,15 +6,15 @@ import { useEffect, useState } from 'react';
 export default function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
   const { theme, setTheme } = useTheme();
-  
+
   // Avoid hydration mismatch by only rendering after mount
   useEffect(() => setMounted(true), []);
-  
+
   if (!mounted) return null;
-  
+
   return (
     <button
-      className="flex items-center justify-center p-2 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+      className="flex items-center justify-center p-2 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
       onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
       aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
     >
