@@ -8,6 +8,7 @@ import { useSearchParams } from "next/navigation";
 
 type TagState = "include" | "neutral" | "exclude";
 
+// Cycle: neutral → include → exclude → neutral …
 const cycleState = (current: TagState): TagState => {
     switch (current) {
         case "neutral":
@@ -26,10 +27,10 @@ const Filters = () => {
     const searchParams = useSearchParams();
     const cohortParam = searchParams.get("cohort");
 
-    // Map each tag string → its tri‐state ('include' / 'neutral' / 'exclude')
+    // Each tagName → "include" | "neutral" | "exclude"
     const [tagStates, setTagStates] = useState<Map<string, TagState>>(new Map());
 
-    // Separate maps by category (keys only; values are Set<classId>) so we know which tags belong to which category
+    // Category‐specific maps: tagName → Set<classId>
     const [cohortTags, setCohortTags] = useState<Map<string, Set<string>>>(new Map());
     const [roomTags, setRoomTags] = useState<Map<string, Set<string>>>(new Map());
     const [instructorTags, setInstructorTags] = useState<Map<string, Set<string>>>(new Map());
@@ -37,9 +38,9 @@ const Filters = () => {
     const [subjectTags, setSubjectTags] = useState<Map<string, Set<string>>>(new Map());
     const [userTags, setUserTags] = useState<Map<string, Set<string>>>(new Map());
 
-    // ---------------------------------------------
-    // 1) On initial load (or whenever tagList changes), rebuild category‐maps and initialize all tagStates
-    // ---------------------------------------------
+    // ───────────────────────────────────────────────────────────
+    // 1) Build category maps and initialize all tagStates on load / tagList change
+    // ───────────────────────────────────────────────────────────
     useEffect(() => {
         if (tagList.size === 0) return;
 
@@ -50,7 +51,6 @@ const Filters = () => {
         const newSubject = new Map<string, Set<string>>();
         const newUser = new Map<string, Set<string>>();
 
-        // Build category maps exactly as before (only include tags that have ≥1 class)
         for (const [tagName, info] of tagList.entries()) {
             const classes = info.classIds;
             if (classes.size === 0) continue;
@@ -74,8 +74,6 @@ const Filters = () => {
                 case "user":
                     newUser.set(tagName, classes);
                     break;
-                default:
-                    break;
             }
         }
 
@@ -86,8 +84,8 @@ const Filters = () => {
         setSubjectTags(newSubject);
         setUserTags(newUser);
 
-        // Consolidate all keys so we can initialize tagStates
-        const allFilteredTags = new Map<string, Set<string>>([
+        // Consolidate every tagName so we can set initial states
+        const allKeys = new Map<string, Set<string>>([
             ...newCohort,
             ...newRoom,
             ...newInstructor,
@@ -96,79 +94,71 @@ const Filters = () => {
             ...newUser,
         ]);
 
-        const initialStates = new Map<string, TagState>();
-
-        if (cohortParam && allFilteredTags.has(cohortParam)) {
-            // If a valid cohort param exists, that single tag starts as “include,” rest are “neutral”
-            for (const key of allFilteredTags.keys()) {
-                initialStates.set(key, key === cohortParam ? "include" : "neutral");
+        const initial = new Map<string, TagState>();
+        if (cohortParam && allKeys.has(cohortParam)) {
+            // Only that one cohort starts as "include"; others are "neutral"
+            for (const name of allKeys.keys()) {
+                initial.set(name, name === cohortParam ? "include" : "neutral");
             }
         } else {
-            // Otherwise default all tags → include (so everything shows by default)
-            for (const key of allFilteredTags.keys()) {
-                initialStates.set(key, "include");
+            // Everything defaults to "include"
+            for (const name of allKeys.keys()) {
+                initial.set(name, "include");
             }
         }
-
-        setTagStates(initialStates);
-        // NOTE: We do NOT call applyFilters(...) here. Instead, a separate useEffect will watch tagStates.
+        setTagStates(initial);
+        // (No applyFilters here; a separate effect will watch tagStates.)
     }, [tagList, cohortParam]);
 
-    // ---------------------------------------------
-    // 2) Whenever tagStates changes, re‐compute visible/invisible on every class
-    //     (We remove allClasses from this dependency list to avoid loops.)
-    // ---------------------------------------------
+    // ───────────────────────────────────────────────────────────
+    // 2) Whenever tagStates changes, recompute each class’s visibility
+    //    (Don’t depend on allClasses, to avoid an infinite loop.)
+    // ───────────────────────────────────────────────────────────
     useEffect(() => {
-        // If tagStates is still empty, do nothing
         if (tagStates.size === 0) return;
 
         const updated = allClasses.map((cls) => {
             const tags = cls.properties.tags ?? [];
 
-            // 2.a) If any tag on this class is 'exclude', hide it immediately
-            const hasExcluded = tags.some((t) => tagStates.get(t.tagName) === "exclude");
-            if (hasExcluded) {
+            // 2.a) If any tag on this class is "exclude", hide immediately
+            if (tags.some((t) => tagStates.get(t.tagName) === "exclude")) {
                 return { ...cls, visible: false };
             }
-
-            // 2.b) Else if any tag is 'include', show it
-            const hasIncluded = tags.some((t) => tagStates.get(t.tagName) === "include");
-            if (hasIncluded) {
+            // 2.b) Else if any tag is "include", show it
+            if (tags.some((t) => tagStates.get(t.tagName) === "include")) {
                 return { ...cls, visible: true };
             }
-
-            // 2.c) Otherwise (all neutral or no tags), hide it
+            // 2.c) Otherwise, hide it (all neutral or no tags)
             return { ...cls, visible: false };
         });
 
         updateAllClasses(updated);
-    }, [tagStates]); // ← only watch tagStates now, not allClasses
+    }, [tagStates]); // ← only tagStates here
 
-    // ---------------------------------------------
-    // 3) User clicks a single tag → cycle its state (neutral → include → exclude → neutral)
-    // ---------------------------------------------
-    const toggleOneTag = useCallback((tag: string) => {
+    // ───────────────────────────────────────────────────────────
+    // 3) Cycle a single tag’s state: neutral → include → exclude → neutral
+    // ───────────────────────────────────────────────────────────
+    const toggleOneTag = useCallback((tagName: string) => {
         setTagStates((prev) => {
             const next = new Map(prev);
-            const oldState = next.get(tag) ?? "neutral";
-            next.set(tag, cycleState(oldState));
+            const oldState = next.get(tagName) ?? "neutral";
+            next.set(tagName, cycleState(oldState));
             return next;
         });
     }, []);
 
-    // ---------------------------------------------
-    // 4) Category “toggle all” (if any in that category ≠ include, set all to include; else set all to neutral)
-    // ---------------------------------------------
+    // ───────────────────────────────────────────────────────────
+    // 4) Category‐level "toggle all": 
+    //    If every tag in that category is already "include", set them all → "neutral"; 
+    //    otherwise set them all → "include".
+    // ───────────────────────────────────────────────────────────
     const toggleCategoryAll = useCallback(
         (tagMap: Map<string, Set<string>>) => {
             setTagStates((prev) => {
                 const next = new Map(prev);
-
-                // Are all tags in this category already “include”?
-                const allInclude = Array.from(tagMap.keys()).every((tag) => next.get(tag) === "include");
-
-                for (const tag of tagMap.keys()) {
-                    next.set(tag, allInclude ? "neutral" : "include");
+                const allInclude = Array.from(tagMap.keys()).every((t) => next.get(t) === "include");
+                for (const tagName of tagMap.keys()) {
+                    next.set(tagName, allInclude ? "neutral" : "include");
                 }
                 return next;
             });
@@ -176,13 +166,14 @@ const Filters = () => {
         []
     );
 
-    // ---------------------------------------------
-    // 5) Global “toggle all filters” (if every tag in every category is include, set all → neutral; else set all → include)
-    // ---------------------------------------------
+    // ───────────────────────────────────────────────────────────
+    // 5) Global "toggle all filters": 
+    //    If every tag (in every category) is "include", set all → "neutral"; 
+    //    otherwise set all → "include".
+    // ───────────────────────────────────────────────────────────
     const toggleAllFilters = useCallback(() => {
         setTagStates((prev) => {
             const next = new Map(prev);
-
             const allTags = [
                 ...cohortTags.keys(),
                 ...roomTags.keys(),
@@ -191,61 +182,71 @@ const Filters = () => {
                 ...subjectTags.keys(),
                 ...userTags.keys(),
             ];
-            // If every single one is “include” right now, we flip them all to “neutral”
-            const allInclude = allTags.every((tag) => next.get(tag) === "include");
-
-            for (const tag of allTags) {
-                next.set(tag, allInclude ? "neutral" : "include");
+            const allInclude = allTags.every((t) => next.get(t) === "include");
+            for (const tagName of allTags) {
+                next.set(tagName, allInclude ? "neutral" : "include");
             }
             return next;
         });
     }, [cohortTags, roomTags, instructorTags, levelTags, subjectTags, userTags]);
 
-    // ---------------------------------------------
-    // 6) Render one tri‐state “checkbox” square for a given tagName
-    // ---------------------------------------------
+    // ───────────────────────────────────────────────────────────
+    // 6) Render one fixed-size (h-5 w-5) tri-state square for a given tagName.
+    //    We stopPropagation on clicks so the dropdown itself doesn't toggle.
+    // ───────────────────────────────────────────────────────────
     const renderTagCheckbox = (tagName: string) => {
         const state = tagStates.get(tagName) ?? "neutral";
 
-        // Base classes for the square “checkbox”
+        // Base classes: 1.25 rem × 1.25 rem, flex center, 1px border, rounded
         let boxClasses =
             "flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center rounded-sm border " +
             "transition-all ";
-        let icon = null;
+
+        const isInclude = state === "include";
+        const isExclude = state === "exclude";
 
         if (state === "neutral") {
-            // transparent background, gray border
             boxClasses += "border-slate-300 bg-transparent hover:border-slate-400";
-        } else if (state === "include") {
-            // blue background, checkmark
+        } else if (isInclude) {
             boxClasses += "border-blue-600 bg-blue-600";
-            icon = <BiCheck className="h-4 w-4 text-white" />;
         } else {
-            // exclude: red background, minus sign
             boxClasses += "border-red-600 bg-red-600";
-            icon = <BiMinus className="h-4 w-4 text-white" />;
         }
 
         return (
             <div
                 className={boxClasses}
-                onClick={() => toggleOneTag(tagName)}
-                title={`State: ${state === "include" ? "Include" : state === "exclude" ? "Exclude" : "Neutral"}`}
+                onClick={(e) => {
+                    e.stopPropagation();
+                    toggleOneTag(tagName);
+                }}
+                title={`State: ${isInclude ? "Include" : isExclude ? "Exclude" : "Neutral"}`}
             >
-                {icon}
+                <div className="h-4 w-4 flex items-center justify-center">
+                    {isInclude ? (
+                        <BiCheck className="h-4 w-4 text-white" />
+                    ) : isExclude ? (
+                        <BiMinus className="h-4 w-4 text-white" />
+                    ) : (
+                        // Invisible placeholder (so the box size never collapses)
+                        <span className="h-4 w-4 block opacity-0" />
+                    )}
+                </div>
             </div>
         );
     };
 
-    // ---------------------------------------------
-    // 7) Render one category’s dropdown (Cohort, Room, Instructor, etc.)
-    // ---------------------------------------------
+    // ───────────────────────────────────────────────────────────
+    // 7) Render one category’s dropdown (e.g. "Cohort", "Room", etc.).
+    //    The category's "toggleAll" box also stops propagation.
+    // ───────────────────────────────────────────────────────────
     const renderTagSection = useCallback(
         (title: string, tagMap: Map<string, Set<string>>) => {
             if (tagMap.size === 0) return null;
 
             return (
                 <DropDown
+                    alwaysOpen={true}
                     renderButton={(isOpen) => (
                         <span className="font-light text-gray-700 dark:text-gray-300 flex flex-row items-center justify-between">
                             <div className="flex items-center">
@@ -254,12 +255,12 @@ const Filters = () => {
                                     className={
                                         "flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center rounded-sm border " +
                                         "mr-2 transition-all " +
-                                        // If every tag in this category is “include,” show a blue check; else transparent border
                                         (Array.from(tagMap.keys()).every((t) => tagStates.get(t) === "include")
                                             ? "border-blue-600 bg-blue-600"
                                             : "border-slate-300 bg-transparent hover:border-slate-400")
                                     }
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                        e.stopPropagation();
                                         toggleCategoryAll(tagMap);
                                     }}
                                     title={
@@ -268,9 +269,14 @@ const Filters = () => {
                                             : "Select all (set all → Include)"
                                     }
                                 >
-                                    {Array.from(tagMap.keys()).every((t) => tagStates.get(t) === "include") && (
-                                        <BiCheck className="h-4 w-4 text-white" />
-                                    )}
+                                    <div className="h-4 w-4 flex items-center justify-center">
+                                        {Array.from(tagMap.keys()).every((t) => tagStates.get(t) === "include") ? (
+                                            <BiCheck className="h-4 w-4 text-white" />
+                                        ) :
+                                            <span className="h-4 w-4 opacity-0" />
+                                        }
+                                    </div>
+
                                 </div>
                                 <div>{title}</div>
                             </div>
@@ -278,8 +284,8 @@ const Filters = () => {
                         </span>
                     )}
                     renderDropdown={() => (
-                        <div className="pl-2 -mt-2">
-                            <ul className="pr-3" title="tag-list">
+                        <div className="pl-2 -mt-1">
+                            <ul className="pr-3">
                                 {Array.from(tagMap.keys())
                                     .sort((a, b) =>
                                         a.localeCompare(b, undefined, {
@@ -287,19 +293,17 @@ const Filters = () => {
                                             sensitivity: "base",
                                         })
                                     )
-                                    .map((tag) => (
-                                        <li key={tag} className="flex flex-row items-center py-1" title="tag-item">
-                                            {/* Our custom tri‐state box */}
-                                            {renderTagCheckbox(tag)}
-                                            <span className="ml-3 whitespace-nowrap">{tag}</span>
+                                    .map((tagName) => (
+                                        <li key={tagName} className="flex flex-row items-center py-1">
+                                            {renderTagCheckbox(tagName)}
+                                            <span className="ml-3 whitespace-nowrap">{tagName}</span>
                                         </li>
                                     ))}
                             </ul>
                         </div>
                     )}
                     buttonClassName="w-full text-left mt-1"
-                    dropdownClassName="relative shadow-none w-full"
-                    alwaysOpen={true}
+                    dropdownClassName="relative w-full"
                     darkClass="dark:bg-zinc-800"
                 />
             );
@@ -307,19 +311,18 @@ const Filters = () => {
         [tagStates, toggleCategoryAll]
     );
 
-    // ---------------------------------------------
-    // 8) Final JSX: top‐level “Toggle All Filters” plus each category section
-    // ---------------------------------------------
+    // ───────────────────────────────────────────────────────────
+    // 8) Final JSX: Top‐level “Toggle All Filters” + each category section
+    // ───────────────────────────────────────────────────────────
     return (
         <div className="flex flex-col">
             <div className="font-bold text-gray-700 dark:text-gray-300 flex flex-row items-center justify-between py-2">
                 <div className="flex flex-row items-center">
-                    {/* Top‐level toggle‐all checkbox */}
+                    {/* Top‐level “toggle all filters” box */}
                     <div
                         className={
                             "flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center rounded-sm border " +
                             "mr-2 transition-all " +
-                            // If every tag in *all* categories is “include,” show a blue check; else transparent
                             (
                                 [
                                     ...cohortTags.keys(),
@@ -333,7 +336,10 @@ const Filters = () => {
                                     : "border-slate-300 bg-transparent hover:border-slate-400"
                             )
                         }
-                        onClick={toggleAllFilters}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            toggleAllFilters();
+                        }}
                         title={
                             [
                                 ...cohortTags.keys(),
@@ -347,16 +353,19 @@ const Filters = () => {
                                 : "Select all filters (set every tag → Include)"
                         }
                     >
-                        {[
-                            ...cohortTags.keys(),
-                            ...roomTags.keys(),
-                            ...instructorTags.keys(),
-                            ...levelTags.keys(),
-                            ...subjectTags.keys(),
-                            ...userTags.keys(),
-                        ].every((t) => tagStates.get(t) === "include") && (
-                                <BiCheck className="h-4 w-4 text-white" />
-                            )}
+                        <div className="h-4 w-4 flex items-center justify-center">
+                            {[
+                                ...cohortTags.keys(),
+                                ...roomTags.keys(),
+                                ...instructorTags.keys(),
+                                ...levelTags.keys(),
+                                ...subjectTags.keys(),
+                                ...userTags.keys(),
+                            ].every((t) => tagStates.get(t) === "include") ?
+                                (<BiCheck className="h-4 w-4 text-white" />) :
+                                (<span className="h-4 w-4 opacity-0" />)
+                            }
+                        </div>
                     </div>
                     <div className="text-bold">Filters</div>
                 </div>
