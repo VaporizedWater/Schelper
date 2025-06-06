@@ -460,14 +460,14 @@ const Calendar = () => {
   .dark .fc-event-main,
   .dark .fc-h-event,
   .dark .fc-v-event {
-    border-color: #9ca3af !important; /* gray-500 */
+    border-color: #343636 !important; /* gray-500 */
   }
   
   /* Selected event border/highlight color */
   .dark .fc-event.selected,
   .dark .fc-event:focus {
-    outline-color: #9ca3af !important;
-    border-color: #9ca3af !important;
+    outline-color: #343636 !important;
+    border-color: #343636 !important;
   }
 
   .dark .fc-timegrid-event-harness-inset .fc-timegrid-event, .fc-timegrid-event.fc-event-mirror, .fc-timegrid-more-link {

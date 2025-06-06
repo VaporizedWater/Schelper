@@ -1,18 +1,35 @@
-// Child (sub-component) of left menu
+// Filters.tsx
 
-import { BiChevronUp, BiChevronDown } from "react-icons/bi";
+import { BiChevronUp, BiChevronDown, BiCheck, BiMinus } from "react-icons/bi";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useCallback, useEffect, useState } from "react";
 import DropDown from "../DropDown/DropDown";
 import { useSearchParams } from "next/navigation";
 
+type TagState = "include" | "neutral" | "exclude";
+
+const cycleState = (current: TagState): TagState => {
+    switch (current) {
+        case "neutral":
+            return "include";
+        case "include":
+            return "exclude";
+        case "exclude":
+            return "neutral";
+        default:
+            return "neutral";
+    }
+};
+
 const Filters = () => {
     const { tagList, allClasses, updateAllClasses } = useCalendarContext();
-    const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
     const searchParams = useSearchParams();
-    const cohortParam = searchParams.get('cohort');
+    const cohortParam = searchParams.get("cohort");
 
-    // Replace single filterTags with category-specific maps
+    // Map each tag string → its tri‐state ('include' / 'neutral' / 'exclude')
+    const [tagStates, setTagStates] = useState<Map<string, TagState>>(new Map());
+
+    // Separate maps by category (keys only; values are Set<classId>) so we know which tags belong to which category
     const [cohortTags, setCohortTags] = useState<Map<string, Set<string>>>(new Map());
     const [roomTags, setRoomTags] = useState<Map<string, Set<string>>>(new Map());
     const [instructorTags, setInstructorTags] = useState<Map<string, Set<string>>>(new Map());
@@ -20,222 +37,341 @@ const Filters = () => {
     const [subjectTags, setSubjectTags] = useState<Map<string, Set<string>>>(new Map());
     const [userTags, setUserTags] = useState<Map<string, Set<string>>>(new Map());
 
+    // ---------------------------------------------
+    // 1) On initial load (or whenever tagList changes), rebuild category‐maps and initialize all tagStates
+    // ---------------------------------------------
     useEffect(() => {
-        if (tagList.size > 0) {
-            // Create new maps for each category
-            const newCohortTags = new Map();
-            const newRoomTags = new Map();
-            const newInstructorTags = new Map();
-            const newLevelTags = new Map();
-            const newSubjectTags = new Map();
-            const newUserTags = new Map();
+        if (tagList.size === 0) return;
 
-            // Iterate through each tag in tagList
-            for (const [tag, tagCategoryAndClasses] of tagList.entries()) {
-                const classes = tagCategoryAndClasses.classIds;
-                // Only include tags that have associated classes
-                if (classes.size > 0) {
-                    // Sort into appropriate category
-                    switch (tagCategoryAndClasses.tagCategory) {
-                        case "cohort":
-                            newCohortTags.set(tag, classes);
-                            break;
-                        case "room":
-                            newRoomTags.set(tag, classes);
-                            break;
-                        case "instructor":
-                            newInstructorTags.set(tag, classes);
-                            break;
-                        case "level":
-                            newLevelTags.set(tag, classes);
-                            break;
-                        case "subject":
-                            newSubjectTags.set(tag, classes);
-                            break;
-                        case "user":
-                            newUserTags.set(tag, classes);
-                            break;
-                        // Other categories could be added as needed
-                    }
-                }
-            }
+        const newCohort = new Map<string, Set<string>>();
+        const newRoom = new Map<string, Set<string>>();
+        const newInstructor = new Map<string, Set<string>>();
+        const newLevel = new Map<string, Set<string>>();
+        const newSubject = new Map<string, Set<string>>();
+        const newUser = new Map<string, Set<string>>();
 
-            // Update state for each category
-            setCohortTags(newCohortTags);
-            setRoomTags(newRoomTags);
-            setInstructorTags(newInstructorTags);
-            setLevelTags(newLevelTags);
-            setSubjectTags(newSubjectTags);
-            setUserTags(newUserTags);
+        // Build category maps exactly as before (only include tags that have ≥1 class)
+        for (const [tagName, info] of tagList.entries()) {
+            const classes = info.classIds;
+            if (classes.size === 0) continue;
 
-            // Handle cohort parameter from URL if present
-            const allFilteredTags = new Map([
-                ...newCohortTags, ...newRoomTags, ...newInstructorTags, ...newLevelTags, ...newSubjectTags, ...newUserTags
-            ]);
-
-            // Use newFilteredTags (not filterTags) since the state update hasn't processed yet
-            if (cohortParam && Array.from(allFilteredTags.keys()).includes(cohortParam)) {
-                // Only select the cohort tag in the UI
-                setSelectedTags(new Set([cohortParam]));
-            } else {
-                // Default behavior: select all tags from filtered tags
-                setSelectedTags(new Set(Array.from(allFilteredTags.keys())));
-            }
-        }
-    }, [tagList, cohortParam]);
-
-    // Function to update list of tags based on selected tags
-    const updateTags = useCallback((event: React.ChangeEvent<HTMLInputElement>, tagMap: Map<string, Set<string>>) => {
-        let newSelectedTags: Set<string>;
-        const mapTags = Array.from(tagMap.keys());
-
-        // Handle the "toggle-all" checkbox
-        if (event.target.id.endsWith("-toggle-all")) {  // Check for IDs ending with "-toggle-all"
-            // Get currently selected tags (excluding those from the current category)
-            const otherSelectedTags = Array.from(selectedTags).filter(tag => !mapTags.includes(tag));
-
-            // If checking "Select All", add all tags from this category
-            newSelectedTags = event.target.checked
-                ? new Set([...otherSelectedTags, ...mapTags])
-                : new Set(otherSelectedTags);
-        } else {
-            // Handle individual tag checkboxes
-            newSelectedTags = new Set(selectedTags);
-            if (event.target.checked) {
-                newSelectedTags.add(event.target.id);
-            } else {
-                newSelectedTags.delete(event.target.id);
+            switch (info.tagCategory) {
+                case "cohort":
+                    newCohort.set(tagName, classes);
+                    break;
+                case "room":
+                    newRoom.set(tagName, classes);
+                    break;
+                case "instructor":
+                    newInstructor.set(tagName, classes);
+                    break;
+                case "level":
+                    newLevel.set(tagName, classes);
+                    break;
+                case "subject":
+                    newSubject.set(tagName, classes);
+                    break;
+                case "user":
+                    newUser.set(tagName, classes);
+                    break;
+                default:
+                    break;
             }
         }
 
-        setSelectedTags(newSelectedTags);
+        setCohortTags(newCohort);
+        setRoomTags(newRoom);
+        setInstructorTags(newInstructor);
+        setLevelTags(newLevel);
+        setSubjectTags(newSubject);
+        setUserTags(newUser);
 
-        const updatedClasses = allClasses.map((cls) => {
-            const isVisible = cls.properties.tags?.some((tag) => newSelectedTags.has(tag.tagName));
-            return {
-                ...cls,
-                visible: isVisible
-            };
-        });
-
-        updateAllClasses(updatedClasses);
-    }, [allClasses, selectedTags, updateAllClasses]);
-
-    // Add a function to handle toggling all filters at once
-    const toggleAllFilters = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const allTags = new Map([
-            ...cohortTags, ...roomTags, ...instructorTags, ...levelTags, ...subjectTags, ...userTags
+        // Consolidate all keys so we can initialize tagStates
+        const allFilteredTags = new Map<string, Set<string>>([
+            ...newCohort,
+            ...newRoom,
+            ...newInstructor,
+            ...newLevel,
+            ...newSubject,
+            ...newUser,
         ]);
 
-        // Either select all or clear all based on checkbox state
-        const newSelectedTags: Set<string> = event.target.checked
-            ? new Set(Array.from(allTags.keys()))
-            : new Set();
+        const initialStates = new Map<string, TagState>();
 
-        setSelectedTags(newSelectedTags);
+        if (cohortParam && allFilteredTags.has(cohortParam)) {
+            // If a valid cohort param exists, that single tag starts as “include,” rest are “neutral”
+            for (const key of allFilteredTags.keys()) {
+                initialStates.set(key, key === cohortParam ? "include" : "neutral");
+            }
+        } else {
+            // Otherwise default all tags → include (so everything shows by default)
+            for (const key of allFilteredTags.keys()) {
+                initialStates.set(key, "include");
+            }
+        }
 
-        const updatedClasses = allClasses.map((cls) => {
-            const isVisible = cls.properties.tags?.some((tag) => newSelectedTags.has(tag.tagName));
-            return {
-                ...cls,
-                visible: isVisible
-            };
+        setTagStates(initialStates);
+        // NOTE: We do NOT call applyFilters(...) here. Instead, a separate useEffect will watch tagStates.
+    }, [tagList, cohortParam]);
+
+    // ---------------------------------------------
+    // 2) Whenever tagStates changes, re‐compute visible/invisible on every class
+    //     (We remove allClasses from this dependency list to avoid loops.)
+    // ---------------------------------------------
+    useEffect(() => {
+        // If tagStates is still empty, do nothing
+        if (tagStates.size === 0) return;
+
+        const updated = allClasses.map((cls) => {
+            const tags = cls.properties.tags ?? [];
+
+            // 2.a) If any tag on this class is 'exclude', hide it immediately
+            const hasExcluded = tags.some((t) => tagStates.get(t.tagName) === "exclude");
+            if (hasExcluded) {
+                return { ...cls, visible: false };
+            }
+
+            // 2.b) Else if any tag is 'include', show it
+            const hasIncluded = tags.some((t) => tagStates.get(t.tagName) === "include");
+            if (hasIncluded) {
+                return { ...cls, visible: true };
+            }
+
+            // 2.c) Otherwise (all neutral or no tags), hide it
+            return { ...cls, visible: false };
         });
 
-        updateAllClasses(updatedClasses);
-    }, [cohortTags, roomTags, instructorTags, levelTags, subjectTags, userTags, allClasses, updateAllClasses]);
+        updateAllClasses(updated);
+    }, [tagStates]); // ← only watch tagStates now, not allClasses
 
-    // Helper function to render a tag category dropdown
-    const renderTagSection = useCallback((title: string, tagMap: Map<string, Set<string>>, categoryId: string) => (
-        <DropDown
-            renderButton={(isOpen) => (
-                <span className="font-light text-gray-700 dark:text-gray-300 flex flex-row items-center justify-between">
-                    <div className="flex items-center">
-                        <input
-                            type="checkbox"
-                            id={`${categoryId}-toggle-all`}
-                            className="h-4 w-4 mr-2 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-400 checked:border-blue-400"
-                            checked={Array.from(tagMap.keys()).every(tag => selectedTags.has(tag))}
-                            onChange={(e) => updateTags(e, tagMap)}
-                            onClick={(e) => e.stopPropagation()}
-                            onMouseDown={(e) => e.stopPropagation()}
-                        />
-                        <div>{title}</div>
-                    </div>
-                    {isOpen ? <BiChevronUp /> : <BiChevronDown />}
-                </span>
-            )}
-            renderDropdown={() => (
-                <div className="pl-2 -mt-2">
-                    <ul className="pr-3" title="tag-list">
-                        {Array.from(tagMap.entries())
-                            .sort((a, b) => a[0].localeCompare(b[0], undefined, {
-                                numeric: true,
-                                sensitivity: 'base'
-                            }))
-                            .map(([tag]) => (
-                                <li key={tag} className="flex flex-row items-center" title="tag-item">
-                                    <label className="flex items-center cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            name={tag}
-                                            id={tag}
-                                            className="h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
-                                            checked={selectedTags.has(tag)}
-                                            onChange={(e) => updateTags(e, tagMap)}
-                                        />
-                                    </label>
-                                    <span className="ml-3 whitespace-nowrap">{tag}</span>
-                                </li>
-                            ))}
-                    </ul>
-                </div>
-            )}
-            buttonClassName="w-full text-left mt-1"
-            dropdownClassName="relative shadow-none w-full"
-            alwaysOpen={true}
-            darkClass="dark:bg-zinc-800"
-        />
-    ), [selectedTags, updateTags]);
+    // ---------------------------------------------
+    // 3) User clicks a single tag → cycle its state (neutral → include → exclude → neutral)
+    // ---------------------------------------------
+    const toggleOneTag = useCallback((tag: string) => {
+        setTagStates((prev) => {
+            const next = new Map(prev);
+            const oldState = next.get(tag) ?? "neutral";
+            next.set(tag, cycleState(oldState));
+            return next;
+        });
+    }, []);
 
+    // ---------------------------------------------
+    // 4) Category “toggle all” (if any in that category ≠ include, set all to include; else set all to neutral)
+    // ---------------------------------------------
+    const toggleCategoryAll = useCallback(
+        (tagMap: Map<string, Set<string>>) => {
+            setTagStates((prev) => {
+                const next = new Map(prev);
+
+                // Are all tags in this category already “include”?
+                const allInclude = Array.from(tagMap.keys()).every((tag) => next.get(tag) === "include");
+
+                for (const tag of tagMap.keys()) {
+                    next.set(tag, allInclude ? "neutral" : "include");
+                }
+                return next;
+            });
+        },
+        []
+    );
+
+    // ---------------------------------------------
+    // 5) Global “toggle all filters” (if every tag in every category is include, set all → neutral; else set all → include)
+    // ---------------------------------------------
+    const toggleAllFilters = useCallback(() => {
+        setTagStates((prev) => {
+            const next = new Map(prev);
+
+            const allTags = [
+                ...cohortTags.keys(),
+                ...roomTags.keys(),
+                ...instructorTags.keys(),
+                ...levelTags.keys(),
+                ...subjectTags.keys(),
+                ...userTags.keys(),
+            ];
+            // If every single one is “include” right now, we flip them all to “neutral”
+            const allInclude = allTags.every((tag) => next.get(tag) === "include");
+
+            for (const tag of allTags) {
+                next.set(tag, allInclude ? "neutral" : "include");
+            }
+            return next;
+        });
+    }, [cohortTags, roomTags, instructorTags, levelTags, subjectTags, userTags]);
+
+    // ---------------------------------------------
+    // 6) Render one tri‐state “checkbox” square for a given tagName
+    // ---------------------------------------------
+    const renderTagCheckbox = (tagName: string) => {
+        const state = tagStates.get(tagName) ?? "neutral";
+
+        // Base classes for the square “checkbox”
+        let boxClasses =
+            "flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center rounded-sm border " +
+            "transition-all ";
+        let icon = null;
+
+        if (state === "neutral") {
+            // transparent background, gray border
+            boxClasses += "border-slate-300 bg-transparent hover:border-slate-400";
+        } else if (state === "include") {
+            // blue background, checkmark
+            boxClasses += "border-blue-600 bg-blue-600";
+            icon = <BiCheck className="h-4 w-4 text-white" />;
+        } else {
+            // exclude: red background, minus sign
+            boxClasses += "border-red-600 bg-red-600";
+            icon = <BiMinus className="h-4 w-4 text-white" />;
+        }
+
+        return (
+            <div
+                className={boxClasses}
+                onClick={() => toggleOneTag(tagName)}
+                title={`State: ${state === "include" ? "Include" : state === "exclude" ? "Exclude" : "Neutral"}`}
+            >
+                {icon}
+            </div>
+        );
+    };
+
+    // ---------------------------------------------
+    // 7) Render one category’s dropdown (Cohort, Room, Instructor, etc.)
+    // ---------------------------------------------
+    const renderTagSection = useCallback(
+        (title: string, tagMap: Map<string, Set<string>>) => {
+            if (tagMap.size === 0) return null;
+
+            return (
+                <DropDown
+                    renderButton={(isOpen) => (
+                        <span className="font-light text-gray-700 dark:text-gray-300 flex flex-row items-center justify-between">
+                            <div className="flex items-center">
+                                {/* Category‐level “toggle all” box */}
+                                <div
+                                    className={
+                                        "flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center rounded-sm border " +
+                                        "mr-2 transition-all " +
+                                        // If every tag in this category is “include,” show a blue check; else transparent border
+                                        (Array.from(tagMap.keys()).every((t) => tagStates.get(t) === "include")
+                                            ? "border-blue-600 bg-blue-600"
+                                            : "border-slate-300 bg-transparent hover:border-slate-400")
+                                    }
+                                    onClick={() => {
+                                        toggleCategoryAll(tagMap);
+                                    }}
+                                    title={
+                                        Array.from(tagMap.keys()).every((t) => tagStates.get(t) === "include")
+                                            ? "Deselect all (set all → Neutral)"
+                                            : "Select all (set all → Include)"
+                                    }
+                                >
+                                    {Array.from(tagMap.keys()).every((t) => tagStates.get(t) === "include") && (
+                                        <BiCheck className="h-4 w-4 text-white" />
+                                    )}
+                                </div>
+                                <div>{title}</div>
+                            </div>
+                            {isOpen ? <BiChevronUp /> : <BiChevronDown />}
+                        </span>
+                    )}
+                    renderDropdown={() => (
+                        <div className="pl-2 -mt-2">
+                            <ul className="pr-3" title="tag-list">
+                                {Array.from(tagMap.keys())
+                                    .sort((a, b) =>
+                                        a.localeCompare(b, undefined, {
+                                            numeric: true,
+                                            sensitivity: "base",
+                                        })
+                                    )
+                                    .map((tag) => (
+                                        <li key={tag} className="flex flex-row items-center py-1" title="tag-item">
+                                            {/* Our custom tri‐state box */}
+                                            {renderTagCheckbox(tag)}
+                                            <span className="ml-3 whitespace-nowrap">{tag}</span>
+                                        </li>
+                                    ))}
+                            </ul>
+                        </div>
+                    )}
+                    buttonClassName="w-full text-left mt-1"
+                    dropdownClassName="relative shadow-none w-full"
+                    alwaysOpen={true}
+                    darkClass="dark:bg-zinc-800"
+                />
+            );
+        },
+        [tagStates, toggleCategoryAll]
+    );
+
+    // ---------------------------------------------
+    // 8) Final JSX: top‐level “Toggle All Filters” plus each category section
+    // ---------------------------------------------
     return (
         <div className="flex flex-col">
             <div className="font-bold text-gray-700 dark:text-gray-300 flex flex-row items-center justify-between py-2">
                 <div className="flex flex-row items-center">
-                    <input
-                        type="checkbox"
-                        id="toggle-all-filters"
-                        className="h-4 w-4 mr-2 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-200 checked:border-blue-200"
-                        checked={selectedTags.size > 0 && selectedTags.size === Array.from(new Map([
-                            ...cohortTags, ...roomTags, ...instructorTags, ...levelTags, ...subjectTags, ...userTags
-                        ]).keys()).length}
-                        onChange={toggleAllFilters}
-                    />
+                    {/* Top‐level toggle‐all checkbox */}
+                    <div
+                        className={
+                            "flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center rounded-sm border " +
+                            "mr-2 transition-all " +
+                            // If every tag in *all* categories is “include,” show a blue check; else transparent
+                            (
+                                [
+                                    ...cohortTags.keys(),
+                                    ...roomTags.keys(),
+                                    ...instructorTags.keys(),
+                                    ...levelTags.keys(),
+                                    ...subjectTags.keys(),
+                                    ...userTags.keys(),
+                                ].every((t) => tagStates.get(t) === "include")
+                                    ? "border-blue-600 bg-blue-600"
+                                    : "border-slate-300 bg-transparent hover:border-slate-400"
+                            )
+                        }
+                        onClick={toggleAllFilters}
+                        title={
+                            [
+                                ...cohortTags.keys(),
+                                ...roomTags.keys(),
+                                ...instructorTags.keys(),
+                                ...levelTags.keys(),
+                                ...subjectTags.keys(),
+                                ...userTags.keys(),
+                            ].every((t) => tagStates.get(t) === "include")
+                                ? "Deselect all filters (set every tag → Neutral)"
+                                : "Select all filters (set every tag → Include)"
+                        }
+                    >
+                        {[
+                            ...cohortTags.keys(),
+                            ...roomTags.keys(),
+                            ...instructorTags.keys(),
+                            ...levelTags.keys(),
+                            ...subjectTags.keys(),
+                            ...userTags.keys(),
+                        ].every((t) => tagStates.get(t) === "include") && (
+                                <BiCheck className="h-4 w-4 text-white" />
+                            )}
+                    </div>
                     <div className="text-bold">Filters</div>
                 </div>
             </div>
 
             <div className="flex flex-col gap-4">
-                {/* Cohort */}
-                {cohortTags.size > 0 && renderTagSection("Cohort", cohortTags, "cohort")}
-
-                {/* Room */}
-                {roomTags.size > 0 && renderTagSection("Room", roomTags, "room")}
-
-                {/* Instructor */}
-                {instructorTags.size > 0 && renderTagSection("Instructor", instructorTags, "instructor")}
-
-                {/* Level */}
-                {levelTags.size > 0 && renderTagSection("Level", levelTags, "level")}
-
-                {/* Subject */}
-                {subjectTags.size > 0 && renderTagSection("Subject", subjectTags, "subject")}
-
-                {/* User Tags */}
-                {userTags.size > 0 && renderTagSection("User Tags", userTags, "user")}
+                {renderTagSection("Cohort", cohortTags)}
+                {renderTagSection("Room", roomTags)}
+                {renderTagSection("Instructor", instructorTags)}
+                {renderTagSection("Level", levelTags)}
+                {renderTagSection("Subject", subjectTags)}
+                {renderTagSection("User Tags", userTags)}
             </div>
         </div>
     );
-}
+};
 
 export default Filters;
