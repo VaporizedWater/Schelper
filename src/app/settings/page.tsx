@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import xlsx, { WorkBook, WorkSheet } from 'xlsx';
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
-import { insertCohort, loadCohorts } from '@/lib/DatabaseUtils';
+import { insertCohort, loadCohorts, updateCohort, setCurrentCohortInDb } from '@/lib/DatabaseUtils';
 import { CohortType } from '@/lib/types';
 import { useSession } from 'next-auth/react';
 import AddTagButton from "@/components/AddTagButton/AddTagButton";
@@ -129,14 +129,24 @@ function CohortSettings() {
         type: 'success' | 'error' | 'info' | null;
     }>({ message: '', type: null });
 
+    // In the CohortSettings component, add a new state variable
+    const [currentCohortId, setCurrentCohortId] = useState<string | null>(null);
+
     // Load cohorts when component mounts
     useEffect(() => {
         async function fetchCohorts() {
             setIsLoading(true);
             try {
+                // Get all cohorts
                 const result = await loadCohorts(session?.user?.email || '', 'true');
                 setCohorts(result);
-                console.log('Loaded cohorts:', result);
+
+                // Get the current cohort separately to identify which one is current
+                const currentCohort = await loadCohorts(session?.user?.email || '', 'false');
+                if (currentCohort && currentCohort[0] && currentCohort[0]._id) {
+                    setCurrentCohortId(currentCohort[0]._id as string);
+                }
+                console.log('Current cohort:', currentCohort);
             } catch (error) {
                 console.error('Error loading cohorts:', error);
                 setUploadStatus({
@@ -158,6 +168,8 @@ function CohortSettings() {
     // Update state type to match CohortType
     const [cohort, setCohort] = useState<CohortType | null>(null);
     const [fileName, setFileName] = useState<string>('');
+    const [editingCohortId, setEditingCohortId] = useState<string | null>(null);
+    const [editNameValue, setEditNameValue] = useState('');
 
     // Define a type for the structured cohort data
     interface CohortCourses {
@@ -244,6 +256,7 @@ function CohortSettings() {
 
             // Create a proper CohortType structure
             const newCohort: CohortType = {
+                name: "",
                 freshman: [],
                 sophomore: [],
                 junior: [],
@@ -270,6 +283,8 @@ function CohortSettings() {
 
             setCohort(newCohort);
             setUploadStatus({ message: 'File processed successfully', type: 'success' });
+            setCurrentCohortId(null); // Reset current cohort ID since we're uploading a new one
+
         } catch (error) {
             console.error('Error reading file:', error);
             setUploadStatus({ message: 'Failed to process file', type: 'error' });
@@ -281,6 +296,11 @@ function CohortSettings() {
     const handleSaveCohort = async () => {
         if (!cohort) {
             setUploadStatus({ message: 'Missing cohort data', type: 'error' });
+            return;
+        }
+
+        if (!cohort.name.trim()) {
+            setUploadStatus({ message: 'Please provide a cohort name', type: 'error' });
             return;
         }
 
@@ -298,6 +318,12 @@ function CohortSettings() {
                 // Refresh cohorts list
                 const updatedCohorts = await loadCohorts(session.user.email, 'true');
                 setCohorts(updatedCohorts);
+
+                // Get the current cohort separately to identify which one is current
+                const currentCohort = await loadCohorts(session.user.email, 'false');
+                if (currentCohort && currentCohort[0] && currentCohort[0]._id) {
+                    setCurrentCohortId(currentCohort[0]._id as string);
+                }
 
                 setCohort(null); // Reset the cohort state
                 setFileName(''); // Clear filename
@@ -317,14 +343,59 @@ function CohortSettings() {
         }
     };
 
-    const handleCancel = () => {
-        setCohort(null);
-        setFileName('');
-        setUploadStatus({ message: '', type: null });
+    // Function to start editing a cohort
+    const handleEditCohort = (cohort: CohortType) => {
+        setEditingCohortId(cohort._id as string);
+        setEditNameValue(cohort.name);
+    };
 
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
+    // Function to save edited cohort
+    const handleUpdateCohort = async (cohortToUpdate: CohortType) => {
+        console.log('Updating cohort:', cohortToUpdate);
+        if (!cohortToUpdate || !cohortToUpdate._id) return;
+
+        if (!editNameValue.trim()) {
+            setUploadStatus({ message: 'Please provide a cohort name', type: 'error' });
+            return;
         }
+
+        setIsLoading(true);
+        try {
+            if (!session?.user?.email) {
+                setUploadStatus({ message: 'User email is not available', type: 'error' });
+                return;
+            }
+
+            const updatedCohort = {
+                ...cohortToUpdate,
+                name: editNameValue
+            };
+
+            const result = await updateCohort(updatedCohort._id as string, updatedCohort);
+
+            if (result) {
+                setUploadStatus({ message: 'Cohort updated successfully!', type: 'success' });
+
+                // Refresh cohorts list
+                const updatedCohorts = await loadCohorts(session.user.email, 'true');
+                setCohorts(updatedCohorts);
+
+                // Exit edit mode
+                setEditingCohortId(null);
+            } else {
+                setUploadStatus({ message: 'Failed to update cohort', type: 'error' });
+            }
+        } catch (error) {
+            console.error("Error updating cohort:", error);
+            setUploadStatus({ message: 'An error occurred while updating the cohort', type: 'error' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Function to cancel editing
+    const handleCancelEdit = () => {
+        setEditingCohortId(null);
     };
 
     const handleDeleteCohort = async (cohortId: string) => {
@@ -365,6 +436,39 @@ function CohortSettings() {
         ].length;
     };
 
+    // Add function to set a cohort as current using the generic users endpoint
+    const setCurrentCohort = async (cohortId: string) => {
+        if (!session?.user?.email) {
+            setUploadStatus({ message: 'User email is not available', type: 'error' });
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const result = await setCurrentCohortInDb(session.user.email, cohortId);
+
+            if (result.success) {
+                setCurrentCohortId(cohortId);
+                setUploadStatus({
+                    message: result.modifiedCount && result.modifiedCount > 0
+                        ? 'Current cohort updated successfully'
+                        : 'This cohort is already set as current',
+                    type: 'success'
+                });
+            } else {
+                setUploadStatus({
+                    message: result.message || 'Failed to update current cohort',
+                    type: 'error'
+                });
+            }
+        } catch (error) {
+            console.error("Error updating current cohort:", error);
+            setUploadStatus({ message: 'An error occurred while updating the current cohort', type: 'error' });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className='flex-1 text-black dark:text-gray-300'>
             <h2 className="text-2xl font-semibold mb-6">Cohorts Settings</h2>
@@ -391,7 +495,7 @@ function CohortSettings() {
                             id="cohort-file"
                             accept=".csv, .xlsx, .xls"
                             onChange={handleFileUpload}
-                            className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/40"
+                            className="block w-full text-sm text-gray-500 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-600 dark:file:bg-opacity-80 dark:file:text-white hover:file:bg-blue-100 dark:hover:file:bg-blue-500 transition-all"
                             disabled={isLoading}
                         />
                         {isLoading && (
@@ -422,7 +526,7 @@ function CohortSettings() {
                             {isLoading ? 'Saving...' : 'Save Cohort'}
                         </button>
                         <button
-                            onClick={handleCancel}
+                            onClick={handleCancelEdit}
                             disabled={isLoading}
                             className="px-4 py-2 bg-gray-200 dark:bg-zinc-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-500 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -437,6 +541,19 @@ function CohortSettings() {
                 <div className="mt-5 mb-8">
                     <h3 className="text-lg font-medium mb-3">Cohort Preview</h3>
                     <div className="bg-gray-50 dark:bg-zinc-700 rounded-lg shadow-sm overflow-hidden">
+                        <div className="p-4 border-b dark:border-zinc-600">
+                            <label htmlFor="cohort-name" className="block mb-1 font-medium text-sm text-gray-700 dark:text-gray-300">
+                                Cohort Name
+                            </label>
+                            <input
+                                type="text"
+                                id="cohort-name"
+                                value={cohort.name}
+                                onChange={(e) => setCohort({ ...cohort, name: e.target.value })}
+                                placeholder="Enter cohort name"
+                                className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-600 text-gray-900 dark:text-gray-100"
+                            />
+                        </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                             {[
                                 { title: 'Freshman', data: cohort.freshman },
@@ -473,7 +590,7 @@ function CohortSettings() {
 
             {/* Display all existing cohorts with card layout */}
             <div className="mt-8">
-                <h3 className="text-lg font-medium mb-4">My Cohorts</h3>
+                <h3 className="text-lg font-medium mb-4">My Cohorts {(!isLoading && cohorts) && "(" + cohorts.length + ")"}</h3>
 
                 {isLoading && !cohort ? (
                     <div className="flex justify-center items-center py-12">
@@ -482,25 +599,90 @@ function CohortSettings() {
                 ) : cohorts.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {cohorts.map((cohort, index) => (
-                            <div key={cohort._id || index} className="bg-white dark:bg-zinc-700 rounded-lg shadow-sm overflow-hidden">
+                            <div key={cohort._id || index} className={`bg-white dark:bg-zinc-700 rounded-lg shadow-sm overflow-hidden ${currentCohortId === cohort._id ? 'ring-2 ring-blue-500 dark:ring-blue-400' : ''}`}>
                                 <div className="p-4 border-b dark:border-zinc-600">
                                     <div className='flex justify-between items-center'>
-                                        <div>
-                                            <h4 className="font-semibold text-lg">Cohort {index + 1}</h4>
-                                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                {countTotalCourses(cohort)} courses total
-                                            </p>
+                                        <div className="w-full">
+                                            {editingCohortId === cohort._id ? (
+                                                // Editing mode remains unchanged
+                                                <div className="flex flex-col space-y-2">
+                                                    <input
+                                                        type="text"
+                                                        value={editNameValue}
+                                                        onChange={(e) => setEditNameValue(e.target.value)}
+                                                        className="px-2 py-1 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-600 text-gray-900 dark:text-gray-100"
+                                                        autoFocus
+                                                    />
+                                                    <div className="flex space-x-2">
+                                                        <button
+                                                            onClick={() => handleUpdateCohort(cohort)}
+                                                            disabled={isLoading}
+                                                            className="px-3 py-1 text-sm bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600"
+                                                        >
+                                                            {isLoading ? 'Saving...' : 'Save'}
+                                                        </button>
+                                                        <button
+                                                            onClick={handleCancelEdit}
+                                                            className="px-3 py-1 text-sm bg-gray-200 dark:bg-zinc-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-500"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div className="flex items-center">
+                                                        <h4 className="font-semibold text-lg">
+                                                            {cohort.name || `Cohort ${index + 1}`}
+                                                        </h4>
+                                                        {currentCohortId === cohort._id && (
+                                                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                                                                Current
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                        {countTotalCourses(cohort)} courses total
+                                                    </p>
+                                                </>
+                                            )}
                                         </div>
-                                        {cohort._id &&
-                                            <button
-                                                onClick={() => handleDeleteCohort(cohort._id as string)}
-                                                disabled={isLoading}
-                                                className="p-2 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-150"
-                                                aria-label="Delete cohort"
-                                            >
-                                                <MdDelete size={20} />
-                                            </button>
-                                        }
+                                        {editingCohortId !== cohort._id && (
+                                            <div className="flex items-center">
+                                                {/* Only show "Set as Current" button if this is not already the current cohort */}
+                                                {currentCohortId !== cohort._id && cohort._id && (
+                                                    <button
+                                                        onClick={() => setCurrentCohort(cohort._id as string)}
+                                                        disabled={isLoading}
+                                                        className="min-w-fit py-2 px-3 text-xs mr-1.5 rounded text-white bg-green-600 dark:bg-emerald-600 hover:bg-green-700 dark:hover:bg-emerald-500 transition-colors duration-150 font-medium whitespace-nowrap"
+                                                        aria-label="Set as current cohort"
+                                                    >
+                                                        Set as Current
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => handleEditCohort(cohort)}
+                                                    disabled={isLoading}
+                                                    className="p-2 mr-1 rounded-md text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors duration-150"
+                                                    aria-label="Edit cohort"
+                                                >
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                    </svg>
+                                                </button>
+                                                {cohort._id &&
+                                                    <button
+                                                        onClick={() => handleDeleteCohort(cohort._id as string)}
+                                                        disabled={isLoading}
+                                                        className="p-2 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-150"
+                                                        aria-label="Delete cohort"
+                                                    >
+                                                        <MdDelete size={20} />
+                                                    </button>
+                                                }
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 
@@ -551,27 +733,6 @@ function CohortSettings() {
                     </div>
                 )}
             </div>
-
-            {/* Custom scrollbar styles */}
-            <style jsx global>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: rgba(0, 0, 0, 0.05);
-                    border-radius: 3px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(0, 0, 0, 0.15);
-                    border-radius: 3px;
-                }
-                .dark .custom-scrollbar::-webkit-scrollbar-track {
-                    background: rgba(255, 255, 255, 0.05);
-                }
-                .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(255, 255, 255, 0.15);
-                }
-            `}</style>
         </div>
     );
 }

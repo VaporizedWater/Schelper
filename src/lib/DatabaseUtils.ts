@@ -356,23 +356,28 @@ export async function updateFaculty(faculty: FacultyType[]): Promise<boolean | n
     }
 }
 
-export async function updateCohort(cohortId: string, cohort: CohortType): Promise<boolean | null> {
+export async function updateCohort(cohortId: string, cohortData: CohortType): Promise<boolean> {
     try {
-        const response = await fetchWithTimeout(`api/cohorts/${cohortId}`, {
+        const response = await fetchWithTimeout("/api/cohorts", {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(cohort),
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ cohortId, cohortData }),
         });
 
         if (!response.ok) {
-            return null;
+            console.error("Failed to update cohort:", response.status, response.statusText);
+            const errorText = await response.text();
+            console.error("Error details:", errorText);
+            return false;
         }
 
         const result = await parseJsonResponse<{ success: boolean }>(response);
         return result.success;
     } catch (error) {
-        console.error("Failed to update cohort:", error);
-        return null;
+        console.error("Error updating cohort:", error);
+        return false;
     }
 }
 // ---
@@ -429,5 +434,57 @@ export async function deleteCohort(email: string, cohortId: string): Promise<boo
     } catch (error) {
         console.error("Failed to delete cohort:", error);
         return false;
+    }
+}
+
+// Add this function to the file
+
+export async function setCurrentCohortInDb(
+    userEmail: string,
+    cohortId: string
+): Promise<{
+    success: boolean;
+    message: string;
+    modifiedCount?: number;
+}> {
+    try {
+        const response = await fetchWithTimeout("/api/users", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                userEmail: userEmail,
+                updates: {
+                    current_cohort: cohortId,
+                },
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await parseJsonResponse<{ error: string }>(response);
+            return {
+                success: false,
+                message: errorData.error || `Failed with status: ${response.status}`,
+            };
+        }
+
+        const result = await parseJsonResponse<{
+            success: boolean;
+            message: string;
+            modifiedCount: number;
+        }>(response);
+
+        return {
+            success: result.success,
+            message: result.message,
+            modifiedCount: result.modifiedCount,
+        };
+    } catch (error) {
+        console.error("Error setting current cohort:", error);
+        return {
+            success: false,
+            message: error instanceof Error ? error.message : "Unknown error occurred",
+        };
     }
 }
