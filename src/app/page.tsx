@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Footer from '@/components/Footer/Footer';
-import Image from 'next/image';
 import Link from "next/link";
 import { ClockTower, DayCampus, LionShrine, NightCampus } from '../lib/icons';
 import { useSession } from "next-auth/react"
 import SignIn from "@/components/SignIn/SignIn";
+import { MdCalendarMonth } from "react-icons/md";
 
 const images = [LionShrine, DayCampus, NightCampus, ClockTower];
 
@@ -84,13 +84,7 @@ const Home = () => {
                             <Link className="overflow-hidden"
                                 href='/calendar'>
                                 <button className="inline-flex gap-2 items-center px-6 py-3 rounded-lg bg-psublue/50 hover:bg-psublue/60 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/40 text-white font-semibold cursor-pointer transition transform duration-200">
-                                    <Image
-                                        src="/calendar1.png"
-                                        alt="Edit Calendar"
-                                        width={30}
-                                        height={12}
-                                        className="cursor-pointer transition rounded-md"
-                                    />
+                                    <MdCalendarMonth className="h-7 w-7" />
                                     Calendar
                                 </button>
                             </Link>

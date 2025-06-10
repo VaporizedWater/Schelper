@@ -1,7 +1,7 @@
 import { DropDownProps } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClassName, alwaysOpen = false, defaultOpen = false, darkClass = "" }: DropDownProps) => {
+const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClassName, alwaysOpen = false, defaultOpen = false, darkClass = "", divClassName = "" }: DropDownProps) => {
     // Initialize isOpen based on alwaysOpen (which takes priority) or defaultOpen
     const [isOpen, setIsOpen] = useState(alwaysOpen || defaultOpen);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -33,7 +33,7 @@ const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClass
     }, []);
 
     return (
-        <div ref={dropdownRef} className="relative">
+        <div ref={dropdownRef} className={"relative " + divClassName}>
             <button
                 type="button"
                 onClick={toggleDropdown}

@@ -95,6 +95,7 @@ export type DropDownProps = {
     alwaysOpen?: boolean;
     defaultOpen?: boolean;
     darkClass?: string; // Class to apply dark mode styles
+    divClassName?: string;
 };
 
 export type ButtonDropDownProps = {

@@ -8,7 +8,7 @@ import { useCallback } from "react";
 const ButtonDropDown = ({ title, items, type }: ButtonDropDownProps) => {
     const renderButton = useCallback((isOpen: boolean) => {
         return (
-            <div className={`flex items-center gap-2 px-3 py-2 bg-white rounded-full 
+            <div className={`flex items-center gap-1 px-2 py-2 bg-white rounded-lg
                 hover:bg-gray-100 dark:bg-dark dark:hover:bg-zinc-700 transition-all duration-200 
                 shadow-sm hover:shadow border border-gray-200 dark:border-gray-500
                 ${isOpen ? 'bg-gray-100 dark:bg-dark' : ''}`}>
@@ -19,8 +19,8 @@ const ButtonDropDown = ({ title, items, type }: ButtonDropDownProps) => {
 
                 <span className="text-sm font-medium">{title}</span>
                 {isOpen ?
-                    <IoMdArrowDropup className="size-4 ml-0.5 text-gray-600 dark:text-gray-400" /> :
-                    <IoMdArrowDropdown className="size-4 ml-0.5 text-gray-600 dark:text-gray-400" />
+                    <IoMdArrowDropup className="size-4 text-gray-600 dark:text-gray-400" /> :
+                    <IoMdArrowDropdown className="size-4 text-gray-600 dark:text-gray-400" />
                 }
             </div>
         );
