@@ -246,7 +246,8 @@ const Filters = () => {
 
             return (
                 <DropDown
-                    alwaysOpen={true}
+                    alwaysOpen={false}
+                    defaultOpen={false}
                     renderButton={(isOpen) => (
                         <span className="font-light text-gray-700 dark:text-gray-300 flex flex-row items-center justify-between">
                             <div className="flex items-center">

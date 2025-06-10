@@ -44,6 +44,10 @@ const ButtonDropDown = ({ title, items, type }: ButtonDropDownProps) => {
         <DropDown
             renderButton={renderButton}
             renderDropdown={renderDropdown}
+            buttonClassName="inline-flex items-center"
+            dropdownClassName="w-40 right-0 min-w-fit"
+            alwaysOpen={false}
+            defaultOpen={false}
             darkClass="dark:bg-dark"
         />
     );

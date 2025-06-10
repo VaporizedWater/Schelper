@@ -2,14 +2,16 @@ import { DropDownProps } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 const DropDown = ({ renderButton, renderDropdown, buttonClassName, dropdownClassName, alwaysOpen = false, defaultOpen = false, darkClass = "" }: DropDownProps) => {
-    // Initialize isOpen based on alwaysOpen prop
-    const [isOpen, setIsOpen] = useState(alwaysOpen);
+    // Initialize isOpen based on alwaysOpen (which takes priority) or defaultOpen
+    const [isOpen, setIsOpen] = useState(alwaysOpen || defaultOpen);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    // Set initial state to be defaultOpen
+    // Only update isOpen based on defaultOpen if not alwaysOpen
     useEffect(() => {
-        setIsOpen(defaultOpen);
-    }, [defaultOpen]);
+        if (!alwaysOpen) {
+            setIsOpen(defaultOpen);
+        }
+    }, [defaultOpen, alwaysOpen]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

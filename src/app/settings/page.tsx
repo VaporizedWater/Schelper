@@ -45,12 +45,25 @@ export default function SettingsPage() {
         router.back();
     };
 
-    return (
-        <div className="flex h-full relative bg-white dark:bg-zinc-800 text-black dark:text-gray-200" onKeyDown={(e) => {
+    // Add global ESC key listener
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
                 handleEscClick();
             }
-        }}>
+        };
+
+        // Add event listener
+        document.addEventListener('keydown', handleKeyDown);
+
+        // Cleanup function
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, []);  // Empty dependency array means this runs once on mount
+
+    return (
+        <div className="flex h-full relative bg-white dark:bg-zinc-800 text-black dark:text-gray-200">
             {/* Left sidebar - independently scrollable */}
             <div className="w-60 bg-gray-100 dark:bg-zinc-700 overflow-y-auto border-r border-gray-200 dark:border-zinc-600 sticky top-15 self-start h-full">
                 <div className="p-4">
