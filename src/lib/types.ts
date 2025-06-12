@@ -95,6 +95,7 @@ export type DropDownProps = {
     alwaysOpen?: boolean;
     defaultOpen?: boolean;
     darkClass?: string; // Class to apply dark mode styles
+    divClassName?: string;
 };
 
 export type ButtonDropDownProps = {
@@ -241,6 +242,7 @@ export type FacultyType = {
 
 export type CohortType = {
     _id?: string;
+    name: string;
     freshman: string[];
     sophomore: string[];
     junior: string[];

@@ -275,6 +275,9 @@ const Calendar = () => {
             }
         }
 
+        // Get the section from the extendedProps
+        const section = eventInfo.event.extendedProps.combinedClass?.data?.section || '';
+
         return {
             html: `<div style="
                     background-color: ${backgroundColor}; 
@@ -286,7 +289,7 @@ const Calendar = () => {
                     white-space: nowrap;
                     font-size: 0.875rem; /* Medium font size for events */
                 ">
-                    ${eventInfo.event.title}
+                    ${eventInfo.event.title}${section ? ` - §${section}` : ''}
                 </div>`
         };
     }, [conflicts]);

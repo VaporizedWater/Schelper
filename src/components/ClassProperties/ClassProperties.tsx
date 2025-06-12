@@ -14,6 +14,7 @@ const ClassProperties = () => {
 
     const [courseSubject, setCourseSubject] = useState(initialData.course_subject || '');
     const [courseNum, setCourseNum] = useState(initialData.course_num || '');
+    const [section, setSection] = useState(initialData.section || '');
     const [title, setTitle] = useState(initialData.title || '');
     const [instructor, setInstructor] = useState(initialProps.instructor_name || '');
     const [email, setEmail] = useState(initialProps.instructor_email || '');
@@ -26,6 +27,7 @@ const ClassProperties = () => {
             const newProps = currentCombinedClass.properties;
             setCourseSubject(newData.course_subject || '');
             setCourseNum(newData.course_num || '');
+            setSection(newData.section || '');
             setTitle(newData.title || '');
             setInstructor(newProps.instructor_name || '');
             setEmail(newProps.instructor_email || '');
@@ -51,6 +53,17 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.data.course_num = newVal;
+            updateOneClass(modifiedClass);
+            toggleConflictPropertyChanged();
+        }
+    }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
+
+    const handleSectionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        const newVal = e.target.value;
+        setSection(newVal);
+        if (currentCombinedClass) {
+            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            modifiedClass.data.section = newVal;
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }
@@ -144,6 +157,15 @@ const ClassProperties = () => {
                                 className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={courseNum}
                                 onChange={handleCourseNumChange}
+                            />
+                        </li>
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50 rounded">
+                            <span className='w-full text-start font-semibold'>Section</span>
+                            <input
+                                type="text"
+                                className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
+                                value={section}
+                                onChange={handleSectionChange}
                             />
                         </li>
                         <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50 rounded">

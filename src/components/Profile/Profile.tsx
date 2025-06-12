@@ -16,12 +16,12 @@ const Profile = () => {
 
     const renderButton = useCallback((isOpen: boolean) => {
         return (
-            <div className={`flex items-center gap-1 px-3 py-2 bg-white rounded-full 
+            <div className={`flex items-center gap-1 px-3 py-2 bg-white rounded-lg 
         hover:bg-gray-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all duration-200 
         shadow-sm hover:shadow border border-gray-200 dark:border-gray-700
         ${isOpen ? 'bg-gray-100 dark:bg-zinc-700' : ''}`}>
 
-                <MdAccountCircle className="size-5 text-gray-700 dark:text-gray-300" />
+                <MdAccountCircle className="h-5 w-5 flex-shrink-0 text-gray-500 dark:text-gray-300" />
                 <div className="flex justify-center w-full">
                     {session?.user ? (
                         <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
@@ -81,6 +81,7 @@ const Profile = () => {
             buttonClassName="focus:outline-none"
             dropdownClassName="right-0 w-56 mt-1"
             darkClass="dark:bg-zinc-800"
+            divClassName=""
         />
     );
 };

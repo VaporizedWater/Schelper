@@ -459,14 +459,16 @@ const ImportSheet = () => {
                                             }}
                                         />
                                     </th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Class #</th>
+
                                     <th className="p-2 dark:border-zinc-500 text-left">Course</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Section</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Title</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Days</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Instructor</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Start</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">End</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Instructor</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Days</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Room</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Class #</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Cohort</th>
                                 </tr>
                             </thead>
@@ -497,21 +499,20 @@ const ImportSheet = () => {
                                                         }}
                                                     />
                                                 </td>
-                                                <td className="p-2 border dark:border-zinc-700">{cls.data.class_num}</td>
-                                                <td className="p-2 border dark:border-zinc-700">
-                                                    {cls.data.course_subject} {cls.data.course_num}
-                                                </td>
+
+                                                <td className="p-2 border dark:border-zinc-700">{cls.data.course_subject} {cls.data.course_num}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.data.section}</td>
                                                 <td className="p-2 border dark:border-zinc-700">{cls.data.title}</td>
-                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.days.join(', ')}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.instructor_name}</td>
                                                 <td className="p-2 border dark:border-zinc-700">
                                                     {cls.properties.start_time}
                                                 </td>
                                                 <td className="p-2 border dark:border-zinc-700">
                                                     {cls.properties.end_time}
                                                 </td>
-                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.instructor_name}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.days.join(', ')}</td>
                                                 <td className="p-2 border dark:border-zinc-700">{cls.properties.room}</td>
-
+                                                <td className="p-2 border dark:border-zinc-700">{cls.data.class_num}</td>
                                                 {/* Cohort which is based on selection + cohort list*/}
                                                 <td className="p-2 border dark:border-zinc-700 min-w-32">
                                                     <select
@@ -567,20 +568,23 @@ const ImportSheet = () => {
                                                         }}
                                                     />
                                                 </td>
-                                                <td className="p-2 border dark:border-zinc-700">{cls.data.class_num}</td>
+
                                                 <td className="p-2 border dark:border-zinc-700">
                                                     {cls.data.course_subject} {cls.data.course_num}
                                                 </td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.data.section}</td>
                                                 <td className="p-2 border dark:border-zinc-700">{cls.data.title}</td>
-                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.days.join(', ')}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.instructor_name}</td>
                                                 <td className="p-2 border dark:border-zinc-700">
                                                     {cls.properties.start_time}
                                                 </td>
                                                 <td className="p-2 border dark:border-zinc-700">
                                                     {cls.properties.end_time}
                                                 </td>
-                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.instructor_name}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.properties.days.join(', ')}</td>
+
                                                 <td className="p-2 border dark:border-zinc-700">{cls.properties.room}</td>
+                                                <td className="p-2 border dark:border-zinc-700">{cls.data.class_num}</td>
 
                                                 {/* Cohort which is based on selection + cohort list*/}
                                                 <td className="p-2 border dark:border-zinc-700 min-w-32">

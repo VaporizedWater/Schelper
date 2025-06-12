@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { MdDelete, MdAdd, MdSearch, MdFilterList } from 'react-icons/md';
-import Image from 'next/image';
+// import Image from 'next/image';
 
 // Professor type definition
 interface Professor {
@@ -181,7 +181,7 @@ export default function ProfessorsPage() {
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-center">
                                             {professor.imageUrl ? (
-                                                <Image
+                                                <img
                                                     src={professor.imageUrl}
                                                     alt={professor.name}
                                                     className="w-12 h-12 rounded-full object-cover mr-4"

@@ -85,14 +85,14 @@ const ExportSheet = () => {
                 'Course Subject': classItem.data.course_subject,
                 'Course Number': classItem.data.course_num,
                 'Section': classItem.data.section,
-                'Class': classItem.data.class_num || '',
                 'Title': classItem.data.title,
                 'Instructor': classItem.properties.instructor_name,
                 'Instructor Email': classItem.properties.instructor_email || '',
-                'Room': classItem.properties.room,
-                'Days': classItem.properties.days.join(', '),
                 'Start Time': classItem.properties.start_time,
-                'End Time': classItem.properties.end_time
+                'End Time': classItem.properties.end_time,
+                'Days': classItem.properties.days.join(', '),
+                'Room': classItem.properties.room,
+                'Class': classItem.data.class_num || ''
             };
         });
 
@@ -132,20 +132,20 @@ const ExportSheet = () => {
                 classItem.data.course_subject,
                 classItem.data.course_num,
                 classItem.data.section,
-                classItem.data.class_num || '',
                 classItem.data.title,
                 classItem.properties.instructor_name,
                 classItem.properties.instructor_email || '',
-                classItem.properties.room,
-                classItem.properties.days.join(', '),
                 classItem.properties.start_time,
-                classItem.properties.end_time
+                classItem.properties.end_time,
+                classItem.properties.days.join(', '),
+                classItem.properties.room,
+                classItem.data.class_num || '',
             ];
         });
 
         // Optimize column widths based on content type
         autoTable(doc, {
-            head: [['Subject', 'Number', 'Section', 'Class Num', 'Title', 'Instructor', 'Email', 'Room', 'Days', 'Start', 'End']],
+            head: [['Subject', 'Number', 'Section', 'Title', 'Instructor', 'Email', 'Start', 'End', 'Days', 'Room', 'Class Num']],
             body: tableData,
             startY: 20,
             styles: {
@@ -163,14 +163,15 @@ const ExportSheet = () => {
             columnStyles: {
                 0: { cellWidth: 15 },    // Subject
                 1: { cellWidth: 15 },    // Number
-                2: { cellWidth: 15 },    // Catalog
+                2: { cellWidth: 15 },    // Section
                 3: { cellWidth: 35 },    // Title
                 4: { cellWidth: 35 },    // Instructor
                 5: { cellWidth: 30 },    // Email
-                6: { cellWidth: 35 },    // Room
+                6: { cellWidth: 12 },    // Start
+                7: { cellWidth: 12 },    // End
                 8: { cellWidth: 25 },    // Days
-                9: { cellWidth: 12 },    // Start
-                10: { cellWidth: 12 },   // End
+                9: { cellWidth: 35 },    // Room
+                10: { cellWidth: 15 },    // Class Num 
             },
             margin: { top: 25 }
         });
@@ -240,14 +241,14 @@ const ExportSheet = () => {
                                     <th className="p-2 dark:border-zinc-500 text-left">Subject</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Number</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Section</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Class Num</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Title</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Instructor</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Email</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Room</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Days</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">Start</th>
                                     <th className="p-2 dark:border-zinc-500 text-left">End</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Days</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Room</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left">Class Num</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-zinc-700 divide-y divide-gray-200">
@@ -283,14 +284,14 @@ const ExportSheet = () => {
                                             <td className="p-2 border dark:border-zinc-500">{classItem.data.course_subject}</td>
                                             <td className="p-2 border dark:border-zinc-500">{classItem.data.course_num}</td>
                                             <td className="p-2 border dark:border-zinc-500">{classItem.data.section}</td>
-                                            <td className="p-2 border dark:border-zinc-500">{classItem.data.class_num || ''}</td>
                                             <td className="p-2 border dark:border-zinc-500">{classItem.data.title}</td>
                                             <td className="p-2 border dark:border-zinc-500">{classItem.properties.instructor_name}</td>
                                             <td className="p-2 border dark:border-zinc-500">{classItem.properties.instructor_email || ''}</td>
-                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.room}</td>
-                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.days.join(', ')}</td>
                                             <td className="p-2 border dark:border-zinc-500">{classItem.properties.start_time}</td>
                                             <td className="p-2 border dark:border-zinc-500">{classItem.properties.end_time}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.days.join(', ')}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.properties.room}</td>
+                                            <td className="p-2 border dark:border-zinc-500">{classItem.data.class_num || ''}</td>
                                         </tr>
                                     );
                                 })}

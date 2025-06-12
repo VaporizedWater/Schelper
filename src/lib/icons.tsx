@@ -13,7 +13,6 @@
 // import windowIconPath from "public/window.svg";
 
 // Images
-import calendar1Path from "public/calendar1.png";
 import leftTrianglePath from "public/left_triangle.png";
 import rightTrianglePath from "public/right_triangle.png";
 import logoPSUPath from "public/logo.png";
@@ -33,7 +32,6 @@ export const ClockTower = clockTowerPath;
 export const LionShrine = lionShrinePath;
 export const NightCampus = nightCampusPath;
 export const DayCampus = dayCampusPath;
-export const Calendar1 = calendar1Path;
 export const LeftTriangle = leftTrianglePath;
 export const RightTriangle = rightTrianglePath;
 export const PSU_Logo = logoPSUPath;

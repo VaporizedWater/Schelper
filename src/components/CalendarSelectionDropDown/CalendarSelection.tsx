@@ -23,14 +23,14 @@ const CalendarDropDown = ({ title }: { title: string }) => {
     return (
         <DropDown
             renderButton={(isOpen) => (
-                <div className={`flex items-center gap-2 px-3 py-2 bg-white rounded-full hover:cursor-pointer
+                <div className={`flex items-center gap-2 px-2 py-2 bg-white rounded-lg hover:cursor-pointer
                     hover:bg-gray-100 dark:bg-dark dark:hover:bg-zinc-700 transition-all duration-200 
                     shadow-sm hover:shadow border border-gray-200 dark:border-gray-500
                     ${isOpen ? 'bg-gray-100 dark:bg-dark' : ''}`}>
-                    <span className="text-sm font-medium">{title}</span>
+                    <span className="text-sm pl-1 font-medium">{title}</span>
                     {isOpen ?
-                        <IoMdArrowDropup className="size-4 ml-0.5 text-gray-600 dark:text-gray-400" /> :
-                        <IoMdArrowDropdown className="size-4 ml-0.5 text-gray-600 dark:text-gray-400" />
+                        <IoMdArrowDropup className="size-4 text-gray-600 dark:text-gray-400" /> :
+                        <IoMdArrowDropdown className="size-4 text-gray-600 dark:text-gray-400" />
                     }
                 </div>
             )}

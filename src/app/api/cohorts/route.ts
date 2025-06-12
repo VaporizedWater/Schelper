@@ -69,6 +69,7 @@ export async function GET(request: Request) {
                 {
                     $project: {
                         _id: "$current_cohort",
+                        name: "$cohortDetails.name",
                         freshman: "$cohortDetails.freshman",
                         sophomore: "$cohortDetails.sophomore",
                         junior: "$cohortDetails.junior",
@@ -153,27 +154,52 @@ export async function POST(request: Request) {
     }
 }
 
-// export async function PUT(request: Request, { params }: { params: { cohortId: string } }) {
-//     try {
-//         const cohortId = params.cohortId;
-//         const cohortData = await request.json();
+export async function PUT(request: Request) {
+    try {
+        const { cohortId, cohortData } = await request.json();
 
-//         if (!cohortId || !cohortData) {
-//             return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
-//         }
+        if (!cohortId || !cohortData) {
+            return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
+        }
 
-//         const result = await collection.updateOne({ _id: new ObjectId(cohortId) }, { $set: cohortData });
+        // Validate ObjectId format
+        let objectId;
+        try {
+            objectId = new ObjectId(cohortId);
+        } catch (error) {
+            console.error("Invalid ObjectId format:", cohortId);
+            return new Response(JSON.stringify({ error: "Invalid cohort ID format. " + error }), { status: 400 });
+        }
 
-//         if (result.modifiedCount === 0) {
-//             return new Response(JSON.stringify({ error: "Cohort not found or no changes made" }), { status: 404 });
-//         }
+        const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
 
-//         return new Response(JSON.stringify({ message: "Cohort updated successfully", success: true }), { status: 200 });
-//     } catch (error) {
-//         console.error("Error in PUT /api/cohorts:", error);
-//         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
-//     }
-// }
+        // First check if the document exists
+        const cohortExists = await cohortsCollection.findOne({ _id: objectId });
+        if (!cohortExists) {
+            return new Response(JSON.stringify({ error: "Cohort not found" }), { status: 404 });
+        }
+
+        // Remove _id from cohortData before updating
+        const { _id, ...cohortDataWithoutId } = cohortData; // eslint-disable-line @typescript-eslint/no-unused-vars
+
+        const result = await cohortsCollection.updateOne({ _id: objectId }, { $set: cohortDataWithoutId });
+
+        if (result.matchedCount === 0) {
+            return new Response(JSON.stringify({ error: "Cohort not found" }), { status: 404 });
+        }
+
+        if (result.modifiedCount === 0) {
+            return new Response(JSON.stringify({ message: "No changes were made to the cohort", success: true }), {
+                status: 200,
+            });
+        }
+
+        return new Response(JSON.stringify({ message: "Cohort updated successfully", success: true }), { status: 200 });
+    } catch (error) {
+        console.error("Error in PUT /api/cohorts:", error);
+        return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    }
+}
 
 export async function DELETE(request: Request) {
     try {
