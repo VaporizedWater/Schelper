@@ -242,7 +242,7 @@ export type FacultyType = {
 
 export type CohortType = {
     _id?: string;
-    name: string;
+    cohortName: string;
     freshman: string[];
     sophomore: string[];
     junior: string[];

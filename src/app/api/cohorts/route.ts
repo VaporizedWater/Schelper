@@ -69,7 +69,7 @@ export async function GET(request: Request) {
                 {
                     $project: {
                         _id: "$current_cohort",
-                        name: "$cohortDetails.name",
+                        cohortName: "$cohortDetails.cohortName",
                         freshman: "$cohortDetails.freshman",
                         sophomore: "$cohortDetails.sophomore",
                         junior: "$cohortDetails.junior",

@@ -269,7 +269,7 @@ function CohortSettings() {
 
             // Create a proper CohortType structure
             const newCohort: CohortType = {
-                name: "",
+                cohortName: "",
                 freshman: [],
                 sophomore: [],
                 junior: [],
@@ -312,7 +312,7 @@ function CohortSettings() {
             return;
         }
 
-        if (!cohort.name.trim()) {
+        if (!cohort.cohortName.trim()) {
             setUploadStatus({ message: 'Please provide a cohort name', type: 'error' });
             return;
         }
@@ -359,7 +359,7 @@ function CohortSettings() {
     // Function to start editing a cohort
     const handleEditCohort = (cohort: CohortType) => {
         setEditingCohortId(cohort._id as string);
-        setEditNameValue(cohort.name);
+        setEditNameValue(cohort.cohortName);
     };
 
     // Function to save edited cohort
@@ -381,7 +381,7 @@ function CohortSettings() {
 
             const updatedCohort = {
                 ...cohortToUpdate,
-                name: editNameValue
+                cohortName: editNameValue
             };
 
             const result = await updateCohort(updatedCohort._id as string, updatedCohort);
@@ -561,8 +561,8 @@ function CohortSettings() {
                             <input
                                 type="text"
                                 id="cohort-name"
-                                value={cohort.name}
-                                onChange={(e) => setCohort({ ...cohort, name: e.target.value })}
+                                value={cohort.cohortName}
+                                onChange={(e) => setCohort({ ...cohort, cohortName: e.target.value })}
                                 placeholder="Enter cohort name"
                                 className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-600 text-gray-900 dark:text-gray-100"
                             />
@@ -646,7 +646,7 @@ function CohortSettings() {
                                                 <>
                                                     <div className="flex items-center">
                                                         <h4 className="font-semibold text-lg">
-                                                            {cohort.name || `Cohort ${index + 1}`}
+                                                            {cohort.cohortName || `Cohort ${index + 1}`}
                                                         </h4>
                                                         {currentCohortId === cohort._id && (
                                                             <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
