@@ -102,15 +102,16 @@ export async function POST(request: Request) {
         }
 
         // Start a session and transaction for atomicity
-        const session = client.startSession();
+        // const session = client.startSession();
         let newCohortId;
 
         try {
-            session.startTransaction();
+            // session.startTransaction();
 
             // Step 1: Insert the new cohort document
             const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
-            const cohortResult = await cohortsCollection.insertOne(cohortData, { session });
+            // const cohortResult = await cohortsCollection.insertOne(cohortData, { session });
+            const cohortResult = await cohortsCollection.insertOne(cohortData);
             newCohortId = cohortResult.insertedId;
 
             // Step 2: Update the user document to include the new cohort ID and set as current
@@ -121,17 +122,18 @@ export async function POST(request: Request) {
                     $push: { cohorts: newCohortId },
                     $set: { current_cohort: newCohortId },
                 },
-                { session, returnDocument: "after" }
+                // { session, returnDocument: "after" }
+                { returnDocument: "after" }
             );
 
             if (!updateResult) {
                 // User not found, abort transaction
-                await session.abortTransaction();
+                // await session.abortTransaction();
                 return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
             }
 
             // Commit the transaction
-            await session.commitTransaction();
+            // await session.commitTransaction();
 
             return new Response(
                 JSON.stringify({
@@ -143,10 +145,8 @@ export async function POST(request: Request) {
             );
         } catch (error) {
             // Any error will abort the transaction
-            await session.abortTransaction();
+            // await session.abortTransaction();
             throw error;
-        } finally {
-            await session.endSession();
         }
     } catch (error) {
         console.error("Error in POST /api/cohorts:", error);
@@ -200,7 +200,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
-        const session = client.startSession();
+        // const session = client.startSession();
 
         const { cohortId, userEmail } = await request.json();
 
@@ -215,7 +215,7 @@ export async function DELETE(request: Request) {
         }
 
         try {
-            session.startTransaction();
+            // session.startTransaction();
 
             const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
             const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
@@ -255,12 +255,13 @@ export async function DELETE(request: Request) {
                         },
                     },
                 ],
-                { session, returnDocument: "after" }
+                // { session, returnDocument: "after" }
+                { returnDocument: "after" }
             );
 
             if (!updateResult) {
                 // User not found, abort transaction
-                await session.abortTransaction();
+                // await session.abortTransaction();
                 return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
             }
 
@@ -268,20 +269,18 @@ export async function DELETE(request: Request) {
 
             if (result.deletedCount === 0) {
                 // Cohort not found, abort transaction
-                await session.abortTransaction();
+                // await session.abortTransaction();
                 return new Response(JSON.stringify({ error: "Cohort not found" }), { status: 404 });
             }
 
             // Commit the transaction
-            await session.commitTransaction();
+            // await session.commitTransaction();
 
             return new Response(JSON.stringify({ message: "Cohort deleted successfully", success: true }), { status: 200 });
         } catch (error) {
             // Any error will abort the transaction
-            await session.abortTransaction();
+            // await session.abortTransaction();
             throw error;
-        } finally {
-            await session.endSession();
         }
     } catch (error) {
         console.error("Error in DELETE /api/cohorts:", error);
