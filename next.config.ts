@@ -9,10 +9,10 @@ const nextConfig: NextConfig = {
   },
 };
 
-// module.exports = {
-//     compiler: {
-//         removeConsole: process.env.NODE_ENV === "production",
-//     },
-// }
+module.exports = {
+    compiler: {
+        removeConsole: process.env.NODE_ENV === "production",
+    },
+}
 
 export default nextConfig;
