@@ -163,18 +163,15 @@ export async function PUT(request: Request) {
         }
 
         // Validate ObjectId format
-        let objectId;
-        try {
-            objectId = new ObjectId(cohortId);
-        } catch (error) {
+        if (ObjectId.isValid(cohortId) === false) {
             console.error("Invalid ObjectId format:", cohortId);
-            return new Response(JSON.stringify({ error: "Invalid cohort ID format. " + error }), { status: 400 });
+            return new Response(JSON.stringify({ error: "Invalid cohort ID format. " + cohortId }), { status: 400 });
         }
 
         const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
 
         // First check if the document exists
-        const cohortExists = await cohortsCollection.findOne({ _id: objectId });
+        const cohortExists = await cohortsCollection.findOne({ _id: cohortId });
         if (!cohortExists) {
             return new Response(JSON.stringify({ error: "Cohort not found" }), { status: 404 });
         }
@@ -182,7 +179,7 @@ export async function PUT(request: Request) {
         // Remove _id from cohortData before updating
         const { _id, ...cohortDataWithoutId } = cohortData; // eslint-disable-line @typescript-eslint/no-unused-vars
 
-        const result = await cohortsCollection.updateOne({ _id: objectId }, { $set: cohortDataWithoutId });
+        const result = await cohortsCollection.updateOne({ _id: cohortId }, { $set: cohortDataWithoutId });
 
         if (result.matchedCount === 0) {
             return new Response(JSON.stringify({ error: "Cohort not found" }), { status: 404 });

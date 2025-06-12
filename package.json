@@ -30,17 +30,17 @@
     "xlsx": "https://cdn.sheetjs.com/xlsx-latest/xlsx-latest.tgz"
   },
   "devDependencies": {
-    "@playwright/test": "^1.52.0",
-    "@tailwindcss/postcss": "^4.1.8",
+    "@playwright/test": "^1.53.0",
+    "@tailwindcss/postcss": "^4.1.10",
     "@testing-library/dom": "^10.4.0",
-    "@types/node": "^22.15.29",
-    "@types/react": "^19.1.6",
-    "@types/react-dom": "^19.1.5",
+    "@types/node": "^22.15.31",
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.28.0",
     "eslint-config-next": "15.2.4",
-    "postcss": "^8.5.4",
-    "tailwindcss": "^4.1.8",
+    "postcss": "^8.5.5",
+    "tailwindcss": "^4.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   }
