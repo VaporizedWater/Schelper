@@ -170,18 +170,18 @@ export async function PUT(request: Request) {
 
         const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
 
-        // First check if the document exists
-        const cohortExists = await cohortsCollection.findOne({ _id: cohortId });
-        if (!cohortExists) {
-            return new Response(JSON.stringify({ error: "Cohort not found" }), { status: 404 });
-        }
-
         // Remove _id from cohortData before updating
         const { _id, ...cohortDataWithoutId } = cohortData; // eslint-disable-line @typescript-eslint/no-unused-vars
 
-        const result = await cohortsCollection.updateOne({ _id: cohortId }, { $set: cohortDataWithoutId });
+        console.log("ID", cohortData._id, "\n\n   ", cohortId);
 
-        if (result.matchedCount === 0) {
+        // First check if the document exists
+        const result = await cohortsCollection.findOneAndUpdate(
+            { _id: ObjectId.createFromHexString(cohortId) },
+            { $set: cohortDataWithoutId }
+        );
+
+        if (!result || result.matchedCount === 0) {
             return new Response(JSON.stringify({ error: "Cohort not found" }), { status: 404 });
         }
 
