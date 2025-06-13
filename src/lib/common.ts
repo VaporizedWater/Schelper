@@ -8,6 +8,7 @@ import {
     FacultyType,
     tagListType,
     tagType,
+    UserSettingType,
 } from "./types";
 import { Document } from "mongodb";
 
@@ -97,20 +98,6 @@ export function newDefaultEmptyCalendar(): CalendarType {
             name: "Select a Calendar",
         },
         classes: [],
-        settings: {
-            conflicts: {
-                all: "#ff0000",
-                "room + instructor": "#f97316",
-                "room + cohort": "#f97316",
-                "instructor + cohort": "#f97316",
-                room: "#f59e0b",
-                instructor: "#f59e0b",
-                cohort: "#f59e0b",
-            },
-            export: [],
-            import: [],
-            sheet: [],
-        },
     };
 }
 
@@ -321,6 +308,20 @@ export const dayIndex: { [key: string]: number } = {
     Fri: 5,
 };
 
+export const defaultSettings: UserSettingType = {
+    settings: {
+        conflicts: {
+            all: "#ff0000",
+            room: "#f59e0b",
+            instructor: "#f59e0b",
+            cohort: "#f59e0b",
+            roomInstructor: "#f97316",
+            roomCohort: "#f97316",
+            instructorCohort: "#f97316",
+        },
+    },
+};
+
 // Initial Calendar state
 export const initialCalendarState: CalendarState = {
     classes: {
@@ -338,6 +339,7 @@ export const initialCalendarState: CalendarState = {
     calendars: [],
     faculty: [newDefaultEmptyFaculty()],
     conflictPropertyChanged: false,
+    userSettings: defaultSettings,
 };
 
 export const darkenRGBColor = (color: string, amount: number = 0.2): string => {

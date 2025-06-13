@@ -11,6 +11,7 @@ import {
     tagCategory,
     tagListType,
     tagType,
+    UserSettingType,
 } from "./types";
 
 /**
@@ -161,68 +162,27 @@ export async function loadFaculty(): Promise<FacultyType[]> {
     }
 }
 
-// INSERTs/POSTs
-// Insert tags
-export async function insertTags(tags: tagType[]): Promise<boolean> {
+export async function loadUserSettings(userEmail: string): Promise<UserSettingType> {
     try {
-        // Handle empty tags array case
-        if (!tags || tags.length === 0) {
-            return true; // Nothing to do, so technically successful
-        }
-
-        // Format tags for API
-        const formattedTags = tags.map((tag) => ({
-            name: tag.tagName,
-            category: tag.tagCategory,
-        }));
-
-        const response = await fetchWithTimeout("api/tags", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(formattedTags),
+        const response = await fetchWithTimeout("./api/settings", {
+            headers: {
+                userEmail: userEmail,
+            },
         });
 
         if (!response.ok) {
-            console.error(`Failed to insert tags: ${response.status}`);
-            return false;
+            return {} as UserSettingType;
         }
 
-        // Parse the response to get success status
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
+        const settings = await parseJsonResponse<UserSettingType>(response);
+        return settings;
     } catch (error) {
-        console.error("Failed to insert tags:", error);
-        return false;
+        console.error("Failed to load user settings ", error);
+        return {} as UserSettingType;
     }
 }
 
-// Insert Cohort
-export async function insertCohort(userEmail: string, cohort: CohortType): Promise<boolean | null> {
-    try {
-        const response = await fetchWithTimeout("api/cohorts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userEmail, cohortData: cohort }),
-        });
-
-        if (!response.ok) {
-            return null;
-        }
-
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
-    } catch (error) {
-        console.error("Failed to insert cohort:", error);
-        return null;
-    }
-}
-
-// --------
-// PUTS/UPDATES
-export async function setCurrentCalendarToNew(calendarId: string) {
-    console.log("CALENAR ID: ", calendarId);
-}
-
+///
 export function getUnavailabilityFromClass(cls: CombinedClass, currentUnavailability?: FacultyType): FacultyType {
     const unavailability = {
         Mon: [] as EventInput[],
@@ -304,6 +264,68 @@ export function getProfessorsUnavailability(classes: CombinedClass[]): FacultyTy
         : ([] as FacultyType[]);
 }
 
+// INSERTs/POSTs
+// Insert tags
+export async function insertTags(tags: tagType[]): Promise<boolean> {
+    try {
+        // Handle empty tags array case
+        if (!tags || tags.length === 0) {
+            return true; // Nothing to do, so technically successful
+        }
+
+        // Format tags for API
+        const formattedTags = tags.map((tag) => ({
+            name: tag.tagName,
+            category: tag.tagCategory,
+        }));
+
+        const response = await fetchWithTimeout("api/tags", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(formattedTags),
+        });
+
+        if (!response.ok) {
+            console.error(`Failed to insert tags: ${response.status}`);
+            return false;
+        }
+
+        // Parse the response to get success status
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to insert tags:", error);
+        return false;
+    }
+}
+
+// Insert Cohort
+export async function insertCohort(userEmail: string, cohort: CohortType): Promise<boolean | null> {
+    try {
+        const response = await fetchWithTimeout("api/cohorts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userEmail, cohortData: cohort }),
+        });
+
+        if (!response.ok) {
+            return null;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to insert cohort:", error);
+        return null;
+    }
+}
+
+// --------
+// PUTS/UPDATES
+export async function setCurrentCalendarToNew(calendarId: string) {
+    console.log("CALENAR ID: ", calendarId);
+}
+
 export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
     try {
         // Create a deep copy to avoid mutating the original objects
@@ -377,6 +399,32 @@ export async function updateCohort(cohortId: string, cohortData: CohortType): Pr
         return result.success;
     } catch (error) {
         console.error("Error updating cohort:", error);
+        return false;
+    }
+}
+
+export async function updateUserSettings(userEmail: string, newSettings: UserSettingType): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("/api/settings", {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                userEmail,
+                settings: newSettings.settings,
+            }),
+        });
+
+        if (!response.ok) {
+            console.error(`Failed to update settings: ${response.status}`);
+            return false;
+        }
+
+        const { success } = await parseJsonResponse<{ success: boolean }>(response);
+        return success;
+    } catch (error) {
+        console.error("Failed to update user settings: ", error);
         return false;
     }
 }

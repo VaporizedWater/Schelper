@@ -1,44 +1,50 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import xlsx, { WorkBook, WorkSheet } from 'xlsx';
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
-import { insertCohort, loadCohorts, updateCohort, setCurrentCohortInDb } from '@/lib/DatabaseUtils';
-import { CohortType } from '@/lib/types';
+import { insertCohort, loadCohorts, updateCohort, setCurrentCohortInDb, loadUserSettings, updateUserSettings } from '@/lib/DatabaseUtils';
+import { CohortType, ConflictColor } from '@/lib/types';
 import { useSession } from 'next-auth/react';
 import AddTagButton from "@/components/AddTagButton/AddTagButton";
 import TagDisplay from "@/components/TagDisplay/TagDisplay";
 import { BiUnlink } from "react-icons/bi";
 import { MdDelete } from 'react-icons/md';
 import ThemeToggle from '@/components/ThemeToggle/ThemeToggle';
+import { useTheme } from 'next-themes';
+import { defaultSettings } from '@/lib/common';
 
 // Define settings sections
 const SETTINGS_SECTIONS = [
-    { id: 'appearance', label: 'Appearance', group: 'user' },
+    { id: 'appearance', label: 'Appearance', group: 'general' },
     { id: 'cohorts', label: 'Cohorts', group: 'calendar' },
-    { id: 'sheet', label: 'Sheet', group: 'calendar' },
-    { id: 'export', label: 'Export', group: 'calendar' },
-    { id: 'import', label: 'Import', group: 'calendar' },
     { id: 'conflicts', label: 'Conflicts', group: 'calendar' },
     { id: 'tags', label: 'Tags', group: 'tags' },
 ];
 
 // Group settings for cleaner UI
 const SECTION_GROUPS = [
-    { id: 'user', label: 'User Settings' },
-    { id: 'calendar', label: 'Calendar Settings' },
+    { id: 'general', label: 'General' },
+    { id: 'calendar', label: 'Calendar' },
     { id: 'tags', label: 'Tags' },
 ];
 
 export default function SettingsPage() {
     const router = useRouter();
-    const [activeSection, setActiveSection] = useState('appearance');
+    const searchParams = useSearchParams();
+    const initial = (searchParams.get('section') as string) ?? 'appearance';
+    const [activeSection, setActiveSection] = useState<string>(initial);
 
-    // Group sections for display
-    const groupedSections = SECTION_GROUPS.map(group => ({
-        ...group,
-        items: SETTINGS_SECTIONS.filter(section => section.group === group.id)
+    const handleActiveClick = (sectionId: string) => {
+        router.replace(`/settings?section=${sectionId}`);
+        setActiveSection(sectionId);
+    }
+
+    // Build grouped nav
+    const groupedSections = SECTION_GROUPS.map(g => ({
+        ...g,
+        items: SETTINGS_SECTIONS.filter(s => s.group === g.id)
     }));
 
     const handleEscClick = () => {
@@ -77,7 +83,7 @@ export default function SettingsPage() {
                                         <button
                                             key={section.id}
                                             className={`block w-full text-left py-1.5 px-3 rounded-md text-sm hover:bg-gray-200 dark:hover:bg-zinc-600 ${activeSection === section.id ? 'bg-gray-200 dark:bg-zinc-600 font-semibold' : ''}`}
-                                            onClick={() => setActiveSection(section.id)}
+                                            onClick={() => handleActiveClick(section.id)}
                                         >
                                             {section.label}
                                         </button>
@@ -94,9 +100,6 @@ export default function SettingsPage() {
                 <div className="p-8">
                     {activeSection === 'appearance' && <AppearanceSettings />}
                     {activeSection === 'cohorts' && <CohortSettings />}
-                    {activeSection === 'sheet' && <SheetSettings />}
-                    {activeSection === 'export' && <ExportSettings />}
-                    {activeSection === 'import' && <ImportSettings />}
                     {activeSection === 'conflicts' && <ConflictsSettings />}
                     {activeSection === 'tags' && <TagsSettings />}
                 </div>
@@ -121,11 +124,12 @@ export default function SettingsPage() {
 
 // Existing settings components
 function AppearanceSettings() {
+    const { theme } = useTheme();
     return (
         <div className="text-black dark:text-gray-300">
             <h2 className="text-2xl font-semibold mb-6">Appearance</h2>
             <div className="mb-4">
-                <label className="block mb-2 font-medium text-gray-700 dark:text-gray-400">Theme</label>
+                <label className="block mb-2 font-medium text-gray-700 dark:text-gray-400 capitalize">Theme: {theme}</label>
                 <ThemeToggle />
             </div>
         </div>
@@ -144,6 +148,7 @@ function CohortSettings() {
 
     // In the CohortSettings component, add a new state variable
     const [currentCohortId, setCurrentCohortId] = useState<string | null>(null);
+    const { data: session } = useSession();
 
     // Load cohorts when component mounts
     useEffect(() => {
@@ -172,10 +177,10 @@ function CohortSettings() {
         }
         fetchCohorts();
         // eslint-disable-next-line
-    }, []);
+    }, [session?.user?.email]);
 
     const { currentCalendar, removeCohort } = useCalendarContext();
-    const { data: session } = useSession();
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Update state type to match CohortType
@@ -750,114 +755,40 @@ function CohortSettings() {
     );
 }
 
-function SheetSettings() {
-    return (
-        <div className='bg-white dark:bg-zinc-800 text-black dark:text-gray-200'>
-            <h2 className="text-2xl font-semibold mb-6">Sheet Settings</h2>
-            <div className="space-y-4">
-                <div className="mb-3">
-                    <label className="block mb-1 font-medium text-gray-700 dark:text-gray-300">Default Sheet View</label>
-                    <div className="flex space-x-4">
-                        <label className="flex items-center">
-                            <input type="radio" name="sheet-view" value="compact" className="mr-2" />
-                            <span>Compact</span>
-                        </label>
-                        <label className="flex items-center">
-                            <input type="radio" name="sheet-view" value="detailed" className="mr-2" />
-                            <span>Detailed</span>
-                        </label>
-                    </div>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="columns" className="block mb-1 font-medium text-gray-700 dark:text-gray-300">Visible Columns</label>
-                    <div className="space-y-1">
-                        <div className="flex items-center">
-                            <input type="checkbox" id="col-name" checked className="mr-2" />
-                            <label htmlFor="col-name">Name</label>
-                        </div>
-                        <div className="flex items-center">
-                            <input type="checkbox" id="col-date" checked className="mr-2" />
-                            <label htmlFor="col-date">Date</label>
-                        </div>
-                        <div className="flex items-center">
-                            <input type="checkbox" id="col-tags" checked className="mr-2" />
-                            <label htmlFor="col-tags">Tags</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function ExportSettings() {
-    return (
-        <div className="bg-white dark:bg-zinc-800 text-black dark:text-gray-200">
-            <h2 className="text-2xl font-semibold mb-6">Export Settings</h2>
-            <div className="space-y-4">
-                <div className="mb-3">
-                    <label htmlFor="export-format" className="block mb-1 font-medium text-gray-700 dark:text-gray-300">Default Export Format</label>
-                    <select id="export-format" className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-700 text-black dark:text-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option>iCalendar (.ics)</option>
-                        <option>CSV</option>
-                        <option>JSON</option>
-                    </select>
-                </div>
-                <div className="flex items-center mb-3">
-                    <input type="checkbox" id="include-tags" className="mr-2" />
-                    <label htmlFor="include-tags" className="font-medium text-gray-700 dark:text-gray-300">Include tags in exports</label>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function ImportSettings() {
-    return (
-        <div className="bg-white dark:bg-zinc-800 text-black dark:text-gray-200">
-            <h2 className="text-2xl font-semibold mb-6">Import Settings</h2>
-            <div className="space-y-4">
-                <div className="mb-3">
-                    <label className="block mb-1 font-medium text-gray-700 dark:text-gray-300">When Importing Duplicates</label>
-                    <div className="space-y-1">
-                        <div className="flex items-center">
-                            <input type="radio" name="duplicate-action" value="skip" className="mr-2" />
-                            <span>Skip</span>
-                        </div>
-                        <div className="flex items-center">
-                            <input type="radio" name="duplicate-action" value="replace" className="mr-2" />
-                            <span>Replace</span>
-                        </div>
-                        <div className="flex items-center">
-                            <input type="radio" name="duplicate-action" value="ask" className="mr-2" />
-                            <span>Always ask</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
-
 function ConflictsSettings() {
     // Define state for conflict colors with default values matching the ones in Calendar.tsx
-    const [conflictColors, setConflictColors] = useState({
-        "all": "#ff0000", // red
-        "room + instructor": "#f97316", // orange
-        "room + cohort": "#f97316", // orange
-        "instructor + cohort": "#f97316", // orange 
-        "room": "#f59e0b", // amber
-        "instructor": "#f59e0b", // amber
-        "cohort": "#f59e0b" // amber
-    });
+    const { data: session } = useSession();
 
-    // Handle color change
-    const handleColorChange = (conflictType: string, color: string) => {
-        setConflictColors(prev => ({
-            ...prev,
-            [conflictType]: color
-        }));
-    };
+    const [originalColors, setOriginalColors] = useState<ConflictColor>(defaultSettings.settings.conflicts);
+    const [workingColors, setWorkingColors] = useState<ConflictColor>(defaultSettings.settings.conflicts);
+
+    useEffect(() => {
+        // don’t try to fetch until we have a real email
+        if (!session?.user?.email) return;
+
+        const email = session?.user?.email;
+
+        async function loadColors() {
+            try {
+                const resp = await loadUserSettings(email);
+
+                console.log("loaded settings for", email, resp.settings ?? {});
+
+                const fromServer = resp?.settings?.conflicts ?? {};
+                // merge defaults + server so you never lose missing keys:
+                const merged = { ...defaultSettings.settings.conflicts, ...fromServer };
+                console.log("loaded keys:", Object.keys(fromServer), merged);
+                setOriginalColors(merged);
+                setWorkingColors(merged);
+            } catch (err) {
+                console.error("Couldn’t fetch settings for", email, err);
+            }
+        }
+
+        loadColors();
+    }, [session?.user?.email]);
+
+    const isEqual = (a: ConflictColor, b: ConflictColor) => JSON.stringify(a) === JSON.stringify(b);
 
     return (
         <div className="bg-white dark:bg-zinc-800 text-black dark:text-gray-200">
@@ -878,98 +809,138 @@ function ConflictsSettings() {
                     </thead>
                     <tbody className="bg-white dark:bg-zinc-800 divide-y divide-gray-200 dark:divide-zinc-700">
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 All (Room + Instructor + Cohort)
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
-                                    value={conflictColors["all"]}
-                                    onChange={(e) => handleColorChange("all", e.target.value)}
+                                    value={workingColors["all"] ?? "#ffffff"} // Default to red if not set
+                                    onChange={(e) => setWorkingColors(w => ({ ...w, all: e.target.value }))}
                                     className="w-10 h-8"
                                 />
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Room + Instructor
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
-                                    value={conflictColors["room + instructor"]}
-                                    onChange={(e) => handleColorChange("room + instructor", e.target.value)}
+                                    value={workingColors["roomInstructor"] || "#f97316"} // Default to orange if not set
+                                    onChange={(e) => setWorkingColors(w => ({ ...w, roomInstructor: e.target.value }))}
                                     className="w-10 h-8"
                                 />
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Room + Cohort
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
-                                    value={conflictColors["room + cohort"]}
-                                    onChange={(e) => handleColorChange("room + cohort", e.target.value)}
+                                    value={workingColors["roomCohort"] || "#f97316"} // Default to orange if not set
+                                    onChange={(e) => setWorkingColors(w => ({ ...w, roomCohort: e.target.value }))}
                                     className="w-10 h-8"
                                 />
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Instructor + Cohort
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
-                                    value={conflictColors["instructor + cohort"]}
-                                    onChange={(e) => handleColorChange("instructor + cohort", e.target.value)}
+                                    value={workingColors["instructorCohort"] || "#f97316"} // Default to orange if not set
+                                    onChange={(e) => setWorkingColors(w => ({ ...w, instructorCohort: e.target.value }))}
                                     className="w-10 h-8"
                                 />
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Room only
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
-                                    value={conflictColors["room"]}
-                                    onChange={(e) => handleColorChange("room", e.target.value)}
+                                    value={workingColors["room"] || "#f59e0b"} // Default to amber if not set
+                                    onChange={(e) => setWorkingColors(w => ({ ...w, room: e.target.value }))}
                                     className="w-10 h-8"
                                 />
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Instructor only
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
-                                    value={conflictColors["instructor"]}
-                                    onChange={(e) => handleColorChange("instructor", e.target.value)}
+                                    value={workingColors["instructor"] || "#f59e0b"} // Default to amber if not set
+                                    onChange={(e) => setWorkingColors(w => ({ ...w, instructor: e.target.value }))}
                                     className="w-10 h-8"
                                 />
                             </td>
                         </tr>
                         <tr>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-300">
                                 Cohort only
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                            <td className="px-6 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 <input
                                     type="color"
-                                    value={conflictColors["cohort"]}
-                                    onChange={(e) => handleColorChange("cohort", e.target.value)}
+                                    value={workingColors["cohort"] ?? "#f59e0b"} // Default to amber if not set
+                                    onChange={(e) => setWorkingColors(w => ({ ...w, cohort: e.target.value }))}
                                     className="w-10 h-8"
                                 />
                             </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            {/* --- New Button Bar --- */}
+            <div className="flex justify-end space-x-3 mt-4">
+                {/* Cancel */}
+                <button
+                    onClick={() => setWorkingColors(originalColors)}
+                    disabled={isEqual(workingColors, originalColors)}
+                    className="
+      px-4 py-2
+      bg-gray-200 dark:bg-zinc-600
+      text-gray-800 dark:text-gray-200
+      rounded-md
+      hover:bg-gray-300 dark:hover:bg-zinc-500
+      transition-colors duration-150
+      disabled:opacity-50 disabled:cursor-not-allowed
+    "
+                >
+                    Cancel
+                </button>
+
+                {/* Save */}
+                <button
+                    onClick={async () => {
+                        const success = await updateUserSettings(session?.user?.email || '', { settings: { conflicts: workingColors } });
+                        if (success) setOriginalColors(workingColors);
+                    }}
+                    disabled={isEqual(workingColors, originalColors)}
+                    className="
+      px-4 py-2
+      bg-blue-600 dark:bg-blue-700
+      text-white
+      rounded-md
+      hover:bg-blue-700 dark:hover:bg-blue-600
+      transition-colors duration-150
+      disabled:opacity-50 disabled:cursor-not-allowed
+    "
+                >
+                    Save
+                </button>
             </div>
         </div>
     );

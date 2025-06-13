@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, FacultyType, ReactNodeChildren } from '@/lib/types';
-import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort } from '@/lib/DatabaseUtils';
+import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort, loadUserSettings } from '@/lib/DatabaseUtils';
 import { buildTagMapping, createEventsFromCombinedClass, initialCalendarState, mergeFacultyEntries, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
@@ -146,7 +146,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 currentCalendar: action.payload.currentCalendar,
                 faculty: action.payload.faculty || state.faculty,
                 conflictPropertyChanged: !state.conflictPropertyChanged,
-                calendars: action.payload.calendars
+                calendars: action.payload.calendars,
+                userSettings: action.payload.userSettings || state.userSettings
             };
         }
 
@@ -472,30 +473,34 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
                 if (session?.user?.email) {
-                    const [calendarPayload, allTags, faculty] = await Promise.all([
+                    const [calendarPayload, allTags, faculty, userSettings] = await Promise.all([
                         loadCalendar(session?.user?.email),
                         loadTags(),
-                        loadFaculty()
+                        loadFaculty(),
+                        loadUserSettings(session?.user?.email)
                     ]);
 
                     // console.log("ALL TAGS", allTags);
                     // console.log("FACULTY", faculty);
                     // console.log("CALENDARS:",calendarPayload);
+                    // console.log("USER SETTINGS222", userSettings);
 
                     const calendar = calendarPayload.calendar;
                     const classes = calendar.classes;
                     calendar.classes = [];
 
+
+
                     if (mounted) {
                         dispatch({
                             type: 'INITIALIZE_DATA',
-                            payload: { classes: classes, tags: allTags, currentCalendar: calendar, calendars: calendarPayload.calendars, faculty: faculty }
+                            payload: { classes: classes, tags: allTags, currentCalendar: calendar, calendars: calendarPayload.calendars, faculty: faculty, userSettings: userSettings }
                         });
                     }
                 } else {
                     dispatch({
                         type: 'INITIALIZE_DATA',
-                        payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar, calendars: state.calendars, faculty: state.faculty }
+                        payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar, calendars: state.calendars, faculty: state.faculty, userSettings: state.userSettings }
                     });
                 }
 
@@ -585,6 +590,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             isLoading: state.status.loading,
             error: state.status.error,
 
+            // User Settings
+            userSettings: state.userSettings,
+
             // Actions
             toggleConflictPropertyChanged: () => {
                 console.log('CONFLICT_PROPERTY_CHANGED');
@@ -635,7 +643,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         tags: new Map(),
                         currentCalendar: newDefaultEmptyCalendar(),
                         calendars: [],
-                        faculty: []
+                        faculty: [],
+                        userSettings: state.userSettings
                     }
                 });
             },

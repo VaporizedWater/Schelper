@@ -76,7 +76,7 @@ export type CalendarType = {
     _id: string;
     info: CalendarInfo;
     classes: CombinedClass[];
-    settings: CalendarSettingType;
+    // settings: CalendarSettingType;
 };
 
 export type CalendarPayload = {
@@ -144,6 +144,8 @@ export type CalendarContextType = {
     conflicts: ConflictType[];
     conflictPropertyChanged: boolean;
 
+    userSettings: UserSettingType;
+
     toggleConflictPropertyChanged: () => void;
 
     resetContextToEmpty: () => void;
@@ -182,6 +184,7 @@ export type UserType = {
     calendars: CalendarType[];
     current_cohort: ObjectId;
     cohorts: ObjectId[];
+    settings: UserSettingType;
 };
 
 export type CalendarState = {
@@ -200,6 +203,7 @@ export type CalendarState = {
     calendars: CalendarInfo[];
     faculty: FacultyType[];
     conflictPropertyChanged: boolean;
+    userSettings: UserSettingType;
 };
 
 export type CalendarAction =
@@ -211,6 +215,7 @@ export type CalendarAction =
               currentCalendar: CalendarType;
               calendars: CalendarInfo[];
               faculty: FacultyType[];
+              userSettings: UserSettingType;
           };
       }
     | { type: "TOGGLE_CONFLICT_PROPERTY_CHANGED"; payload: boolean }
@@ -251,23 +256,16 @@ export type CohortType = {
 
 export type ConflictColor = {
     all: string;
-    "room + instructor": string;
-    "room + cohort": string;
-    "instructor + cohort": string;
+    roomInstructor: string;
+    roomCohort: string;
+    instructorCohort: string;
     room: string;
     instructor: string;
     cohort: string;
 };
 
-export type ExportSettingType = string[]; //temp
-
-export type ImportSettingType = string[]; //temp
-
-export type SheetSettingType = string[]; //temp
-
-export type CalendarSettingType = {
-    export: ExportSettingType;
-    import: ImportSettingType;
-    sheet: SheetSettingType;
-    conflicts: ConflictColor;
+export type UserSettingType = {
+    settings: {
+        conflicts: ConflictColor;
+    };
 };

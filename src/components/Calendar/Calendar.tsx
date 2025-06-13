@@ -16,7 +16,7 @@ const selectedEvents: HTMLElement[] = [];
 const Calendar = () => {
     const { theme, resolvedTheme } = useTheme();
     const calendarRef = useRef<FullCalendar>(null);
-    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
+    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, updateOneClass, toggleConflictPropertyChanged, userSettings } = useCalendarContext();
     // const [events, setEvents] = useState<EventInput[]>([]);
     const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
@@ -266,13 +266,27 @@ const Calendar = () => {
             const hasInstructorConflict = classConflicts.some(c => c.conflictType === "instructor");
             const hasCohortConflict = classConflicts.some(c => c.conflictType === "cohort");
 
+            console.log(userSettings, "USER SETTINGS!")
+            const conflictColors = userSettings.settings.conflicts;
+
+            console.log("Conflict colors INstructor: ", conflictColors.instructor);
+
             if (hasAllConflict) {
-                backgroundColor = 'red'; // Room + Instructor + Cohort conflict
-            } else if (hasRoomInstructorConflict || hasRoomCohortConflict || hasInstructorCohortConflict) {
-                backgroundColor = '#f97316'; // Orange for room + instructor or room + cohort or instructor + cohort conflicts
-            } else if (hasRoomConflict || hasInstructorConflict || hasCohortConflict) {
-                backgroundColor = '#f59e0b'; // Amber for room or instructor or cohort conflicts
+                backgroundColor = conflictColors.all; // Room + Instructor + Cohort conflict
+            } else if (hasRoomInstructorConflict) {
+                backgroundColor = conflictColors.roomInstructor; // Orange for room + instructor or room + cohort or instructor + cohort conflicts
+            } else if (hasRoomCohortConflict) {
+                backgroundColor = conflictColors.roomCohort; // Amber for room or instructor or cohort conflicts
+            } else if (hasInstructorCohortConflict) {
+                backgroundColor = conflictColors.instructorCohort; // Orange for room + instructor or room + cohort or instructor + cohort conflicts
+            } else if (hasRoomConflict) {
+                backgroundColor = conflictColors.room; // Amber for room or instructor or cohort conflicts
+            } else if (hasInstructorConflict) {
+                backgroundColor = conflictColors.instructor; // Orange for room + instructor or room + cohort or instructor + cohort conflicts
+            } else if (hasCohortConflict) {
+                backgroundColor = conflictColors.cohort; // Amber for room or instructor or cohort conflicts
             }
+
         }
 
         // Get the section from the extendedProps

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { MdAdd, MdDelete, MdOpenInNew, MdCalendarMonth } from 'react-icons/md';
 import { BsCalendarCheck, BsCalendarX } from 'react-icons/bs';
-import { CalendarInfo, CalendarSettingType, CalendarType, ClassData, ClassProperty } from '@/lib/types';
+import { CalendarInfo, CalendarType, ClassData, ClassProperty } from '@/lib/types';
 import Link from 'next/link';
 
 export default function CalendarsPage() {
@@ -65,8 +65,7 @@ export default function CalendarsPage() {
                         properties: createMockProperties(i, 100),
                         events: [],
                         visible: true
-                    })),
-                    settings: {} as CalendarSettingType
+                    }))
                 },
                 {
                     _id: '2',
@@ -82,7 +81,6 @@ export default function CalendarsPage() {
                         events: [],
                         visible: true
                     })),
-                    settings: {} as CalendarSettingType
                 },
                 {
                     _id: '3',
@@ -97,8 +95,7 @@ export default function CalendarsPage() {
                         properties: createMockProperties(i + 50, 300),
                         events: [],
                         visible: true
-                    })),
-                    settings: {} as CalendarSettingType
+                    }))
                 }
             ];
 

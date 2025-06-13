@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { ClassData, ClassProperty, CombinedClass } from '@/lib/types';
+import { ClassData, ClassProperty, CombinedClass, tagType } from '@/lib/types';
 import { newDefaultEmptyClass } from '@/lib/common';
 
 // Cohort options constant
@@ -119,6 +119,10 @@ const ClassProperties = () => {
         if (currentCombinedClass) {
             const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
             modifiedClass.properties.cohort = newVal;
+
+            modifiedClass.properties.tags.filter(tag => tag.tagCategory !== "cohort");
+            modifiedClass.properties.tags.push({ tagName: newVal.toLowerCase(), tagCategory: "cohort" } as tagType);
+
             updateOneClass(modifiedClass);
             toggleConflictPropertyChanged();
         }

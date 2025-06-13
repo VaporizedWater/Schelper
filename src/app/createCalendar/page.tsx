@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { CalendarInfo, CalendarSettingType, CalendarType } from '@/lib/types';
+import { CalendarInfo, CalendarType } from '@/lib/types';
 
 const CreateCalendarForm = () => {
     const router = useRouter();
@@ -38,8 +38,7 @@ const CreateCalendarForm = () => {
                     semester: newCalendar.semester,
                     year: newCalendar.year.toString(),
                 } as CalendarInfo,
-                classes: [],
-                settings: {} as CalendarSettingType
+                classes: []
             };
 
             // Here you would integrate with your actual calendar creation logic
