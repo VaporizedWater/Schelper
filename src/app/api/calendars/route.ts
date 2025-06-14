@@ -66,6 +66,74 @@ export async function GET(request: Request): Promise<Response> {
     }
 }
 
+export async function POST(request: Request): Promise<Response> {
+    try {
+        // 1) Parse body
+        const { userEmail, calendarData } = await request.json();
+
+        if (!userEmail || !calendarData) {
+            return new Response(JSON.stringify({ success: false, error: "Invalid user or calendar ID" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        // 2) Get DB & collections
+        const client = await clientPromise;
+        const db = client.db("class-scheduling-app");
+        const usersColl = db.collection("users") as Collection<Document>;
+        const calsColl = db.collection("calendars") as Collection<Document>;
+
+        // 3) Prepare a new calendar document with a placeholder for _id
+        //    We'll let Mongo assign _id, then inject it into info._id
+        //    by doing a two‐step insert+update.
+        const insertResult = await calsColl.insertOne({
+            ...calendarData,
+            // ensure info exists
+            info: {
+                ...calendarData.info,
+                // placeholder; will overwrite immediately
+                _id: null,
+            },
+        });
+        if (!insertResult.insertedId) {
+            throw new Error("Failed to create calendar");
+        }
+        const newCalId = insertResult.insertedId;
+
+        // 4) Patch the calendar's info._id to match its real _id
+        await calsColl.updateOne({ _id: newCalId }, { $set: { "info._id": newCalId } });
+
+        // 5) Add this calendar _id to the user's user_calendars array
+        const updateResult = await usersColl.findOneAndUpdate(
+            { email: userEmail },
+            { $addToSet: { user_calendars: newCalId } },
+            { returnDocument: "after" }
+        );
+
+        if (!updateResult) {
+            // Rollback: remove the calendar we just created
+            await calsColl.deleteOne({ _id: newCalId });
+            return new Response(JSON.stringify({ success: false, error: "User not found" }), {
+                status: 404,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        // 6) Success
+        return new Response(JSON.stringify({ success: true, calendarId: newCalId }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (error) {
+        console.error("Error in POST /api/calendars:", error);
+        return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+}
+
 export async function PUT(request: Request): Promise<Response> {
     try {
         const { userId, calendarId } = (await request.json()) as { userId: string; calendarId: string };

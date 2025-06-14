@@ -74,7 +74,7 @@ export async function loadTags(): Promise<tagListType> {
     }
 }
 
-export async function loadCalendar(userEmail: string): Promise<CalendarPayload> {
+export async function loadCalendars(userEmail: string): Promise<CalendarPayload> {
     if (userEmail === "") {
         console.error("Calendar ID is undefined");
         return {
@@ -320,10 +320,32 @@ export async function insertCohort(userEmail: string, cohort: CohortType): Promi
     }
 }
 
+// Insert Calendar
+export async function insertCalendar(userEmail: string, calendarData: CalendarType): Promise<boolean | null> {
+    try {
+        const response = await fetchWithTimeout("api/calendars", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userEmail, calendarData }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to insert calendar:", response.status, response.statusText);
+            return null;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean; calendarId?: string }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to insert calendar:", error);
+        return null;
+    }
+}
+
 // --------
 // PUTS/UPDATES
 export async function setCurrentCalendarToNew(calendarId: string) {
-    console.log("CALENAR ID: ", calendarId);
+    console.log("CALENDAR ID: ", calendarId);
 }
 
 export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {

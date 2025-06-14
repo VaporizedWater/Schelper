@@ -3,22 +3,24 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { CalendarInfo, CalendarType } from '@/lib/types';
+import { CalendarInfo } from '@/lib/types';
+import { insertCalendar } from '@/lib/DatabaseUtils';
+import { createCalendarFromInfo } from '@/lib/common';
 
 const CreateCalendarForm = () => {
     const router = useRouter();
     const { data: session } = useSession();
 
-    const [newCalendar, setNewCalendar] = useState({
+    const [newCalendarInfo, setNewCalendarInfo] = useState<CalendarInfo>({
+        _id: '',
         name: '',
-        description: '',
         semester: 'FA',
-        year: new Date().getFullYear()
+        year: new Date().getFullYear(),
     });
     const [error, setError] = useState('');
 
     const handleCreateCalendar = async () => {
-        if (!newCalendar.name) {
+        if (!newCalendarInfo.name) {
             setError('Calendar name is required');
             return;
         }
@@ -29,20 +31,18 @@ const CreateCalendarForm = () => {
         }
 
         try {
-            // Mock creating a new calendar - this would be replaced with actual API call
-            const newId = `calendar-${Date.now()}`;
-            const createdCalendar: CalendarType = {
-                _id: newId,
-                info: {
-                    name: newCalendar.name,
-                    semester: newCalendar.semester,
-                    year: newCalendar.year.toString(),
-                } as CalendarInfo,
-                classes: []
-            };
+            // create new calendar
+            const createdCalendar = createCalendarFromInfo(newCalendarInfo);
 
-            // Here you would integrate with your actual calendar creation logic
-            console.log('Creating calendar:', createdCalendar);
+            // Call Database util function to save the calendar
+            const response = await insertCalendar(session.user.email, createdCalendar);
+
+            if (!response) {
+                window.alert('Failed to create calendar');
+                throw new Error('Failed to create calendar');
+            } else {
+                window.alert('Calendar created successfully!');
+            }
 
             // Return to the previous page
             router.back();
@@ -69,24 +69,11 @@ const CreateCalendarForm = () => {
                     </label>
                     <input
                         type="text"
-                        value={newCalendar.name}
-                        onChange={(e) => setNewCalendar({ ...newCalendar, name: e.target.value })}
+                        value={newCalendarInfo.name}
+                        onChange={(e) => setNewCalendarInfo({ ...newCalendarInfo, name: e.target.value })}
                         className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         placeholder="e.g., Fall 2023"
                         required
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Description
-                    </label>
-                    <textarea
-                        value={newCalendar.description}
-                        onChange={(e) => setNewCalendar({ ...newCalendar, description: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Optional description for this calendar"
-                        rows={3}
                     />
                 </div>
 
@@ -96,8 +83,8 @@ const CreateCalendarForm = () => {
                             Semester *
                         </label>
                         <select
-                            value={newCalendar.semester}
-                            onChange={(e) => setNewCalendar({ ...newCalendar, semester: e.target.value })}
+                            value={newCalendarInfo.semester}
+                            onChange={(e) => setNewCalendarInfo({ ...newCalendarInfo, semester: e.target.value })}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             required
                         >
@@ -113,8 +100,8 @@ const CreateCalendarForm = () => {
                         </label>
                         <input
                             type="number"
-                            value={newCalendar.year}
-                            onChange={(e) => setNewCalendar({ ...newCalendar, year: parseInt(e.target.value) })}
+                            value={newCalendarInfo.year}
+                            onChange={(e) => setNewCalendarInfo({ ...newCalendarInfo, year: parseInt(e.target.value) })}
                             className="w-full px-3 py-2 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             min={2020}
                             max={2100}

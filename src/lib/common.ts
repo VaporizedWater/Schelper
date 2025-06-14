@@ -1,5 +1,6 @@
 import { EventInput } from "@fullcalendar/core/index.js";
 import {
+    CalendarInfo,
     CalendarState,
     CalendarType,
     ClassData,
@@ -94,7 +95,7 @@ export function newDefaultEmptyCalendar(): CalendarType {
         info: {
             _id: "",
             semester: "",
-            year: "",
+            year: new Date().getFullYear(),
             name: "Select a Calendar",
         },
         classes: [],
@@ -275,6 +276,31 @@ const mergeDaySlots = (existingSlots: EventInput[] = [], newSlots: EventInput[] 
         };
     });
 };
+
+export function createCalendarFromInfo(calendarInfo: CalendarInfo): CalendarType {
+    if (calendarInfo._id === undefined || calendarInfo._id === null || calendarInfo._id === "") {
+        return {
+            info: {
+                _id: "",
+                semester: calendarInfo.semester,
+                year: calendarInfo.year,
+                name: calendarInfo.name,
+            },
+            classes: [],
+        };
+    } else {
+        return {
+            _id: calendarInfo._id,
+            info: {
+                _id: calendarInfo._id,
+                semester: calendarInfo.semester,
+                year: calendarInfo.year,
+                name: calendarInfo.name,
+            },
+            classes: [],
+        };
+    }
+}
 
 /// CONSTANTS
 export const defaultBackgroundColor = "#001e443f";

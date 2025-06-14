@@ -5,106 +5,38 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { MdAdd, MdDelete, MdOpenInNew, MdCalendarMonth } from 'react-icons/md';
 import { BsCalendarCheck, BsCalendarX } from 'react-icons/bs';
-import { CalendarInfo, CalendarType, ClassData, ClassProperty } from '@/lib/types';
+import { CalendarType } from '@/lib/types';
 import Link from 'next/link';
+import { loadCalendars } from '@/lib/DatabaseUtils';
 
 export default function CalendarsPage() {
     const router = useRouter();
     const { data: session } = useSession();
 
-    // Add mock data for development
+    // Real data loader
     const [calendars, setCalendars] = useState<CalendarType[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Mock calendar data for development
     useEffect(() => {
-        // Create mock class data that conforms to ClassData type
-        const createMockClassData = (index: number): ClassData => ({
-            catalog_num: `${100 + index % 10}`,
-            class_num: `${10000 + index}`,
-            course_num: `${200 + index % 20}`,
-            session: "regular",
-            course_subject: ["CS", "MATH", "ENG", "PHYS", "CHEM"][index % 5],
-            title: `Mock Class ${index}`,
-            section: `00${index % 9 + 1}`,
-            enrollment_cap: "25",
-            waitlist_cap: "5"
-        });
+        if (!session?.user?.email) return;
+        setIsLoading(true);
 
-        // Create mock properties that conform to ClassProperty type
-        const createMockProperties = (index: number, prefix: number): ClassProperty => ({
-            days: (index % 3 === 0) ? ["Mon", "Wed", "Fri"] :
-                (index % 3 === 1) ? ["Tue", "Thu"] : ["Mon", "Wed"],
-            start_time: (index % 2 === 0) ? "09:00" : "11:00",
-            end_time: (index % 2 === 0) ? "10:15" : "12:15",
-            room: `Room ${prefix + index % 20}`,
-            instructor_name: `Instructor ${(index + prefix / 100) % 10}`,
-            instructor_email: `instructor${(index + prefix / 100) % 10}@university.edu`,
-            tags: [],
-            class_status: "Open",
-            facility_id: `F-${prefix + index % 30}`,
-            total_enrolled: `${15 + index % 10}`,
-            total_waitlisted: `${index % 5}`,
-            cohort: `Cohort ${index % 3}`,
-            owners: session?.user?.email ? [session.user.email] : []
-        });
+        loadCalendars(session.user.email)
+            .then(({ calendar: current, calendars: list }) => {
+                // map your CalendarInfo[] into CalendarType[], attaching the classes array
+                const typedList: CalendarType[] = list.map(info => ({
+                    _id: info._id!,
+                    info,
+                    classes: info._id === current._id ? current.classes : []
+                }));
 
-        // Simulate API loading delay
-        const timer = setTimeout(() => {
-            const mockCalendars: CalendarType[] = [
-                {
-                    _id: '1',
-                    info: {
-                        name: 'Fall 2023',
-                        semester: 'FA',
-                        year: "2023"
-                    } as CalendarInfo,
-                    classes: Array(24).fill(null).map((_, i) => ({
-                        _id: `class-${i}`,
-                        data: createMockClassData(i),
-                        properties: createMockProperties(i, 100),
-                        events: [],
-                        visible: true
-                    }))
-                },
-                {
-                    _id: '2',
-                    info: {
-                        name: 'Spring 2024',
-                        semester: 'SP',
-                        year: "2024"
-                    } as CalendarInfo,
-                    classes: Array(18).fill(null).map((_, i) => ({
-                        _id: `class-${i + 25}`,
-                        data: createMockClassData(i + 25),
-                        properties: createMockProperties(i + 25, 200),
-                        events: [],
-                        visible: true
-                    })),
-                },
-                {
-                    _id: '3',
-                    info: {
-                        name: 'Summer 2024',
-                        semester: 'SU',
-                        year: "2024"
-                    } as CalendarInfo,
-                    classes: Array(8).fill(null).map((_, i) => ({
-                        _id: `class-${i + 50}`,
-                        data: createMockClassData(i + 50),
-                        properties: createMockProperties(i + 50, 300),
-                        events: [],
-                        visible: true
-                    }))
-                }
-            ];
-
-            setCalendars(mockCalendars);
-            setIsLoading(false);
-        }, 1000);
-
-        return () => clearTimeout(timer);
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+                setCalendars(typedList);
+            })
+            .catch(err => {
+                console.error("Error loading calendars:", err);
+            })
+            .finally(() => setIsLoading(false));
+    }, [session]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleDeleteCalendar = async (id: string, name: string) => {
         if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
@@ -190,6 +122,7 @@ export default function CalendarsPage() {
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {calendars
+                            .filter(calendar => (calendar._id !== null))
                             .sort((a, b) => {
                                 // Sort by year (descending)
                                 const yearA = Number(a.info?.year);
@@ -216,14 +149,14 @@ export default function CalendarsPage() {
                                             </div>
                                             <div className="flex space-x-1">
                                                 <button
-                                                    onClick={() => navigateToCalendar(calendar._id)}
+                                                    onClick={() => navigateToCalendar(calendar._id || '')}
                                                     className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150"
                                                     aria-label="Open calendar"
                                                 >
                                                     <MdOpenInNew size={20} />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteCalendar(calendar._id, calendar.info?.name)}
+                                                    onClick={() => handleDeleteCalendar(calendar._id || '', calendar.info?.name)}
                                                     className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150 text-red-500 dark:text-red-400"
                                                     aria-label="Delete calendar"
                                                 >

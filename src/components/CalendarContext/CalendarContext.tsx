@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, FacultyType, ReactNodeChildren } from '@/lib/types';
-import { updateCombinedClasses, loadCalendar, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort, loadUserSettings } from '@/lib/DatabaseUtils';
+import { updateCombinedClasses, loadCalendars, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort, loadUserSettings } from '@/lib/DatabaseUtils';
 import { buildTagMapping, createEventsFromCombinedClass, initialCalendarState, mergeFacultyEntries, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
@@ -474,7 +474,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
                 if (session?.user?.email) {
                     const [calendarPayload, allTags, faculty, userSettings] = await Promise.all([
-                        loadCalendar(session?.user?.email),
+                        loadCalendars(session?.user?.email),
                         loadTags(),
                         loadFaculty(),
                         loadUserSettings(session?.user?.email)
@@ -482,7 +482,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
                     // console.log("ALL TAGS", allTags);
                     // console.log("FACULTY", faculty);
-                    // console.log("CALENDARS:",calendarPayload);
+                    console.log("CALENDARS:", calendarPayload);
                     // console.log("USER SETTINGS222", userSettings);
 
                     const calendar = calendarPayload.calendar;
@@ -791,6 +791,10 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
             deleteClass: async (classId: string) => {
                 try {
+                    if (!state.currentCalendar._id) {
+                        return;
+                    }
+
                     const success = await deleteCombinedClasses(classId, state.currentCalendar._id);
 
                     if (!success) {

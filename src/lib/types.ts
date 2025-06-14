@@ -68,15 +68,14 @@ export type CalendarInfo = {
     _id: string;
     name: string;
     semester: string;
-    year: string;
+    year: number;
 };
 
 // This serves as a type to transport the calendar/class data from the API to the calendar context via LoadCalendar (previously LoadCombinedClasses)
 export type CalendarType = {
-    _id: string;
+    _id?: string;
     info: CalendarInfo;
     classes: CombinedClass[];
-    // settings: CalendarSettingType;
 };
 
 export type CalendarPayload = {

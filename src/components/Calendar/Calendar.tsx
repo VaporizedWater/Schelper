@@ -266,10 +266,10 @@ const Calendar = () => {
             const hasInstructorConflict = classConflicts.some(c => c.conflictType === "instructor");
             const hasCohortConflict = classConflicts.some(c => c.conflictType === "cohort");
 
-            console.log(userSettings, "USER SETTINGS!")
+            // console.log(userSettings, "USER SETTINGS!")
             const conflictColors = userSettings.settings.conflicts;
 
-            console.log("Conflict colors INstructor: ", conflictColors.instructor);
+            // console.log("Conflict colors INstructor: ", conflictColors.instructor);
 
             if (hasAllConflict) {
                 backgroundColor = conflictColors.all; // Room + Instructor + Cohort conflict

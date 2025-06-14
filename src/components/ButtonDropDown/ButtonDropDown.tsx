@@ -64,7 +64,7 @@ const ButtonDropDown = ({ title, items, type }: ButtonDropDownProps) => {
                 id={`${dropdownId}-menu`}
                 role="menu"
                 aria-labelledby={`${dropdownId}-button`}
-                className="w-40 rounded-lg shadow-md border border-gray-200 bg-white dark:bg-dark dark:border-gray-500 overflow-hidden"
+                className="w-full rounded-lg shadow-md border border-gray-200 bg-white dark:bg-dark dark:border-gray-500 overflow-hidden"
             >
                 {items.map((item, idx) => (
                     <li
@@ -101,7 +101,7 @@ const ButtonDropDown = ({ title, items, type }: ButtonDropDownProps) => {
             alwaysOpen={false}
             defaultOpen={false}
             darkClass="dark:bg-dark"
-            divClassName="relative inline-block"
+            divClassName="relative inline-block w-fit"
         />
     );
 };

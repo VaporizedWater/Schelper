@@ -9,11 +9,11 @@ interface CalendarDropDownProps {
 }
 
 const CalendarDropDown = ({ id, title }: CalendarDropDownProps) => {
-    const { setContextToOtherCalendar, calendarInfoList } = useCalendarContext();
+    const { setContextToOtherCalendar, calendarInfoList, currentCalendar } = useCalendarContext();
 
     const calendarInfoListMap = useMemo(
         () =>
-            calendarInfoList.map((item, index) => (
+            calendarInfoList.filter(c => c._id !== currentCalendar._id).map((item, index) => (
                 <li
                     key={index}
                     role="option"
@@ -33,8 +33,26 @@ const CalendarDropDown = ({ id, title }: CalendarDropDownProps) => {
                     </button>
                 </li>
             )),
-        [calendarInfoList, setContextToOtherCalendar, title]
+        [calendarInfoList, setContextToOtherCalendar, title] // eslint-disable-line react-hooks/exhaustive-deps
     );
+
+    if (calendarInfoListMap.length === 0) {
+        return (
+            <div
+                id={id}
+                className={`flex items-center gap-2 px-2 py-2 bg-white rounded-lg hover:bg-gray-100 dark:bg-dark dark:hover:bg-zinc-700 transition-all duration-200
+    shadow-sm hover:shadow border border-gray-200 dark:border-gray-500`}
+                role="button"
+                aria-labelledby={`${id}-label`}
+                tabIndex={0}
+            >
+                <span id={`${id}-label`} className="text-sm px-1 font-medium">
+                    {title}
+                </span>
+            </div>
+        )
+    }
+
 
     return (
         <DropDown
