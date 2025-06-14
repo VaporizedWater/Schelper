@@ -10,57 +10,65 @@ import { MdCalendarMonth } from "react-icons/md";
 const TopNav = () => {
     const { data: session } = useSession();
 
+    const commonHeaderProps = {
+        role: "banner",
+        "aria-label": "Site header",
+        className:
+            "flex flex-row items-center bg-psublue dark:bg-zinc-800 border-b border-gray-400 dark:border-gray-600 sticky top-0 z-50 pl-6 md:pl-8 lg:pl-10",
+    } as const;
+
     const loggedOut = useMemo(() => {
         return (
-            <header className="flex flex-row bg-psublue dark:bg-zinc-800 border-b border-gray-400 dark:border-gray-600 sticky top-0 z-50 pl-6 md:pl-8 lg:pl-10">
-                <Link href="/" className="cursor-pointer">
-                    <div className='py-2'>
-                        <Image
-                            src={HorizontalTextPSULogo}
-                            alt="Logo"
-                            height={"40"}
-                        />
-                    </div>
+            <header  {...commonHeaderProps}>
+                <Link href="/" aria-label="Go to homepage" className="flex items-center py-2">
+                    <Image
+                        src={HorizontalTextPSULogo}
+                        alt="Logo"
+                        height={"40"}
+                        priority
+                    />
                 </Link>
 
-                <div className="p-4 ml-auto text-white flex flex-row">
+                <div className="ml-auto p-4 text-white flex items-center">
                     <SignIn></SignIn>
                 </div>
             </header>
         );
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const loggedIn = useMemo(() => {
         return (
-            <header className="flex flex-row items-center bg-psublue dark:bg-zinc-800 border-b border-gray-400 dark:border-gray-600 sticky top-0 z-50 pl-6 md:pl-8 lg:pl-10">
-                <Link href="/" className="flex items-center">
-                    <div className='py-2'>
-                        <Image
-                            src={HorizontalTextPSULogo}
-                            alt="Logo"
-                            height={"40"}
-                        />
-                    </div>
+            <header {...commonHeaderProps}>
+                <Link href="/" aria-label="Go to homepage" className="flex items-center py-2">
+                    <Image
+                        src={HorizontalTextPSULogo}
+                        alt="Logo"
+                        height={"40"}
+                        priority
+                    />
                 </Link>
 
-                <div className="p-4 ml-auto text-white flex flex-row items-center gap-2">
-                    <Link href={'/calendar'} className="flex items-center">
-                        <button className="px-1.5 py-1 w-full sm:min-w-max  text-gray-500 dark:text-white bg-white rounded-lg 
-        hover:bg-gray-100 dark:bg-zinc-800 dark:hover:bg-zinc-700 transition-all duration-200 
-        shadow-sm hover:shadow border border-gray-200 dark:border-gray-700">
-                            <MdCalendarMonth className="h-7 w-7" />
-                        </button>
+                <nav
+                    aria-label="User actions"
+                    className="ml-auto p-4 text-white flex items-center space-x-2"
+                >
+                    <Link
+                        href={'/calendar'}
+                        aria-label="View calendar"
+                        className="inline-flex items-center justify-center px-1.5 py-1 bg-white dark:bg-zinc-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm hover:bg-gray-100 dark:hover:bg-zinc-700 transition"
+                    >
+                        <MdCalendarMonth
+                            className="h-7 w-7 text-gray-500 dark:text-white"
+                            aria-hidden="true"
+                        />
                     </Link>
-                    <Profile></Profile>
-                </div>
+                    <Profile />
+                </nav>
             </header>
         );
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-    if (session?.user == undefined) {
-        return (loggedOut);
-    }
-    return (loggedIn);
+    return session?.user ? loggedIn : loggedOut;
 }
 // 
 export default TopNav;

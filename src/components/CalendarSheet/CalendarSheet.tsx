@@ -24,32 +24,36 @@ export default function CalendarSheet() {
         setSelectedRowIndex(index);
     }, [setCurrentClass]);
 
+    const thClassname = 'px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider';
+    const tdClassname = 'p-2 whitespace-nowrap dark:text-gray-300';
+
+
     const calendarSheet = useMemo(() => {
         return (
             <div className="grow overflow-auto max-h-[80vh]">
-                <table className="w-full border-collapse min-w-full text-sm">
+                <table className="w-full border-collapse min-w-full text-sm" role="table" aria-label="Calendar Classes Spreadsheet" title="Calendar Classes Spreadsheet">
                     <thead className="bg-gray-50 dark:bg-zinc-800 sticky top-0">
-                        <tr>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">#</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Subject</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Course #</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Section</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-40">Title</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Instructor</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Start</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">End</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Days</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Room</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Class #</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Cohort</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Tags</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Catalog #</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Session</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Enroll Cap</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Wait Cap</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            <th className="px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Facility</th>
+                        <tr role="row">
+                            <th className="">#</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Subject">Subject</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Course Number">Course #</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Section">Section</th>
+                            <th className={thClassname + " min-w-40"} role="columnheader" scope="col" title="Title">Title</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Instructor Name">Instructor</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Instructor Email">Email</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Start Time">Start</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="End Time">End</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Class Days">Days</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Room">Room</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Class Number">Class #</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Cohort">Cohort</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Tags">Tags</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Catalog Number">Catalog #</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Session">Session</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Enrollment Capacity">Enroll Cap</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Waitlist Capacity">Wait Cap</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Class Status">Status</th>
+                            <th className={thClassname} role="columnheader" scope="col" title="Facility ID">Facility</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-zinc-700">
@@ -63,26 +67,26 @@ export default function CalendarSheet() {
                                 role="row"
                                 aria-selected={index === selectedRowIndex}
                             >
-                                <td className="p-2 text-xs font-medium text-gray-500 dark:text-gray-400">{index + 1}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.data.course_subject}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.data.course_num}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.data.section}</td>
-                                <td className="p-2 dark:text-gray-300">{item.data.title}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.properties.instructor_name}</td>
-                                <td className="p-2 dark:text-gray-300">{item.properties.instructor_email}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.properties.start_time}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.properties.end_time}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.properties.days?.join(', ')}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.properties.room}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.data.class_num}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.properties.cohort}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.properties.tags?.filter(tag => tag.tagCategory === "user").map(tag => tag.tagName).join(', ')}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.data.catalog_num}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.data.session}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.data.enrollment_cap}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.data.waitlist_cap}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.properties.class_status}</td>
-                                <td className="p-2 whitespace-nowrap dark:text-gray-300">{item.properties.facility_id}</td>
+                                <td className="p-2 text-xs font-medium text-gray-500 dark:text-gray-400" role="cell">{index + 1}</td>
+                                <td className={tdClassname} role="cell">{item.data.course_subject}</td>
+                                <td className={tdClassname} role="cell">{item.data.course_num}</td>
+                                <td className={tdClassname} role="cell">{item.data.section}</td>
+                                <td className="p-2 dark:text-gray-300" role="cell">{item.data.title}</td>
+                                <td className={tdClassname} role="cell">{item.properties.instructor_name}</td>
+                                <td className="p-2 dark:text-gray-300" role="cell">{item.properties.instructor_email}</td>
+                                <td className={tdClassname} role="cell">{item.properties.start_time}</td>
+                                <td className={tdClassname} role="cell">{item.properties.end_time}</td>
+                                <td className={tdClassname} role="cell">{item.properties.days?.join(', ')}</td>
+                                <td className={tdClassname} role="cell">{item.properties.room}</td>
+                                <td className={tdClassname} role="cell">{item.data.class_num}</td>
+                                <td className={tdClassname} role="cell">{item.properties.cohort}</td>
+                                <td className={tdClassname} role="cell">{item.properties.tags?.filter(tag => tag.tagCategory === "user").map(tag => tag.tagName).join(', ')}</td>
+                                <td className={tdClassname} role="cell">{item.data.catalog_num}</td>
+                                <td className={tdClassname} role="cell">{item.data.session}</td>
+                                <td className={tdClassname} role="cell">{item.data.enrollment_cap}</td>
+                                <td className={tdClassname} role="cell">{item.data.waitlist_cap}</td>
+                                <td className={tdClassname} role="cell">{item.properties.class_status}</td>
+                                <td className={tdClassname} role="cell">{item.properties.facility_id}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -93,7 +97,7 @@ export default function CalendarSheet() {
 
     if (isLoading) {
         return (
-            <div className="h-full flex items-center justify-center bg-white dark:bg-dark bg-opacity-80 dark:bg-opacity-100">
+            <div className="h-full flex items-center justify-center bg-white dark:bg-dark bg-opacity-80 dark:bg-opacity-100" title="Loading classes sheet" aria-label="Loading classes sheet">
                 <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
                     <p className="mt-4 text-lg font-medium text-gray-700 dark:text-gray-400">Loading classes sheet...</p>
@@ -103,4 +107,4 @@ export default function CalendarSheet() {
     }
 
     return (calendarSheet);
-}
+} 

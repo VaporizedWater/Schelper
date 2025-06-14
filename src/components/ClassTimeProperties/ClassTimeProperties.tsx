@@ -64,61 +64,94 @@ const ClassTimeProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     return (
-        <div className="h-full w-full flex flex-col">
-            <div className="w-full text-left py-2 font-bold text-gray-700 dark:text-gray-300">Time Properties</div>
+        <div
+            id="time-properties-panel"
+            className="h-full w-full flex flex-col"
+            role="region"
+            aria-labelledby="time-properties-title"
+        >
+            <div
+                id="time-properties-title"
+                className="w-full text-left py-2 font-bold text-gray-700 dark:text-gray-300"
+            >
+                Time Properties
+            </div>
             <div className="h-full">
-
                 {currentCombinedClass?._id ? (
-                    <ul className="flex flex-col w-full">
-                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50">
-                            <span className='w-full text-start font-semibold'>Start Time</span>
+                    <ul className="flex flex-col w-full" role="group" aria-label="Edit time properties">
+                        {/* Start Time */}
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50 rounded">
+                            <label htmlFor="start-time" className="w-full text-start font-semibold">
+                                Start Time
+                            </label>
                             <input
+                                id="start-time"
+                                name="startTime"
                                 type="time"
-                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={startTime}
                                 onChange={handleStartTimeChange}
+                                aria-required="true"
                             />
                         </li>
-                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50">
-                            <span className='w-full text-start font-semibold'>End Time</span>
+
+                        {/* End Time */}
+                        <li className="flex flex-col py-1 px-2 items-center focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50 rounded">
+                            <label htmlFor="end-time" className="w-full text-start font-semibold">
+                                End Time
+                            </label>
                             <input
+                                id="end-time"
+                                name="endTime"
                                 type="time"
-                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full"
+                                className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={endTime}
                                 onChange={handleEndTimeChange}
+                                aria-required="true"
                             />
                         </li>
-                        {/* Days Section */}
-                        <li className="flex flex-col py-1 px-2 focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50">
-                            <div className="font-bold text-gray-700 dark:text-gray-300 min-w-20 flex flex-row items-center justify-between">
-                                Days
-                            </div>
-                            <div>
-                                <div className="flex-1 flex flex-col py-1 pl-1">
+
+                        {/* Days */}
+                        <li className="flex flex-col py-1 px-2 focus-within:bg-blue-50 dark:focus-within:bg-gray-500/50 rounded">
+                            <fieldset
+                                id="days-fieldset"
+                                className="w-full"
+                                aria-required="true"
+                            >
+                                <legend className="font-bold text-gray-700 dark:text-gray-300">
+                                    Days
+                                </legend>
+                                <div className="flex flex-col gap-2 mt-1">
                                     {ShortenedDays.map(day => (
-                                        <label key={day} className="flex items-center gap-1">
+                                        <label key={day} htmlFor={`day-${day}`} className="flex items-center gap-1">
                                             <input
+                                                id={`day-${day}`}
+                                                name="days"
                                                 type="checkbox"
+                                                value={day}
                                                 checked={days.includes(day)}
-                                                onChange={(e) => handleDaysChange(day, e.target.checked)}
-                                                className="form-checkbox h-4 w-4 cursor-pointer transition-all appearance-none rounded-sm shadow-sm hover:shadow-md border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
+                                                onChange={e => handleDaysChange(day, e.target.checked)}
+                                                className="form-checkbox h-4 w-4 cursor-pointer rounded-sm transition-shadow border border-slate-300 checked:bg-blue-600 checked:border-blue-600"
                                             />
                                             <span>{day}</span>
                                         </label>
                                     ))}
                                 </div>
-                            </div>
+                            </fieldset>
                         </li>
                     </ul>
-
                 ) : (
-                    <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
+                    <div
+                        className="flex items-center justify-center text-center h-full text-gray-400 pb-8"
+                        role="alert"
+                    >
                         <p>Select a class to edit</p>
                     </div>
                 )}
             </div>
         </div>
     )
+
 }
 
 export default ClassTimeProperties;

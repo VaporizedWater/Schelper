@@ -66,7 +66,7 @@ export default function SettingsPage() {
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
         };
-    }, []);  // Empty dependency array means this runs once on mount
+    }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div className="flex h-full relative bg-white dark:bg-zinc-800 text-black dark:text-gray-200">

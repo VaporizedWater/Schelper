@@ -47,12 +47,19 @@ const TagDisplay = () => {
     }, [allClasses, unlinkTagFromClass]);
 
     if (isLoading) {
-        return <div className="flex justify-center items-center p-4">Loading tags...</div>;
+        return (
+            <div role="status" aria-live="polite" className="flex justify-center items-center p-4 animate-pulse">
+                Loading tags...
+            </div>
+        );
     }
 
     return (
-        <div className="text-black dark:text-gray-300">
-            <ul className="grid grid-cols-3 gap-3">
+        <div role="region" aria-labelledby="tag-display-title" className="text-black dark:text-gray-300">
+            <h2 id="tag-display-title" className="sr-only">
+                Tag list
+            </h2>
+            <ul role="list" aria-label="User-defined tags" className="grid grid-cols-3 gap-3">
                 {/* Render linked tags with prefixed key */}
                 {
                     Array.from(tagList)
@@ -61,23 +68,35 @@ const TagDisplay = () => {
                         .map(([tagId, tagData]) => (
                             <li
                                 key={`linked-${tagId}`}
+                                role="listitem"
                                 onMouseEnter={() => setHoveredTagId(tagId)}
                                 onMouseLeave={() => setHoveredTagId(null)}
                             >
                                 <DropDown
                                     buttonClassName="w-full"
                                     renderButton={(isOpen) => (
-                                        <div className="hover:bg-gray-200 dark:hover:bg-zinc-600 flex justify-between items-center p-2 bg-gray-100 dark:bg-zinc-700 rounded-sm cursor-pointer transition-colors duration-150">
+                                        <div
+                                            role="button"
+                                            aria-haspopup="true"
+                                            aria-expanded={isOpen}
+                                            aria-label={`Tag ${tagId}, ${tagData.classIds.size} class${tagData.classIds.size > 1 ? 'es' : ''}`}
+                                            className="hover:bg-gray-200 dark:hover:bg-zinc-600 flex justify-between items-center p-2 bg-gray-100 dark:bg-zinc-700 rounded-sm cursor-pointer transition-colors duration-150"
+                                        >
                                             <span>
                                                 {tagId}
                                             </span>
                                             <div className="flex items-center gap-2">
                                                 <span className="text-xs text-gray-500 dark:text-gray-400">{tagData.classIds.size} Class{tagData.classIds.size > 1 && `es`}</span>
                                                 {hoveredTagId === tagId && (
-                                                    <div className="hover:bg-gray-300 dark:hover:bg-zinc-500 p-1 rounded-sm cursor-pointer transition-colors duration-150" onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleTagUnlink(tagId)
-                                                    }}>
+                                                    <div
+                                                        role="button"
+                                                        tabIndex={0}
+                                                        aria-label={`Unlink tag ${tagId} from all classes`}
+                                                        className="hover:bg-gray-300 dark:hover:bg-zinc-500 p-1 rounded-sm cursor-pointer transition-colors duration-150"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleTagUnlink(tagId)
+                                                        }}>
                                                         <BiUnlink />
                                                     </div>
                                                 )}
@@ -90,23 +109,35 @@ const TagDisplay = () => {
                                     dropdownClassName="w-full mt-1"
                                     renderDropdown={() => (
                                         <div>
-                                            <ul className="flex flex-col gap-1 bg-white dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 rounded-sm shadow-lg">
+                                            <ul
+                                                role="list"
+                                                aria-label={`Classes linked to tag ${tagId}`}
+                                                className="flex flex-col gap-1 bg-white dark:bg-zinc-700 border border-gray-300 dark:border-zinc-600 rounded-sm shadow-lg"
+                                            >
                                                 {Array.from(tagData.classIds).map((classId) => {
-                                                    const foundClass = allClasses.find(
-                                                        (cls) => String(cls._id) === classId
-                                                    );
+                                                    const foundClass = allClasses.find((cls) => String(cls._id) === classId);
                                                     return (
                                                         <li
-                                                            key={classId} className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-600 flex justify-between items-center transition-colors duration-150"
+                                                            key={classId}
+                                                            role="listitem"
+                                                            className="p-2 hover:bg-gray-100 dark:hover:bg-zinc-600 flex justify-between items-center transition-colors duration-150"
                                                             onMouseEnter={() => setHoveredTagClassId([tagId, classId])}
                                                             onMouseLeave={() => setHoveredTagClassId(null)}
                                                         >
-                                                            {foundClass ? foundClass.data.course_subject + " " + foundClass.data.course_num + " " + foundClass.data.title : classId}
+                                                            <span>
+                                                                {foundClass ? foundClass.data.course_subject + " " + foundClass.data.course_num + " " + foundClass.data.title : classId}
+                                                            </span>
                                                             {hoveredTagClassId && hoveredTagClassId[0] === tagId && hoveredTagClassId[1] === classId && (
-                                                                <div className="hover:bg-gray-300 dark:hover:bg-zinc-500 p-1 rounded-sm cursor-pointer transition-colors duration-150" onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    handleClassUnlink(tagId, classId)
-                                                                }}>
+                                                                <div
+                                                                    role="button"
+                                                                    tabIndex={0}
+                                                                    aria-label={`Unlink class ${classId} from tag ${tagId}`}
+                                                                    className="hover:bg-gray-300 dark:hover:bg-zinc-500 p-1 rounded-sm cursor-pointer transition-colors duration-150"
+                                                                    onClick={(e) => {
+                                                                        e.stopPropagation();
+                                                                        handleClassUnlink(tagId, classId)
+                                                                    }}
+                                                                >
                                                                     <BiUnlink />
                                                                 </div>
                                                             )}
@@ -126,9 +157,11 @@ const TagDisplay = () => {
                         return (
                             <li
                                 key={`unlinked-${tag.tagName}-${index}`}
+                                role="listitem"
                                 onMouseEnter={() => setHoveredTagId(tag.tagName)}
                                 onMouseLeave={() => setHoveredTagId(null)}
                                 className="flex justify-between items-center p-2 bg-gray-100 dark:bg-zinc-700 rounded-sm hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150"
+                                aria-label={`Tag ${tag.tagName}, no classes linked`}
                             >
                                 <span>{tag.tagName}</span>
                                 <span className="text-xs text-gray-500 dark:text-gray-400">0 classes</span>

@@ -44,7 +44,7 @@ const Calendar = () => {
         });
 
         selectedEvents.length = 0;
-    }, [theme, resolvedTheme]);
+    }, [theme, resolvedTheme]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const selectEvent = useCallback((element: HTMLElement) => {
         const isDarkMode = theme === 'dark' || resolvedTheme === 'dark';
@@ -293,20 +293,22 @@ const Calendar = () => {
         const section = eventInfo.event.extendedProps.combinedClass?.data?.section || '';
 
         return {
-            html: `<div style="
-                    background-color: ${backgroundColor}; 
-                    color: white;
-                    padding: 2px 2px;
-                    border-radius: 1px;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-                    white-space: nowrap;
-                    font-size: 0.875rem; /* Medium font size for events */
-                ">
+            html: `<div 
+                    style="
+                        background-color: ${backgroundColor}; 
+                        color: white;
+                        padding: 2px 2px;
+                        border-radius: 1px;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        font-size: 0.875rem; /* Medium font size for events */"
+                    title="${eventInfo.event.title}${section ? ` - §${section}` : ''}"
+                >
                     ${eventInfo.event.title}${section ? ` - §${section}` : ''}
                 </div>`
         };
-    }, [conflicts]);
+    }, [conflicts]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // EventInfo in types defines possibilities, but fullcalendar doesn't support typescript, so dont use it as the type here
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -413,10 +415,28 @@ const Calendar = () => {
 
     if (isLoading) {
         return (
-            <div className="h-full flex items-center justify-center bg-white dark:bg-dark bg-opacity-80 dark:bg-opacity-100">
+            <div
+                id="classes-loading-overlay"
+                role="status"
+                aria-live="polite"
+                aria-label="Loading classes"
+                className="h-full flex items-center justify-center bg-white dark:bg-dark bg-opacity-80 dark:bg-opacity-100"
+            >
                 <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
-                    <p className="mt-4 text-lg font-medium text-gray-700 dark:text-gray-400">Loading classes...</p>
+                    <div
+                        id="classes-loading-spinner"
+                        role="status"
+                        aria-busy="true"
+                        aria-describedby="classes-loading-text"
+                        title="Loading classes"
+                        className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"
+                    />
+                    <p
+                        id="classes-loading-text"
+                        className="mt-4 text-lg font-medium text-gray-700 dark:text-gray-400"
+                    >
+                        Loading classes...
+                    </p>
                 </div>
             </div>
         );

@@ -104,7 +104,7 @@ export default function CalendarsPage() {
         }, 1000);
 
         return () => clearTimeout(timer);
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleDeleteCalendar = async (id: string, name: string) => {
         if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {

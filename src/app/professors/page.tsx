@@ -14,7 +14,6 @@ interface Professor {
     officeHours?: string;
     phone?: string;
     subjects?: string[];
-    imageUrl?: string;
 }
 
 export default function ProfessorsPage() {
@@ -43,7 +42,6 @@ export default function ProfessorsPage() {
                 officeHours: 'Mon/Wed 2-4pm',
                 phone: '555-123-4567',
                 subjects: ['Programming', 'Algorithms', 'Data Structures'],
-                imageUrl: 'https://i.pravatar.cc/150?img=1'
             },
             {
                 id: '2',
@@ -53,7 +51,6 @@ export default function ProfessorsPage() {
                 office: 'IST 204',
                 officeHours: 'Tue/Thu 1-3pm',
                 subjects: ['Machine Learning', 'AI'],
-                imageUrl: 'https://i.pravatar.cc/150?img=2'
             },
             {
                 id: '3',
@@ -64,7 +61,6 @@ export default function ProfessorsPage() {
                 officeHours: 'Fri 10am-12pm',
                 phone: '555-987-6543',
                 subjects: ['Circuit Analysis', 'Digital Logic'],
-                imageUrl: 'https://i.pravatar.cc/150?img=3'
             }
         ];
 
@@ -180,19 +176,12 @@ export default function ProfessorsPage() {
                                 <div className="p-5 flex flex-col h-full">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-center">
-                                            {professor.imageUrl ? (
-                                                <img
-                                                    src={professor.imageUrl}
-                                                    alt={professor.name}
-                                                    className="w-12 h-12 rounded-full object-cover mr-4"
-                                                />
-                                            ) : (
-                                                <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-4">
-                                                    <span className="text-blue-800 dark:text-blue-200 text-lg font-semibold">
-                                                        {professor.name.split(' ').map(n => n[0]).join('')}
-                                                    </span>
-                                                </div>
-                                            )}
+
+                                            <div className="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center mr-4">
+                                                <span className="text-blue-800 dark:text-blue-200 text-lg font-semibold">
+                                                    {professor.name.split(' ').map(n => n[0]).join('')}
+                                                </span>
+                                            </div>
                                             <div>
                                                 <h2 className="text-xl font-semibold">{professor.name}</h2>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400">{professor.department}</p>

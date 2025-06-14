@@ -19,37 +19,51 @@ const DeleteClass = () => {
                 // Clear current class selection
                 setCurrentClass(newDefaultEmptyClass());
             } catch (error) {
-                alert("Failed to delete class. Please try again. ");
-                console.log("Error deleting class:", error);
+                alert("Failed to delete class. Please try again.");
+                console.error("Error deleting class:", error);
             }
         }
     }, [currentCombinedClass, deleteClass, setCurrentClass]);
 
     return (
-        <div className="w-full h-full flex flex-col">
-            <div className="w-full text-left py-2 font-bold text-gray-700 dark:text-gray-300">
+        <div
+            id="delete-class-panel"
+            role="region"
+            aria-labelledby="delete-class-title"
+            className="w-full h-full flex flex-col"
+        >
+            <div
+                id="delete-class-title"
+                className="w-full text-left py-2 font-bold text-gray-700 dark:text-gray-300"
+            >
                 Delete Class
             </div>
+
             <div className="h-full">
-                {(currentCombinedClass && currentCombinedClass._id) ? (
-                    <li className="flex items-center justify-center">
-                        <button
-                            onClick={handleDeleteClass}
-                            className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors cursor-pointer"
-                            aria-label="Delete class"
-                        >
-                            Delete Class
-                        </button>
-                    </li>
+                {currentCombinedClass && currentCombinedClass._id ? (
+                    <ul role="list" aria-label="Delete class action" className="flex items-center justify-center">
+                        <li role="listitem">
+                            <button
+                                type="button"
+                                onClick={handleDeleteClass}
+                                className="w-full bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-lg transition-colors cursor-pointer"
+                                aria-label={`Delete class ${currentCombinedClass.data.course_subject} ${currentCombinedClass.data.course_num}`}
+                            >
+                                Delete Class
+                            </button>
+                        </li>
+                    </ul>
                 ) : (
-                    <div className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
+                    <div
+                        role="alert"
+                        className="flex items-center justify-center text-center h-full text-gray-400 pb-8"
+                    >
                         <p>Select a class to delete</p>
                     </div>
-                )
-                }
+                )}
             </div>
         </div>
-    )
-}
+    );
+};
 
 export default DeleteClass;
