@@ -91,10 +91,12 @@ export type DropDownProps = {
     /** Additional class names */
     buttonClassName?: string;
     dropdownClassName?: string;
-    alwaysOpen?: boolean;
+    closeOnOutsideClick?: boolean;
     defaultOpen?: boolean;
     darkClass?: string; // Class to apply dark mode styles
     divClassName?: string;
+    id?: string;
+    label?: string;
 };
 
 export type ButtonDropDownProps = {
@@ -230,7 +232,8 @@ export type CalendarAction =
     | { type: "UNLINK_ALL_TAGS_FROM_ALL_CLASSES" }
     | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] }
     | { type: "DELETE_CLASS"; payload: string }
-    | { type: "UPDATE_FACULTY"; payload: FacultyType[] };
+    | { type: "UPDATE_FACULTY"; payload: FacultyType[] }
+    | { type: "SET_NEW_CALENDAR"; payload: { userEmail: string; calendarId: string } };
 
 export type FacultyType = {
     _id?: string;

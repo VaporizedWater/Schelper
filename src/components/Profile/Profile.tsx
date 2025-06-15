@@ -127,6 +127,7 @@ const Profile = () => {
             dropdownClassName="right-0 w-56 mt-1"
             darkClass="dark:bg-zinc-800"
             divClassName=""
+            closeOnOutsideClick={true}
         />
     );
 };

@@ -260,7 +260,7 @@ const FacultyDisplayPage = () => {
                                 <DropDown
                                     buttonClassName="w-full"
                                     dropdownClassName="relative mt-0 shadow-none rounded-lg"
-                                    alwaysOpen={openDropdownEmail === faculty.email}
+                                    closeOnOutsideClick={openDropdownEmail === faculty.email}
                                     renderButton={(isOpen) => (
                                         <div
                                             className="flex justify-between items-center p-2 bg-gray-100 dark:bg-zinc-700 rounded-lg cursor-pointer hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150"

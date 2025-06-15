@@ -60,7 +60,7 @@ const CalendarDropDown = ({ id, title }: CalendarDropDownProps) => {
             renderButton={(isOpen) => (
                 <div
                     id={id}
-                    className={`flex items-center gap-2 px-2 py-2 bg-white rounded-lg hover:cursor-pointer
+                    className={`flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:cursor-pointer
             hover:bg-gray-100 dark:bg-dark dark:hover:bg-zinc-700 transition-all duration-200
             shadow-sm hover:shadow border border-gray-200 dark:border-gray-500
             ${isOpen ? "bg-gray-100 dark:bg-dark" : ""}`}
@@ -98,6 +98,7 @@ const CalendarDropDown = ({ id, title }: CalendarDropDownProps) => {
             )
             }
             darkClass="dark:bg-dark"
+            closeOnOutsideClick={true}
         />
     );
 };

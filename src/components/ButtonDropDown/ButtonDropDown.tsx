@@ -98,10 +98,11 @@ const ButtonDropDown = ({ title, items, type }: ButtonDropDownProps) => {
             renderDropdown={renderDropdown}
             buttonClassName="inline-flex items-center focus:outline-none"
             dropdownClassName="right-0 mt-2"
-            alwaysOpen={false}
+            closeOnOutsideClick={true}
             defaultOpen={false}
             darkClass="dark:bg-dark"
             divClassName="relative inline-block w-fit"
+
         />
     );
 };

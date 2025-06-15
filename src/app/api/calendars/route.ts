@@ -136,15 +136,46 @@ export async function POST(request: Request): Promise<Response> {
 
 export async function PUT(request: Request): Promise<Response> {
     try {
-        const { userId, calendarId } = (await request.json()) as { userId: string; calendarId: string };
+        const { userEmail, calendarId } = await request.json();
 
-        if (ObjectId.isValid(calendarId) && ObjectId.isValid(userId)) {
-            const calendar = new ObjectId(calendarId);
+        if (!userEmail || !calendarId) {
+            return new Response(JSON.stringify({ success: false, error: "Invalid userEmail or calendarId" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
 
-            await collection.findOneAndUpdate(
-                { _id: new ObjectId(userId) },
-                { $addToSet: { classes: { calendar } } },
-                { upsert: true }
+        if (!ObjectId.isValid(calendarId) || !userEmail) {
+            return new Response(JSON.stringify({ success: false, error: "Invalid userEmail or calendarId format" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        const client = await clientPromise;
+        const db = client.db("class-scheduling-app");
+        const usersColl = db.collection("users") as Collection<Document>;
+
+        const objectCalId = ObjectId.createFromHexString(calendarId);
+
+        const result = await usersColl.updateOne(
+            {
+                email: userEmail,
+                user_calendars: objectCalId, // ensure the user actually has that calendar
+            },
+            {
+                $set: { current_calendar: objectCalId }, // update the current_calendar field
+            }
+        );
+
+        if (result.matchedCount === 0) {
+            // either no such user, or calendarId not in their user_calendars
+            return new Response(
+                JSON.stringify({
+                    success: false,
+                    error: "User not found or calendar not in user_calendars",
+                }),
+                { status: 404, headers: { "Content-Type": "application/json" } }
             );
         }
 
@@ -154,6 +185,41 @@ export async function PUT(request: Request): Promise<Response> {
         });
     } catch (error) {
         console.error("Error in PUT /api/combined_classes:", error);
+        return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+        });
+    }
+}
+
+export async function DELETE(request: Request): Promise<Response> {
+    try {
+        const { userEmail, calendarId } = await request.json();
+
+        if (!userEmail || !calendarId) {
+            return new Response(JSON.stringify({ success: false, error: "Invalid user or calendar ID" }), {
+                status: 400,
+                headers: { "Content-Type": "application/json" },
+            });
+        }
+
+        const client = await clientPromise;
+        const db = client.db("class-scheduling-app");
+        const usersColl = db.collection("users") as Collection<Document>;
+        const calsColl = db.collection("calendars") as Collection<Document>;
+
+        // Remove the calendar from the user's user_calendars array
+        await usersColl.updateOne({ email: userEmail }, { $pull: { user_calendars: new ObjectId(calendarId) } });
+
+        // Delete the calendar document itself
+        await calsColl.deleteOne({ _id: new ObjectId(calendarId) });
+
+        return new Response(JSON.stringify({ success: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch (error) {
+        console.error("Error in DELETE /api/calendars:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
             headers: { "Content-Type": "application/json" },

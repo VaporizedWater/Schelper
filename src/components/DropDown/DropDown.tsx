@@ -1,13 +1,6 @@
 import { DropDownProps } from "@/lib/types";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-interface AccessibleDropDownProps extends DropDownProps {
-    /** Unique identifier for this dropdown (e.g. "calendar-selector") */
-    id?: string;
-    /** Human-readable label for the dropdown, used for aria-labelledby */
-    label?: string;
-}
-
 const DropDown = ({
     id = `dropdown-${Math.random().toString(36).substr(2, 5)}`,
     label = "Options",
@@ -15,31 +8,30 @@ const DropDown = ({
     renderDropdown,
     buttonClassName,
     dropdownClassName,
-    alwaysOpen = false,
+    closeOnOutsideClick = true,
     defaultOpen = false,
     darkClass = "",
     divClassName = "",
-}: AccessibleDropDownProps) => {
-    const [isOpen, setIsOpen] = useState(alwaysOpen || defaultOpen);
+}: DropDownProps) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!alwaysOpen) {
-            setIsOpen(defaultOpen);
-        }
-    }, [defaultOpen, alwaysOpen]);
+        setIsOpen(defaultOpen);
+    }, [defaultOpen]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                if (!alwaysOpen) {
-                    setIsOpen(false);
-                }
+                // console.log("Clicked outside the dropdown");
+                // Close the dropdown if clicked outside
+                console.log(isOpen, closeOnOutsideClick);
+                setIsOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [alwaysOpen]);
+    }, [closeOnOutsideClick]);  // eslint-disable-line react-hooks/exhaustive-deps
 
     const toggleDropdown = useCallback(() => {
         setIsOpen((prev) => !prev);

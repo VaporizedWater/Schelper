@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
-import { CalendarAction, CalendarContextType, CalendarState, CombinedClass, ConflictType, FacultyType, ReactNodeChildren } from '@/lib/types';
+import { CalendarAction, CalendarContextType, CalendarInfo, CalendarState, CalendarType, CombinedClass, ConflictType, FacultyType, ReactNodeChildren } from '@/lib/types';
 import { updateCombinedClasses, loadCalendars, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort, loadUserSettings } from '@/lib/DatabaseUtils';
 import { buildTagMapping, createEventsFromCombinedClass, initialCalendarState, mergeFacultyEntries, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
@@ -173,6 +173,24 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     current: action.payload
                 }
             };
+        }
+
+        case 'SET_NEW_CALENDAR': {
+            return {
+                ...state,
+                currentCalendar: { _id: action.payload.calendarId, info: {} as CalendarInfo, classes: [] } as CalendarType,
+                classes: {
+                    all: [],
+                    current: newDefaultEmptyClass()
+                },
+                tags: new Map(),
+                status: {
+                    loading: false,
+                    error: null
+                },
+                faculty: [],
+                conflictPropertyChanged: !state.conflictPropertyChanged,
+            }
         }
 
         case 'UPDATE_CLASS': {
@@ -650,8 +668,15 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             },
 
             setContextToOtherCalendar: async (calendarId: string) => {
+                if (!session?.user?.email) {
+                    console.error("No user email found in session");
+                    return;
+                }
+
                 console.log('SETTING CONTEXT TO OTHER CALENDAR');
-                await setCurrentCalendarToNew(calendarId);
+                console.log("Calendar ID:", calendarId);
+                await setCurrentCalendarToNew(session.user.email, calendarId);
+                dispatch({ type: 'SET_NEW_CALENDAR', payload: { userEmail: session.user.email, calendarId: calendarId } });
                 setForceUpdate(Date.now().toString());
             },
 
@@ -852,7 +877,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 }
             }
         }
-    }, [state]);
+    }, [state]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (typeof window !== 'undefined') {
         (window as any).__calendarContext__ = contextValue; // eslint-disable-line @typescript-eslint/no-explicit-any

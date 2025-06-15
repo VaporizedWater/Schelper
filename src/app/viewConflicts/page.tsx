@@ -20,6 +20,9 @@ const ViewConflicts = () => {
         router.back();
     }, [router, setCurrentClass]);
 
+    console.log("displayClasses:", displayClasses);
+    console.log("conflicts:", conflicts);
+
     // Helper function to render a conflict list
     const renderConflictsList = useCallback((conflictsList: ConflictType[], title: string, alwaysOpen?: boolean, defaultOpen?: boolean) => {
         if (conflictsList.length === 0) {
@@ -149,7 +152,7 @@ const ViewConflicts = () => {
                             })}
                         </ul>
                     )}
-                    alwaysOpen={alwaysOpen}
+                    closeOnOutsideClick={alwaysOpen}
                     defaultOpen={defaultOpen}
                     darkClass="dark:bg-zinc-800"
                 />

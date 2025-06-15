@@ -256,7 +256,7 @@ const Filters = () => {
                 <DropDown
                     id={sectionId}
                     label={`${title} filters`}
-                    alwaysOpen={false}
+                    closeOnOutsideClick={false}
                     defaultOpen={false}
                     buttonClassName="w-full text-left mt-1 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
                     dropdownClassName="relative w-full"

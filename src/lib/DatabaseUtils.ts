@@ -344,8 +344,25 @@ export async function insertCalendar(userEmail: string, calendarData: CalendarTy
 
 // --------
 // PUTS/UPDATES
-export async function setCurrentCalendarToNew(calendarId: string) {
-    console.log("CALENDAR ID: ", calendarId);
+export async function setCurrentCalendarToNew(userEmail: string, calendarId: string) {
+    try {
+        const response = await fetchWithTimeout("api/calendars", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userEmail, calendarId }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to set current calendar:", response.status, response.statusText);
+            return false;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to set current calendar:", error);
+        return false;
+    }
 }
 
 export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
@@ -503,6 +520,29 @@ export async function deleteCohort(email: string, cohortId: string): Promise<boo
         return result.success;
     } catch (error) {
         console.error("Failed to delete cohort:", error);
+        return false;
+    }
+}
+
+export async function deleteCalendar(userEmail: string, calendarId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/calendars", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userEmail: userEmail, calendarId: calendarId }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to delete calendar:", response.status, response.statusText);
+            return false;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete calendar:", error);
         return false;
     }
 }
