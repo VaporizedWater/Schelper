@@ -1,7 +1,7 @@
 "use client"
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
-import { CalendarAction, CalendarContextType, CalendarInfo, CalendarState, CalendarType, CombinedClass, ConflictType, FacultyType, ReactNodeChildren } from '@/lib/types';
+import { CalendarAction, CalendarContextType, CalendarInfo, CalendarState, CalendarType, CombinedClass, ConflictType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
 import { updateCombinedClasses, loadCalendars, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort, loadUserSettings } from '@/lib/DatabaseUtils';
 import { buildTagMapping, createEventsFromCombinedClass, initialCalendarState, mergeFacultyEntries, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
@@ -183,13 +183,14 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     all: [],
                     current: newDefaultEmptyClass()
                 },
-                tags: new Map(),
+                tags: new Map() as tagListType,
                 status: {
                     loading: false,
                     error: null
                 },
                 faculty: [],
                 conflictPropertyChanged: !state.conflictPropertyChanged,
+                conflicts: [] as ConflictType[],
             }
         }
 
