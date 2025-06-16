@@ -24,12 +24,6 @@ export default function CalendarsPage() {
     useEffect(() => {
         if (!session?.user?.email) return;
 
-        // only fetch if calendars list is empty
-        if (calendars.length > 0) {
-            setIsLoading(false);
-            return;
-        }
-
         setIsLoading(true);
 
         loadCalendars(session.user.email)
@@ -76,6 +70,8 @@ export default function CalendarsPage() {
                     console.error("Error deleting calendar:", err);
                     alert('Failed to delete calendar');
                 }
+            } else {
+
             }
         }
     };
