@@ -1,7 +1,7 @@
 'use client';
 
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import * as XLSX from 'xlsx';
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
@@ -9,7 +9,9 @@ import { CombinedClass } from "@/lib/types";
 
 const ExportSheet = () => {
     const { allClasses, conflicts } = useCalendarContext();
+
     const [filename, setFilename] = useState('schedule');
+    const [showOnlySelected, setShowOnlySelected] = useState(false);
 
     allClasses.sort((a, b) => {
         // Sort by course subject, then course number, then section
@@ -27,7 +29,33 @@ const ExportSheet = () => {
         return `${cls.data.class_num || ''}-${cls.data.section || ''}-${cls.properties.room}-${cls.properties.instructor_name}-${cls.properties.days.join(',')}-${cls.properties.start_time}`;
     }, []);
 
-    const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set(allClasses.map(c => getUniqueClassId(c))));
+    // Use only visible classes
+    const visibleClasses = useMemo(
+        () => allClasses.filter((cls) => cls.visible),
+        [allClasses]
+    );
+
+    // build a set of IDs for those filtered classes
+    const visibleIds = useMemo(
+        () => new Set(visibleClasses.map((cls) => getUniqueClassId(cls))),
+        [visibleClasses, getUniqueClassId]
+    );
+
+    const [selectedClasses, setSelectedClasses] = useState<Set<string>>(visibleIds);
+
+    // …and whenever filters shift which classes are visible, reseed selection
+    useEffect(() => {
+        setSelectedClasses(new Set(visibleIds));
+    }, [visibleIds]);
+
+    // derive which rows to render
+    const displayedClasses = useMemo(
+        () =>
+            showOnlySelected
+                ? allClasses.filter((cls) => selectedClasses.has(getUniqueClassId(cls)))
+                : allClasses,
+        [allClasses, selectedClasses, showOnlySelected]
+    );
 
     // Get conflict color information for each class (used for UI only)
     const classConflictColors = useMemo(() => {
@@ -180,8 +208,8 @@ const ExportSheet = () => {
     }, [allClasses, filename, getUniqueClassId, selectedClasses]);
 
     return (
-        <div className="p-4 min-h-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300">
-            <div className="mb-8">
+        <div className="px-4 min-h-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300">
+            <div className="mb-4">
                 <h1 className="text-2xl font-bold mb-1 dark:text-gray-200">Export Schedule</h1>
                 <span className="text-lg text-gray-600 dark:text-gray-400 font-medium">Spring 2025</span>
             </div>
@@ -190,37 +218,46 @@ const ExportSheet = () => {
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     File Name
                 </label>
-                <input
-                    type="text"
-                    value={filename}
-                    onChange={(e) => setFilename(e.target.value)}
-                    className="w-full p-2 border rounded-md dark:border-zinc-500 dark:bg-zinc-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
-                    placeholder="Enter file name"
-                />
-            </div>
-
-            <div className="flex gap-4">
-                <button
-                    onClick={exportToXLSX}
-                    className="bg-blue-500 dark:bg-blue-600 dark:text-gray-100 text-white px-4 py-2 rounded-md hover:bg-blue-600 dark:hover:bg-blue-500"
-                >
-                    Export to Excel ({selectedClasses.size})
-                </button>
-                <button
-                    onClick={exportToPDF}
-                    className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 dark:hover:bg-red-500 dark:bg-red-600 dark:text-gray-100"
-                >
-                    Export to PDF ({selectedClasses.size})
-                </button>
+                <div className="flex items-center gap-4">
+                    <input
+                        type="text"
+                        value={filename}
+                        onChange={(e) => setFilename(e.target.value)}
+                        className="w-full p-2 border rounded-md dark:border-zinc-500 dark:bg-zinc-700 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                        placeholder="Enter file name"
+                    />
+                    <button
+                        onClick={exportToXLSX}
+                        className="bg-blue-500 dark:bg-blue-600 dark:text-gray-100 text-white px-4 py-2.25 rounded-md hover:bg-blue-600 dark:hover:bg-blue-500 whitespace-nowrap"
+                    >
+                        Export to Excel ({selectedClasses.size})
+                    </button>
+                    <button
+                        onClick={exportToPDF}
+                        className="bg-red-500 text-white px-4 py-2.25 rounded-md hover:bg-red-600 dark:hover:bg-red-500 dark:bg-red-600 dark:text-gray-100 whitespace-nowrap"
+                    >
+                        Export to PDF ({selectedClasses.size})
+                    </button>
+                </div>
             </div>
 
             {/* Preview of classes to be exported */}
             {allClasses.length > 0 && (
                 <div className="mt-4">
-                    <div className="flex justify-between items-center mb-2">
+                    <div className="flex gap-4 items-center mb-2">
                         <h2 className="text-xl font-semibold">Classes to Export ({selectedClasses.size})</h2>
+                        <button
+                            onClick={() => setShowOnlySelected((prev) => !prev)}
+                            className={`text-white px-4 py-2 rounded-md whitespace-nowrap ${showOnlySelected
+                                ? "bg-indigo-500 dark:bg-indigo-600 hover:bg-indigo-600 dark:hover:bg-indigo-500"
+                                : "bg-green-500 dark:bg-green-600 hover:bg-green-600 dark:hover:bg-green-500"
+                                }`}
+                        >
+                            {showOnlySelected ? "Show all" : "Show selected"}
+                        </button>
+
                     </div>
-                    <div className="overflow-auto max-h-[60vh] border dark:bg-zinc-500 dark:border-zinc-500 rounded-md">
+                    <div className="overflow-auto max-h-[70vh] border dark:bg-zinc-500 dark:border-zinc-500 rounded-md">
                         <table className="min-w-full table-fixed border-collapse divide-y divide-gray-200 dark:divide-zinc-500">
                             <thead className="bg-gray-50 dark:bg-zinc-600 sticky top-0 dark:text-gray-300 dark:border-zinc-500">
                                 <tr className="">
@@ -252,7 +289,7 @@ const ExportSheet = () => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-zinc-700 divide-y divide-gray-200">
-                                {allClasses.map((classItem, index) => {
+                                {displayedClasses.map((classItem, index) => {
                                     const uniqueId = getUniqueClassId(classItem);
                                     const { color, textColor } = classConflictColors.get(classItem._id) || { color: 'transparent', textColor: 'inherit' };
 

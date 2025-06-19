@@ -394,7 +394,7 @@ const ImportSheet = () => {
         : 0;
 
     return (
-        <div className="p-4 bg-white dark:bg-zinc-800 h-full w-full text-black dark:text-gray-300">
+        <div className="px-4 bg-white dark:bg-zinc-800 h-full w-full text-black dark:text-gray-300">
             <h1 className="text-2xl font-bold mb-4 ">Import Sheet</h1>
             <div className="space-y-4">
                 <div className=''>
@@ -535,7 +535,7 @@ const ImportSheet = () => {
                                                         <option value="Senior">Senior</option>
                                                     </select>
                                                     {isCurrentCohortValid && assignCohort(cls, currentCohort) && (
-                                                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Auto-assigned</div>
+                                                        <div className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Auto-assigned</div>
                                                     )}
                                                 </td>
                                             </tr>
