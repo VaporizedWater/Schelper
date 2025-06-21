@@ -17,21 +17,14 @@ const DropDown = ({
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        setIsOpen(defaultOpen);
-    }, [defaultOpen]);
-
-    useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-                // console.log("Clicked outside the dropdown");
-                // Close the dropdown if clicked outside
-                console.log(isOpen, closeOnOutsideClick);
+            if (closeOnOutsideClick && isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [closeOnOutsideClick]);  // eslint-disable-line react-hooks/exhaustive-deps
+    }, [isOpen, closeOnOutsideClick]);  // eslint-disable-line react-hooks/exhaustive-deps
 
     const toggleDropdown = useCallback(() => {
         setIsOpen((prev) => !prev);

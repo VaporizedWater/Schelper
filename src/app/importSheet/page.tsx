@@ -50,6 +50,12 @@ const assignCohort = (cls: CombinedClass, cohort: CohortType): string | null => 
     // OR keep the full course number with the letter.
     const courseSubjectNum = cls.data.course_subject.toUpperCase() + " " + cls.data.course_num;
 
+    // If cohort is not valid, return null
+    if (!isValidCohort(cohort)) {
+        console.warn("Invalid cohort data provided for assignment.");
+        return null;
+    }
+
     // Check if the class 
     if (cohort.freshman.includes(courseSubjectNum)) {
         return "Freshman";
@@ -67,16 +73,47 @@ const assignCohort = (cls: CombinedClass, cohort: CohortType): string | null => 
 const ImportSheet = () => {
     // State to store loaded cohorts
     const { data: session } = useSession();
+    const { uploadNewClasses } = useCalendarContext();
+    const router = useRouter();
+
     const [currentCohort, setCurrentCohort] = useState<CohortType>({} as CohortType);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [fileName, setFileName] = useState<string>("");
+    const [parsedClasses, setParsedClasses] = useState<CombinedClass[]>([]);
+    const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set()); // Use selected classes as initial_state, and then make an initial_state per user. On export, any classes exporting that are not on initial state get everything included.
+    const [cohortSelections, setCohortSelections] = useState<Record<string, string>>({});
+
+    const [searchTerm, setSearchTerm] = useState(''); // New search term state
+
+    // New state for parsed + assigned cohort
+    const [decoratedClasses, setDecoratedClasses] = useState<
+        Array<CombinedClass & { assignedCohort: string | null }>
+    >([]);
+
+    useEffect(() => {
+        const out = parsedClasses.map(cls => ({
+            ...cls,
+            assignedCohort: assignCohort(cls, currentCohort)
+        }));
+        setDecoratedClasses(out);
+    }, [parsedClasses, currentCohort]);
 
     const isCurrentCohortValid = useMemo(() => isValidCohort(currentCohort), [currentCohort]);
 
     // Load cohorts when component mounts
     useEffect(() => {
+        if (!session?.user?.email) {
+            console.log("No user email found in session.");
+            return;
+        }
+
         async function fetchCohorts() {
-            const result = await loadCohorts(session?.user?.email || '', 'false');
+            if (!session?.user?.email) {
+                console.log("No user email found in session.");
+                return;
+            }
+
+            const result = await loadCohorts(session?.user?.email, 'false');
 
             if (!result || result.length === 0) {
                 console.log("No cohorts found for the user.");
@@ -89,12 +126,6 @@ const ImportSheet = () => {
         }
         fetchCohorts();
     }, [session?.user?.email]);
-
-    const router = useRouter();
-    const { uploadNewClasses } = useCalendarContext();
-    const [parsedClasses, setParsedClasses] = useState<CombinedClass[]>([]);
-    const [selectedClasses, setSelectedClasses] = useState<Set<string>>(new Set()); // Use selected classes as initial_state, and then make an initial_state per user. On export, any classes exporting that are not on initial state get everything included.
-    const [cohortSelections, setCohortSelections] = useState<Record<string, string>>({});
 
     // Create a unique identifier for each class
     const getUniqueClassId = useCallback((cls: CombinedClass): string => {
@@ -389,9 +420,28 @@ const ImportSheet = () => {
         router.back();
     }, [cohortSelections, getUniqueClassId, parsedClasses, router, selectedClasses, uploadNewClasses]);
 
-    const autoAssignedCount = (isCurrentCohortValid) ? parsedClasses.filter(cls =>
-        assignCohort(cls, currentCohort) !== null).length
-        : 0;
+    // Compute filtered classes by search + current parsing
+    const displayedClasses = useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return decoratedClasses.filter(cls => {
+            // only include if selected and match search
+            if (!selectedClasses.has(getUniqueClassId(cls))) return false;
+            return [
+                `${cls.data.course_subject} ${cls.data.course_num}`,
+                cls.data.section,
+                cls.data.title,
+                cls.properties.instructor_name,
+                cls.properties.days.join(', '),
+                cls.properties.room,
+                cls.data.class_num
+            ].some(field => field.toLowerCase().includes(lowerSearch));
+        });
+    }, [decoratedClasses, searchTerm, selectedClasses, getUniqueClassId]); //eslint-disable-line react-hooks/exhaustive-deps
+
+    // Count auto-assigned in displayed
+    const autoAssignedCount = useMemo(() => {
+        return decoratedClasses.filter(c => c.assignedCohort).length;
+    }, [decoratedClasses]);
 
     return (
         <div className="px-4 bg-white dark:bg-zinc-800 h-full w-full text-black dark:text-gray-300">
@@ -423,9 +473,9 @@ const ImportSheet = () => {
             </div>
 
             {!isLoading && parsedClasses.length > 0 && (
-                <div className="mt-4">
-                    <div className="flex justify-between items-center mb-4">
-                        <div>
+                <div className="mt-4 flex flex-col">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className='flex items-center'>
                             <h2 className="text-xl font-semibold">Classes to Import ({selectedClasses.size})</h2>
                             {autoAssignedCount > 0 && (
                                 <p className="text-sm text-blue-600 dark:text-blue-400">
@@ -435,11 +485,21 @@ const ImportSheet = () => {
                         </div>
                         <button
                             onClick={handleImport}
-                            className="px-4 py-2 bg-green-500 dark:bg-green-600 text-white rounded-sm hover:bg-green-600 dark:hover:bg-green-500"
+                            className="px-4 py-2 bg-green-500 dark:bg-green-600 text-white text-md rounded-sm hover:bg-green-600 dark:hover:bg-green-500"
                             data-testid="import-selected-classes"
                         >
                             Import Selected Classes ({selectedClasses.size})
                         </button>
+                    </div>
+                    {/* New search input */}
+                    <div className="mb-4 relative w-full">
+                        <input
+                            type="text"
+                            placeholder="Search imported classes..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-3 pr-4 py-2 w-full border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:cursor-text transition-colors"
+                        />
                     </div>
                     <div className="overflow-auto max-h-[50vh] bg-gray-50 dark:bg-zinc-800">
                         <table className="min-w-full">
@@ -474,8 +534,8 @@ const ImportSheet = () => {
                             </thead>
                             <tbody>
                                 {/* Classes with auto-assigned cohorts */}
-                                {parsedClasses
-                                    .filter(cls => assignCohort(cls, currentCohort))
+                                {displayedClasses
+                                    .filter(cls => cls.assignedCohort && cls.assignedCohort !== "")
                                     .map((cls) => {
                                         const uniqueId = getUniqueClassId(cls);
                                         return (
@@ -543,8 +603,8 @@ const ImportSheet = () => {
                                     })}
 
                                 {/* Classes without autoassigned cohorts */}
-                                {parsedClasses
-                                    .filter(cls => !assignCohort(cls, currentCohort))
+                                {displayedClasses
+                                    .filter(cls => cls.assignedCohort === "" || cls.assignedCohort === null)
                                     .map((cls) => {
                                         const uniqueId = getUniqueClassId(cls);
                                         return (

@@ -139,7 +139,7 @@ export async function loadCohorts(userEmail: string, loadAll: string): Promise<C
             },
         });
 
-        if (!response.ok) {
+        if (!response.ok || response.status === 404) {
             return [];
         }
 

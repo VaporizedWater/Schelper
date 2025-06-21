@@ -12,6 +12,7 @@ const ExportSheet = () => {
 
     const [filename, setFilename] = useState('schedule');
     const [showOnlySelected, setShowOnlySelected] = useState(false);
+    const [searchTerm, setSearchTerm] = useState(''); // New search term state
 
     allClasses.sort((a, b) => {
         // Sort by course subject, then course number, then section
@@ -48,14 +49,29 @@ const ExportSheet = () => {
         setSelectedClasses(new Set(visibleIds));
     }, [visibleIds]);
 
-    // derive which rows to render
-    const displayedClasses = useMemo(
-        () =>
-            showOnlySelected
-                ? allClasses.filter((cls) => selectedClasses.has(getUniqueClassId(cls)))
-                : allClasses,
-        [allClasses, selectedClasses, showOnlySelected]
+    // Apply showOnlySelected filter
+    const filteredBySelection = useMemo(
+        () => showOnlySelected
+            ? allClasses.filter((cls) => selectedClasses.has(getUniqueClassId(cls)))
+            : allClasses,
+        [allClasses, selectedClasses, showOnlySelected, getUniqueClassId]
     );
+
+    // derive which rows to render
+    // New: apply search filter (on top of selection)
+    const displayedClasses = useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return filteredBySelection.filter((cls) => {
+            return (
+                cls.data.course_subject.toLowerCase().includes(lowerSearch) ||
+                cls.data.course_num.toLowerCase().includes(lowerSearch) ||
+                cls.data.title.toLowerCase().includes(lowerSearch) ||
+                cls.properties.instructor_name.toLowerCase().includes(lowerSearch) ||
+                cls.properties.days.join(', ').toLowerCase().includes(lowerSearch) ||
+                cls.properties.room.toLowerCase().includes(lowerSearch)
+            );
+        });
+    }, [filteredBySelection, searchTerm]);
 
     // Get conflict color information for each class (used for UI only)
     const classConflictColors = useMemo(() => {
@@ -243,8 +259,8 @@ const ExportSheet = () => {
 
             {/* Preview of classes to be exported */}
             {allClasses.length > 0 && (
-                <div className="mt-4">
-                    <div className="flex gap-4 items-center mb-2">
+                <div className="mt-4 flex flex-col gap-4">
+                    <div className="flex gap-4 items-center">
                         <h2 className="text-xl font-semibold">Classes to Export ({selectedClasses.size})</h2>
                         <button
                             onClick={() => setShowOnlySelected((prev) => !prev)}
@@ -257,7 +273,17 @@ const ExportSheet = () => {
                         </button>
 
                     </div>
-                    <div className="overflow-auto max-h-[70vh] border dark:bg-zinc-500 dark:border-zinc-500 rounded-md">
+                    {/* New Search Bar */}
+                    <div className="relative w-full">
+                        <input
+                            type="text"
+                            placeholder="Search classes..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-3 pr-4 py-2 w-full border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div className="overflow-auto max-h-[65vh] border dark:bg-zinc-500 dark:border-zinc-500 rounded-md">
                         <table className="min-w-full table-fixed border-collapse divide-y divide-gray-200 dark:divide-zinc-500">
                             <thead className="bg-gray-50 dark:bg-zinc-600 sticky top-0 dark:text-gray-300 dark:border-zinc-500">
                                 <tr className="">

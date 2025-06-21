@@ -55,7 +55,7 @@ export default function CalendarsPage() {
         }
 
         if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-            if (length > 0 && (confirm(`WARNING: You are about to delete ${name} which has ${length} classes. Are you sure?`))) {
+            if (length === 0 || length > 0 && (confirm(`WARNING: You are about to delete ${name} which has ${length} classes. Are you sure?`))) {
                 try {
                     const response = await deleteCalendar(session?.user?.email, id);
 
@@ -67,11 +67,9 @@ export default function CalendarsPage() {
 
                     setCalendars(prev => prev.filter(cal => cal._id !== id));
                 } catch (err) {
-                    console.error("Error deleting calendar:", err);
+                    console.error("Error deleting calendar: ", err);
                     alert('Failed to delete calendar');
                 }
-            } else {
-
             }
         }
     };
