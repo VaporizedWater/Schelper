@@ -39,7 +39,7 @@ const Tags = () => {
             // modifiedClass.properties.tags = updatedTags;
             // updateOneClass(modifiedClass);
         }
-    }, [currentCombinedClass, tags, updateCombinedClasses, currentCombinedClasses, currentCalendar._id]);
+    }, [currentCombinedClass, tags, currentCombinedClasses, currentCalendar._id]);
 
     if (!currentCombinedClass?._id) {
         return (
