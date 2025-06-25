@@ -301,17 +301,17 @@ const ExportSheet = () => {
                                             className="h-4 w-4"
                                         />
                                     </th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Subject</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Number</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Section</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Title</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Instructor</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Email</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Start</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">End</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Days</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Room</th>
-                                    <th className="p-2 dark:border-zinc-500 text-left">Class Num</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-20">Subject</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-15">Num</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-15">Sec</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-60">Title</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-55.5">Instructor</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-40">Email</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-14">Start</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-14">End</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-39">Days</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-57">Room</th>
+                                    <th className="p-2 dark:border-zinc-500 text-left w-18 whitespace-nowrap">Class #</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-zinc-700 divide-y divide-gray-200">

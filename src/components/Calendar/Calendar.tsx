@@ -16,7 +16,7 @@ const selectedEvents: HTMLElement[] = [];
 const Calendar = () => {
     const { theme, resolvedTheme } = useTheme();
     const calendarRef = useRef<FullCalendar>(null);
-    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, updateOneClass, toggleConflictPropertyChanged, userSettings } = useCalendarContext();
+    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, setCurrentClasses, updateOneClass, toggleConflictPropertyChanged, userSettings } = useCalendarContext();
     // const [events, setEvents] = useState<EventInput[]>([]);
     const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
@@ -98,6 +98,7 @@ const Calendar = () => {
             console.timeEnd("start");
 
             setCurrentClass(foundClass);
+            setCurrentClasses(foundClass);
             // console.log("Current class: ", foundClass);
 
             // Use the instructor's email to find the matching Faculty record
@@ -160,15 +161,16 @@ const Calendar = () => {
         } else {
             console.log("Class not found");
         }
-    }, [faculty, findClass, selectEvent, setCurrentClass, unselectAll]);
+    }, [faculty, findClass, selectEvent, setCurrentClass, setCurrentClasses, unselectAll]);
 
     // This triggers when clicking on any date/time slot that isn't an event
     const handleDateClick = useCallback((info: DateClickArg) => {
         console.log("Date clicked: ", info);
         unselectAll();
         setCurrentClass(newDefaultEmptyClass());
+        setCurrentClasses(newDefaultEmptyClass());
         setBusinessHours([]);
-    }, [unselectAll, setCurrentClass, setBusinessHours]);
+    }, [unselectAll, setCurrentClass, setCurrentClasses, setBusinessHours]);
 
     const handleEventDrop = useCallback((info: EventDropArg) => {
         // Update the class in the context

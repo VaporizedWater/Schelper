@@ -136,6 +136,7 @@ export type CalendarContextType = {
     displayClasses: CombinedClass[];
     displayEvents: EventInput[];
     currentCombinedClass?: CombinedClass | undefined;
+    currentCombinedClasses: CombinedClass[]; // Used for displaying multiple classes in the calendar
 
     tagList: tagListType; // Map of tags to a set of class ids
 
@@ -154,6 +155,8 @@ export type CalendarContextType = {
     setContextToOtherCalendar: (newCalendarId: string) => void;
 
     setCurrentClass: (newClasses: CombinedClass) => void;
+
+    setCurrentClasses: (newClasses: CombinedClass) => void;
 
     updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
 
@@ -192,6 +195,7 @@ export type CalendarState = {
     classes: {
         all: CombinedClass[];
         current: CombinedClass | undefined;
+        currentClasses: CombinedClass[];
     };
     tags: tagListType;
     status: {
@@ -221,6 +225,7 @@ export type CalendarAction =
       }
     | { type: "TOGGLE_CONFLICT_PROPERTY_CHANGED"; payload: boolean }
     | { type: "SET_CURRENT_CLASS"; payload: CombinedClass }
+    | { type: "SET_CURRENT_CLASSES"; payload: CombinedClass[] }
     | { type: "UPDATE_CLASS"; payload: CombinedClass }
     | { type: "UPDATE_ALL_CLASSES"; payload: CombinedClass[] }
     | { type: "SET_CONFLICTS"; payload: ConflictType[] }

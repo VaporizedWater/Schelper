@@ -120,6 +120,15 @@ const detectClassConflicts = (classes: CombinedClass[]): ConflictType[] => {
     return conflicts;
 };
 
+const getAllSameClasses = (cls: CombinedClass, allClasses: CombinedClass[]): CombinedClass[] => {
+    if (!cls || !cls._id || !cls.data.course_subject || !cls.data.course_num) return [];
+    // Find all classes that have the same course subject and number
+    return allClasses.filter(c =>
+        c.data.course_subject === cls.data.course_subject &&
+        c.data.course_num === cls.data.course_num
+    );
+}
+
 // Reducer Function
 function calendarReducer(state: CalendarState, action: CalendarAction): CalendarState {
     switch (action.type) {
@@ -135,7 +144,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 classes: {
                     all: classes,
                     // display: classes,
-                    current: state.classes.current
+                    current: state.classes.current,
+                    currentClasses: state.classes.currentClasses
                 },
                 tags: tagMapping,
                 status: {
@@ -175,13 +185,24 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             };
         }
 
+        case 'SET_CURRENT_CLASSES': {
+            return {
+                ...state,
+                classes: {
+                    ...state.classes,
+                    currentClasses: action.payload
+                }
+            };
+        }
+
         case 'SET_NEW_CALENDAR': {
             return {
                 ...state,
                 currentCalendar: { _id: action.payload.calendarId, info: {} as CalendarInfo, classes: [] } as CalendarType,
                 classes: {
                     all: [],
-                    current: newDefaultEmptyClass()
+                    current: newDefaultEmptyClass(),
+                    currentClasses: []
                 },
                 tags: new Map() as tagListType,
                 status: {
@@ -209,7 +230,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 classes: {
                     all: updateClassById(state.classes.all),
                     // display: updateClassById(state.classes.display),
-                    current: updatedClass
+                    current: updatedClass,
+                    currentClasses: getAllSameClasses(updatedClass, updateClassById(state.classes.all))
                 },
             };
         }
@@ -222,7 +244,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: classes,
-                    current: state.classes.current
+                    current: state.classes.current,
+                    currentClasses: state.classes.currentClasses
                 },
                 tags: tagMapping
             }
@@ -291,7 +314,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     all: updatedClasses,
                     current: state.classes.current?._id === classId ?
                         updatedClasses.find(c => c._id === classId) :
-                        state.classes.current
+                        state.classes.current,
+                    currentClasses: state.classes.currentClasses
                 },
                 tags: newMapping
             };
@@ -329,7 +353,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     all: updatedClasses,
                     current: state.classes.current?._id === classId ?
                         updatedClasses.find(c => c._id === classId) :
-                        state.classes.current
+                        state.classes.current,
+                    currentClasses: state.classes.currentClasses
                 },
                 tags: newMapping
             };
@@ -364,7 +389,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                     all: updatedClasses,
                     current: state.classes.current && affectedClassIds.includes(state.classes.current._id) ?
                         updatedClasses.find(c => c._id === state.classes.current?._id) :
-                        state.classes.current
+                        state.classes.current,
+                    currentClasses: state.classes.currentClasses
                 },
                 tags: newMapping
             };
@@ -391,7 +417,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                             ...state.classes.current.properties,
                             tags: []
                         }
-                    } : undefined
+                    } : undefined,
+                    currentClasses: state.classes.currentClasses
                 },
                 tags: new Map()
             };
@@ -419,7 +446,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 classes: {
                     all: newClasses,
                     // display: newClasses,
-                    current: state.classes.current
+                    current: state.classes.current,
+                    currentClasses: state.classes.currentClasses
                 },
                 tags: newMapping,
                 conflictPropertyChanged: !state.conflictPropertyChanged
@@ -462,7 +490,8 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 classes: {
                     all: filteredAllClasses,
                     // display: filteredDisplayClasses,
-                    current: newCurrentClass
+                    current: newCurrentClass,
+                    currentClasses: state.classes.currentClasses.filter(c => c._id !== classIdToDelete)
                 },
                 tags: newMapping,
                 conflictPropertyChanged: !state.conflictPropertyChanged
@@ -597,6 +626,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             displayClasses: displayClasses,
             displayEvents: displayEvents,
             currentCombinedClass: state.classes.current,
+            currentCombinedClasses: state.classes.currentClasses,
 
             // Tags
             tagList: state.tags,
@@ -684,6 +714,11 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             setCurrentClass: (cls: CombinedClass) => {
                 console.log('SET_CURRENT_CLASS');
                 dispatch({ type: 'SET_CURRENT_CLASS', payload: cls });
+            },
+
+            setCurrentClasses: (cls: CombinedClass) => {
+                console.log('SET_CURRENT_CLASSES');
+                dispatch({ type: 'SET_CURRENT_CLASSES', payload: getAllSameClasses(cls, state.classes.all) });
             },
 
             updateOneClass: async (cls: CombinedClass) => {

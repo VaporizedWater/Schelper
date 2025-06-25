@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import { ClassProperty, CombinedClass, tagType } from "@/lib/types";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { newDefaultEmptyClass } from "@/lib/common";
+import { updateCombinedClasses } from "@/lib/DatabaseUtils";
 
 {/* Tags Section */ }
 const Tags = () => {
-    const { tagList, currentCombinedClass, updateOneClass } = useCalendarContext();
+    const { tagList, currentCombinedClass, currentCombinedClasses, currentCalendar } = useCalendarContext();
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
     const [tags, setTags] = useState<tagType[]>(Array.isArray(initialProps.tags) ? initialProps.tags : []);
 
@@ -22,12 +23,23 @@ const Tags = () => {
             : tags.filter(t => t.tagName !== tag.tagName);
 
         setTags(updatedTags);
-        if (currentCombinedClass) {
-            const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
-            modifiedClass.properties.tags = updatedTags;
-            updateOneClass(modifiedClass);
+        if (currentCombinedClass && currentCombinedClasses.length > 0) {
+            const updatedCombinedClasses: CombinedClass[] = currentCombinedClasses.map(combinedClass => {
+                const modifiedClass: CombinedClass = combinedClass || newDefaultEmptyClass();
+
+                modifiedClass.properties.tags = updatedTags;
+                return modifiedClass;
+            });
+
+            // Update all the classes with the new tags
+            updateCombinedClasses(updatedCombinedClasses, currentCalendar._id);
+
+
+            // const modifiedClass: CombinedClass = currentCombinedClass || newDefaultEmptyClass();
+            // modifiedClass.properties.tags = updatedTags;
+            // updateOneClass(modifiedClass);
         }
-    }, [currentCombinedClass, tags, updateOneClass]);
+    }, [currentCombinedClass, tags, updateCombinedClasses, currentCombinedClasses, currentCalendar._id]);
 
     if (!currentCombinedClass?._id) {
         return (

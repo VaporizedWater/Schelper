@@ -353,6 +353,7 @@ export const initialCalendarState: CalendarState = {
     classes: {
         all: [],
         current: undefined,
+        currentClasses: [],
     },
     tags: new Map(),
     status: {
