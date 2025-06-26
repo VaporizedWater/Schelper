@@ -124,10 +124,11 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request): Promise<Response> {
     try {
-        const { calendarId, classes, facultyData } = (await request.json()) as {
+        const { calendarId, classes, facultyData, skipTags } = (await request.json()) as {
             calendarId?: string;
             classes: CombinedClass[];
             facultyData?: FacultyType[];
+            skipTags?: boolean;
         };
 
         console.log(calendarId + "CALENDAR");
@@ -169,6 +170,13 @@ export async function PUT(request: Request): Promise<Response> {
         const bulkOperations = classes.map((cls) => {
             const { _id, ...updateData } = cls;
 
+            // Clone and strip out user tags if needed
+
+            const setData: any = { ...updateData.properties }; // eslint-disable-line @typescript-eslint/no-explicit-any
+            if (skipTags || (Array.isArray(setData.tags) && setData.tags.length === 0)) {
+                delete setData.tags;
+            }
+
             if (_id && _id !== "") {
                 // Update existing class by ID
                 return {
@@ -176,7 +184,7 @@ export async function PUT(request: Request): Promise<Response> {
                         filter: { _id: new ObjectId(_id) },
                         update: {
                             $set: {
-                                ...updateData,
+                                ...setData,
                                 lastUpdated: new Date(),
                                 _random: Math.random(), // Force an update
                             },
@@ -200,7 +208,7 @@ export async function PUT(request: Request): Promise<Response> {
                         },
                         update: {
                             $set: {
-                                ...updateData,
+                                ...setData,
                                 lastUpdated: new Date(),
                                 _random: Math.random(), // Force an update
                             },

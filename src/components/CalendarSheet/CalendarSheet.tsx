@@ -5,7 +5,7 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { CombinedClass } from "@/lib/types";
 
 export default function CalendarSheet() {
-    const { displayClasses, allClasses, setCurrentClass, currentCombinedClass, isLoading } = useCalendarContext();
+    const { displayClasses, allClasses, setCurrentClass, currentCombinedClass, setCurrentClasses, currentCombinedClasses, isLoading } = useCalendarContext();
     const [selectedRowIndex, setSelectedRowIndex] = useState<number | null>(null);
 
     // Update selected row when currentClass changes
@@ -16,13 +16,14 @@ export default function CalendarSheet() {
                 setSelectedRowIndex(rowIndex);
             }
         }
-    }, [currentCombinedClass, displayClasses]);
+    }, [currentCombinedClass, currentCombinedClasses, displayClasses]);
 
     // Handle row selection
     const handleRowClick = useCallback((item: CombinedClass, index: number) => {
         setCurrentClass(item);
+        setCurrentClasses(item);
         setSelectedRowIndex(index);
-    }, [setCurrentClass]);
+    }, [setCurrentClass, setCurrentClasses]);
 
     const thClassname = 'px-2 py-1 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider';
     const tdClassname = 'p-2 whitespace-nowrap dark:text-gray-300';
@@ -60,8 +61,13 @@ export default function CalendarSheet() {
                         {displayClasses.map((item, index) => (
                             <tr
                                 key={item._id}
-                                className={`${index === selectedRowIndex || item._id === currentCombinedClass?._id ? 'bg-blue-200 dark:bg-blue-900 hover:bg-blue-300 dark:hover:bg-blue-800' : ((index % 2 === 0 ? 'bg-white dark:bg-zinc-800' : 'bg-gray-50 dark:bg-zinc-700') + ' hover:bg-gray-100 dark:hover:bg-zinc-600')
-                                    }  transition-colors duration-150`}
+                                className={`${index === selectedRowIndex || item._id === currentCombinedClass?._id ? 'bg-blue-200 dark:bg-blue-900 hover:bg-blue-300 dark:hover:bg-blue-800'
+                                    : (currentCombinedClasses.includes(item) ?
+                                        'bg-indigo-100 dark:bg-blue-900/70 hover:bg-indigo-200 dark:hover:bg-blue-800/70'
+                                        : ((index % 2 === 0 ? 'bg-white dark:bg-zinc-800' : 'bg-gray-50 dark:bg-zinc-700') + ' hover:bg-gray-100 dark:hover:bg-zinc-600'))
+                                    }  
+                                    transition-colors duration-150`
+                                }
                                 onClick={() => handleRowClick(item, index)}
                                 style={{ cursor: 'pointer' }}
                                 role="row"

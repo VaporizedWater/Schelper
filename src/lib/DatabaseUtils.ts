@@ -365,7 +365,11 @@ export async function setCurrentCalendarToNew(userEmail: string, calendarId: str
     }
 }
 
-export async function updateCombinedClasses(combinedClasses: CombinedClass[], calendarId?: string): Promise<boolean> {
+export async function updateCombinedClasses(
+    combinedClasses: CombinedClass[],
+    calendarId?: string,
+    skipTags: boolean = false
+): Promise<boolean> {
     try {
         // Create a deep copy to avoid mutating the original objects
         const classesToSend = combinedClasses.map((cls) => ({
@@ -380,6 +384,7 @@ export async function updateCombinedClasses(combinedClasses: CombinedClass[], ca
             calendarId: calendarId,
             classes: classesToSend,
             facultyData: getProfessorsUnavailability(combinedClasses),
+            skipTags: skipTags, // Add skipTags to the payload
         };
 
         const response = await fetchWithTimeout("api/combined_classes", {
