@@ -383,6 +383,8 @@ const Calendar = () => {
                 eventContent={eventContent}
                 eventClassNames={eventClassNames}
                 eventDidMount={eventMounted}
+                handleWindowResize={true}
+                windowResizeDelay={0}
             />);
         }
         return (<FullCalendar
@@ -411,6 +413,8 @@ const Calendar = () => {
             eventDidMount={eventMounted}
             businessHours={businessHours}
             eventBackgroundColor="#242424"
+            handleWindowResize={true}
+            windowResizeDelay={0}
         />);
 
     }, [businessHours, allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
