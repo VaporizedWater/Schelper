@@ -189,6 +189,7 @@ export type UserType = {
     current_cohort: ObjectId;
     cohorts: ObjectId[];
     settings: UserSettingType;
+    user_classes: CombinedClass[];
 };
 
 export type CalendarState = {
@@ -275,4 +276,14 @@ export type UserSettingType = {
     settings: {
         conflicts: ConflictColor;
     };
+};
+
+export type TagState = "include" | "neutral" | "exclude";
+
+export type CategoryFilterProps = {
+    title: string;
+    tagMap: Map<string, Set<string>>;
+    tagStates: Map<string, TagState>;
+    toggleCategoryAll: (tagMap: Map<string, Set<string>>) => void;
+    toggleOneTag: (tagName: string) => void;
 };

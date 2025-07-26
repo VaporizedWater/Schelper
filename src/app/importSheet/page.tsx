@@ -2,12 +2,14 @@
 
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
 import { newDefaultEmptyClass } from '@/lib/common';
-import { loadCohorts, insertTags } from '@/lib/DatabaseUtils';
+import { loadCohorts, insertTags, setCurrentCohortInDb } from '@/lib/DatabaseUtils';
 import { CohortType, CombinedClass, tagType } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import xlsx from 'xlsx';
 import { useSession } from 'next-auth/react';
+import DropDown from '@/components/DropDown/DropDown';
+import { IoMdArrowDropdown, IoMdArrowDropup } from 'react-icons/io';
 
 const convertTime = (excelTime: string): string => {
     const [time, period] = excelTime.split(' ');
@@ -52,7 +54,6 @@ const assignCohort = (cls: CombinedClass, cohort: CohortType): string | null => 
 
     // If cohort is not valid, return null
     if (!isValidCohort(cohort)) {
-        console.warn("Invalid cohort data provided for assignment.");
         return null;
     }
 
@@ -76,7 +77,8 @@ const ImportSheet = () => {
     const { uploadNewClasses } = useCalendarContext();
     const router = useRouter();
 
-    const [currentCohort, setCurrentCohort] = useState<CohortType>({} as CohortType);
+    const [allCohorts, setAllCohorts] = useState<CohortType[]>([]);
+    const [currentCohortInState, setCurrentCohortInState] = useState<CohortType>({} as CohortType);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [fileName, setFileName] = useState<string>("");
     const [parsedClasses, setParsedClasses] = useState<CombinedClass[]>([]);
@@ -84,6 +86,13 @@ const ImportSheet = () => {
     const [cohortSelections, setCohortSelections] = useState<Record<string, string>>({});
 
     const [searchTerm, setSearchTerm] = useState(''); // New search term state
+
+    const [uploadStatus, setUploadStatus] = useState<{
+        message: string;
+        type: 'success' | 'error' | 'info' | null;
+    }>({ message: '', type: null });
+
+    const [uploadOpen, setUploadOpen] = useState(false);
 
     // New state for parsed + assigned cohort
     const [decoratedClasses, setDecoratedClasses] = useState<
@@ -93,12 +102,28 @@ const ImportSheet = () => {
     useEffect(() => {
         const out = parsedClasses.map(cls => ({
             ...cls,
-            assignedCohort: assignCohort(cls, currentCohort)
+            assignedCohort: assignCohort(cls, currentCohortInState)
         }));
         setDecoratedClasses(out);
-    }, [parsedClasses, currentCohort]);
 
-    const isCurrentCohortValid = useMemo(() => isValidCohort(currentCohort), [currentCohort]);
+        // Update cohort selections based on current cohort
+        setCohortSelections(prev => {
+            const updated = { ...prev };
+            for (const cls of parsedClasses) {
+                const uniqueId = getUniqueClassId(cls);
+                if (!updated[uniqueId]) {
+                    const assignedCohort = assignCohort(cls, currentCohortInState);
+                    if (assignedCohort) {
+                        updated[uniqueId] = assignedCohort;
+                    }
+                }
+            }
+
+            return updated;
+        })
+    }, [parsedClasses, currentCohortInState]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const isCurrentCohortValid = useMemo(() => isValidCohort(currentCohortInState), [currentCohortInState]);
 
     // Load cohorts when component mounts
     useEffect(() => {
@@ -113,16 +138,24 @@ const ImportSheet = () => {
                 return;
             }
 
-            const result = await loadCohorts(session?.user?.email, 'false');
+            const currentCohortResult = await loadCohorts(session?.user?.email, 'false');
 
-            if (!result || result.length === 0) {
+            if (!currentCohortResult || currentCohortResult.length === 0) {
                 console.log("No cohorts found for the user.");
                 return;
             }
 
-            setCurrentCohort(result[0]);
-            console.log('Loaded cohort:', result);
-            console.log("RESULT 0", result[0]);
+            const allCohortsResult = await loadCohorts(session?.user?.email, 'true');
+
+            if (!allCohortsResult || allCohortsResult.length === 0) {
+                console.log("No all cohorts found for the user.");
+                return;
+            }
+
+            setAllCohorts(allCohortsResult);
+            setCurrentCohortInState(currentCohortResult[0]);
+            console.log('Loaded cohorts:', allCohortsResult);
+            console.log("Current Cohort Result: ", currentCohortResult[0]);
         }
         fetchCohorts();
     }, [session?.user?.email]);
@@ -151,6 +184,10 @@ const ImportSheet = () => {
         const combinedClasses = [] as CombinedClass[];
 
         rows.values().forEach((element: object[]) => {
+            // if (element['Course'] === "EDSGN") {
+            //     console.log("Parsed Row:", element);
+            // }
+
             const combinedClass = newDefaultEmptyClass();
             const classData = combinedClass.data;
             const classProperties = combinedClass.properties;
@@ -160,8 +197,12 @@ const ImportSheet = () => {
                 if (isCancelled) {
                     return;
                 }
-                const value = String(element[key as keyof typeof element]);
-                if (value) {
+
+                const rawValue = String(element[key as keyof typeof element]);
+
+                if (rawValue !== undefined && rawValue !== null && String(rawValue).trim() !== "") {
+                    const value = String(rawValue).trim();
+
                     switch (key) {
                         // Class
                         case "Catalog #":
@@ -313,7 +354,7 @@ const ImportSheet = () => {
         if (isCurrentCohortValid) {
             combinedClasses.forEach(cls => {
                 const uniqueId = getUniqueClassId(cls);
-                const suggestedCohort = assignCohort(cls, currentCohort);
+                const suggestedCohort = assignCohort(cls, currentCohortInState);
                 if (suggestedCohort) {
                     initialCohortSelections[uniqueId] = suggestedCohort;
                 }
@@ -325,7 +366,7 @@ const ImportSheet = () => {
         setSelectedClasses(new Set(combinedClasses.map(c => getUniqueClassId(c))));
         setCohortSelections(initialCohortSelections);
         setIsLoading(false);
-    }, [currentCohort, getUniqueClassId, isCurrentCohortValid]);
+    }, [currentCohortInState, getUniqueClassId, isCurrentCohortValid]);
 
     const handleImport = useCallback(async () => {
         // Track all unique tags that need to be created
@@ -372,6 +413,9 @@ const ImportSheet = () => {
                 // Add instructor tag if it exists and isn't empty
                 if (cls.properties.instructor_name && cls.properties.instructor_name.trim() !== '') {
                     addTag(cls.properties.instructor_name.toLowerCase().replace(/\s+/g, ""), "instructor");
+                    if (cls.data.course_subject === "EDSGN") {
+                        console.log("Added instructor tag:", cls.properties.instructor_name, "to class catalog num", cls.data.class_num);
+                    }
                 }
 
                 // Add the new cohort tag
@@ -443,16 +487,73 @@ const ImportSheet = () => {
         return decoratedClasses.filter(c => c.assignedCohort).length;
     }, [decoratedClasses]);
 
+    const setCurrentCohort = async (cohortId: string) => {
+        if (!session?.user?.email) {
+            setUploadStatus({ message: 'User email is not available', type: 'error' });
+            setUploadOpen(true);
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const result = await setCurrentCohortInDb(session.user.email, cohortId);
+
+            if (result.success) {
+                setCurrentCohortInState(allCohorts.find(c => c._id === cohortId) || {} as CohortType);
+                setUploadStatus({
+                    message: result.modifiedCount && result.modifiedCount > 0
+                        ? 'Current cohort updated successfully'
+                        : 'This cohort is already set as current',
+                    type: 'success'
+                });
+            } else {
+                setUploadStatus({
+                    message: result.message || 'Failed to update current cohort',
+                    type: 'error'
+                });
+            }
+
+            setUploadOpen(true);
+        } catch (error) {
+            console.error("Error updating current cohort:", error);
+            setUploadStatus({ message: 'An error occurred while updating the current cohort', type: 'error' });
+            setUploadOpen(true);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
-        <div className="px-4 bg-white dark:bg-zinc-800 h-full w-full text-black dark:text-gray-300">
-            <h1 className="text-2xl font-bold mb-4 ">Import Sheet</h1>
+        <div className="px-4 bg-white dark:bg-zinc-800 h-full w-full text-black dark:text-gray-300 items-center flex flex-col">
+            <h1 className="text-2xl font-bold py-2">Import Sheet</h1>
+
+            {/* Status message */}
+            {uploadStatus.type && uploadOpen && (
+                <div className={`flex items-center gap-2 mb-4 p-3 border rounded-lg ${uploadStatus.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-800 text-green-700 dark:text-green-400' :
+                    uploadStatus.type === 'error' ? 'bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-800 text-red-700 dark:text-red-400' :
+                        'bg-blue-100 dark:bg-blue-900/30 border-blue-400 dark:border-blue-800 text-blue-700 dark:text-blue-400'
+                    }`}>
+                    <p>
+                        {uploadStatus.message}
+                    </p>
+                    <button
+                        type="button"
+                        className="text-gray-500 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300 cursor-pointer transition-all duration-100 ease-in-out"
+                        onClick={() => setUploadOpen(false)}
+                        aria-label="Close modal"
+                    >
+                        &#x2715;
+                    </button>
+                </div>
+            )}
+
             <div className="space-y-4">
                 <div className=''>
                     <input
                         type="file"
                         accept=".csv,.xlsx,.xls"
                         onChange={handleFileChange}
-                        className="block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        className="cursor-pointer block w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 focus-within:outline-blue-200 focus-within:outline rounded-lg"
                         disabled={isLoading}
                     />
                 </div>
@@ -473,24 +574,85 @@ const ImportSheet = () => {
             </div>
 
             {!isLoading && parsedClasses.length > 0 && (
-                <div className="mt-4 flex flex-col">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className='flex items-center'>
-                            <h2 className="text-xl font-semibold">Classes to Import ({selectedClasses.size})</h2>
+                <div className="mt-2 flex flex-col">
+                    <div className="flex items-center gap-4 mb-2">
+                        <div className='flex items-center gap-2 mb-4'>
+                            <h3 className="text-lg font-semibold">Cohort</h3>
+
+                            <DropDown
+                                renderButton={(isOpen: boolean) => (
+                                    <div
+                                        className={`flex items-center gap-1 px-6 py-2 bg-white dark:bg-zinc-800 rounded-lg
+                                      hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all duration-200 
+                                      shadow-sm hover:shadow border border-gray-200 dark:border-gray-500
+                                      ${isOpen ? " " : ""}`}
+                                        role="button"
+                                        id={`cohort-button`}
+                                        aria-haspopup="menu"
+                                        aria-expanded={isOpen}
+                                        aria-controls={`cohort-menu`}
+                                        tabIndex={0}
+                                        title={"Cohort Selection"}
+                                    >
+
+                                        <span className="text-sm font-medium">{currentCohortInState.cohortName}</span>
+                                        {isOpen ? (
+                                            <IoMdArrowDropup
+                                                className="size-4 text-gray-600 dark:text-gray-400"
+                                                aria-hidden="true"
+                                            />
+                                        ) : (
+                                            <IoMdArrowDropdown
+                                                className="size-4 text-gray-600 dark:text-gray-400"
+                                                aria-hidden="true"
+                                            />
+                                        )}
+                                    </div>
+                                )
+                                }
+                                renderDropdown={() => (
+                                    <ul
+                                        id={`cohort-list-menu`}
+                                        role="menu"
+                                        aria-labelledby={`cohort-list-button`}
+                                        className="w-full rounded-lg shadow-md border border-gray-200 bg-white dark:bg-zinc-800 dark:border-gray-500 overflow-hidden"
+                                    >
+                                        {allCohorts.filter(c => c._id !== currentCohortInState._id).map((item, idx) => (
+                                            <li
+                                                key={idx}
+                                                role="none"
+                                                className={`${idx < allCohorts.length - 1
+                                                    ? "border-b border-gray-100 dark:border-gray-500 w-full"
+                                                    : ""
+                                                    }`}
+                                            >
+                                                <button
+                                                    role="menuitem"
+                                                    className="block px-4 py-2 w-full text-sm hover:bg-gray-50 dark:hover:bg-zinc-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 transition-colors duration-150"
+                                                    title={item.cohortName}
+                                                    onClick={() => setCurrentCohort(item._id as string)}
+                                                >
+                                                    {item.cohortName}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                )} />
                             {autoAssignedCount > 0 && (
                                 <p className="text-sm text-blue-600 dark:text-blue-400">
-                                    {autoAssignedCount} classes with auto-assigned cohorts
+                                    {autoAssignedCount} classes auto-assigned cohorts
                                 </p>
                             )}
                         </div>
                         <button
                             onClick={handleImport}
-                            className="px-4 py-2 bg-green-500 dark:bg-green-600 text-white text-md rounded-sm hover:bg-green-600 dark:hover:bg-green-500"
+                            className="px-4 py-2 ml-auto bg-green-500 dark:bg-green-600 text-white text-md rounded-sm hover:bg-green-600 dark:hover:bg-green-500"
                             data-testid="import-selected-classes"
                         >
                             Import Selected Classes ({selectedClasses.size})
                         </button>
                     </div>
+
                     {/* New search input */}
                     <div className="mb-4 relative w-full">
                         <input
@@ -501,7 +663,7 @@ const ImportSheet = () => {
                             className="pl-3 pr-4 py-2 w-full border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:cursor-text transition-colors"
                         />
                     </div>
-                    <div className="overflow-auto max-h-[50vh] bg-gray-50 dark:bg-zinc-800">
+                    <div className="overflow-auto max-h-[55vh] bg-gray-50 dark:bg-zinc-800">
                         <table className="min-w-full">
                             <thead className="bg-gray-50 dark:bg-zinc-800 sticky top-0">
                                 <tr>
@@ -541,6 +703,7 @@ const ImportSheet = () => {
                                         return (
                                             <tr
                                                 key={uniqueId}
+                                                onClick={() => { console.log(cls.assignedCohort, "assigned cohort"); }}
                                                 className="hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
                                             >
                                                 <td className="p-2 border dark:border-zinc-700 text-center">
@@ -584,9 +747,9 @@ const ImportSheet = () => {
                                                             });
                                                         }}
 
-                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohort) ? 'bg-blue-50 dark:bg-gray-700' : ''
+                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohortInState) ? 'bg-blue-50 dark:bg-gray-700' : ''
                                                             }`}
-                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohort)}
+                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohortInState)}
                                                     >
                                                         <option value="None"></option>
                                                         <option value="Freshman">Freshman</option>
@@ -594,7 +757,7 @@ const ImportSheet = () => {
                                                         <option value="Junior">Junior</option>
                                                         <option value="Senior">Senior</option>
                                                     </select>
-                                                    {isCurrentCohortValid && assignCohort(cls, currentCohort) && (
+                                                    {isCurrentCohortValid && assignCohort(cls, currentCohortInState) && (
                                                         <div className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Auto-assigned</div>
                                                     )}
                                                 </td>
@@ -657,9 +820,9 @@ const ImportSheet = () => {
                                                             });
                                                         }}
 
-                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohort) ? 'bg-blue-50 dark:bg-gray-700' : ''
+                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohortInState) ? 'bg-blue-50 dark:bg-gray-700' : ''
                                                             }`}
-                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohort)}
+                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohortInState)}
                                                     >
                                                         <option value="None"></option>
                                                         <option value="Freshman">Freshman</option>
@@ -667,7 +830,7 @@ const ImportSheet = () => {
                                                         <option value="Junior">Junior</option>
                                                         <option value="Senior">Senior</option>
                                                     </select>
-                                                    {isCurrentCohortValid && assignCohort(cls, currentCohort) && (
+                                                    {isCurrentCohortValid && assignCohort(cls, currentCohortInState) && (
                                                         <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Auto-assigned</div>
                                                     )}
                                                 </td>

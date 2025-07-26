@@ -597,6 +597,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         });
         displayClasses.forEach(cls => {
             if (cls._id) {
+
                 const classEvents = createEventsFromCombinedClass(cls);
 
                 // Add class reference to each event's extendedProps

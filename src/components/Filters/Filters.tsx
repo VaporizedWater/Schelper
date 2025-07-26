@@ -1,12 +1,11 @@
 // Filters.tsx
 
-import { BiChevronUp, BiChevronDown, BiCheck, BiMinus } from "react-icons/bi";
+import { BiCheck } from "react-icons/bi";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { useCallback, useEffect, useState, KeyboardEvent } from "react";
-import DropDown from "../DropDown/DropDown";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-
-type TagState = "include" | "neutral" | "exclude";
+import { TagState } from "@/lib/types";
+import CategoryFilter from "../CategoryFilter/CategoryFilter";
 
 // Cycle: neutral → include → exclude → neutral …
 const cycleState = (current: TagState): TagState => {
@@ -37,6 +36,8 @@ const Filters = () => {
     const [levelTags, setLevelTags] = useState<Map<string, Set<string>>>(new Map());
     const [subjectTags, setSubjectTags] = useState<Map<string, Set<string>>>(new Map());
     const [userTags, setUserTags] = useState<Map<string, Set<string>>>(new Map());
+
+    // Category-specific 
 
     // ───────────────────────────────────────────────────────────
     // 1) Build category maps and initialize all tagStates on load / tagList change
@@ -147,14 +148,6 @@ const Filters = () => {
         });
     }, []);
 
-    // Support keyboard toggling on each tag checkbox
-    const handleTagKeyDown = (e: KeyboardEvent, tagName: string) => {
-        if (e.key === " " || e.key === "Enter") {
-            e.preventDefault();
-            toggleOneTag(tagName);
-        }
-    };
-
     // ───────────────────────────────────────────────────────────
     // 4) Category‐level "toggle all"
     // ───────────────────────────────────────────────────────────
@@ -194,143 +187,6 @@ const Filters = () => {
         });
     }, [cohortTags, roomTags, instructorTags, levelTags, subjectTags, userTags]);
 
-    // ───────────────────────────────────────────────────────────
-    // 6) Render one fixed-size tri-state “checkbox”
-    // ───────────────────────────────────────────────────────────
-    const renderTagCheckbox = (tagName: string) => {
-        const state = tagStates.get(tagName) ?? "neutral";
-        const isInclude = state === "include";
-        const isExclude = state === "exclude";
-
-        let boxClasses =
-            "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-sm border cursor-pointer " +
-            "transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 ";
-
-        if (state === "neutral") {
-            boxClasses += "border-slate-300 bg-transparent hover:border-slate-400";
-        } else if (isInclude) {
-            boxClasses += "border-blue-600 bg-blue-600";
-        } else {
-            boxClasses += "border-red-600 bg-red-600";
-        }
-
-        return (
-            <div
-                role="checkbox"
-                aria-checked={isInclude}
-                tabIndex={0}
-                onKeyDown={(e) => handleTagKeyDown(e, tagName)}
-                onClick={(e) => {
-                    e.stopPropagation();
-                    toggleOneTag(tagName);
-                }}
-                className={boxClasses}
-                title={`Filter tag "${tagName}": ${isInclude ? "Included" : isExclude ? "Excluded" : "Neutral"}`}
-                aria-label={`Tag ${tagName}: ${isInclude ? "Included" : isExclude ? "Excluded" : "Neutral"}`}
-            >
-                {isInclude ? (
-                    <BiCheck className="h-4 w-4 text-white" aria-hidden="true" />
-                ) : isExclude ? (
-                    <BiMinus className="h-4 w-4 text-white" aria-hidden="true" />
-                ) : (
-                    <span className="h-4 w-4 block opacity-0" aria-hidden="true" />
-                )}
-            </div>
-        );
-    };
-
-    // ───────────────────────────────────────────────────────────
-    // 7) Render one category’s dropdown section
-    // ───────────────────────────────────────────────────────────
-    const renderTagSection = useCallback(
-        (title: string, tagMap: Map<string, Set<string>>) => {
-            if (tagMap.size === 0) return null;
-
-            // derive a stable ID for this category
-            const sectionId = `filter-${title.toLowerCase().replace(/\s+/g, "-")}`;
-
-            // check if all in this category are included
-            const allIncluded = Array.from(tagMap.keys()).every((t) => tagStates.get(t) === "include");
-
-            return (
-                <DropDown
-                    id={sectionId}
-                    label={`${title} filters`}
-                    closeOnOutsideClick={false}
-                    defaultOpen={false}
-                    buttonClassName="w-full text-left mt-1 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
-                    dropdownClassName="relative w-full"
-                    darkClass="dark:bg-zinc-800"
-                    renderButton={(isOpen) => (
-                        <div
-                            role="button"
-                            aria-haspopup="listbox"
-                            aria-expanded={isOpen}
-                            aria-controls={`${sectionId}-list`}
-                            tabIndex={0}
-                            className="font-light text-gray-700 dark:text-gray-300 flex items-center justify-between"
-                            title={`${title} filters: ${allIncluded ? "All included" : "Not all included"}`}
-                        >
-                            <div className="flex items-center">
-                                {/* Category‐level “toggle all” box */}
-                                <div
-                                    role="button"
-                                    aria-pressed={allIncluded}
-                                    tabIndex={0}
-                                    onKeyDown={(e) => {
-                                        if (e.key === " " || e.key === "Enter") {
-                                            e.preventDefault();
-                                            toggleCategoryAll(tagMap);
-                                        }
-                                    }}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        toggleCategoryAll(tagMap);
-                                    }}
-                                    className={
-                                        "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-sm border mr-2 transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500 " +
-                                        (allIncluded
-                                            ? "border-blue-600 bg-blue-600"
-                                            : "border-slate-300 bg-transparent hover:border-slate-400")
-                                    }
-                                    title={allIncluded ? "Deselect all in “" + title + "”" : "Select all in “" + title + "”"}
-                                    aria-label={allIncluded ? `Deselect all ${title}` : `Select all ${title}`}
-                                >
-                                    {allIncluded ? (
-                                        <BiCheck className="h-4 w-4 text-white" aria-hidden="true" />
-                                    ) : (
-                                        <span className="h-4 w-4 block opacity-0" aria-hidden="true" />
-                                    )}
-                                </div>
-                                <span>{title}</span>
-                            </div>
-                            {isOpen ? <BiChevronUp aria-hidden="true" /> : <BiChevronDown aria-hidden="true" />}
-                        </div>
-                    )}
-                    renderDropdown={() => (
-                        <div id={`${sectionId}-list`} role="listbox" aria-labelledby={`${sectionId}-button`} className="pl-2 -mt-1">
-                            <ul className="pr-3">
-                                {Array.from(tagMap.keys())
-                                    .sort((a, b) =>
-                                        a.localeCompare(b, undefined, {
-                                            numeric: true,
-                                            sensitivity: "base",
-                                        })
-                                    )
-                                    .map((tagName) => (
-                                        <li key={tagName} role="option" aria-selected={tagStates.get(tagName) === "include"} className="flex items-center py-1">
-                                            {renderTagCheckbox(tagName)}
-                                            <span className="ml-3 whitespace-nowrap">{tagName}</span>
-                                        </li>
-                                    ))}
-                            </ul>
-                        </div>
-                    )}
-                />
-            );
-        },
-        [tagStates, toggleCategoryAll] // eslint-disable-line react-hooks/exhaustive-deps
-    );
 
     // ───────────────────────────────────────────────────────────
     // 8) Final JSX: Top‐level “Toggle All Filters” + each category section
@@ -389,12 +245,12 @@ const Filters = () => {
             </div>
 
             <div className="flex flex-col gap-4">
-                {renderTagSection("Cohort", cohortTags)}
-                {renderTagSection("Room", roomTags)}
-                {renderTagSection("Instructor", instructorTags)}
-                {renderTagSection("Level", levelTags)}
-                {renderTagSection("Subject", subjectTags)}
-                {renderTagSection("User Tags", userTags)}
+                <CategoryFilter title="Cohort" tagMap={cohortTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
+                <CategoryFilter title="Room" tagMap={roomTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
+                <CategoryFilter title="Instructor" tagMap={instructorTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
+                <CategoryFilter title="Level" tagMap={levelTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
+                <CategoryFilter title="Subject" tagMap={subjectTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
+                <CategoryFilter title="User Tags" tagMap={userTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
             </div>
         </section>
     );

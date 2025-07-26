@@ -90,12 +90,11 @@ const Calendar = () => {
         const foundClass = findClass(info);
 
         if (foundClass) {
-            console.time("start");
+            console.log("Found class: ", foundClass);
             const elements = document.getElementsByClassName(`event-${foundClass?._id}`);
             for (let i = 0; i < elements.length; i++) {
                 selectEvent(elements[i] as HTMLElement);
             }
-            console.timeEnd("start");
 
             setCurrentClass(foundClass);
             setCurrentClasses(foundClass);

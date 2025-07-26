@@ -31,7 +31,7 @@ export default function CalendarSheet() {
 
     const calendarSheet = useMemo(() => {
         return (
-            <div className="grow overflow-auto max-h-[80vh]">
+            <div className="overflow-scroll max-h-[80vh]">
                 <table className="w-full border-collapse min-w-full text-sm" role="table" aria-label="Calendar Classes Spreadsheet" title="Calendar Classes Spreadsheet">
                     <thead className="bg-gray-50 dark:bg-zinc-800 sticky top-0">
                         <tr role="row">

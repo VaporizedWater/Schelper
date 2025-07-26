@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useCallback, useEffect } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface ModalProps {
@@ -9,6 +9,8 @@ interface ModalProps {
 
 export default function Modal({ children }: ModalProps) {
     const router = useRouter();
+    const modalRef = useRef<HTMLDivElement>(null);
+    const [mouseDownInside, setMouseDownInside] = useState(false);
 
     // Add global ESC key listener
     useEffect(() => {
@@ -31,10 +33,25 @@ export default function Modal({ children }: ModalProps) {
         router.back(); // Navigate back to the previous route
     }, [router]);
 
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (modalRef.current && modalRef.current.contains(e.target as Node)) {
+            setMouseDownInside(true);
+        } else {
+            setMouseDownInside(false);
+        }
+    }
+
+    const handleMouseUp = (e: React.MouseEvent) => {
+        if (!mouseDownInside && !modalRef.current?.contains(e.target as Node)) {
+            closeModal(); // Close modal if mouse was not down inside
+        }
+    }
+
     return (
         <div
-            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-            onClick={closeModal}
+            className="fixed inset-0 bg-black/50 z-40 flex items-center justify-center p-4"
+            onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
             aria-hidden="true"
         >
             {/* Modal Content */}
@@ -42,8 +59,8 @@ export default function Modal({ children }: ModalProps) {
                 role="dialog"
                 aria-modal="true"
                 aria-label="Modal window"
-                className="bg-white dark:bg-zinc-800 min-w-fit w-[85%] md:w-[60%] rounded-lg relative max-h-[85vh] min-h-[50vh] flex flex-col pb-8 pt-4"
-                onClick={(e) => e.stopPropagation()} // Prevent click propagation
+                className="bg-white dark:bg-zinc-800 min-w-fit w-[85%] md:w-[60%] rounded-lg relative max-h-[85vh] min-h-[50vh] flex flex-col pb-8 pt-4 z-50"
+                ref={modalRef}
             >
                 <button
                     type="button"

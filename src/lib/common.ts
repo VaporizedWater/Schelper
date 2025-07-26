@@ -116,7 +116,7 @@ export function newDefaultEmptyFaculty(): FacultyType {
     };
 }
 
-export function createEventsFromCombinedClass(combinedClass: CombinedClass): EventInput[] {
+export function createEventsFromCombinedClass(combinedClass: CombinedClass, isEditable?: boolean): EventInput[] {
     const events: EventInput[] = [];
 
     combinedClass.properties.days.forEach((day) => {
@@ -147,6 +147,7 @@ export function createEventsFromCombinedClass(combinedClass: CombinedClass): Eve
                 combinedClassId: combinedClass._id,
             },
             priority: "b",
+            editable: isEditable || false,
         });
     });
 

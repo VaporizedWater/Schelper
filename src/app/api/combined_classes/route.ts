@@ -172,9 +172,13 @@ export async function PUT(request: Request): Promise<Response> {
 
             // Clone and strip out user tags if needed
 
-            const setData: any = { ...updateData.properties }; // eslint-disable-line @typescript-eslint/no-explicit-any
-            if (skipTags || (Array.isArray(setData.tags) && setData.tags.length === 0)) {
-                delete setData.tags;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const setData: any = {
+                data: updateData.data,
+                properties: updateData.properties,
+            };
+            if (skipTags || (Array.isArray(setData.properties.tags) && setData.properties.tags.length === 0)) {
+                delete setData.properties.tags;
             }
 
             if (_id && _id !== "") {

@@ -12,8 +12,14 @@ import { FaChevronCircleLeft } from 'react-icons/fa';
 const CalendarPage = () => {
     const [isCalendarOpen, setCalendarOpen] = useState(true);
     const [isLeftMenuVisible, setLeftMenuVisible] = useState(true);
+    const [leftMenuWidth, setLeftMenuWidth] = useState(0); // default width for left menu
     const searchParams = useSearchParams();
     const { allClasses, updateAllClasses } = useCalendarContext();
+
+    useEffect(() => {
+        // Set initial left menu width based on the current window size
+        setLeftMenuWidth(window.innerWidth * 0.17); // 17% of the window width
+    }, []);
 
     // Apply cohort filter from URL parameter
     useEffect(() => {
@@ -43,12 +49,43 @@ const CalendarPage = () => {
         }
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+    const handleWidthDrag = (e: React.MouseEvent) => {
+        const startX = e.clientX;
+        const startWidth = leftMenuWidth;
+
+        const handleMouseMove = (moveEvent: MouseEvent) => {
+            const newWidth = startWidth + (moveEvent.clientX - startX);
+            setLeftMenuWidth(Math.max(newWidth, 200)); // minimum width of 200px
+        }
+
+        const handleMouseUp = () => {
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseup', handleMouseUp);
+
+            // Trigger FullCalendar resize after width change
+            setTimeout(() => {
+                const calendarEl = document.querySelector('.fc');
+                if (calendarEl) {
+                    window.dispatchEvent(new Event('resize'));
+                }
+            }, 0);
+        }
+
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseup', handleMouseUp);
+    }
+
     return (
         <div className="h-full flex">
             {/* sidebar */}
             {isLeftMenuVisible && (
-                <div className="w-[17%] min-w-[200px] overflow-auto">
-                    <LeftMenu />
+                <div className='flex'>
+                    <div style={{ width: leftMenuWidth }} className="min-w-[200px] max-w-[600px] overflow-auto">
+                        <LeftMenu />
+                    </div>
+                    <div className='w-2 cursor-col-resize flex justify-center items-center' onMouseDown={handleWidthDrag} >
+                        <div className='w-0.5 h-full bg-gray-200 dark:bg-gray-700' />
+                    </div>
                 </div>
             )}
 

@@ -20,7 +20,7 @@ const CalendarDropDown = ({ id, title }: CalendarDropDownProps) => {
                     aria-selected={item.name === title}
                     className={
                         index !== calendarInfoList.length - 1
-                            ? "border-b border-gray-100 dark:border-gray-500"
+                            ? "border-b border-gray-100 dark:border-gray-500 hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors duration-150"
                             : ""
                     }
                 >
@@ -91,7 +91,7 @@ const CalendarDropDown = ({ id, title }: CalendarDropDownProps) => {
                 <ul
                     role="listbox"
                     aria-labelledby={`${id}-label`}
-                    className="w-full mt-1 rounded-lg shadow-md border border-gray-200 dark:border-gray-500 bg-white dark:bg-dark hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors duration-150 overflow-hidden"
+                    className="w-full mt-1 rounded-lg shadow-md border border-gray-200 dark:border-gray-500 bg-white dark:bg-dark overflow-hidden"
                 >
                     {calendarInfoListMap}
                 </ul>
