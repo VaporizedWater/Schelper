@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import DropDown from "../DropDown/DropDown";
 import { BiCheck, BiChevronDown, BiChevronUp, BiMinus, BiSearch } from "react-icons/bi";
 import { CategoryFilterProps } from "@/lib/types";
@@ -8,6 +8,7 @@ import { CategoryFilterProps } from "@/lib/types";
 const CategoryFilter = ({ title, tagMap, tagStates, toggleCategoryAll, toggleOneTag }: CategoryFilterProps) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isSearchActive, setIsSearchActive] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement | null>(null);
 
     const handleTagKeyDown = (e: React.KeyboardEvent, tagName: string) => {
         if (e.key === " " || e.key === "Enter") {
@@ -78,6 +79,7 @@ const CategoryFilter = ({ title, tagMap, tagStates, toggleCategoryAll, toggleOne
             <DropDown
                 id={sectionId}
                 label={`${title} filters`}
+                ref={dropdownRef}
                 closeOnOutsideClick={false}
                 defaultOpen={false}
                 buttonClassName="w-full text-left mt-1 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
@@ -101,11 +103,19 @@ const CategoryFilter = ({ title, tagMap, tagStates, toggleCategoryAll, toggleOne
                                 value={searchTerm}
                                 onClick={(e) => e.stopPropagation()}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                onBlur={() => setIsSearchActive(false)}
+                                onBlur={() => {
+                                    if (!dropdownRef.current) {
+                                        setIsSearchActive(false)
+                                    }
+                                }}
                                 onKeyDown={(e) => {
                                     if (e.key === "Escape") {
                                         setIsSearchActive(false);
                                         setSearchTerm("");
+                                    }
+
+                                    if (e.key === " " || e.key === "Enter") {
+                                        e.preventDefault();
                                     }
                                 }}
                             />
@@ -146,7 +156,10 @@ const CategoryFilter = ({ title, tagMap, tagStates, toggleCategoryAll, toggleOne
                         )}
                         <span className="flex items-center">
                             <BiSearch className="h-4.5 w-4.5 text-gray-500 dark:text-gray-400" aria-hidden="true" onClick={(e) => {
-                                e.stopPropagation()
+                                if (isOpen != isSearchActive) {
+                                    e.stopPropagation()
+                                }
+
                                 setIsSearchActive(!isSearchActive);
                             }} />
                             {isOpen ? <BiChevronUp aria-hidden="true" /> : <BiChevronDown aria-hidden="true" />}

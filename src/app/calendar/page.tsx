@@ -55,7 +55,7 @@ const CalendarPage = () => {
 
         const handleMouseMove = (moveEvent: MouseEvent) => {
             const newWidth = startWidth + (moveEvent.clientX - startX);
-            setLeftMenuWidth(Math.max(newWidth, 200)); // minimum width of 200px
+            setLeftMenuWidth(Math.min(Math.max(newWidth, 200), 600)); // minimum width of 200px max of 600px
         }
 
         const handleMouseUp = () => {

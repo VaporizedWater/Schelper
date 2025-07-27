@@ -12,6 +12,7 @@ const DropDown = ({
     defaultOpen = false,
     darkClass = "",
     divClassName = "",
+    ref,
 }: DropDownProps) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -35,7 +36,7 @@ const DropDown = ({
     const listId = `${id}-list`;
 
     return (
-        <div ref={dropdownRef} className={`relative ${divClassName}`}>
+        <div ref={ref ? ref : dropdownRef} className={`relative ${divClassName}`}>
             <button
                 id={buttonId}
                 type="button"

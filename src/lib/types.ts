@@ -97,6 +97,7 @@ export type DropDownProps = {
     divClassName?: string;
     id?: string;
     label?: string;
+    ref?: React.RefObject<HTMLDivElement | null>;
 };
 
 export type ButtonDropDownProps = {
