@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import DropDown from "../DropDown/DropDown";
 import { BiCheck, BiChevronDown, BiChevronUp, BiMinus, BiSearch } from "react-icons/bi";
 import { CategoryFilterProps } from "@/lib/types";
@@ -8,7 +8,22 @@ import { CategoryFilterProps } from "@/lib/types";
 const CategoryFilter = ({ title, tagMap, tagStates, toggleCategoryAll, toggleOneTag }: CategoryFilterProps) => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isSearchActive, setIsSearchActive] = useState(false);
+    const [totalChecked, setTotalChecked] = useState(0);
     const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+    useEffect(() => {
+        // Count total checked tags whenever tagStates change
+        const countChecked = () => {
+            let count = 0;
+            tagStates.forEach((state, tagName) => {
+                if (state === "include" && tagMap.has(tagName)) count++;
+            });
+            setTotalChecked(count);
+        };
+
+        countChecked();
+    }
+        , [tagStates]);
 
     const handleTagKeyDown = (e: React.KeyboardEvent, tagName: string) => {
         if (e.key === " " || e.key === "Enter") {
@@ -155,6 +170,7 @@ const CategoryFilter = ({ title, tagMap, tagStates, toggleCategoryAll, toggleOne
                             </div>
                         )}
                         <span className="flex items-center">
+                            <p className="px-1 text-sm text-gray-300 dark:text-gray-400">{`${totalChecked}/${filteredTags.length}`}</p>
                             <BiSearch className="h-4.5 w-4.5 text-gray-500 dark:text-gray-400" aria-hidden="true" onClick={(e) => {
                                 if (isOpen != isSearchActive) {
                                     e.stopPropagation()
