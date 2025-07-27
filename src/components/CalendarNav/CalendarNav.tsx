@@ -14,9 +14,9 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const [calendarActive, setActive] = useState(true);
 
     const createDropList = [
-        { content: "Class", link: "/classes" },
+        { content: "Class", link: "/createClass" },
         { content: "Tag", link: "/addTag" },
-        { content: "Faculty", link: "/faculty" },
+        { content: "Faculty", link: "/addFacultyUnavailability" },
     ];
 
     // Updated styling for better consistency

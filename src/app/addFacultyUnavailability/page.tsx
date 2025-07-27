@@ -72,7 +72,7 @@ const FacultyForm = () => {
 
     return (
         <div className="p-8 mx-auto text-black dark:text-gray-300">
-            <h2 className="font-semibold mb-6">Manage Faculty Availability</h2>
+            <h2 className="font-semibold mb-6">Add Faculty Unavailability</h2>
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <input
                     type="text"

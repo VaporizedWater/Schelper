@@ -76,7 +76,7 @@ const CalendarPage = () => {
     }
 
     return (
-        <div className="h-full flex">
+        <div className="h-full flex relative max-w-full">
             {/* sidebar */}
             {isLeftMenuVisible && (
                 <div className='flex'>
@@ -90,7 +90,7 @@ const CalendarPage = () => {
             )}
 
             {/* main content always flex-1 */}
-            <div className="flex-1 relative flex flex-col">
+            <div className="flex-1 relative flex flex-col max-w-full">
                 {/* toggle button */}
                 <button
                     className="absolute left-4 top-1/2 -translate-y-1/2 z-20 text-gray-500/40 hover:text-gray-500/60 dark:text-gray-300/40 dark:hover:text-gray-100/60 transition-transform duration-200 ease-in-out rounded-full shadow-md hover:shadow-lg"
