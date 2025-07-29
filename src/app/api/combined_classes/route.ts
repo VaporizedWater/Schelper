@@ -69,8 +69,10 @@ export async function GET(request: Request) {
 
         const data = await collection.aggregate(pipeline).toArray();
 
+        // console.log("GET /api/combined_classes response data:", data);
+
         if (!data.length) {
-            return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
+            return new Response(JSON.stringify({ error: "No classes found!" }), { status: 404 });
         }
 
         return new Response(JSON.stringify(data[0]), { status: 200 });

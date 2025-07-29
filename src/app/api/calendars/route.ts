@@ -51,8 +51,10 @@ export async function GET(request: Request): Promise<Response> {
 
         const data = await collection.aggregate(pipeline).toArray();
 
+        // console.log("GET /api/calendars response data:", data, data.length);
+
         if (!data.length) {
-            return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
+            return new Response(JSON.stringify({ error: "No classes found-aahhhh" }), { status: 404 });
         }
 
         const json = JSON.stringify(data);
@@ -104,10 +106,13 @@ export async function POST(request: Request): Promise<Response> {
         // 4) Patch the calendar's info._id to match its real _id
         await calsColl.updateOne({ _id: newCalId }, { $set: { "info._id": newCalId } });
 
-        // 5) Add this calendar _id to the user's user_calendars array
+        // 5) Add this calendar _id to the user's user_calendars array and make it the current calendar
         const updateResult = await usersColl.findOneAndUpdate(
             { email: userEmail },
-            { $addToSet: { user_calendars: newCalId } },
+            {
+                $addToSet: { user_calendars: newCalId }, // add calendar to user_calendars
+                $set: { current_calendar: newCalId }, // set as current calendar
+            },
             { returnDocument: "after" }
         );
 
@@ -210,6 +215,17 @@ export async function DELETE(request: Request): Promise<Response> {
 
         // Remove the calendar from the user's user_calendars array
         await usersColl.updateOne({ email: userEmail }, { $pull: { user_calendars: new ObjectId(calendarId) } });
+
+        // Set the user's current_calendar to null if there are no other calendars else set it to the first one in the array
+        const user = (await usersColl.findOne({ email: userEmail })) as (typeof usersColl extends Collection<infer U>
+            ? U
+            : any) & { user_calendars?: ObjectId[] }; // eslint-disable-line @typescript-eslint/no-explicit-any
+        if (user && Array.isArray(user.user_calendars) && user.user_calendars.length > 0) {
+            const newCurrentCalendar = user.user_calendars[0]; // Set to the first calendar in the array
+            await usersColl.updateOne({ email: userEmail }, { $set: { current_calendar: newCurrentCalendar } });
+        } else {
+            await usersColl.updateOne({ email: userEmail }, { $set: { current_calendar: null } });
+        }
 
         // Delete the calendar document itself
         await calsColl.deleteOne({ _id: new ObjectId(calendarId) });
