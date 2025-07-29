@@ -22,8 +22,7 @@ const CategoryFilter = ({ title, tagMap, tagStates, toggleCategoryAll, toggleOne
         };
 
         countChecked();
-    }
-        , [tagStates]);
+    }, [tagStates, tagMap]);
 
     const handleTagKeyDown = (e: React.KeyboardEvent, tagName: string) => {
         if (e.key === " " || e.key === "Enter") {

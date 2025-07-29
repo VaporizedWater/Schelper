@@ -100,7 +100,7 @@ const Profile = () => {
                         href={href}
                         role="menuitem"
                         tabIndex={0}
-                        className="w-full text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+                        className={`w-full text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-300 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500` + (sub ? " pl-2" : "")}
                         title={label}
                     >
                         {label}
