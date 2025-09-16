@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -10,10 +10,11 @@ import { useSession } from 'next-auth/react';
 import AddTagButton from "@/components/AddTagButton/AddTagButton";
 import TagDisplay from "@/components/TagDisplay/TagDisplay";
 import { BiUnlink } from "react-icons/bi";
-import { MdDelete } from 'react-icons/md';
+import { MdArrowRightAlt, MdDelete } from 'react-icons/md';
 import ThemeToggle from '@/components/ThemeToggle/ThemeToggle';
 import { useTheme } from 'next-themes';
 import { defaultSettings } from '@/lib/common';
+import Link from 'next/link';
 
 // Define settings sections
 const SETTINGS_SECTIONS = [
@@ -21,6 +22,8 @@ const SETTINGS_SECTIONS = [
     { id: 'cohorts', label: 'Cohorts', group: 'calendar' },
     { id: 'conflicts', label: 'Conflicts', group: 'calendar' },
     { id: 'tags', label: 'Tags', group: 'tags' },
+    { id: 'classes', label: 'Classes', group: 'department' },
+    { id: 'faculty', label: 'Faculty', group: 'department' },
 ];
 
 // Group settings for cleaner UI
@@ -28,6 +31,7 @@ const SECTION_GROUPS = [
     { id: 'general', label: 'General' },
     { id: 'calendar', label: 'Calendar' },
     { id: 'tags', label: 'Tags' },
+    { id: 'department', label: 'Department' }
 ];
 
 export default function SettingsPage() {
@@ -149,18 +153,32 @@ function CohortSettings() {
     // In the CohortSettings component, add a new state variable
     const [currentCohortId, setCurrentCohortId] = useState<string | null>(null);
     const { data: session } = useSession();
+    const { currentCalendar, removeCohort, currentDepartment } = useCalendarContext();
 
     // Load cohorts when component mounts
     useEffect(() => {
         async function fetchCohorts() {
             setIsLoading(true);
             try {
+                if (!session?.user?.email) return;
+
+                if (!currentDepartment || !currentDepartment._id) {
+                    console.log("No current department found for the user.", currentDepartment);
+                    setUploadStatus({
+                        message: 'Please create and select a department first.',
+                        type: 'error'
+                    });
+                    setIsLoading(false);
+                    return;
+                } else {
+                    setUploadStatus({ message: `Using department: ${currentDepartment.name}`, type: 'info' });
+                }
                 // Get all cohorts
-                const result = await loadCohorts(session?.user?.email || '', 'true');
+                const result = await loadCohorts(currentDepartment._id, 'true');
                 setCohorts(result);
 
                 // Get the current cohort separately to identify which one is current
-                const currentCohort = await loadCohorts(session?.user?.email || '', 'false');
+                const currentCohort = await loadCohorts(currentDepartment._id, 'false');
                 if (currentCohort && currentCohort[0] && currentCohort[0]._id) {
                     setCurrentCohortId(currentCohort[0]._id as string);
                 }
@@ -177,9 +195,7 @@ function CohortSettings() {
         }
         fetchCohorts();
         // eslint-disable-next-line
-    }, [session?.user?.email]);
-
-    const { currentCalendar, removeCohort } = useCalendarContext();
+    }, [session?.user?.email, currentDepartment]);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -329,16 +345,22 @@ function CohortSettings() {
                 return;
             }
 
-            const result = await insertCohort(session.user.email, cohort);
+            if (!currentDepartment || !currentDepartment._id) {
+                setUploadStatus({ message: 'No department selected. Please select a department first.', type: 'error' });
+                setIsLoading(false);
+                return;
+            }
+
+            const result = await insertCohort(cohort, currentDepartment._id);
             if (result) {
                 setUploadStatus({ message: 'Cohort saved successfully!', type: 'success' });
 
                 // Refresh cohorts list
-                const updatedCohorts = await loadCohorts(session.user.email, 'true');
+                const updatedCohorts = await loadCohorts(currentDepartment._id, 'true');
                 setCohorts(updatedCohorts);
 
                 // Get the current cohort separately to identify which one is current
-                const currentCohort = await loadCohorts(session.user.email, 'false');
+                const currentCohort = await loadCohorts(currentDepartment._id, 'false');
                 if (currentCohort && currentCohort[0] && currentCohort[0]._id) {
                     setCurrentCohortId(currentCohort[0]._id as string);
                 }
@@ -384,18 +406,24 @@ function CohortSettings() {
                 return;
             }
 
+            if (!currentDepartment || !currentDepartment._id) {
+                setUploadStatus({ message: 'No department selected. Please select a department first.', type: 'error' });
+                setIsLoading(false);
+                return;
+            }
+
             const updatedCohort = {
                 ...cohortToUpdate,
                 cohortName: editNameValue
             };
 
-            const result = await updateCohort(updatedCohort._id as string, updatedCohort);
+            const result = await updateCohort(updatedCohort._id as string, updatedCohort, currentDepartment._id);
 
             if (result) {
                 setUploadStatus({ message: 'Cohort updated successfully!', type: 'success' });
 
                 // Refresh cohorts list
-                const updatedCohorts = await loadCohorts(session.user.email, 'true');
+                const updatedCohorts = await loadCohorts(currentDepartment._id, 'true');
                 setCohorts(updatedCohorts);
 
                 // Exit edit mode
@@ -422,6 +450,11 @@ function CohortSettings() {
             return;
         }
 
+        if (!currentDepartment || !currentDepartment._id) {
+            setUploadStatus({ message: 'No department selected. Please select a department first.', type: 'error' });
+            return;
+        }
+
         try {
             // Confirm deletion
             const isConfirmed = window.confirm("Are you sure you want to delete this cohort?");
@@ -429,10 +462,10 @@ function CohortSettings() {
 
             setIsLoading(true);
             // Call the removeCohort function
-            await removeCohort(session.user.email, cohortId);
+            await removeCohort(cohortId, currentDepartment._id);
 
             // Update the cohorts list
-            const updatedCohorts = await loadCohorts(session.user.email, 'true');
+            const updatedCohorts = await loadCohorts(currentDepartment._id, 'true');
             setCohorts(updatedCohorts);
 
             setUploadStatus({ message: 'Cohort deleted successfully', type: 'success' });
@@ -486,6 +519,22 @@ function CohortSettings() {
             setIsLoading(false);
         }
     };
+    // Different rendering based on whether current department is defined or not
+
+    if (!currentDepartment) {
+        // Ask to create department first
+        return (
+            <div className='flex-1 text-black dark:text-gray-300'>
+                <h2 className="text-2xl font-semibold mb-6">Cohorts Settings</h2>
+                <div className="p-4 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-400 dark:border-yellow-800 rounded-lg">
+                    <p className="text-yellow-800 dark:text-yellow-400 flex items-center">Please create and select a department before managing cohorts.
+                        <Link href={"/departments"}><MdArrowRightAlt /></Link>
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
 
     return (
         <div className='flex-1 text-black dark:text-gray-300'>

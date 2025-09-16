@@ -74,7 +74,7 @@ const assignCohort = (cls: CombinedClass, cohort: CohortType): string | null => 
 const ImportSheet = () => {
     // State to store loaded cohorts
     const { data: session } = useSession();
-    const { uploadNewClasses } = useCalendarContext();
+    const { uploadNewClasses, currentDepartment } = useCalendarContext();
     const router = useRouter();
 
     const [allCohorts, setAllCohorts] = useState<CohortType[]>([]);
@@ -138,14 +138,19 @@ const ImportSheet = () => {
                 return;
             }
 
-            const currentCohortResult = await loadCohorts(session?.user?.email, 'false');
+            if (!currentDepartment || currentDepartment?._id === undefined) {
+                console.log("No current department found for the user.");
+                return;
+            }
+
+            const currentCohortResult = await loadCohorts(currentDepartment._id, 'false');
 
             if (!currentCohortResult || currentCohortResult.length === 0) {
                 console.log("No cohorts found for the user.");
                 return;
             }
 
-            const allCohortsResult = await loadCohorts(session?.user?.email, 'true');
+            const allCohortsResult = await loadCohorts(currentDepartment._id, 'true');
 
             if (!allCohortsResult || allCohortsResult.length === 0) {
                 console.log("No all cohorts found for the user.");
@@ -179,161 +184,116 @@ const ImportSheet = () => {
         const workbook = xlsx.read(data, { type: 'array' });
         const firstSheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[firstSheetName];
-        const rows = xlsx.utils.sheet_to_json(worksheet, { range: 1 }) as object[][];
+
+        // Safely parse raw rows (header: 1 → get 2D array)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const raw: any[][] = xlsx.utils.sheet_to_json(worksheet, {
+            header: 1,
+            defval: "",
+        });
+
+        const headers = raw[1]; // Row 2 (index 1) contains actual column names
+
+        // const rows = xlsx.utils.sheet_to_json(worksheet, { range: 1 }) as object[][];
+
+        const rows = raw.slice(2).filter(row => row.some(cell => String(cell).trim() !== "")); // Remove empty rows
 
         const combinedClasses = [] as CombinedClass[];
 
-        rows.values().forEach((element: object[]) => {
-            // if (element['Course'] === "EDSGN") {
-            //     console.log("Parsed Row:", element);
-            // }
+        let dropCount = 0;
+
+        for (const row of rows) {
+            const element = Object.fromEntries(
+                row.map((cell, i) => [headers[i], cell])
+            );
 
             const combinedClass = newDefaultEmptyClass();
             const classData = combinedClass.data;
             const classProperties = combinedClass.properties;
             let isCancelled = false;
 
-            Object.keys(element).forEach(key => {
-                if (isCancelled) {
-                    return;
+            for (const key in element) {
+                const rawValue = String(element[key]);
+                if (!rawValue || rawValue.trim() === "") continue;
+                const value = rawValue.trim();
+
+                switch (key) {
+                    // Class
+                    case "Catalog #": classData.catalog_num = value; break;
+                    case "Class #": classData.class_num = value; break;
+                    case "Session": classData.session = value; break;
+                    case "Course": classData.course_subject = value; break;
+                    case "Num": classData.course_num = value.trim(); break;
+                    case "Section": classData.section = value; break;
+                    case "Title": classData.title = value; break;
+                    case "Enr Cpcty": classData.enrollment_cap = value; break;
+                    case "Wait Cap": classData.waitlist_cap = value; break;
+
+                    // Class Property
+                    case "Class Stat":
+                        classProperties.class_status = value;
+
+                        if (value === "Cancelled Section") {
+                            isCancelled = true;
+                        }
+
+                        break;
+                    case "Start": classProperties.start_time = convertTime(value); break;
+                    case "End": classProperties.end_time = convertTime(value); break;
+                    case "Room":
+                        classProperties.room = value;
+
+                        if (value === "WEB" || value === "APPT") {
+                            isCancelled = true;
+                        }
+
+                        break;
+                    case "Facility ID":
+                        classProperties.facility_id = value;
+
+                        if (value === "WEB" || value === "APPT") {
+                            isCancelled = true;
+                        }
+
+                        break;
+                    case "M":
+                        if (value.trim() === "" || value === undefined) {
+                            break;
+                        }
+                        classProperties.days.push("Mon");
+                        break;
+                    case "T":
+                        if (value.trim() === "" || value === undefined) {
+                            break;
+                        }
+                        classProperties.days.push("Tue");
+                        break;
+                    case "W":
+                        if (value.trim() === "" || value === undefined) {
+                            break;
+                        }
+                        classProperties.days.push("Wed");
+                        break;
+                    case "R":
+                        if (value.trim() === "" || value === undefined) {
+                            break;
+                        }
+                        classProperties.days.push("Thu");
+                        break;
+                    case "F":
+                        if (value.trim() === "" || value === undefined) {
+                            break;
+                        }
+                        classProperties.days.push("Fri");
+                        break;
+                    case "Instructor Email": classProperties.instructor_email = value; break;
+                    case "Instructor Name": classProperties.instructor_name = value; break;
+                    case "Tot Enrl": classProperties.total_enrolled = value; break;
+                    case "Wait Tot": classProperties.total_waitlisted = value; break;
+                    default: break;
                 }
 
-                const rawValue = String(element[key as keyof typeof element]);
-
-                if (rawValue !== undefined && rawValue !== null && String(rawValue).trim() !== "") {
-                    const value = String(rawValue).trim();
-
-                    switch (key) {
-                        // Class
-                        case "Catalog #":
-                            classData.catalog_num = value;
-                            break;
-                        case "Class #":
-                            classData.class_num = value;
-                            break;
-                        case "Session":
-                            classData.session = value;
-                            break;
-                        case "Course":
-                            classData.course_subject = value;
-                            break;
-                        case "Num":
-                            const val = value.trim();
-                            const match = val.match(/^\d+/);
-                            if (match) {
-                                const numbers = Number(match);
-                                if (!isNaN(numbers)) {
-                                    switch (Math.floor(numbers / 100)) {
-                                        case 1:
-                                            classProperties.tags.push({ tagName: "100level", tagCategory: "level" });
-                                            break;
-                                        case 2:
-                                            classProperties.tags.push({ tagName: "200level", tagCategory: "level" });
-                                            break;
-                                        case 3:
-                                            classProperties.tags.push({ tagName: "300level", tagCategory: "level" });
-                                            break;
-                                        case 4:
-                                            classProperties.tags.push({ tagName: "400level", tagCategory: "level" });
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                            }
-                            classData.course_num = val;
-                            break;
-                        case "Section":
-                            classData.section = value;
-                            break;
-                        case "Title":
-                            classData.title = value;
-                            break;
-                        case "Enr Cpcty":
-                            classData.enrollment_cap = value;
-                            break;
-                        case "Wait Cap":
-                            classData.waitlist_cap = value;
-                            break;
-
-                        // Class Property
-                        case "Class Stat":
-                            classProperties.class_status = value;
-
-                            if (value === "Cancelled Section") {
-                                isCancelled = true;
-                            }
-
-                            break;
-                        case "Start":
-                            classProperties.start_time = convertTime(value);
-                            break;
-                        case "End":
-                            classProperties.end_time = convertTime(value);
-                            break;
-                        case "Room":
-                            classProperties.room = value;
-
-                            if (value === "WEB" || value === "APPT") {
-                                isCancelled = true;
-                            }
-
-                            break;
-                        case "Facility ID":
-                            classProperties.facility_id = value;
-
-                            if (value === "WEB" || value === "APPT") {
-                                isCancelled = true;
-                            }
-
-                            break;
-                        case "M":
-                            if (value.trim() === "" || value === undefined) {
-                                break;
-                            }
-                            classProperties.days.push("Mon");
-                            break;
-                        case "T":
-                            if (value.trim() === "" || value === undefined) {
-                                break;
-                            }
-                            classProperties.days.push("Tue");
-                            break;
-                        case "W":
-                            if (value.trim() === "" || value === undefined) {
-                                break;
-                            }
-                            classProperties.days.push("Wed");
-                            break;
-                        case "R":
-                            if (value.trim() === "" || value === undefined) {
-                                break;
-                            }
-                            classProperties.days.push("Thu");
-                            break;
-                        case "F":
-                            if (value.trim() === "" || value === undefined) {
-                                break;
-                            }
-                            classProperties.days.push("Fri");
-                            break;
-                        case "Instructor Email":
-                            classProperties.instructor_email = value;
-                            break;
-                        case "Instructor Name":
-                            classProperties.instructor_name = value;
-                            break;
-                        case "Tot Enrl":
-                            classProperties.total_enrolled = value;
-                            break;
-                        case "Wait Tot":
-                            classProperties.total_waitlisted = value;
-                            break;
-                        default:
-                            break;
-                    }
-                }
-            });
+            };
 
             // Do not insert class if cancelled (e.g., "Cancelled Section", "WEB")
             // Important to mention that Class ID will contain duplicates if the class is marked as WEB (Web vs Non-Web have the same ID)
@@ -345,8 +305,13 @@ const ImportSheet = () => {
                 }
 
                 combinedClasses.push(combinedClass);
+            } else {
+                console.log(`Skipping cancelled class: ${combinedClass.data.course_subject} ${combinedClass.data.course_num} - Section: ${combinedClass.data.section} - Room: ${combinedClass.properties.room} - Instructor: ${combinedClass.properties.instructor_name} Facility ID: ${combinedClass.properties.facility_id} Class status: ${combinedClass.properties.class_status}`);
+                dropCount++;
             }
-        });
+        };
+
+        console.log(`Dropped ${dropCount} cancelled classes from import.`);
 
         // After classes are parsed, auto-assign cohorts
         const initialCohortSelections: Record<string, string> = {};
@@ -460,6 +425,16 @@ const ImportSheet = () => {
         });
 
         // Then upload the classes with tags
+        console.log("Uploading classes to import:", classesToImport);
+
+        const ids = parsedClasses.map(getUniqueClassId);
+        const uniqueIds = new Set(ids);
+        if (uniqueIds.size !== ids.length) {
+            console.warn("Duplicate classes detected in import. This may cause issues.");
+            const dupes = ids.filter((id, idx) => ids.indexOf(id) !== idx);
+            console.log("Duplicates:", [...new Set(dupes)]);
+        }
+
         uploadNewClasses(classesToImport);
         router.back();
     }, [cohortSelections, getUniqueClassId, parsedClasses, router, selectedClasses, uploadNewClasses]);
