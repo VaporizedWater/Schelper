@@ -10,13 +10,14 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
 import { CombinedClass } from "@/lib/types";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 
 const selectedEvents: HTMLElement[] = [];
 
 const Calendar = () => {
     const { theme, resolvedTheme } = useTheme();
     const calendarRef = useRef<FullCalendar>(null);
-    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, setCurrentClasses, updateOneClass, toggleConflictPropertyChanged, userSettings } = useCalendarContext();
+    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, setCurrentClasses, updateOneClass, toggleConflictPropertyChanged, userSettings, currentCalendar } = useCalendarContext();
     // const [events, setEvents] = useState<EventInput[]>([]);
     const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
@@ -166,10 +167,12 @@ const Calendar = () => {
     const handleDateClick = useCallback((info: DateClickArg) => {
         console.log("Date clicked: ", info);
         unselectAll();
-        setCurrentClass(newDefaultEmptyClass());
-        setCurrentClasses(newDefaultEmptyClass());
+        if (currentCombinedClass) {
+            setCurrentClass(newDefaultEmptyClass());
+            setCurrentClasses(newDefaultEmptyClass());
+        }
         setBusinessHours([]);
-    }, [unselectAll, setCurrentClass, setCurrentClasses, setBusinessHours]);
+    }, [unselectAll, setCurrentClass, setCurrentClasses, setBusinessHours]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleEventDrop = useCallback((info: EventDropArg) => {
         // Update the class in the context
@@ -445,6 +448,14 @@ const Calendar = () => {
                 </div>
             </div>
         );
+    }
+
+    if (!currentCalendar || currentCalendar._id === '') {
+        return (
+            <div className="h-full flex items-center justify-center">
+                <p className="text-gray-500 dark:text-gray-400">Please select or <Link href={"/createCalendar"} className="text-blue-500">create a calendar</Link> to view classes.</p>
+            </div>
+        )
     }
 
     return (
