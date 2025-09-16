@@ -1,16 +1,60 @@
 "use server";
 
+import { auth } from "@/lib/auth";
 import clientPromise from "@/lib/mongodb";
 import { UserType } from "@/lib/types";
 import { ObjectId } from "mongodb";
 
+export async function POST(request: Request) {
+    try {
+        const session = await auth();
+        if (!session || !session.user || !session.user.email) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+        }
+
+        const userEmail = session.user.email;
+        const userData = await request.json();
+
+        if (!userData || Object.keys(userData).length === 0) {
+            return new Response(JSON.stringify({ error: "No user data provided" }), { status: 400 });
+        }
+        if (!userEmail) {
+            return new Response(JSON.stringify({ error: "User email is required" }), { status: 400 });
+        }
+
+        const client = await clientPromise;
+        const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
+        const existingUser = await usersCollection.findOne({ email: userEmail });
+
+        if (existingUser) {
+            return new Response(JSON.stringify({ error: "User already exists" }), { status: 409 });
+        }
+
+        const result = await usersCollection.insertOne(userData);
+        return new Response(
+            JSON.stringify({ message: "User created successfully", success: true, userId: result.insertedId }),
+            { status: 201 }
+        );
+    } catch (error) {
+        console.error("Error in POST /api/users:", error);
+        return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    }
+}
+
 export async function PUT(request: Request) {
     try {
-        const { userEmail, updates } = await request.json();
+        const session = await auth();
+        if (!session || !session.user || !session.user.email) {
+            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
+        }
+
+        const userEmail = session.user.email;
 
         if (!userEmail) {
-            return new Response(JSON.stringify({ error: "Missing user email" }), { status: 400 });
+            return new Response(JSON.stringify({ error: "User email is required" }), { status: 400 });
         }
+
+        const { updates } = await request.json();
 
         if (!updates || Object.keys(updates).length === 0) {
             return new Response(JSON.stringify({ error: "No updates provided" }), { status: 400 });
@@ -41,7 +85,13 @@ export async function PUT(request: Request) {
                 return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
             }
 
-            const cohortExists = userData.cohorts.some(
+            const currentDepartment = userData.departments.find((dept) => dept._id === userData.current_department_id);
+
+            if (!currentDepartment) {
+                return new Response(JSON.stringify({ error: "Department not found" }), { status: 404 });
+            }
+
+            const cohortExists = currentDepartment.cohorts.some(
                 (cohortId) => cohortId.toString() === processedUpdates.current_cohort.toString()
             );
 
