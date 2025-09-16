@@ -178,7 +178,7 @@ export async function PUT(request: Request): Promise<Response> {
             return new Response(
                 JSON.stringify({
                     success: false,
-                    error: "User not found or calendar not in user_calendars",
+                    error: "User not found or calendar not in user calendars",
                 }),
                 { status: 404, headers: { "Content-Type": "application/json" } }
             );
