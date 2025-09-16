@@ -69,8 +69,6 @@ export async function GET(request: Request) {
 
         const data = await collection.aggregate(pipeline).toArray();
 
-        // console.log("GET /api/combined_classes response data:", data);
-
         if (!data.length) {
             return new Response(JSON.stringify({ error: "No classes found!" }), { status: 404 });
         }
@@ -132,9 +130,6 @@ export async function PUT(request: Request): Promise<Response> {
             facultyData?: FacultyType[];
             skipTags?: boolean;
         };
-
-        console.log(calendarId + "CALENDAR");
-        console.log(classes);
 
         // First, find IDs of documents that already exist without an _id field
         const classesWithIds = classes.filter((cls) => cls._id && cls._id !== "");
@@ -258,9 +253,7 @@ export async function PUT(request: Request): Promise<Response> {
                 },
             }));
 
-            const facultyResult = await facultyCollection.bulkWrite(facultyBulkOperations);
-
-            console.log("Faculty data:", facultyResult);
+            await facultyCollection.bulkWrite(facultyBulkOperations);
         }
 
         return new Response(
