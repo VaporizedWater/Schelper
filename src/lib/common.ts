@@ -5,7 +5,9 @@ import {
     CalendarType,
     ClassData,
     ClassProperty,
+    CohortType,
     CombinedClass,
+    DepartmentType,
     FacultyType,
     tagListType,
     tagType,
@@ -96,7 +98,7 @@ export function newDefaultEmptyCalendar(): CalendarType {
             _id: "",
             semester: "",
             year: new Date().getFullYear(),
-            name: "Select a Calendar",
+            name: "No Calendars",
         },
         classes: [],
     };
@@ -303,6 +305,16 @@ export function createCalendarFromInfo(calendarInfo: CalendarInfo): CalendarType
     }
 }
 
+export function createDepartmentFromInfo(departmentInfo: { name: string }): DepartmentType {
+    return {
+        name: departmentInfo.name,
+        faculty_list: [] as string[],
+        cohorts: [] as CohortType[],
+        current_cohort: "",
+        class_list: [] as CombinedClass[],
+    };
+}
+
 /// CONSTANTS
 export const defaultBackgroundColor = "#001e443f";
 export const selectedBackgroundColor = "#001e44bd";
@@ -368,6 +380,10 @@ export const initialCalendarState: CalendarState = {
     faculty: [newDefaultEmptyFaculty()],
     conflictPropertyChanged: false,
     userSettings: defaultSettings,
+    departments: {
+        all: [],
+        current: null,
+    },
 };
 
 export const darkenRGBColor = (color: string, amount: number = 0.2): string => {
