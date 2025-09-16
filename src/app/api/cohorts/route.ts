@@ -1,18 +1,35 @@
 "use server";
 
+import { auth } from "@/lib/auth";
 import clientPromise from "@/lib/mongodb";
 import { UserType } from "@/lib/types";
-// import { Collection, Document, ObjectId } from "mongodb";
 import { Document, ObjectId } from "mongodb";
 
-const client = await clientPromise;
-// const collection = client.db("class-scheduling-app").collection("cohorts") as Collection<Document>;
-
 export async function GET(request: Request) {
-    const collection = client.db("class-scheduling-app").collection("users");
-
     try {
-        const userEmail = request.headers.get("userEmail");
+        const session = await auth();
+
+        if (!session?.user?.email) {
+            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
+        }
+
+        const userEmail = session.user.email;
+
+        if (!userEmail || userEmail.split("@").length !== 2) {
+            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
+        }
+
+        const departmentIdHeader = request.headers.get("departmentId");
+
+        if (!departmentIdHeader) {
+            return new Response(JSON.stringify("Header: 'departmentId' is missing"), { status: 400 });
+        }
+
+        if (!departmentIdHeader || !ObjectId.isValid(departmentIdHeader)) {
+            return new Response(JSON.stringify("Header: 'departmentId' is missing or invalid"), { status: 400 });
+        }
+
+        const depObjectId = new ObjectId(departmentIdHeader);
 
         if (request.headers.get("loadAll") === null) {
             return new Response(JSON.stringify("Header: 'loadAll' is missing"), { status: 400 });
@@ -20,55 +37,43 @@ export async function GET(request: Request) {
 
         const loadAll: boolean = request.headers.get("loadAll") === "true";
 
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify("Header: 'userEmail' is missing or invalid"), { status: 400 });
-        }
+        const client = await clientPromise;
+        const collection = client.db("class-scheduling-app").collection("users");
 
         let pipeline: Document[] = [];
-        console.log("loadAll", loadAll);
         if (loadAll) {
             pipeline = [
-                {
-                    $match: {
-                        email: userEmail,
-                    },
-                },
+                { $match: { email: userEmail } },
+                { $unwind: "$departments" }, // Unwind the departments array
+                { $match: { "departments._id": depObjectId } },
                 {
                     $lookup: {
                         from: "cohorts",
-                        localField: "cohorts",
+                        localField: "departments.cohorts",
                         foreignField: "_id",
                         as: "cohortsDetails",
                     },
                 },
-                {
-                    $unwind: "$cohortsDetails", // Flatten the array
-                },
-                {
-                    $replaceRoot: { newRoot: "$cohortsDetails" }, // Promote cohort to top level
-                },
+                { $unwind: "$cohortsDetails" }, // Flatten the array
+                { $replaceRoot: { newRoot: "$cohortsDetails" } }, // Promote cohort to top level
             ];
         } else {
             pipeline = [
-                {
-                    $match: {
-                        email: userEmail,
-                    },
-                },
+                { $match: { email: userEmail } },
+                { $unwind: "$departments" }, // Unwind the departments array
+                { $match: { "departments._id": depObjectId } },
                 {
                     $lookup: {
                         from: "cohorts",
-                        localField: "current_cohort",
+                        localField: "departments.current_cohort",
                         foreignField: "_id",
                         as: "cohortDetails",
                     },
                 },
-                {
-                    $unwind: "$cohortDetails", // Unwind the array before projecting
-                },
+                { $unwind: "$cohortDetails" }, // Unwind the array before projecting
                 {
                     $project: {
-                        _id: "$current_cohort",
+                        _id: "$departments.current_cohort",
                         cohortName: "$cohortDetails.cohortName",
                         freshman: "$cohortDetails.freshman",
                         sophomore: "$cohortDetails.sophomore",
@@ -94,60 +99,87 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
-        // Parse the request body
-        const { userEmail, cohortData } = await request.json();
+        const session = await auth();
+        if (!session?.user?.email) return new Response(JSON.stringify("Unauthorized"), { status: 401 });
 
-        if (!userEmail || !cohortData) {
+        const userEmail = session.user.email;
+        if (!userEmail || userEmail.split("@").length !== 2) {
+            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
+        }
+
+        const departmentIdHeader = request.headers.get("departmentId");
+        if (!departmentIdHeader || !ObjectId.isValid(departmentIdHeader)) {
+            return new Response(JSON.stringify("Header: 'departmentId' is missing or invalid"), { status: 400 });
+        }
+        const depObjectId = new ObjectId(departmentIdHeader);
+
+        const { cohortData } = await request.json();
+        if (!cohortData) {
             return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400 });
         }
 
-        // Start a session and transaction for atomicity
-        // const session = client.startSession();
-        let newCohortId;
+        const client = await clientPromise;
 
-        try {
-            // session.startTransaction();
+        // 1) Insert new cohort
+        const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
+        const cohortResult = await cohortsCollection.insertOne(cohortData);
+        const newCohortId = cohortResult.insertedId;
 
-            // Step 1: Insert the new cohort document
-            const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
-            // const cohortResult = await cohortsCollection.insertOne(cohortData, { session });
-            const cohortResult = await cohortsCollection.insertOne(cohortData);
-            newCohortId = cohortResult.insertedId;
+        // 2) Update the target department and (only if null) set current_department_id
+        const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
 
-            // Step 2: Update the user document to include the new cohort ID and set as current
-            const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
-            const updateResult = await usersCollection.findOneAndUpdate(
-                { email: userEmail },
+        const updateResult = await usersCollection.findOneAndUpdate(
+            { email: userEmail },
+            [
                 {
-                    $push: { cohorts: newCohortId },
-                    $set: { current_cohort: newCohortId },
+                    $set: {
+                        departments: {
+                            $map: {
+                                input: { $ifNull: ["$departments", []] },
+                                as: "d",
+                                in: {
+                                    $cond: [
+                                        { $eq: ["$$d._id", depObjectId] },
+                                        {
+                                            $mergeObjects: [
+                                                "$$d",
+                                                {
+                                                    cohorts: {
+                                                        $concatArrays: [{ $ifNull: ["$$d.cohorts", []] }, [newCohortId]],
+                                                    },
+                                                    current_cohort: newCohortId,
+                                                },
+                                            ],
+                                        },
+                                        "$$d",
+                                    ],
+                                },
+                            },
+                        },
+                    },
                 },
-                // { session, returnDocument: "after" }
-                { returnDocument: "after" }
-            );
+                // Set current_department_id to depObjectId only if it's not already set
+                {
+                    $set: {
+                        current_department_id: { $ifNull: ["$current_department_id", depObjectId] },
+                    },
+                },
+            ],
+            { returnDocument: "after" }
+        );
 
-            if (!updateResult) {
-                // User not found, abort transaction
-                // await session.abortTransaction();
-                return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
-            }
-
-            // Commit the transaction
-            // await session.commitTransaction();
-
-            return new Response(
-                JSON.stringify({
-                    cohortId: newCohortId,
-                    message: "Cohort created and user updated successfully",
-                    success: true,
-                }),
-                { status: 201 }
-            );
-        } catch (error) {
-            // Any error will abort the transaction
-            // await session.abortTransaction();
-            throw error;
+        if (!updateResult) {
+            return new Response(JSON.stringify({ error: "User or department not found" }), { status: 404 });
         }
+
+        return new Response(
+            JSON.stringify({
+                cohortId: newCohortId,
+                message: "Cohort created and user updated successfully",
+                success: true,
+            }),
+            { status: 201 }
+        );
     } catch (error) {
         console.error("Error in POST /api/cohorts:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
@@ -156,6 +188,24 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
+        const session = await auth();
+
+        if (!session?.user?.email) {
+            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
+        }
+
+        const userEmail = session.user.email;
+
+        if (!userEmail || userEmail.split("@").length !== 2) {
+            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
+        }
+
+        const departmentId = request.headers.get("departmentId");
+
+        if (!departmentId) {
+            return new Response(JSON.stringify("Header: 'departmentId' is missing"), { status: 400 });
+        }
+
         const { cohortId, cohortData } = await request.json();
 
         if (!cohortId || !cohortData) {
@@ -168,6 +218,7 @@ export async function PUT(request: Request) {
             return new Response(JSON.stringify({ error: "Invalid cohort ID format. " + cohortId }), { status: 400 });
         }
 
+        const client = await clientPromise;
         const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
 
         // Remove _id from cohortData before updating
@@ -200,9 +251,30 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
-        // const session = client.startSession();
+        const session = await auth();
 
-        const { cohortId, userEmail } = await request.json();
+        if (!session?.user?.email) {
+            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
+        }
+
+        const userEmail = session.user.email;
+
+        if (!userEmail || userEmail.split("@").length !== 2) {
+            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
+        }
+
+        const departmentIdHeader = request.headers.get("departmentId");
+
+        if (!departmentIdHeader) {
+            return new Response(JSON.stringify("Header: 'departmentId' is missing"), { status: 400 });
+        }
+
+        if (!departmentIdHeader || !ObjectId.isValid(departmentIdHeader)) {
+            return new Response(JSON.stringify("Header: 'departmentId' is missing or invalid"), { status: 400 });
+        }
+        const depObjectId = new ObjectId(departmentIdHeader);
+
+        const { cohortId } = await request.json();
 
         console.log("userEmail", userEmail);
 
@@ -215,21 +287,20 @@ export async function DELETE(request: Request) {
         }
 
         try {
-            // session.startTransaction();
-
+            const client = await clientPromise;
             const cohortsCollection = client.db("class-scheduling-app").collection("cohorts");
             const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
 
             // Step 2: Update the user document to delete the cohort ID and remove from current
             const updateResult = await usersCollection.findOneAndUpdate(
-                { email: userEmail },
+                { email: userEmail, "departments._id": depObjectId },
                 [
                     // Remove the cohort ID from the user's cohorts array
                     {
                         $set: {
-                            cohorts: {
+                            "departments.$.cohorts": {
                                 $filter: {
-                                    input: "$cohorts",
+                                    input: "departments.$.cohorts",
                                     as: "cohort",
                                     cond: { $ne: ["$$cohort", new ObjectId(cohortId)] }, // Remove the cohort ID
                                 },
@@ -238,49 +309,40 @@ export async function DELETE(request: Request) {
                     },
                     {
                         $set: {
-                            current_cohort: {
+                            "departments.$.current_cohort": {
                                 // set current cohort only if the current_cohort is the one being deleted
                                 $cond: {
-                                    if: { $eq: ["$current_cohort", new ObjectId(cohortId)] },
+                                    if: { $eq: ["$departments.$.current_cohort", new ObjectId(cohortId)] },
                                     then: {
                                         $cond: {
-                                            if: { $gt: [{ $size: "$cohorts" }, 0] },
-                                            then: { $arrayElemAt: ["$cohorts", -1] }, // Set to the last cohort in the array
+                                            if: { $gt: [{ $size: "$departments.$.cohorts" }, 0] },
+                                            then: { $arrayElemAt: ["$departments.$.cohorts", -1] }, // Set to the last cohort in the array
                                             else: null,
                                         },
                                     },
-                                    else: "$current_cohort",
+                                    else: "$departments.$.current_cohort",
                                 },
                             },
                         },
                     },
                 ],
-                // { session, returnDocument: "after" }
                 { returnDocument: "after" }
             );
 
             if (!updateResult) {
-                // User not found, abort transaction
-                // await session.abortTransaction();
                 return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
             }
 
             const result = await cohortsCollection.deleteOne({ _id: new ObjectId(cohortId) });
 
             if (result.deletedCount === 0) {
-                // Cohort not found, abort transaction
-                // await session.abortTransaction();
                 return new Response(JSON.stringify({ error: "Cohort not found" }), { status: 404 });
             }
 
-            // Commit the transaction
-            // await session.commitTransaction();
-
             return new Response(JSON.stringify({ message: "Cohort deleted successfully", success: true }), { status: 200 });
         } catch (error) {
-            // Any error will abort the transaction
-            // await session.abortTransaction();
-            throw error;
+            console.error("Transaction error in DELETE /api/cohorts:", error);
+            return new Response(JSON.stringify({ error: "Internal server error during transaction" }), { status: 500 });
         }
     } catch (error) {
         console.error("Error in DELETE /api/cohorts:", error);
