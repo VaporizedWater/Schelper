@@ -7,6 +7,7 @@ import {
     CalendarType,
     CohortType,
     CombinedClass,
+    DepartmentType,
     FacultyType,
     tagCategory,
     tagListType,
@@ -130,11 +131,11 @@ export async function loadCalendars(userEmail: string): Promise<CalendarPayload>
     }
 }
 
-export async function loadCohorts(userEmail: string, loadAll: string): Promise<CohortType[]> {
+export async function loadCohorts(departmentId: string, loadAll: string): Promise<CohortType[]> {
     try {
         const response = await fetchWithTimeout("./api/cohorts", {
             headers: {
-                userEmail: userEmail,
+                departmentId: departmentId,
                 loadAll: loadAll,
             },
         });
@@ -179,6 +180,31 @@ export async function loadUserSettings(userEmail: string): Promise<UserSettingTy
     } catch (error) {
         console.error("Failed to load user settings ", error);
         return {} as UserSettingType;
+    }
+}
+
+export async function loadDepartments(): Promise<{ all: DepartmentType[]; current: DepartmentType | null }> {
+    try {
+        const response = await fetchWithTimeout("./api/departments", { method: "GET" });
+
+        if (!response.ok) {
+            return { all: [], current: null };
+        }
+
+        const departments = await parseJsonResponse<{
+            departments: { all: DepartmentType[]; current: string | null };
+        }>(response);
+
+        // Find the current department object
+        if (departments.departments.current) {
+            const currentDept = departments.departments.all.find((dept) => dept._id === departments.departments.current) || null;
+            return { all: departments.departments.all, current: currentDept };
+        }
+
+        return { all: departments.departments.all, current: null };
+    } catch (error) {
+        console.error("Failed to load departments ", error);
+        return { all: [], current: null };
     }
 }
 
@@ -300,12 +326,12 @@ export async function insertTags(tags: tagType[]): Promise<boolean> {
 }
 
 // Insert Cohort
-export async function insertCohort(userEmail: string, cohort: CohortType): Promise<boolean | null> {
+export async function insertCohort(cohort: CohortType, departmentId: string): Promise<boolean | null> {
     try {
         const response = await fetchWithTimeout("api/cohorts", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userEmail, cohortData: cohort }),
+            headers: { "Content-Type": "application/json", departmentId: departmentId },
+            body: JSON.stringify({ cohortData: cohort }),
         });
 
         if (!response.ok) {
@@ -338,6 +364,58 @@ export async function insertCalendar(userEmail: string, calendarData: CalendarTy
         return result.success;
     } catch (error) {
         console.error("Failed to insert calendar:", error);
+        return null;
+    }
+}
+
+//Insert user
+export async function insertUser(): Promise<{ success: boolean | null; status?: number }> {
+    try {
+        const response = await fetchWithTimeout("api/users", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                current_calendar: null,
+                calendars: [],
+                current_department: null,
+                departments: [],
+                settings: null,
+            }),
+        });
+
+        if (response.status === 409) {
+            return { success: true, status: 409 }; // User already exists, treat as success
+        }
+
+        if (!response.ok) {
+            console.error("Failed to insert user:", response.status, response.statusText);
+            return { success: false };
+        }
+
+        const result = await parseJsonResponse<{ success: boolean; userId?: string }>(response);
+        return { success: result.success };
+    } catch (error) {
+        console.error("Failed to insert user:", error);
+        return { success: false };
+    }
+}
+
+// Insert Department
+export async function insertDepartment(departmentData: DepartmentType): Promise<boolean | null> {
+    try {
+        const response = await fetchWithTimeout("api/departments", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ departmentData }),
+        });
+        if (!response.ok) {
+            console.error("Failed to insert department:", response.status, response.statusText);
+            return null;
+        }
+        const result = await parseJsonResponse<{ success: boolean; departmentId?: string }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to insert department:", error);
         return null;
     }
 }
@@ -422,12 +500,13 @@ export async function updateFaculty(faculty: FacultyType[]): Promise<boolean | n
     }
 }
 
-export async function updateCohort(cohortId: string, cohortData: CohortType): Promise<boolean> {
+export async function updateCohort(cohortId: string, cohortData: CohortType, departmentId: string): Promise<boolean> {
     try {
         const response = await fetchWithTimeout("/api/cohorts", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
+                departmentId: departmentId,
             },
             body: JSON.stringify({ cohortId, cohortData }),
         });
@@ -472,87 +551,6 @@ export async function updateUserSettings(userEmail: string, newSettings: UserSet
         return false;
     }
 }
-// ---
-// DELETEs
-export async function deleteCombinedClasses(classId: string, calendarId: string): Promise<boolean> {
-    try {
-        const payload = {
-            calendarId: calendarId,
-            classId: classId,
-        };
-
-        const response = await fetchWithTimeout("api/combined_classes", {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload),
-        });
-
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
-    } catch (error) {
-        console.error("Failed to delete classes:", error);
-        return false;
-    }
-}
-
-export async function deleteStoredFaculty(facultyEmail: string): Promise<boolean> {
-    try {
-        const response = await fetchWithTimeout("api/faculty", {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: facultyEmail }),
-        });
-
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
-    } catch (error) {
-        console.error("Failed to delete faculty:", error);
-        return false;
-    }
-}
-
-export async function deleteCohort(email: string, cohortId: string): Promise<boolean> {
-    try {
-        const response = await fetchWithTimeout(`api/cohorts`, {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ cohortId: cohortId, userEmail: email }),
-        });
-
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
-    } catch (error) {
-        console.error("Failed to delete cohort:", error);
-        return false;
-    }
-}
-
-export async function deleteCalendar(userEmail: string, calendarId: string): Promise<boolean> {
-    try {
-        const response = await fetchWithTimeout("api/calendars", {
-            method: "DELETE",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ userEmail: userEmail, calendarId: calendarId }),
-        });
-
-        if (!response.ok) {
-            console.error("Failed to delete calendar:", response.status, response.statusText);
-            return false;
-        }
-
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
-    } catch (error) {
-        console.error("Failed to delete calendar:", error);
-        return false;
-    }
-}
-
-// Add this function to the file
 
 export async function setCurrentCohortInDb(
     userEmail: string,
@@ -601,5 +599,124 @@ export async function setCurrentCohortInDb(
             success: false,
             message: error instanceof Error ? error.message : "Unknown error occurred",
         };
+    }
+}
+
+export async function setCurrentDepartmentToNew(departmentId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/departments", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ departmentId }),
+        });
+        if (!response.ok) {
+            console.error("Failed to set current department:", response.status, response.statusText);
+            return false;
+        }
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to set current department:", error);
+        return false;
+    }
+}
+// ---
+// DELETEs
+export async function deleteCombinedClasses(classId: string, calendarId: string): Promise<boolean> {
+    try {
+        const payload = {
+            calendarId: calendarId,
+            classId: classId,
+        };
+
+        const response = await fetchWithTimeout("api/combined_classes", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete classes:", error);
+        return false;
+    }
+}
+
+export async function deleteStoredFaculty(facultyEmail: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/faculty", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: facultyEmail }),
+        });
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete faculty:", error);
+        return false;
+    }
+}
+
+export async function deleteCohort(cohortId: string, departmentId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout(`api/cohorts`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                departmentId: departmentId,
+            },
+            body: JSON.stringify({ cohortId: cohortId }),
+        });
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete cohort:", error);
+        return false;
+    }
+}
+
+export async function deleteCalendar(userEmail: string, calendarId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/calendars", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ userEmail: userEmail, calendarId: calendarId }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to delete calendar:", response.status, response.statusText);
+            return false;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete calendar:", error);
+        return false;
+    }
+}
+
+// Delete Department
+export async function deleteDepartment(departmentId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/departments", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ departmentId }),
+        });
+        if (!response.ok) {
+            console.error("Failed to delete department:", response.status, response.statusText);
+            return false;
+        }
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete department:", error);
+        return false;
     }
 }
