@@ -1,8 +1,8 @@
 "use client"
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
-import { CalendarAction, CalendarContextType, CalendarInfo, CalendarState, CalendarType, CombinedClass, ConflictType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { updateCombinedClasses, loadCalendars, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort, loadUserSettings } from '@/lib/DatabaseUtils';
+import { CalendarAction, CalendarContextType, CalendarInfo, CalendarState, CalendarType, CombinedClass, ConflictType, DepartmentType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
+import { updateCombinedClasses, loadCalendars, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort, loadUserSettings, loadDepartments, insertUser, setCurrentDepartmentToNew } from '@/lib/DatabaseUtils';
 import { buildTagMapping, createEventsFromCombinedClass, initialCalendarState, mergeFacultyEntries, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
@@ -157,7 +157,12 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 faculty: action.payload.faculty || state.faculty,
                 conflictPropertyChanged: !state.conflictPropertyChanged,
                 calendars: action.payload.calendars,
-                userSettings: action.payload.userSettings || state.userSettings
+                userSettings: action.payload.userSettings || state.userSettings,
+
+                departments: {
+                    all: action.payload.allDepartments ?? state.departments?.all ?? [],
+                    current: action.payload.currentDepartment ?? state.departments?.current ?? null,
+                },
             };
         }
 
@@ -498,6 +503,16 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
             };
         }
 
+        case 'SET_CURRENT_DEPARTMENT': {
+            return {
+                ...state,
+                departments: {
+                    all: state.departments.all,
+                    current: action.payload
+                }
+            };
+        }
+
         default:
             return state;
     }
@@ -510,6 +525,23 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
     const [forceUpdate, setForceUpdate] = useState('');
     const { data: session } = useSession();
 
+    // Ensure user exists in DB on login
+    useEffect(() => {
+        async function ensureUserExists() {
+            if (!session?.user?.email) return;
+
+            const { success, status } = await insertUser();
+
+            if (!success) {
+                console.error("Failed to ensure user exists.");
+            } else if (!status || status !== 409) {
+                alert("Welcome " + (session.user.name || session.user.email) + "!");
+            }
+        }
+
+        ensureUserExists();
+    }, [session?.user?.email]);
+
     // Load initial data
     useEffect(() => {
         // console.time("CalendarProvider:initialLoad");
@@ -521,34 +553,28 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
                 if (session?.user?.email) {
-                    const [calendarPayload, allTags, faculty, userSettings] = await Promise.all([
+                    const [calendarPayload, allTags, faculty, userSettings, departments] = await Promise.all([
                         loadCalendars(session?.user?.email),
                         loadTags(),
                         loadFaculty(),
-                        loadUserSettings(session?.user?.email)
+                        loadUserSettings(session?.user?.email),
+                        loadDepartments()
                     ]);
-
-                    // console.log("ALL TAGS", allTags);
-                    // console.log("FACULTY", faculty);
-                    console.log("CALENDARS:", calendarPayload);
-                    // console.log("USER SETTINGS222", userSettings);
 
                     const calendar = calendarPayload.calendar;
                     const classes = calendar.classes;
                     calendar.classes = [];
 
-
-
                     if (mounted) {
                         dispatch({
                             type: 'INITIALIZE_DATA',
-                            payload: { classes: classes, tags: allTags, currentCalendar: calendar, calendars: calendarPayload.calendars, faculty: faculty, userSettings: userSettings }
+                            payload: { classes: classes, tags: allTags, currentCalendar: calendar, calendars: calendarPayload.calendars, faculty: faculty, userSettings: userSettings, allDepartments: departments.all, currentDepartment: departments.current }
                         });
                     }
                 } else {
                     dispatch({
                         type: 'INITIALIZE_DATA',
-                        payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar, calendars: state.calendars, faculty: state.faculty, userSettings: state.userSettings }
+                        payload: { classes: [], tags: new Map(), currentCalendar: state.currentCalendar, calendars: state.calendars, faculty: state.faculty, userSettings: state.userSettings, allDepartments: [], currentDepartment: null }
                     });
                 }
 
@@ -615,6 +641,25 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         });
 
         return {
+            // Department
+            currentDepartment: state.departments?.current ? state.departments.current : null,
+            allDepartments: state.departments?.all ? state.departments.all : [],
+            setCurrentDepartment: (newDepartment: DepartmentType) => {
+                if (!newDepartment || !newDepartment._id) {
+                    console.error("Invalid department:", newDepartment);
+                    return;
+                }
+
+                setCurrentDepartmentToNew(newDepartment._id).then(() => {
+                    console.log('SET_CURRENT_DEPARTMENT');
+                    dispatch({ type: 'SET_CURRENT_DEPARTMENT', payload: newDepartment });
+                }).catch((error) => {
+                    console.error("Error setting current department:", error);
+                }).finally(() => {
+                    setForceUpdate(Date.now().toString());
+                });
+            },
+
             // Faculty
             faculty: state.faculty,
 
@@ -626,8 +671,8 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             allClasses: state.classes.all,
             displayClasses: displayClasses,
             displayEvents: displayEvents,
-            currentCombinedClass: state.classes.current,
-            currentCombinedClasses: state.classes.currentClasses,
+            currentCombinedClass: state.classes.current, // Selected on calendar
+            currentCombinedClasses: state.classes.currentClasses, // Selected on calendar
 
             // Tags
             tagList: state.tags,
@@ -651,7 +696,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     payload: !state.conflictPropertyChanged
                 })
             },
-
 
             updateFaculty: (faculty: FacultyType[], doMerge: boolean): Promise<boolean> => {
                 console.log('UPDATE_FACULTY');
@@ -694,7 +738,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         currentCalendar: newDefaultEmptyCalendar(),
                         calendars: [],
                         faculty: [],
-                        userSettings: state.userSettings
+                        userSettings: state.userSettings,
+                        allDepartments: [],
+                        currentDepartment: null
                     }
                 });
             },
@@ -894,11 +940,11 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 }
             },
 
-            removeCohort: async (email: string, cohortId: string) => {
+            removeCohort: async (cohortId: string, departmentId: string) => {
                 try {
                     // console.log('DELETE_COHORT');
-                    console.log(email, cohortId);
-                    const success = await deleteCohort(email, cohortId);
+                    console.log(cohortId);
+                    const success = await deleteCohort(cohortId, departmentId);
 
                     if (!success) {
                         console.error("Failed to delete cohort");
