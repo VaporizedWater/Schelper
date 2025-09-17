@@ -1,14 +1,12 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
+import { requireEmail } from "@/lib/requireEmail";
 import { UserType } from "@/lib/types";
 
-export async function GET(request: Request) {
+export async function GET() {
     try {
-        const userEmail = request.headers.get("userEmail");
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify({ error: "Header: 'userEmail' is missing or invalid" }), { status: 400 });
-        }
+        const userEmail = await requireEmail();
 
         const client = await clientPromise;
         const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
@@ -23,6 +21,8 @@ export async function GET(request: Request) {
         const settings = user.settings || {};
         return new Response(JSON.stringify({ settings }), { status: 200 });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in GET /api/settings:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
@@ -30,11 +30,9 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
     try {
-        const { userEmail, settings } = await request.json();
+        const userEmail = await requireEmail();
 
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify({ error: "'userEmail' is missing or invalid" }), { status: 400 });
-        }
+        const { settings } = await request.json();
 
         if (typeof settings !== "object" || settings === null) {
             return new Response(JSON.stringify({ error: "'settings' must be a valid object" }), { status: 400 });
@@ -52,6 +50,8 @@ export async function PUT(request: Request) {
 
         return new Response(JSON.stringify({ message: "Settings saved successfully", success: true }), { status: 200 });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in PUT /api/settings:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }

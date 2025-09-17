@@ -496,7 +496,7 @@ function CohortSettings() {
 
         setIsLoading(true);
         try {
-            const result = await setCurrentCohortInDb(session.user.email, cohortId);
+            const result = await setCurrentCohortInDb(cohortId);
 
             if (result.success) {
                 setCurrentCohortId(cohortId);
@@ -819,7 +819,7 @@ function ConflictsSettings() {
 
         async function loadColors() {
             try {
-                const resp = await loadUserSettings(email);
+                const resp = await loadUserSettings();
 
                 console.log("loaded settings for", email, resp.settings ?? {});
 
@@ -974,7 +974,7 @@ function ConflictsSettings() {
                 {/* Save */}
                 <button
                     onClick={async () => {
-                        const success = await updateUserSettings(session?.user?.email || '', { settings: { conflicts: workingColors } });
+                        const success = await updateUserSettings({ settings: { conflicts: workingColors } });
                         if (success) setOriginalColors(workingColors);
                     }}
                     disabled={isEqual(workingColors, originalColors)}

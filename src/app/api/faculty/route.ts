@@ -3,6 +3,7 @@
 import clientPromise from "@/lib/mongodb";
 import { Collection, Document } from "mongodb";
 import { FacultyType } from "@/lib/types";
+import { requireEmail } from "@/lib/requireEmail";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("faculty") as Collection<Document>;
@@ -25,6 +26,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
+        await requireEmail();
+
         const facultyData: FacultyType = await request.json();
         const { _id, ...facultyDataToInsert } = facultyData; // eslint-disable-line @typescript-eslint/no-unused-vars
 
@@ -41,6 +44,8 @@ export async function POST(request: Request) {
             headers: { "Content-Type": "application/json" },
         });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in POST /api/faculty:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
@@ -51,6 +56,8 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
+        await requireEmail();
+
         const facultyData: FacultyType[] = await request.json();
 
         const bulkOps = facultyData.map((faculty) => {
@@ -77,6 +84,8 @@ export async function PUT(request: Request) {
             headers: { "Content-Type": "application/json" },
         });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in POST /api/faculty:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
@@ -87,6 +96,8 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
+        await requireEmail();
+
         const { email } = await request.json();
 
         if (!email) {
@@ -115,6 +126,8 @@ export async function DELETE(request: Request) {
             headers: { "Content-Type": "application/json" },
         });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in DELETE /api/faculty:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,

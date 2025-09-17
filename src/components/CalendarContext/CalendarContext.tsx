@@ -554,10 +554,10 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
                 if (session?.user?.email) {
                     const [calendarPayload, allTags, faculty, userSettings, departments] = await Promise.all([
-                        loadCalendars(session?.user?.email),
+                        loadCalendars(),
                         loadTags(),
                         loadFaculty(),
-                        loadUserSettings(session?.user?.email),
+                        loadUserSettings(),
                         loadDepartments()
                     ]);
 
@@ -753,7 +753,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
                 console.log('SETTING CONTEXT TO OTHER CALENDAR');
                 console.log("Calendar ID:", calendarId);
-                await setCurrentCalendarToNew(session.user.email, calendarId);
+                await setCurrentCalendarToNew(calendarId);
                 dispatch({ type: 'SET_NEW_CALENDAR', payload: { userEmail: session.user.email, calendarId: calendarId } });
                 setForceUpdate(Date.now().toString());
             },

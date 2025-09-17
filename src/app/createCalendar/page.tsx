@@ -35,7 +35,7 @@ const CreateCalendarForm = () => {
             const createdCalendar = createCalendarFromInfo(newCalendarInfo);
 
             // Call Database util function to save the calendar
-            const response = await insertCalendar(session.user.email, createdCalendar);
+            const response = await insertCalendar(createdCalendar);
 
             if (!response) {
                 window.alert('Failed to create calendar');

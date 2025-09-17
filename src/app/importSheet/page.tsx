@@ -471,7 +471,7 @@ const ImportSheet = () => {
 
         setIsLoading(true);
         try {
-            const result = await setCurrentCohortInDb(session.user.email, cohortId);
+            const result = await setCurrentCohortInDb(cohortId);
 
             if (result.success) {
                 setCurrentCohortInState(allCohorts.find(c => c._id === cohortId) || {} as CohortType);

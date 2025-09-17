@@ -1,25 +1,18 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import clientPromise from "@/lib/mongodb";
+import { requireEmail } from "@/lib/requireEmail";
 import { UserType } from "@/lib/types";
 import { ObjectId } from "mongodb";
 
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        if (!session || !session.user || !session.user.email) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-        }
+        const userEmail = await requireEmail();
 
-        const userEmail = session.user.email;
         const userData = await request.json();
 
         if (!userData || Object.keys(userData).length === 0) {
             return new Response(JSON.stringify({ error: "No user data provided" }), { status: 400 });
-        }
-        if (!userEmail) {
-            return new Response(JSON.stringify({ error: "User email is required" }), { status: 400 });
         }
 
         const client = await clientPromise;
@@ -36,6 +29,8 @@ export async function POST(request: Request) {
             { status: 201 }
         );
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in POST /api/users:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
@@ -43,16 +38,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
-        const session = await auth();
-        if (!session || !session.user || !session.user.email) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-        }
-
-        const userEmail = session.user.email;
-
-        if (!userEmail) {
-            return new Response(JSON.stringify({ error: "User email is required" }), { status: 400 });
-        }
+        const userEmail = await requireEmail();
 
         const { updates } = await request.json();
 
@@ -121,6 +107,8 @@ export async function PUT(request: Request) {
             { status: 200 }
         );
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in PUT /api/users:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }

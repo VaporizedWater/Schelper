@@ -1,4 +1,5 @@
 import clientPromise from "@/lib/mongodb";
+import { requireEmail } from "@/lib/requireEmail";
 import { handleBulkWriteResult } from "@/lib/routerUtils";
 
 const client = await clientPromise;
@@ -30,6 +31,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
+        await requireEmail();
+
         const body = await request.json();
 
         // Support both single tag and array of tags
@@ -61,6 +64,8 @@ export async function POST(request: Request) {
         const result = await collection.bulkWrite(bulkOps);
         return handleBulkWriteResult(result);
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error adding tags:", error);
         // Consistent with handleBulkWriteResult format
         return new Response(JSON.stringify({ success: false }), {
@@ -72,16 +77,22 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
+        await requireEmail();
+
         // Read and process the tag name: lowercase and remove spaces
         let tagName = (await request.text()).trim();
+
         if (!tagName) {
             return new Response("Tag name is required", { status: 400 });
         }
+
         tagName = tagName.toLowerCase().replace(/\s+/g, "");
         // Delete the tag with _id set to the processed tagName
         await collection.deleteOne({ _id: tagName });
         return new Response("Tag deleted successfully", { status: 200 });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error deleting tag:", error);
         return new Response("Failed to delete tag", { status: 500 });
     }

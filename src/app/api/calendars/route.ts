@@ -1,12 +1,13 @@
 import clientPromise from "@/lib/mongodb";
+import { requireEmail } from "@/lib/requireEmail";
 import { Collection, ObjectId } from "mongodb";
 
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("users") as Collection<Document>;
 
-export async function GET(request: Request): Promise<Response> {
+export async function GET(): Promise<Response> {
     try {
-        const userEmail = request.headers.get("userEmail");
+        const userEmail = await requireEmail();
 
         const pipeline = [
             {
@@ -51,8 +52,6 @@ export async function GET(request: Request): Promise<Response> {
 
         const data = await collection.aggregate(pipeline).toArray();
 
-        // console.log("GET /api/calendars response data:", data, data.length);
-
         if (!data.length) {
             return new Response(JSON.stringify({ error: "No classes found-aahhhh" }), { status: 404 });
         }
@@ -60,6 +59,8 @@ export async function GET(request: Request): Promise<Response> {
         const json = JSON.stringify(data);
         return new Response(json, { status: 200 });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
@@ -70,11 +71,13 @@ export async function GET(request: Request): Promise<Response> {
 
 export async function POST(request: Request): Promise<Response> {
     try {
-        // 1) Parse body
-        const { userEmail, calendarData } = await request.json();
+        const userEmail = await requireEmail();
 
-        if (!userEmail || !calendarData) {
-            return new Response(JSON.stringify({ success: false, error: "Invalid user or calendar ID" }), {
+        // 1) Parse body
+        const { calendarData } = await request.json();
+
+        if (!calendarData) {
+            return new Response(JSON.stringify({ success: false, error: "Invalid calendar ID" }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
             });
@@ -131,6 +134,8 @@ export async function POST(request: Request): Promise<Response> {
             headers: { "Content-Type": "application/json" },
         });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in POST /api/calendars:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
@@ -141,17 +146,19 @@ export async function POST(request: Request): Promise<Response> {
 
 export async function PUT(request: Request): Promise<Response> {
     try {
-        const { userEmail, calendarId } = await request.json();
+        const userEmail = await requireEmail();
 
-        if (!userEmail || !calendarId) {
-            return new Response(JSON.stringify({ success: false, error: "Invalid userEmail or calendarId" }), {
+        const { calendarId } = await request.json();
+
+        if (!calendarId) {
+            return new Response(JSON.stringify({ success: false, error: "Invalid calendar Id" }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
             });
         }
 
-        if (!ObjectId.isValid(calendarId) || !userEmail) {
-            return new Response(JSON.stringify({ success: false, error: "Invalid userEmail or calendarId format" }), {
+        if (!ObjectId.isValid(calendarId)) {
+            return new Response(JSON.stringify({ success: false, error: "Invalid calendar Id format" }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
             });
@@ -189,6 +196,8 @@ export async function PUT(request: Request): Promise<Response> {
             headers: { "Content-Type": "application/json" },
         });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
@@ -199,10 +208,12 @@ export async function PUT(request: Request): Promise<Response> {
 
 export async function DELETE(request: Request): Promise<Response> {
     try {
-        const { userEmail, calendarId } = await request.json();
+        const userEmail = await requireEmail();
 
-        if (!userEmail || !calendarId) {
-            return new Response(JSON.stringify({ success: false, error: "Invalid user or calendar ID" }), {
+        const { calendarId } = await request.json();
+
+        if (!calendarId) {
+            return new Response(JSON.stringify({ success: false, error: "Invalid calendar ID" }), {
                 status: 400,
                 headers: { "Content-Type": "application/json" },
             });
@@ -235,6 +246,8 @@ export async function DELETE(request: Request): Promise<Response> {
             headers: { "Content-Type": "application/json" },
         });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in DELETE /api/calendars:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,

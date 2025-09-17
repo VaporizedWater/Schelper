@@ -1,20 +1,11 @@
-import { auth } from "@/lib/auth";
 import clientPromise from "@/lib/mongodb";
+import { requireEmail } from "@/lib/requireEmail";
 import { DepartmentType, UserType } from "@/lib/types";
 import { Collection, ObjectId } from "mongodb";
 
 export async function GET() {
     try {
-        const session = await auth();
-        if (!session || !session.user || !session.user.email) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-        }
-
-        const userEmail = session.user.email;
-
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify({ error: "Missing or invalid user email" }), { status: 400 });
-        }
+        const userEmail = await requireEmail();
 
         const client = await clientPromise;
         const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
@@ -35,6 +26,8 @@ export async function GET() {
             status: 200,
         });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in GET /api/departments:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
@@ -42,12 +35,8 @@ export async function GET() {
 
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        if (!session || !session.user || !session.user.email) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-        }
+        const userEmail = await requireEmail();
 
-        const userEmail = session.user.email;
         const { departmentData } = await request.json();
 
         if (!userEmail || userEmail.split("@").length !== 2) {
@@ -102,6 +91,8 @@ export async function POST(request: Request) {
             { status: 201 }
         );
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in POST /api/departments:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
@@ -109,14 +100,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
-        const session = await auth();
-        if (!session || !session.user || !session.user.email) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-        }
-        const userEmail = session.user.email;
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify({ error: "Missing or invalid user email" }), { status: 400 });
-        }
+        const userEmail = await requireEmail();
 
         const { departmentId } = await request.json();
         if (!departmentId) {
@@ -131,7 +115,7 @@ export async function PUT(request: Request) {
         }
 
         const departmentExists = user.departments?.some((dept) => dept._id?.toString() === departmentId);
-        
+
         if (!departmentExists) {
             return new Response(JSON.stringify({ error: "Department not found" }), { status: 404 });
         }
@@ -142,7 +126,7 @@ export async function PUT(request: Request) {
                 JSON.stringify({ success: true, message: "Current department is already set to the selected department" }),
                 { status: 200 }
             );
-        }    
+        }
 
         const updateResult = await usersCollection.updateOne(
             { email: userEmail },
@@ -161,6 +145,8 @@ export async function PUT(request: Request) {
             status: 200,
         });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in PUT /api/departments:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
@@ -168,18 +154,13 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request): Promise<Response> {
     try {
-        const session = await auth();
-
-        if (!session?.user?.email) {
-            return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 });
-        }
+        const userEmail = await requireEmail();
 
         const { departmentId } = await request.json();
         if (typeof departmentId !== "string" || !departmentId.trim()) {
             return new Response(JSON.stringify({ error: "Invalid department ID" }), { status: 400 });
         }
 
-        const userEmail = session.user.email;
         const client = await clientPromise;
         const usersCollection = client.db("class-scheduling-app").collection("users") as Collection<Document>;
 
@@ -260,6 +241,8 @@ export async function DELETE(request: Request): Promise<Response> {
 
         return new Response(JSON.stringify({ success: true, message: "Department deleted successfully" }), { status: 200 });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in DELETE /api/departments:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }

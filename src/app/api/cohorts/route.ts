@@ -1,23 +1,13 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import clientPromise from "@/lib/mongodb";
+import { requireEmail } from "@/lib/requireEmail";
 import { UserType } from "@/lib/types";
 import { Document, ObjectId } from "mongodb";
 
 export async function GET(request: Request) {
     try {
-        const session = await auth();
-
-        if (!session?.user?.email) {
-            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
-        }
-
-        const userEmail = session.user.email;
-
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
-        }
+        const userEmail = requireEmail();
 
         const departmentIdHeader = request.headers.get("departmentId");
 
@@ -92,6 +82,8 @@ export async function GET(request: Request) {
 
         return new Response(JSON.stringify(data), { status: 200 });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in GET /api/cohorts:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
@@ -99,13 +91,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
-        const session = await auth();
-        if (!session?.user?.email) return new Response(JSON.stringify("Unauthorized"), { status: 401 });
-
-        const userEmail = session.user.email;
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
-        }
+        const userEmail = await requireEmail();
 
         const departmentIdHeader = request.headers.get("departmentId");
         if (!departmentIdHeader || !ObjectId.isValid(departmentIdHeader)) {
@@ -181,6 +167,8 @@ export async function POST(request: Request) {
             { status: 201 }
         );
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in POST /api/cohorts:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
@@ -188,17 +176,7 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request) {
     try {
-        const session = await auth();
-
-        if (!session?.user?.email) {
-            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
-        }
-
-        const userEmail = session.user.email;
-
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
-        }
+        await requireEmail();
 
         const departmentId = request.headers.get("departmentId");
 
@@ -244,6 +222,8 @@ export async function PUT(request: Request) {
 
         return new Response(JSON.stringify({ message: "Cohort updated successfully", success: true }), { status: 200 });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in PUT /api/cohorts:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
@@ -251,17 +231,7 @@ export async function PUT(request: Request) {
 
 export async function DELETE(request: Request) {
     try {
-        const session = await auth();
-
-        if (!session?.user?.email) {
-            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
-        }
-
-        const userEmail = session.user.email;
-
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify("Unauthorized"), { status: 401 });
-        }
+        const userEmail = await requireEmail();
 
         const departmentIdHeader = request.headers.get("departmentId");
 
@@ -345,6 +315,8 @@ export async function DELETE(request: Request) {
             return new Response(JSON.stringify({ error: "Internal server error during transaction" }), { status: 500 });
         }
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in DELETE /api/cohorts:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }

@@ -26,7 +26,7 @@ export default function CalendarsPage() {
 
         setIsLoading(true);
 
-        loadCalendars(session.user.email)
+        loadCalendars()
             .then(({ calendar: current, calendars: list }) => {
                 // map your CalendarInfo[] into CalendarType[], attaching the classes array
                 const typedList: CalendarType[] = list.map(info => ({
@@ -57,7 +57,7 @@ export default function CalendarsPage() {
         if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
             if (length === 0 || length > 0 && (confirm(`WARNING: You are about to delete ${name} which has ${length} classes. Are you sure?`))) {
                 try {
-                    const response = await deleteCalendar(session?.user?.email, id);
+                    const response = await deleteCalendar(id);
 
                     if (!response) {
                         throw new Error('Failed to delete calendar');

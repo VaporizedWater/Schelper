@@ -1,6 +1,7 @@
 "use server";
 
 import clientPromise from "@/lib/mongodb";
+import { requireEmail } from "@/lib/requireEmail";
 import { ClassData, ClassProperty, CombinedClass, FacultyType } from "@/lib/types";
 import { EventInput } from "@fullcalendar/core/index.js";
 import { Collection, Document, ObjectId, OptionalId } from "mongodb";
@@ -8,14 +9,11 @@ import { Collection, Document, ObjectId, OptionalId } from "mongodb";
 const client = await clientPromise;
 const collection = client.db("class-scheduling-app").collection("combined_classes") as Collection<Document>;
 
-export async function GET(request: Request) {
+export async function GET() {
     const collection = client.db("class-scheduling-app").collection("users");
 
     try {
-        const userEmail = request.headers.get("userEmail");
-        if (!userEmail || userEmail.split("@").length !== 2) {
-            return new Response(JSON.stringify("Header: 'userEmail' is missing or invalid"), { status: 400 });
-        }
+        const userEmail = requireEmail();
 
         const pipeline = [
             {
@@ -75,6 +73,8 @@ export async function GET(request: Request) {
 
         return new Response(JSON.stringify(data[0]), { status: 200 });
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in GET /api/classes:", error);
         return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
     }
@@ -82,6 +82,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
     try {
+        await requireEmail();
+
         const { calendarId, classes } = (await request.json()) as { calendarId?: string; classes: CombinedClass[] };
 
         const documents:
@@ -114,6 +116,8 @@ export async function POST(request: Request) {
             });
         }
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in POST /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
@@ -124,6 +128,8 @@ export async function POST(request: Request) {
 
 export async function PUT(request: Request): Promise<Response> {
     try {
+        await requireEmail();
+
         const { calendarId, classes, facultyData, skipTags } = (await request.json()) as {
             calendarId?: string;
             classes: CombinedClass[];
@@ -270,6 +276,8 @@ export async function PUT(request: Request): Promise<Response> {
             }
         );
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
@@ -287,6 +295,8 @@ type CalendarCollection = {
 
 export async function DELETE(request: Request): Promise<Response> {
     try {
+        await requireEmail();
+
         const { calendarId, classId } = (await request.json()) as { calendarId?: string; classId: CombinedClass };
         const collection = client.db("class-scheduling-app").collection<CalendarCollection>("calendar");
 
@@ -311,6 +321,8 @@ export async function DELETE(request: Request): Promise<Response> {
             });
         }
     } catch (error) {
+        if (error instanceof Response) return error; // Propagate Response errors directly
+
         console.error("Error in DELETE /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,

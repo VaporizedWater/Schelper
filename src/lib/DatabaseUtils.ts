@@ -75,40 +75,16 @@ export async function loadTags(): Promise<tagListType> {
     }
 }
 
-export async function loadCalendars(userEmail: string): Promise<CalendarPayload> {
-    if (userEmail === "") {
-        console.error("Calendar ID is undefined");
-        return {
-            calendar: newDefaultEmptyCalendar(),
-            calendars: [],
-        };
-    }
-
+export async function loadCalendars(): Promise<CalendarPayload> {
     try {
-        const calendarInfoRequest = fetchWithTimeout(
-            "./api/calendars",
-            {
-                headers: {
-                    userEmail: userEmail,
-                },
-            },
-            15000
-        );
+        const calendarInfoRequest = fetchWithTimeout("./api/calendars", {}, 15000);
 
-        const classRequest = fetchWithTimeout(
-            "./api/combined_classes",
-            {
-                headers: {
-                    userEmail: userEmail,
-                },
-            },
-            15000
-        );
+        const classRequest = fetchWithTimeout("./api/combined_classes", {}, 15000);
 
         const calendarInfoResponse = await calendarInfoRequest;
         const classResponse = await classRequest;
 
-        if (classResponse.ok) {
+        if (classResponse.ok && calendarInfoResponse.ok) {
             const currentCalendar = await parseJsonResponse<CalendarType>(classResponse);
             const calendarList = await parseJsonResponse<CalendarInfo[]>(calendarInfoResponse);
 
@@ -163,13 +139,9 @@ export async function loadFaculty(): Promise<FacultyType[]> {
     }
 }
 
-export async function loadUserSettings(userEmail: string): Promise<UserSettingType> {
+export async function loadUserSettings(): Promise<UserSettingType> {
     try {
-        const response = await fetchWithTimeout("./api/settings", {
-            headers: {
-                userEmail: userEmail,
-            },
-        });
+        const response = await fetchWithTimeout("./api/settings", {});
 
         if (!response.ok) {
             return {} as UserSettingType;
@@ -197,7 +169,8 @@ export async function loadDepartments(): Promise<{ all: DepartmentType[]; curren
 
         // Find the current department object
         if (departments.departments.current) {
-            const currentDept = departments.departments.all.find((dept) => dept._id === departments.departments.current) || null;
+            const currentDept =
+                departments.departments.all.find((dept) => dept._id === departments.departments.current) || null;
             return { all: departments.departments.all, current: currentDept };
         }
 
@@ -347,12 +320,12 @@ export async function insertCohort(cohort: CohortType, departmentId: string): Pr
 }
 
 // Insert Calendar
-export async function insertCalendar(userEmail: string, calendarData: CalendarType): Promise<boolean | null> {
+export async function insertCalendar(calendarData: CalendarType): Promise<boolean | null> {
     try {
         const response = await fetchWithTimeout("api/calendars", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userEmail, calendarData }),
+            body: JSON.stringify({ calendarData }),
         });
 
         if (!response.ok) {
@@ -422,12 +395,12 @@ export async function insertDepartment(departmentData: DepartmentType): Promise<
 
 // --------
 // PUTS/UPDATES
-export async function setCurrentCalendarToNew(userEmail: string, calendarId: string) {
+export async function setCurrentCalendarToNew(calendarId: string) {
     try {
         const response = await fetchWithTimeout("api/calendars", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ userEmail, calendarId }),
+            body: JSON.stringify({ calendarId }),
         });
 
         if (!response.ok) {
@@ -526,7 +499,7 @@ export async function updateCohort(cohortId: string, cohortData: CohortType, dep
     }
 }
 
-export async function updateUserSettings(userEmail: string, newSettings: UserSettingType): Promise<boolean> {
+export async function updateUserSettings(newSettings: UserSettingType): Promise<boolean> {
     try {
         const response = await fetchWithTimeout("/api/settings", {
             method: "PUT",
@@ -534,7 +507,6 @@ export async function updateUserSettings(userEmail: string, newSettings: UserSet
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                userEmail,
                 settings: newSettings.settings,
             }),
         });
@@ -552,10 +524,7 @@ export async function updateUserSettings(userEmail: string, newSettings: UserSet
     }
 }
 
-export async function setCurrentCohortInDb(
-    userEmail: string,
-    cohortId: string
-): Promise<{
+export async function setCurrentCohortInDb(cohortId: string): Promise<{
     success: boolean;
     message: string;
     modifiedCount?: number;
@@ -567,7 +536,6 @@ export async function setCurrentCohortInDb(
                 "Content-Type": "application/json",
             },
             body: JSON.stringify({
-                userEmail: userEmail,
                 updates: {
                     current_cohort: cohortId,
                 },
@@ -678,14 +646,14 @@ export async function deleteCohort(cohortId: string, departmentId: string): Prom
     }
 }
 
-export async function deleteCalendar(userEmail: string, calendarId: string): Promise<boolean> {
+export async function deleteCalendar(calendarId: string): Promise<boolean> {
     try {
         const response = await fetchWithTimeout("api/calendars", {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify({ userEmail: userEmail, calendarId: calendarId }),
+            body: JSON.stringify({ calendarId: calendarId }),
         });
 
         if (!response.ok) {
