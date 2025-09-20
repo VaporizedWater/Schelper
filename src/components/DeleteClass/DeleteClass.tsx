@@ -1,9 +1,11 @@
 import { newDefaultEmptyClass } from "@/lib/common";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useCallback } from "react";
+import { useToast } from "../Toast/Toast";
 
 const DeleteClass = () => {
     const { currentCombinedClass, deleteClass, setCurrentClass } = useCalendarContext();
+    const { toast } = useToast();
 
     const handleDeleteClass = useCallback(() => {
         if (!currentCombinedClass || !currentCombinedClass._id) return;
@@ -19,7 +21,7 @@ const DeleteClass = () => {
                 // Clear current class selection
                 setCurrentClass(newDefaultEmptyClass());
             } catch (error) {
-                alert("Failed to delete class. Please try again.");
+                toast({ description: "Failed to delete class. Please try again.", variant: 'error' });
                 console.error("Error deleting class:", error);
             }
         }

@@ -4,10 +4,12 @@ import { MdAdd, MdExpandLess, MdExpandMore } from "react-icons/md";
 import DropDown from "../DropDown/DropDown";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { insertTags } from "@/lib/DatabaseUtils";
+import { useToast } from "../Toast/Toast";
 
 const AddTagButton = () => {
     const { tagList } = useCalendarContext();
     const [inputValue, setInputValue] = useState("");
+    const { toast } = useToast();
 
     const handleAddTag = useCallback(async () => {
         if (inputValue.trim() !== "") {
@@ -21,9 +23,9 @@ const AddTagButton = () => {
                 setInputValue("");
 
                 // Display success message
-                alert("Tag added successfully: " + trimmedValue);
+                toast({ description: "Tag added successfully: " + trimmedValue, variant: 'success' });
             } else {
-                alert("Failed to add tag" + trimmedValue);
+                toast({ description: "Failed to add tag: " + trimmedValue, variant: 'error' });
                 console.error("Failed to add tag");
             }
         }

@@ -350,7 +350,7 @@ export async function insertUser(): Promise<{ success: boolean | null; status?: 
             body: JSON.stringify({
                 current_calendar: null,
                 calendars: [],
-                current_department: null,
+                current_department_id: null,
                 departments: [],
                 settings: null,
             }),
@@ -524,13 +524,16 @@ export async function updateUserSettings(newSettings: UserSettingType): Promise<
     }
 }
 
-export async function setCurrentCohortInDb(cohortId: string): Promise<{
+export async function setCurrentCohortInDb(
+    cohortId: string,
+    currentDepartmentId: string
+): Promise<{
     success: boolean;
     message: string;
     modifiedCount?: number;
 }> {
     try {
-        const response = await fetchWithTimeout("/api/users", {
+        const response = await fetchWithTimeout("api/users", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -538,6 +541,7 @@ export async function setCurrentCohortInDb(cohortId: string): Promise<{
             body: JSON.stringify({
                 updates: {
                     current_cohort: cohortId,
+                    current_department_id: currentDepartmentId,
                 },
             }),
         });

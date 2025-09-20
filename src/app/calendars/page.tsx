@@ -9,11 +9,13 @@ import { CalendarType } from '@/lib/types';
 import Link from 'next/link';
 import { deleteCalendar, loadCalendars } from '@/lib/DatabaseUtils';
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
+import { useToast } from '@/components/Toast/Toast';
 
 export default function CalendarsPage() {
     const router = useRouter();
     const { data: session } = useSession();
     const { setContextToOtherCalendar } = useCalendarContext();
+    const { toast } = useToast();
 
     // Real data loader
     const [calendars, setCalendars] = useState<CalendarType[]>([]);
@@ -50,7 +52,7 @@ export default function CalendarsPage() {
 
     const handleDeleteCalendar = async (id: string, name: string, length: number) => {
         if (!session?.user?.email) {
-            alert('You must be logged in to delete a calendar.');
+            toast({ description: 'You must be logged in to delete a calendar.', variant: 'error' });
             return;
         }
 
@@ -62,13 +64,13 @@ export default function CalendarsPage() {
                     if (!response) {
                         throw new Error('Failed to delete calendar');
                     } else {
-                        alert(`Calendar "${name}" deleted successfully.`);
+                        toast({ description: `Calendar "${name}" deleted successfully.`, variant: 'success' });
                     }
 
                     setCalendars(prev => prev.filter(cal => cal._id !== id));
                 } catch (err) {
                     console.error("Error deleting calendar: ", err);
-                    alert('Failed to delete calendar');
+                    toast({ description: 'Failed to delete calendar. Please try again.', variant: 'error' });
                 }
             }
         }
@@ -76,7 +78,7 @@ export default function CalendarsPage() {
 
     const setCurrentCalendar = (id: string) => {
         if (!id || id === "") {
-            alert('Invalid calendar ID');
+            toast({ description: 'Invalid calendar ID', variant: 'error' });
             console.error('Invalid calendar ID:', id);
             return;
         }
@@ -91,7 +93,7 @@ export default function CalendarsPage() {
 
     const navigateToCalendar = (id: string) => {
         if (!id || id === "") {
-            alert('Invalid calendar ID');
+            toast({ description: 'Invalid calendar ID', variant: 'error' });
             console.error('Invalid calendar ID:', id);
             return;
         }

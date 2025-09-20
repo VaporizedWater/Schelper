@@ -13,7 +13,7 @@ export async function GET() {
     const collection = client.db("class-scheduling-app").collection("users");
 
     try {
-        const userEmail = requireEmail();
+        const userEmail = await requireEmail();
 
         const pipeline = [
             {

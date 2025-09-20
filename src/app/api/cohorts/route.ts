@@ -7,9 +7,11 @@ import { Document, ObjectId } from "mongodb";
 
 export async function GET(request: Request) {
     try {
-        const userEmail = requireEmail();
+        const userEmail = await requireEmail();
 
         const departmentIdHeader = request.headers.get("departmentId");
+
+        console.log("departmentIdHeader", departmentIdHeader);
 
         if (!departmentIdHeader) {
             return new Response(JSON.stringify("Header: 'departmentId' is missing"), { status: 400 });
@@ -50,7 +52,7 @@ export async function GET(request: Request) {
         } else {
             pipeline = [
                 { $match: { email: userEmail } },
-                { $unwind: "$departments" }, // Unwind the departments array
+                { $unwind: "$departments" }, // Unwind the departments array.
                 { $match: { "departments._id": depObjectId } },
                 {
                     $lookup: {
@@ -262,35 +264,61 @@ export async function DELETE(request: Request) {
             const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
 
             // Step 2: Update the user document to delete the cohort ID and remove from current
+            const cohortObjId = new ObjectId(cohortId);
+
             const updateResult = await usersCollection.findOneAndUpdate(
                 { email: userEmail, "departments._id": depObjectId },
                 [
-                    // Remove the cohort ID from the user's cohorts array
                     {
                         $set: {
-                            "departments.$.cohorts": {
-                                $filter: {
-                                    input: "departments.$.cohorts",
-                                    as: "cohort",
-                                    cond: { $ne: ["$$cohort", new ObjectId(cohortId)] }, // Remove the cohort ID
-                                },
-                            },
-                        },
-                    },
-                    {
-                        $set: {
-                            "departments.$.current_cohort": {
-                                // set current cohort only if the current_cohort is the one being deleted
-                                $cond: {
-                                    if: { $eq: ["$departments.$.current_cohort", new ObjectId(cohortId)] },
-                                    then: {
-                                        $cond: {
-                                            if: { $gt: [{ $size: "$departments.$.cohorts" }, 0] },
-                                            then: { $arrayElemAt: ["$departments.$.cohorts", -1] }, // Set to the last cohort in the array
-                                            else: null,
-                                        },
+                            departments: {
+                                $map: {
+                                    input: { $ifNull: ["$departments", []] },
+                                    as: "d",
+                                    in: {
+                                        $cond: [
+                                            { $eq: ["$$d._id", depObjectId] },
+                                            {
+                                                $let: {
+                                                    vars: {
+                                                        filtered: {
+                                                            $filter: {
+                                                                input: { $ifNull: ["$$d.cohorts", []] },
+                                                                as: "cid",
+                                                                cond: { $ne: ["$$cid", cohortObjId] },
+                                                            },
+                                                        },
+                                                    },
+                                                    in: {
+                                                        $mergeObjects: [
+                                                            "$$d",
+                                                            {
+                                                                cohorts: "$$filtered",
+                                                                current_cohort: {
+                                                                    // If we’re deleting the current cohort:
+                                                                    $cond: [
+                                                                        { $eq: ["$$d.current_cohort", cohortObjId] },
+                                                                        {
+                                                                            // pick last remaining if any, else null
+                                                                            $cond: [
+                                                                                { $gt: [{ $size: "$$filtered" }, 0] },
+                                                                                { $arrayElemAt: ["$$filtered", -1] },
+                                                                                null,
+                                                                            ],
+                                                                        },
+                                                                        // else keep as-is
+                                                                        "$$d.current_cohort",
+                                                                    ],
+                                                                },
+                                                            },
+                                                        ],
+                                                    },
+                                                },
+                                            },
+                                            // not the target department -> leave unchanged
+                                            "$$d",
+                                        ],
                                     },
-                                    else: "$departments.$.current_cohort",
                                 },
                             },
                         },
@@ -299,8 +327,9 @@ export async function DELETE(request: Request) {
                 { returnDocument: "after" }
             );
 
+            // Better check:
             if (!updateResult) {
-                return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
+                return new Response(JSON.stringify({ error: "User or department not found" }), { status: 404 });
             }
 
             const result = await cohortsCollection.deleteOne({ _id: new ObjectId(cohortId) });

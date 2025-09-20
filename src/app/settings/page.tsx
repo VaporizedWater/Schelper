@@ -10,28 +10,29 @@ import { useSession } from 'next-auth/react';
 import AddTagButton from "@/components/AddTagButton/AddTagButton";
 import TagDisplay from "@/components/TagDisplay/TagDisplay";
 import { BiUnlink } from "react-icons/bi";
-import { MdArrowRightAlt, MdDelete } from 'react-icons/md';
+import { MdArrowRightAlt, MdDelete, MdFileUpload } from 'react-icons/md';
 import ThemeToggle from '@/components/ThemeToggle/ThemeToggle';
 import { useTheme } from 'next-themes';
-import { defaultSettings } from '@/lib/common';
+import { defaultSettings, newSemesterCourses } from '@/lib/common';
 import Link from 'next/link';
+import { useToast } from '@/components/Toast/Toast';
 
 // Define settings sections
 const SETTINGS_SECTIONS = [
     { id: 'appearance', label: 'Appearance', group: 'general' },
-    { id: 'cohorts', label: 'Cohorts', group: 'calendar' },
-    { id: 'conflicts', label: 'Conflicts', group: 'calendar' },
-    { id: 'tags', label: 'Tags', group: 'tags' },
+    { id: 'cohorts', label: 'Cohorts', group: 'department' },
     { id: 'classes', label: 'Classes', group: 'department' },
     { id: 'faculty', label: 'Faculty', group: 'department' },
+    { id: 'conflicts', label: 'Conflicts', group: 'user' },
+    { id: 'tags', label: 'Tags', group: 'tags' },
 ];
 
 // Group settings for cleaner UI
 const SECTION_GROUPS = [
     { id: 'general', label: 'General' },
-    { id: 'calendar', label: 'Calendar' },
+    { id: 'department', label: 'Department' },
+    { id: 'user', label: 'User' },
     { id: 'tags', label: 'Tags' },
-    { id: 'department', label: 'Department' }
 ];
 
 export default function SettingsPage() {
@@ -145,10 +146,6 @@ function CohortSettings() {
     // State to store loaded cohorts
     const [cohorts, setCohorts] = useState<CohortType[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [uploadStatus, setUploadStatus] = useState<{
-        message: string;
-        type: 'success' | 'error' | 'info' | null;
-    }>({ message: '', type: null });
 
     // In the CohortSettings component, add a new state variable
     const [currentCohortId, setCurrentCohortId] = useState<string | null>(null);
@@ -164,15 +161,10 @@ function CohortSettings() {
 
                 if (!currentDepartment || !currentDepartment._id) {
                     console.log("No current department found for the user.", currentDepartment);
-                    setUploadStatus({
-                        message: 'Please create and select a department first.',
-                        type: 'error'
-                    });
                     setIsLoading(false);
                     return;
-                } else {
-                    setUploadStatus({ message: `Using department: ${currentDepartment.name}`, type: 'info' });
                 }
+
                 // Get all cohorts
                 const result = await loadCohorts(currentDepartment._id, 'true');
                 setCohorts(result);
@@ -185,10 +177,7 @@ function CohortSettings() {
                 console.log('Current cohort:', currentCohort);
             } catch (error) {
                 console.error('Error loading cohorts:', error);
-                setUploadStatus({
-                    message: 'Failed to load cohorts',
-                    type: 'error'
-                });
+                toast({ description: 'Failed to load cohorts', variant: 'error' });
             } finally {
                 setIsLoading(false);
             }
@@ -204,6 +193,9 @@ function CohortSettings() {
     const [fileName, setFileName] = useState<string>('');
     const [editingCohortId, setEditingCohortId] = useState<string | null>(null);
     const [editNameValue, setEditNameValue] = useState('');
+    const [chosenSemester, setChosenSemester] = useState<'Fall' | 'Spring'>(['FA', 'FALL'].includes(currentCalendar.info.semester.toLocaleUpperCase()) ? 'Fall' : 'Spring');
+
+    const { toast } = useToast();
 
     // Define a type for the structured cohort data
     interface CohortCourses {
@@ -269,7 +261,6 @@ function CohortSettings() {
         if (!file) return;
 
         setFileName(file.name);
-        setUploadStatus({ message: 'Processing file...', type: 'info' });
         setIsLoading(true);
 
         try {
@@ -280,7 +271,7 @@ function CohortSettings() {
             const rawRows: (string | number | null | undefined)[][] = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
 
             if (!rawRows || rawRows.length === 0) {
-                setUploadStatus({ message: 'No data found in the uploaded file', type: 'error' });
+                toast({ description: 'No data found in the uploaded file', variant: 'error' });
                 setIsLoading(false);
                 return;
             }
@@ -291,37 +282,35 @@ function CohortSettings() {
             // Create a proper CohortType structure
             const newCohort: CohortType = {
                 cohortName: "",
-                freshman: [],
-                sophomore: [],
-                junior: [],
-                senior: []
+                freshman: newSemesterCourses(),
+                sophomore: newSemesterCourses(),
+                junior: newSemesterCourses(),
+                senior: newSemesterCourses()
             };
 
-            // Map courses to the appropriate year based on semester
-            if (currentCalendar.info.semester === 'FA') {
-                // Assuming the first entry is freshman courses, second is sophomore, etc.
-                const cohortEntries = Object.entries(parsedCohorts);
-                if (cohortEntries.length >= 1) newCohort.freshman = cohortEntries[0][1].Fall;
-                if (cohortEntries.length >= 2) newCohort.sophomore = cohortEntries[1][1].Fall;
-                if (cohortEntries.length >= 3) newCohort.junior = cohortEntries[2][1].Fall;
-                if (cohortEntries.length >= 4) newCohort.senior = cohortEntries[3][1].Fall;
+            // Map parsed cohorts to the newCohort structure
+            const entries = Object.entries(parsedCohorts);
 
-            } else if (currentCalendar.info.semester === 'SP') {
-                const cohortEntries = Object.entries(parsedCohorts);
-                if (cohortEntries.length >= 1) newCohort.freshman = cohortEntries[0][1].Spring;
-                if (cohortEntries.length >= 2) newCohort.sophomore = cohortEntries[1][1].Spring;
-                if (cohortEntries.length >= 3) newCohort.junior = cohortEntries[2][1].Spring;
-                if (cohortEntries.length >= 4) newCohort.senior = cohortEntries[3][1].Spring;
+            // Helper function to set year data
+            const setYear = (idx: number, key: 'freshman' | 'sophomore' | 'junior' | 'senior') => {
+                const rec = entries[idx]?.[1];
+                if (!rec) return;
+                newCohort[key].Fall = Array.isArray(rec.Fall) ? rec.Fall : [];
+                newCohort[key].Spring = Array.isArray(rec.Spring) ? rec.Spring : [];
+            };
 
-            }
+            // Assuming the order is freshman, sophomore, junior, senior
+            setYear(0, 'freshman');
+            setYear(1, 'sophomore');
+            setYear(2, 'junior');
+            setYear(3, 'senior');
 
             setCohort(newCohort);
-            setUploadStatus({ message: 'File processed successfully', type: 'success' });
             setCurrentCohortId(null); // Reset current cohort ID since we're uploading a new one
 
         } catch (error) {
             console.error('Error reading file:', error);
-            setUploadStatus({ message: 'Failed to process file', type: 'error' });
+            toast({ description: 'Failed to process file', variant: 'error' });
         } finally {
             setIsLoading(false);
         }
@@ -329,31 +318,31 @@ function CohortSettings() {
 
     const handleSaveCohort = async () => {
         if (!cohort) {
-            setUploadStatus({ message: 'Missing cohort data', type: 'error' });
+            toast({ description: 'Missing cohort data', variant: 'error' });
             return;
         }
 
         if (!cohort.cohortName.trim()) {
-            setUploadStatus({ message: 'Please provide a cohort name', type: 'error' });
+            toast({ description: 'Please provide a cohort name', variant: 'error' });
             return;
         }
 
         setIsLoading(true);
         try {
             if (!session?.user?.email) {
-                setUploadStatus({ message: 'User email is not available', type: 'error' });
+                toast({ description: 'User email is not available', variant: 'error' });
                 return;
             }
 
             if (!currentDepartment || !currentDepartment._id) {
-                setUploadStatus({ message: 'No department selected. Please select a department first.', type: 'error' });
+                toast({ description: 'No department selected. Please select a department first.', variant: 'error' });
                 setIsLoading(false);
                 return;
             }
 
             const result = await insertCohort(cohort, currentDepartment._id);
             if (result) {
-                setUploadStatus({ message: 'Cohort saved successfully!', type: 'success' });
+                toast({ description: 'Cohort saved successfully!', variant: 'success' });
 
                 // Refresh cohorts list
                 const updatedCohorts = await loadCohorts(currentDepartment._id, 'true');
@@ -373,11 +362,11 @@ function CohortSettings() {
                     fileInputRef.current.value = '';
                 }
             } else {
-                setUploadStatus({ message: 'Failed to save cohort', type: 'error' });
+                toast({ description: 'Failed to save cohort', variant: 'error' });
             }
         } catch (error) {
             console.error("Error saving cohort:", error);
-            setUploadStatus({ message: 'An error occurred while saving the cohort', type: 'error' });
+            toast({ description: 'An error occurred while saving the cohort', variant: 'error' });
         } finally {
             setIsLoading(false);
         }
@@ -395,19 +384,19 @@ function CohortSettings() {
         if (!cohortToUpdate || !cohortToUpdate._id) return;
 
         if (!editNameValue.trim()) {
-            setUploadStatus({ message: 'Please provide a cohort name', type: 'error' });
+            toast({ description: 'Please provide a cohort name', variant: 'error' });
             return;
         }
 
         setIsLoading(true);
         try {
             if (!session?.user?.email) {
-                setUploadStatus({ message: 'User email is not available', type: 'error' });
+                toast({ description: 'User email is not available', variant: 'error' });
                 return;
             }
 
             if (!currentDepartment || !currentDepartment._id) {
-                setUploadStatus({ message: 'No department selected. Please select a department first.', type: 'error' });
+                toast({ description: 'No department selected. Please select a department first.', variant: 'error' });
                 setIsLoading(false);
                 return;
             }
@@ -420,7 +409,7 @@ function CohortSettings() {
             const result = await updateCohort(updatedCohort._id as string, updatedCohort, currentDepartment._id);
 
             if (result) {
-                setUploadStatus({ message: 'Cohort updated successfully!', type: 'success' });
+                toast({ description: 'Cohort updated successfully!', variant: 'success' });
 
                 // Refresh cohorts list
                 const updatedCohorts = await loadCohorts(currentDepartment._id, 'true');
@@ -429,11 +418,11 @@ function CohortSettings() {
                 // Exit edit mode
                 setEditingCohortId(null);
             } else {
-                setUploadStatus({ message: 'Failed to update cohort', type: 'error' });
+                toast({ description: 'Failed to update cohort', variant: 'error' });
             }
         } catch (error) {
             console.error("Error updating cohort:", error);
-            setUploadStatus({ message: 'An error occurred while updating the cohort', type: 'error' });
+            toast({ description: 'An error occurred while updating the cohort', variant: 'error' });
         } finally {
             setIsLoading(false);
         }
@@ -446,12 +435,12 @@ function CohortSettings() {
 
     const handleDeleteCohort = async (cohortId: string) => {
         if (!session?.user?.email) {
-            setUploadStatus({ message: 'User email is not available', type: 'error' });
+            toast({ description: 'User email is not available', variant: 'error' });
             return;
         }
 
         if (!currentDepartment || !currentDepartment._id) {
-            setUploadStatus({ message: 'No department selected. Please select a department first.', type: 'error' });
+            toast({ description: 'No department selected. Please select a department first.', variant: 'error' });
             return;
         }
 
@@ -468,10 +457,10 @@ function CohortSettings() {
             const updatedCohorts = await loadCohorts(currentDepartment._id, 'true');
             setCohorts(updatedCohorts);
 
-            setUploadStatus({ message: 'Cohort deleted successfully', type: 'success' });
+            toast({ description: 'Cohort deleted successfully', variant: 'success' });
         } catch (error) {
             console.error("Error deleting cohort:", error);
-            setUploadStatus({ message: 'An error occurred while deleting the cohort', type: 'error' });
+            toast({ description: 'An error occurred while deleting the cohort', variant: 'error' });
         } finally {
             setIsLoading(false);
         }
@@ -480,41 +469,40 @@ function CohortSettings() {
     // Helper function to count courses in a cohort
     const countTotalCourses = (cohort: CohortType): number => {
         return [
-            ...(cohort.freshman || []),
-            ...(cohort.sophomore || []),
-            ...(cohort.junior || []),
-            ...(cohort.senior || [])
+            ...(cohort.freshman[chosenSemester] || []),
+            ...(cohort.sophomore[chosenSemester] || []),
+            ...(cohort.junior[chosenSemester] || []),
+            ...(cohort.senior[chosenSemester] || [])
         ].length;
+
     };
 
     // Add function to set a cohort as current using the generic users endpoint
     const setCurrentCohort = async (cohortId: string) => {
         if (!session?.user?.email) {
-            setUploadStatus({ message: 'User email is not available', type: 'error' });
+            toast({ description: 'User email is not available', variant: 'error' });
             return;
         }
 
         setIsLoading(true);
         try {
-            const result = await setCurrentCohortInDb(cohortId);
+            if (!currentDepartment || !currentDepartment._id) {
+                toast({ description: 'No department selected. Please select a department first.', variant: 'error' });
+                setIsLoading(false);
+                return;
+            }
+
+            const result = await setCurrentCohortInDb(cohortId, currentDepartment._id);
 
             if (result.success) {
                 setCurrentCohortId(cohortId);
-                setUploadStatus({
-                    message: result.modifiedCount && result.modifiedCount > 0
-                        ? 'Current cohort updated successfully'
-                        : 'This cohort is already set as current',
-                    type: 'success'
-                });
+                toast({ description: 'Current cohort updated successfully', variant: 'success' });
             } else {
-                setUploadStatus({
-                    message: result.message || 'Failed to update current cohort',
-                    type: 'error'
-                });
+                toast({ description: result.message || 'Failed to update current cohort', variant: 'error' });
             }
         } catch (error) {
             console.error("Error updating current cohort:", error);
-            setUploadStatus({ message: 'An error occurred while updating the current cohort', type: 'error' });
+            toast({ description: 'An error occurred while updating the current cohort', variant: 'error' });
         } finally {
             setIsLoading(false);
         }
@@ -535,72 +523,111 @@ function CohortSettings() {
         );
     }
 
-
     return (
         <div className='flex-1 text-black dark:text-gray-300'>
-            <h2 className="text-2xl font-semibold mb-6">Cohorts Settings</h2>
+            <div className="flex items-center justify-between mb-5">
+                {/* Left: Title + Pills */}
+                <div className="flex items-center gap-3 flex-wrap">
+                    <h2 className="text-2xl font-semibold tracking-tight">Cohorts Settings</h2>
 
-            {/* Status message */}
-            {uploadStatus.type && (
-                <div className={`mb-4 p-3 border rounded-lg ${uploadStatus.type === 'success' ? 'bg-green-100 dark:bg-green-900/30 border-green-400 dark:border-green-800 text-green-700 dark:text-green-400' :
-                    uploadStatus.type === 'error' ? 'bg-red-100 dark:bg-red-900/30 border-red-400 dark:border-red-800 text-red-700 dark:text-red-400' :
-                        'bg-blue-100 dark:bg-blue-900/30 border-blue-400 dark:border-blue-800 text-blue-700 dark:text-blue-400'
-                    }`}>
-                    {uploadStatus.message}
-                </div>
-            )}
-
-            {/* Upload section with improved styling */}
-            <div className="bg-gray-50 dark:bg-zinc-700 p-5 rounded-lg shadow-sm mb-6">
-                <h3 className="text-lg font-medium mb-3">Upload Cohort Spreadsheet</h3>
-
-                <div className="mb-3">
-                    <div className="relative">
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            id="cohort-file"
-                            accept=".csv, .xlsx, .xls"
-                            onChange={handleFileUpload}
-                            className="block w-full text-sm text-gray-500 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:bg-blue-50 file:text-blue-700 dark:file:bg-blue-600 dark:file:bg-opacity-80 dark:file:text-white hover:file:bg-blue-100 dark:hover:file:bg-blue-500 transition-all"
-                            disabled={isLoading}
-                        />
-                        {isLoading && (
-                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-700 dark:border-blue-400"></div>
-                            </div>
-                        )}
-                    </div>
-
-                    {fileName && (
-                        <div className="mt-2 text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    {/* Pills */}
+                    <div className="flex items-center gap-2">
+                        {/* Department pill */}
+                        <span className="inline-flex items-center gap-2 rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-700 dark:text-zinc-200">
+                            <svg
+                                className="h-3.5 w-3.5 opacity-70"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7l9-4 9 4-9 4-9-4z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10l9 4 9-4V7" />
                             </svg>
-                            {fileName}
+                            <span className="truncate max-w-[220px]">
+                                Dept: {currentDepartment?.name ?? "—"}
+                            </span>
+                        </span>
+
+                        {/* Semester segmented pill */}
+                        <div className="inline-flex rounded-full border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-0.5">
+                            <button
+                                type="button"
+                                onClick={() => setChosenSemester('Fall')}
+                                className={`px-3 py-1 text-xs rounded-l-full transition
+                                    ${chosenSemester === 'Fall'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700'}
+                                `}>
+                                Fall
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setChosenSemester('Spring')}
+                                className={`px-3 py-1 text-xs rounded-r-full transition
+                                    ${chosenSemester === 'Spring'
+                                        ? 'bg-blue-600 text-white shadow-sm'
+                                        : 'text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700'}
+                                `}>
+                                Spring
+                            </button>
                         </div>
+                    </div>
+                </div>
+
+                {/* Right: Upload + Save/Cancel */}
+                <div className="flex items-center gap-3">
+                    {isLoading ? (
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-700 dark:border-blue-400" />
+                    ) : (
+                        <>
+                            <label
+                                htmlFor="cohort-file"
+                                className="flex items-center cursor-pointer bg-blue-50 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-700 rounded-md px-3 py-2 hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors"
+                                title="Upload"
+                            >
+                                <MdFileUpload className="text-blue-600 dark:text-blue-300 mr-2" size={20} />
+                                <span className="text-sm font-medium text-blue-700 dark:text-blue-200">
+                                    {fileName ? "Change File" : "Upload Cohort"}
+                                </span>
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    id="cohort-file"
+                                    accept=".csv, .xlsx, .xls"
+                                    onChange={handleFileUpload}
+                                    className="hidden"
+                                    disabled={isLoading}
+                                />
+                            </label>
+
+                            {fileName && (
+                                <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[140px]">
+                                    {fileName}
+                                </span>
+                            )}
+
+                            {cohort && (
+                                <>
+                                    <button
+                                        onClick={handleSaveCohort}
+                                        disabled={isLoading}
+                                        className="px-3 py-1.5 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 text-xs font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isLoading ? 'Saving...' : 'Save'}
+                                    </button>
+                                    <button
+                                        onClick={handleCancelEdit}
+                                        disabled={isLoading}
+                                        className="px-3 py-1.5 bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-zinc-600 text-xs font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Cancel
+                                    </button>
+                                </>
+                            )}
+                        </>
                     )}
                 </div>
-
-                {/* Save and Cancel buttons */}
-                {cohort && (
-                    <div className="flex space-x-3 mt-4">
-                        <button
-                            onClick={handleSaveCohort}
-                            disabled={isLoading}
-                            className="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? 'Saving...' : 'Save Cohort'}
-                        </button>
-                        <button
-                            onClick={handleCancelEdit}
-                            disabled={isLoading}
-                            className="px-4 py-2 bg-gray-200 dark:bg-zinc-600 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-300 dark:hover:bg-zinc-500 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                )}
             </div>
 
             {/* Display parsed data with improved styling */}
@@ -632,13 +659,13 @@ function CohortSettings() {
                                     <h4 className="font-semibold text-base mb-2 flex items-center">
                                         {section.title}
                                         <span className="ml-2 bg-gray-200 dark:bg-zinc-600 px-2 py-0.5 rounded-full text-xs">
-                                            {section.data.length}
+                                            {section.data[chosenSemester].length}
                                         </span>
                                     </h4>
-                                    {section.data.length > 0 ? (
+                                    {section.data[chosenSemester].length > 0 ? (
                                         <div className="max-h-60 overflow-y-auto pr-2 custom-scrollbar">
                                             <ul className="space-y-1">
-                                                {section.data.map((course, i) => (
+                                                {section.data[chosenSemester].map((course, i) => (
                                                     <li key={i} className="text-sm py-1 border-b border-gray-100 dark:border-zinc-600 last:border-b-0">
                                                         {course}
                                                     </li>
@@ -656,7 +683,7 @@ function CohortSettings() {
             )}
 
             {/* Display all existing cohorts with card layout */}
-            <div className="mt-8">
+            <div className="mt-5">
                 <h3 className="text-lg font-medium mb-4">My Cohorts {(!isLoading && cohorts) && "(" + cohorts.length + ")"}</h3>
 
                 {isLoading && !cohort ? (
@@ -757,29 +784,29 @@ function CohortSettings() {
                                     <div className="space-y-3">
                                         <div>
                                             <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Freshman</h5>
-                                            <p className="text-sm line-clamp-2">{cohort.freshman.length > 0 ?
-                                                cohort.freshman.join(', ') :
+                                            <p className="text-sm line-clamp-2">{cohort.freshman[chosenSemester].length > 0 ?
+                                                cohort.freshman[chosenSemester].join(', ') :
                                                 <span className="italic text-gray-500 dark:text-gray-400">No courses</span>}
                                             </p>
                                         </div>
                                         <div>
                                             <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Sophomore</h5>
-                                            <p className="text-sm line-clamp-2">{cohort.sophomore.length > 0 ?
-                                                cohort.sophomore.join(', ') :
+                                            <p className="text-sm line-clamp-2">{cohort.sophomore[chosenSemester].length > 0 ?
+                                                cohort.sophomore[chosenSemester].join(', ') :
                                                 <span className="italic text-gray-500 dark:text-gray-400">No courses</span>}
                                             </p>
                                         </div>
                                         <div>
                                             <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Junior</h5>
-                                            <p className="text-sm line-clamp-2">{cohort.junior.length > 0 ?
-                                                cohort.junior.join(', ') :
+                                            <p className="text-sm line-clamp-2">{cohort.junior[chosenSemester].length > 0 ?
+                                                cohort.junior[chosenSemester].join(', ') :
                                                 <span className="italic text-gray-500 dark:text-gray-400">No courses</span>}
                                             </p>
                                         </div>
                                         <div>
                                             <h5 className="font-medium text-sm text-gray-700 dark:text-gray-300 mb-1">Senior</h5>
-                                            <p className="text-sm line-clamp-2">{cohort.senior.length > 0 ?
-                                                cohort.senior.join(', ') :
+                                            <p className="text-sm line-clamp-2">{cohort.senior[chosenSemester].length > 0 ?
+                                                cohort.senior[chosenSemester].join(', ') :
                                                 <span className="italic text-gray-500 dark:text-gray-400">No courses</span>}
                                             </p>
                                         </div>
@@ -807,6 +834,7 @@ function CohortSettings() {
 function ConflictsSettings() {
     // Define state for conflict colors with default values matching the ones in Calendar.tsx
     const { data: session } = useSession();
+    const { toast } = useToast();
 
     const [originalColors, setOriginalColors] = useState<ConflictColor>(defaultSettings.settings.conflicts);
     const [workingColors, setWorkingColors] = useState<ConflictColor>(defaultSettings.settings.conflicts);
@@ -821,16 +849,15 @@ function ConflictsSettings() {
             try {
                 const resp = await loadUserSettings();
 
-                console.log("loaded settings for", email, resp.settings ?? {});
-
                 const fromServer = resp?.settings?.conflicts ?? {};
+
                 // merge defaults + server so you never lose missing keys:
                 const merged = { ...defaultSettings.settings.conflicts, ...fromServer };
-                console.log("loaded keys:", Object.keys(fromServer), merged);
+
                 setOriginalColors(merged);
                 setWorkingColors(merged);
             } catch (err) {
-                console.error("Couldn’t fetch settings for", email, err);
+                toast({ description: "Couldn’t fetch settings for " + email + ": " + err, variant: 'error' })
             }
         }
 
@@ -958,15 +985,13 @@ function ConflictsSettings() {
                 <button
                     onClick={() => setWorkingColors(originalColors)}
                     disabled={isEqual(workingColors, originalColors)}
-                    className="
-      px-4 py-2
-      bg-gray-200 dark:bg-zinc-600
-      text-gray-800 dark:text-gray-200
-      rounded-md
-      hover:bg-gray-300 dark:hover:bg-zinc-500
-      transition-colors duration-150
-      disabled:opacity-50 disabled:cursor-not-allowed
-    "
+                    className="px-4 py-2
+                    bg-gray-200 dark:bg-zinc-600
+                    text-gray-800 dark:text-gray-200
+                    rounded-md
+                    hover:bg-gray-300 dark:hover:bg-zinc-500
+                    transition-colors duration-150
+                    disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Cancel
                 </button>
@@ -975,7 +1000,11 @@ function ConflictsSettings() {
                 <button
                     onClick={async () => {
                         const success = await updateUserSettings({ settings: { conflicts: workingColors } });
-                        if (success) setOriginalColors(workingColors);
+
+                        if (success) {
+                            setOriginalColors(workingColors);
+                            toast({ description: "Successfully updated conflict colors!", variant: "success" })
+                        };
                     }}
                     disabled={isEqual(workingColors, originalColors)}
                     className="

@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FacultyType } from "@/lib/types";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
+import { useToast } from "@/components/Toast/Toast";
 
 const initialUnavailability: FacultyType["unavailability"] = {
     Mon: [],
@@ -18,6 +19,7 @@ const FacultyForm = () => {
     const [email, setEmail] = useState("");
     const [unavailability, setUnavailability] = useState(initialUnavailability);
     const router = useRouter();
+    const { toast } = useToast();
 
     const addTimeSlot = useCallback((day: keyof FacultyType["unavailability"]) => {
         setUnavailability((prev) => ({
@@ -51,7 +53,7 @@ const FacultyForm = () => {
         e.preventDefault();
 
         if (!email) {
-            alert("Please enter a faculty email");
+            toast({ description: 'Please enter a faculty email', variant: 'error' });
             return;
         }
 
@@ -60,10 +62,10 @@ const FacultyForm = () => {
         const response = await updateFaculty([payload], true); // Merge faculty data with existing data
 
         if (!response) {
-            alert("Error updating faculty");
+            toast({ description: 'Error updating faculty', variant: 'error' });
             return;
         } else {
-            alert("Faculty updated successfully!");
+            toast({ description: 'Faculty updated successfully', variant: 'success' });
             router.back();
         }
     }, [email, router, unavailability, updateFaculty]);

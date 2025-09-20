@@ -5,10 +5,12 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { insertDepartment } from '@/lib/DatabaseUtils';
 import { createDepartmentFromInfo } from '@/lib/common';
+import { useToast } from '@/components/Toast/Toast';
 
 const CreateDepartmentForm = () => {
     const router = useRouter();
     const { data: session } = useSession();
+    const { toast } = useToast();
 
     const [newDepartmentInfo, setNewDepartmentInfo] = useState<{ name: string }>({
         name: '',
@@ -34,10 +36,10 @@ const CreateDepartmentForm = () => {
             const response = await insertDepartment(createdDepartment);
 
             if (!response) {
-                window.alert('Failed to create department');
+                toast({ description: 'Failed to create department', variant: 'error' });
                 throw new Error('Failed to create department');
             } else {
-                window.alert('Department created successfully!');
+                toast({ description: 'Department created successfully', variant: 'success' });
             }
 
             // Return to the previous page

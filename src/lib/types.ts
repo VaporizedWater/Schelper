@@ -277,13 +277,18 @@ export type FacultyType = {
     };
 };
 
+export type SemesterCourses = {
+    Spring: string[];
+    Fall: string[];
+};
+
 export type CohortType = {
     _id?: string;
     cohortName: string;
-    freshman: string[];
-    sophomore: string[];
-    junior: string[];
-    senior: string[];
+    freshman: SemesterCourses;
+    sophomore: SemesterCourses;
+    junior: SemesterCourses;
+    senior: SemesterCourses;
 };
 
 export type ConflictColor = {

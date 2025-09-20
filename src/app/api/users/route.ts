@@ -15,6 +15,9 @@ export async function POST(request: Request) {
             return new Response(JSON.stringify({ error: "No user data provided" }), { status: 400 });
         }
 
+        // userData has no email so add it from the authenticated session
+        userData.email = userEmail;
+
         const client = await clientPromise;
         const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
         const existingUser = await usersCollection.findOne({ email: userEmail });
@@ -71,7 +74,9 @@ export async function PUT(request: Request) {
                 return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
             }
 
-            const currentDepartment = userData.departments.find((dept) => dept._id === userData.current_department_id);
+            const currentDepartment = userData.departments.find(
+                (dept) => dept._id?.toString() === userData.current_department_id.toString()
+            );
 
             if (!currentDepartment) {
                 return new Response(JSON.stringify({ error: "Department not found" }), { status: 404 });

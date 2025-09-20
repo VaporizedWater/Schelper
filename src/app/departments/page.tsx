@@ -8,10 +8,12 @@ import { DepartmentType } from '@/lib/types';
 import Link from 'next/link';
 import { deleteDepartment, loadDepartments } from '@/lib/DatabaseUtils';
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
+import { useToast } from '@/components/Toast/Toast';
 
 export default function DepartmentsPage() {
     const { data: session } = useSession();
     const { setCurrentDepartment, allDepartments } = useCalendarContext();
+    const { toast } = useToast();
 
     // Real data loader
     const [departments, setDepartments] = useState<DepartmentType[]>([]);
@@ -42,7 +44,7 @@ export default function DepartmentsPage() {
 
     const handleDeleteDepartment = async (id: string, name: string, length: number) => {
         if (!session?.user?.email) {
-            alert('You must be logged in to delete a department.');
+            toast({ description: 'You must be logged in to delete a department.', variant: 'error' });
             return;
         }
 
@@ -54,13 +56,13 @@ export default function DepartmentsPage() {
                     if (!response) {
                         throw new Error('Failed to delete department');
                     } else {
-                        alert(`Department "${name}" deleted successfully.`);
+                        toast({ description: `Department "${name}" deleted successfully.`, variant: 'success' });
                     }
 
                     setDepartments(prev => prev.filter(cal => cal._id !== id));
                 } catch (err) {
                     console.error("Error deleting department: ", err);
-                    alert('Failed to delete department');
+                    toast({ description: 'Failed to delete department', variant: 'error' });
                 }
             }
         }
@@ -69,7 +71,7 @@ export default function DepartmentsPage() {
     const setCurrDept = (id: string) => {
         console.log("ALL DEPARTMENTS:", allDepartments);
         if (!id || id === "") {
-            alert('Invalid department ID');
+            toast({ description: 'Invalid department ID', variant: 'error' });
             console.error('Invalid department ID:', id);
             return;
         }
@@ -77,7 +79,7 @@ export default function DepartmentsPage() {
         const foundDepartment = allDepartments.find(dept => dept._id === id);
 
         if (!foundDepartment) {
-            alert('Department not found');
+            toast({ description: 'Department not found', variant: 'error' });
             console.error('Department not found for ID:', id);
             return;
         }

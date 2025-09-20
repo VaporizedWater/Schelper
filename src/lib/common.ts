@@ -9,6 +9,7 @@ import {
     CombinedClass,
     DepartmentType,
     FacultyType,
+    SemesterCourses,
     tagListType,
     tagType,
     UserSettingType,
@@ -115,6 +116,13 @@ export function newDefaultEmptyFaculty(): FacultyType {
             Thu: [],
             Fri: [],
         },
+    };
+}
+
+export function newSemesterCourses(): SemesterCourses {
+    return {
+        Spring: [],
+        Fall: [],
     };
 }
 

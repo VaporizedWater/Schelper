@@ -5,6 +5,7 @@ import { CalendarProvider } from "@/components/CalendarContext/CalendarContext";
 import NavWrapper from "@/components/NavWrapper/NavWrapper";
 import { SessionProvider } from "next-auth/react";
 import ThemeProvider from "@/components/ThemeProvider/ThemeProvider";
+import { ToastProvider } from "@/components/Toast/Toast";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -30,12 +31,14 @@ export default function RootLayout(
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col h-screen`}>
                 <ThemeProvider>
                     <SessionProvider>
-                        <CalendarProvider>
-                            <NavWrapper />
-                            <div className="flex-1">
-                                {children}
-                            </div>
-                        </CalendarProvider>
+                        <ToastProvider>
+                            <CalendarProvider>
+                                <NavWrapper />
+                                <div className="flex-1">
+                                    {children}
+                                </div>
+                            </CalendarProvider>
+                        </ToastProvider>
                     </SessionProvider>
                 </ThemeProvider>
             </body>

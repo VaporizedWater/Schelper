@@ -6,6 +6,7 @@ import { updateCombinedClasses, loadCalendars, loadTags, deleteCombinedClasses, 
 import { buildTagMapping, createEventsFromCombinedClass, initialCalendarState, mergeFacultyEntries, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
+import { useToast } from '../Toast/Toast';
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
@@ -221,20 +222,16 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         }
 
         case 'UPDATE_CLASS': {
-            // console.time("UPDATE_CLASS");
             const updatedClass = action.payload;
-            // const updatedEvents = createEventsFromCombinedClass(updatedClass);
 
             // Update the class in all collections
             const updateClassById = (classes: CombinedClass[]) =>
                 classes.map(c => c._id === updatedClass._id ? updatedClass : c);
 
-            // console.timeEnd("UPDATE_CLASS");
             return {
                 ...state,
                 classes: {
                     all: updateClassById(state.classes.all),
-                    // display: updateClassById(state.classes.display),
                     current: updatedClass,
                     currentClasses: getAllSameClasses(updatedClass, updateClassById(state.classes.all))
                 },
@@ -415,7 +412,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: updatedClasses,
-                    // display: updatedClasses,
                     current: state.classes.current ? {
                         ...state.classes.current,
                         properties: {
@@ -430,27 +426,13 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         }
 
         case 'UPLOAD_CLASSES': {
-            // console.time("UPLOAD_CLASSES");
             const newClasses = [...state.classes.all, ...action.payload];
             const newMapping = buildTagMapping(newClasses);
-
-            // newClasses.sort((a, b) => {
-            //     // Sort by course subject and number, then by section
-            //     if (a.data.course_subject < b.data.course_subject) return -1;
-            //     if (a.data.course_subject > b.data.course_subject) return 1;
-            //     if (a.data.course_num < b.data.course_num) return -1;
-            //     if (a.data.course_num > b.data.course_num) return 1;
-            //     if (a.data.section < b.data.section) return -1;
-            //     if (a.data.section > b.data.section) return 1;
-            //     return 0; // Equal
-            // });
-            // console.timeEnd("UPLOAD_CLASSES");
 
             return {
                 ...state,
                 classes: {
                     all: newClasses,
-                    // display: newClasses,
                     current: state.classes.current,
                     currentClasses: state.classes.currentClasses
                 },
@@ -464,7 +446,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
 
             // Filter out deleted classes in a single pass each
             const filteredAllClasses = state.classes.all.filter(c => c._id !== classIdToDelete);
-            // const filteredDisplayClasses = state.classes.display.filter(c => c._id !== classIdToDelete);
 
             // Update tag mapping
             const newMapping = new Map(state.tags);
@@ -494,7 +475,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 ...state,
                 classes: {
                     all: filteredAllClasses,
-                    // display: filteredDisplayClasses,
                     current: newCurrentClass,
                     currentClasses: state.classes.currentClasses.filter(c => c._id !== classIdToDelete)
                 },
@@ -518,12 +498,11 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
     }
 }
 
-
-
 export const CalendarProvider = ({ children }: ReactNodeChildren) => {
     const [state, dispatch] = useReducer(calendarReducer, initialCalendarState);
     const [forceUpdate, setForceUpdate] = useState('');
     const { data: session } = useSession();
+    const { toast } = useToast();
 
     // Ensure user exists in DB on login
     useEffect(() => {
@@ -535,7 +514,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             if (!success) {
                 console.error("Failed to ensure user exists.");
             } else if (!status || status !== 409) {
-                alert("Welcome " + (session.user.name || session.user.email) + "!");
+                toast({ description: "Welcome " + (session.user.name || session.user.email) + "!", variant: 'success' });
             }
         }
 
@@ -544,11 +523,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
     // Load initial data
     useEffect(() => {
-        // console.time("CalendarProvider:initialLoad");
         let mounted = true;
 
         const loadData = async () => {
-            // console.time("loadData");
             try {
                 dispatch({ type: 'SET_LOADING', payload: true });
 
@@ -589,11 +566,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     dispatch({ type: 'SET_LOADING', payload: false });
                 }
             }
-            // console.timeEnd("loadData");
         };
 
         loadData();
-        // console.timeEnd("CalendarProvider:initialLoad");
         return () => { mounted = false; };
     }, [forceUpdate, session?.user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
     // Depends on session.email rather than session itself because it only changes on login state
@@ -867,7 +842,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             },
 
             uploadNewClasses: (classes: CombinedClass[]) => {
-                // console.time("uploadNewClasses");
 
                 // Set loading state immediately
                 dispatch({ type: 'SET_LOADING', payload: true });
@@ -892,9 +866,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         // Make sure to set loading to false if there's an error
                         dispatch({ type: 'SET_LOADING', payload: false });
                     });
-
-
-                // console.timeEnd("uploadNewClasses");
             },
 
             deleteClass: async (classId: string) => {
@@ -932,7 +903,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     const updatedFaculty = state.faculty.filter(faculty => faculty.email !== facultyToDeleteEmail);
                     dispatch({ type: 'UPDATE_FACULTY', payload: updatedFaculty });
 
-                    window.alert(`Faculty ${facultyToDeleteEmail} deleted successfully.`);
+                    toast({ description: `Faculty ${facultyToDeleteEmail} deleted successfully.`, variant: 'success' });
                     return true;
                 } catch (error) {
                     console.error("Error deleting faculty:", error);
@@ -942,7 +913,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
             removeCohort: async (cohortId: string, departmentId: string) => {
                 try {
-                    // console.log('DELETE_COHORT');
                     console.log(cohortId);
                     const success = await deleteCohort(cohortId, departmentId);
 

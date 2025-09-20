@@ -5,7 +5,7 @@ import { newDefaultEmptyClass } from '@/lib/common';
 import { loadCohorts, insertTags, setCurrentCohortInDb } from '@/lib/DatabaseUtils';
 import { CohortType, CombinedClass, tagType } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { use, useCallback, useEffect, useMemo, useState } from 'react';
 import xlsx from 'xlsx';
 import { useSession } from 'next-auth/react';
 import DropDown from '@/components/DropDown/DropDown';
@@ -44,7 +44,7 @@ const isValidCohort = (cohort: CohortType): boolean => {
     }
 }
 
-const assignCohort = (cls: CombinedClass, cohort: CohortType): string | null => {
+const assignCohort = (cls: CombinedClass, cohort: CohortType, semester: "Fall" | "Spring"): string | null => {
     // Extract only the numeric portion of the course number
     // const numericPart = cls.data.course_num.match(/^(\d+)/)?.[1] || cls.data.course_num;
     // const courseSubjectNum = cls.data.course_subject.toUpperCase() + " " + numericPart;
@@ -58,13 +58,13 @@ const assignCohort = (cls: CombinedClass, cohort: CohortType): string | null => 
     }
 
     // Check if the class 
-    if (cohort.freshman.includes(courseSubjectNum)) {
+    if (cohort.freshman[semester].includes(courseSubjectNum)) {
         return "Freshman";
-    } else if (cohort.sophomore.includes(courseSubjectNum)) {
+    } else if (cohort.sophomore[semester].includes(courseSubjectNum)) {
         return "Sophomore";
-    } else if (cohort.junior.includes(courseSubjectNum)) {
+    } else if (cohort.junior[semester].includes(courseSubjectNum)) {
         return "Junior";
-    } else if (cohort.senior.includes(courseSubjectNum)) {
+    } else if (cohort.senior[semester].includes(courseSubjectNum)) {
         return "Senior";
     }
 
@@ -74,7 +74,7 @@ const assignCohort = (cls: CombinedClass, cohort: CohortType): string | null => 
 const ImportSheet = () => {
     // State to store loaded cohorts
     const { data: session } = useSession();
-    const { uploadNewClasses, currentDepartment } = useCalendarContext();
+    const { uploadNewClasses, currentDepartment, currentCalendar } = useCalendarContext();
     const router = useRouter();
 
     const [allCohorts, setAllCohorts] = useState<CohortType[]>([]);
@@ -99,10 +99,19 @@ const ImportSheet = () => {
         Array<CombinedClass & { assignedCohort: string | null }>
     >([]);
 
+    const getCurrentSemester = (): "Fall" | "Spring" => {
+        return (
+            ['FA', 'FALL'].includes(currentCalendar.info.semester.toUpperCase()) ? "Fall" : "Spring"
+        );
+    }
+
     useEffect(() => {
+        if (!currentCalendar || !currentCalendar.info || !currentCalendar.info.semester) {
+            return
+        }
         const out = parsedClasses.map(cls => ({
             ...cls,
-            assignedCohort: assignCohort(cls, currentCohortInState)
+            assignedCohort: assignCohort(cls, currentCohortInState, getCurrentSemester())
         }));
         setDecoratedClasses(out);
 
@@ -112,7 +121,7 @@ const ImportSheet = () => {
             for (const cls of parsedClasses) {
                 const uniqueId = getUniqueClassId(cls);
                 if (!updated[uniqueId]) {
-                    const assignedCohort = assignCohort(cls, currentCohortInState);
+                    const assignedCohort = assignCohort(cls, currentCohortInState, getCurrentSemester());
                     if (assignedCohort) {
                         updated[uniqueId] = assignedCohort;
                     }
@@ -319,7 +328,7 @@ const ImportSheet = () => {
         if (isCurrentCohortValid) {
             combinedClasses.forEach(cls => {
                 const uniqueId = getUniqueClassId(cls);
-                const suggestedCohort = assignCohort(cls, currentCohortInState);
+                const suggestedCohort = assignCohort(cls, currentCohortInState, getCurrentSemester());
                 if (suggestedCohort) {
                     initialCohortSelections[uniqueId] = suggestedCohort;
                 }
@@ -471,7 +480,14 @@ const ImportSheet = () => {
 
         setIsLoading(true);
         try {
-            const result = await setCurrentCohortInDb(cohortId);
+            if (!currentDepartment || !currentDepartment._id) {
+                setUploadStatus({ message: 'No department selected. Please select a department first.', type: 'error' });
+                setUploadOpen(true);
+                setIsLoading(false);
+                return;
+            }
+
+            const result = await setCurrentCohortInDb(cohortId, currentDepartment._id);
 
             if (result.success) {
                 setCurrentCohortInState(allCohorts.find(c => c._id === cohortId) || {} as CohortType);
@@ -722,9 +738,9 @@ const ImportSheet = () => {
                                                             });
                                                         }}
 
-                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohortInState) ? 'bg-blue-50 dark:bg-gray-700' : ''
+                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohortInState, getCurrentSemester()) ? 'bg-blue-50 dark:bg-gray-700' : ''
                                                             }`}
-                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohortInState)}
+                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohortInState, getCurrentSemester())}
                                                     >
                                                         <option value="None"></option>
                                                         <option value="Freshman">Freshman</option>
@@ -732,7 +748,7 @@ const ImportSheet = () => {
                                                         <option value="Junior">Junior</option>
                                                         <option value="Senior">Senior</option>
                                                     </select>
-                                                    {isCurrentCohortValid && assignCohort(cls, currentCohortInState) && (
+                                                    {isCurrentCohortValid && assignCohort(cls, currentCohortInState, getCurrentSemester()) && (
                                                         <div className="text-xs text-blue-600 dark:text-blue-400 mt-0.5">Auto-assigned</div>
                                                     )}
                                                 </td>
@@ -795,9 +811,9 @@ const ImportSheet = () => {
                                                             });
                                                         }}
 
-                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohortInState) ? 'bg-blue-50 dark:bg-gray-700' : ''
+                                                        className={`w-full p-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 ${isCurrentCohortValid && assignCohort(cls, currentCohortInState, getCurrentSemester()) ? 'bg-blue-50 dark:bg-gray-700' : ''
                                                             }`}
-                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohortInState)}
+                                                        data-auto-assigned={isCurrentCohortValid && !!assignCohort(cls, currentCohortInState, getCurrentSemester())}
                                                     >
                                                         <option value="None"></option>
                                                         <option value="Freshman">Freshman</option>
@@ -805,7 +821,7 @@ const ImportSheet = () => {
                                                         <option value="Junior">Junior</option>
                                                         <option value="Senior">Senior</option>
                                                     </select>
-                                                    {isCurrentCohortValid && assignCohort(cls, currentCohortInState) && (
+                                                    {isCurrentCohortValid && assignCohort(cls, currentCohortInState, getCurrentSemester()) && (
                                                         <div className="text-xs text-blue-600 dark:text-blue-400 mt-1">Auto-assigned</div>
                                                     )}
                                                 </td>

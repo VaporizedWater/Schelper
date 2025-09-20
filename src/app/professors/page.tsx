@@ -1,5 +1,6 @@
 "use client";
 
+import { useToast } from '@/components/Toast/Toast';
 import { useEffect, useState } from 'react';
 import { MdDelete, MdAdd, MdSearch, MdFilterList } from 'react-icons/md';
 // import Image from 'next/image';
@@ -28,6 +29,7 @@ export default function ProfessorsPage() {
         office: '',
     });
     const [filter, setFilter] = useState('all');
+    const { toast } = useToast();
 
     // Mock data for demonstration
     useEffect(() => {
@@ -86,7 +88,7 @@ export default function ProfessorsPage() {
 
     const handleAddProfessor = () => {
         if (!newProfessor.name || !newProfessor.email || !newProfessor.department) {
-            alert('Please fill in all required fields');
+            toast({ description: 'Please fill in all required fields', variant: 'error' });
             return;
         }
 

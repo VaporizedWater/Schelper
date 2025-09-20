@@ -7,6 +7,7 @@ import DropDown from "@/components/DropDown/DropDown";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import { newDefaultEmptyClass, ShortenedDays } from "@/lib/common";
+import { useToast } from "@/components/Toast/Toast";
 
 // Add this helper function before the component
 const preventWheelChange = (e: React.WheelEvent<HTMLInputElement>) => {
@@ -46,6 +47,7 @@ const NewClassForm = () => {
     const { tagList, uploadNewClasses } = useCalendarContext();
 
     const router = useRouter();
+    const { toast } = useToast();
 
     const clearState = () => {
         clearTitle();
@@ -73,7 +75,7 @@ const NewClassForm = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!title || !selectedDays.length || !startTime || !endTime) {
-            alert("Please fill out all fields");
+            toast({ description: 'Please fill out all required fields', variant: 'error' });
             return;
         }
 
@@ -110,7 +112,7 @@ const NewClassForm = () => {
         clearState();
 
         // Display success message
-        alert("Class created successfully: " + defaultCombined.data.title);
+        toast({ description: `Class "${defaultCombined.data.title}" created successfully.`, variant: 'success' });
 
         // Navigate back (optional)
         router.back();

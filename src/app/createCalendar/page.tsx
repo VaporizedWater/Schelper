@@ -6,10 +6,12 @@ import { useSession } from 'next-auth/react';
 import { CalendarInfo } from '@/lib/types';
 import { insertCalendar } from '@/lib/DatabaseUtils';
 import { createCalendarFromInfo } from '@/lib/common';
+import { useToast } from '@/components/Toast/Toast';
 
 const CreateCalendarForm = () => {
     const router = useRouter();
     const { data: session } = useSession();
+    const { toast } = useToast();
 
     const [newCalendarInfo, setNewCalendarInfo] = useState<CalendarInfo>({
         _id: '',
@@ -38,10 +40,10 @@ const CreateCalendarForm = () => {
             const response = await insertCalendar(createdCalendar);
 
             if (!response) {
-                window.alert('Failed to create calendar');
+                toast({ description: 'Failed to create calendar', variant: 'error' });
                 throw new Error('Failed to create calendar');
             } else {
-                window.alert('Calendar created successfully!');
+                toast({ description: 'Calendar created successfully', variant: 'success' });
             }
 
             // Return to the previous page

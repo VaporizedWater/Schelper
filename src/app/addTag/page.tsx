@@ -5,19 +5,20 @@ import { useRouter } from "next/navigation";
 import { insertTags } from "@/lib/DatabaseUtils";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import { tagType } from "@/lib/types";
+import { useToast } from "@/components/Toast/Toast";
 
 const AddTag = () => {
     const { tagList } = useCalendarContext();
     const [tag, setTag] = useState("");
-    const [error, setError] = useState<string | null>(null);
     const router = useRouter();
+    const { toast } = useToast();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const trimmedTag = tag.trim();
 
         if (!trimmedTag) {
-            setError("Tag name cannot be empty");
+            toast({ description: 'Tag name cannot be empty', variant: 'error' });
             return;
         }
 
@@ -27,16 +28,10 @@ const AddTag = () => {
                 tagList.set(trimmedTag, { tagCategory: "user", classIds: new Set() });
             }
 
-            // Use an accessible alert
-            const alertEl = document.getElementById("add-tag-alert");
-            if (alertEl) {
-                alertEl.textContent = `Tag added successfully: ${trimmedTag}`;
-            }
-            setError(null);
-            // Delay so screen readers can catch the alert
-            setTimeout(() => router.back(), 500);
+            toast({ description: `Tag added successfully: ${trimmedTag}`, variant: 'success' });
+            router.back();
         } else {
-            setError(`Failed to add tag: ${trimmedTag}`);
+            toast({ description: `Failed to add tag: ${trimmedTag}`, variant: 'error' });
         }
     };
 
@@ -52,7 +47,6 @@ const AddTag = () => {
             <form
                 onSubmit={handleSubmit}
                 className="space-y-4"
-                aria-describedby={error ? "add-tag-error" : undefined}
             >
                 <div>
                     <label
@@ -68,22 +62,12 @@ const AddTag = () => {
                         value={tag}
                         onChange={(e) => {
                             setTag(e.target.value);
-                            if (error) setError(null);
                         }}
                         placeholder="Enter tag name"
                         className="w-full p-2 border rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 border-gray-300 dark:border-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                         autoFocus
                         aria-required="true"
                     />
-                    {error && (
-                        <p
-                            id="add-tag-error"
-                            role="alert"
-                            className="mt-1 text-sm text-red-600 dark:text-red-400"
-                        >
-                            {error}
-                        </p>
-                    )}
                 </div>
 
                 <button
@@ -101,14 +85,6 @@ const AddTag = () => {
                     Add Tag
                 </button>
             </form>
-
-            {/* Live region for success/failure */}
-            <div
-                id="add-tag-alert"
-                role="status"
-                aria-live="polite"
-                className="sr-only"
-            />
         </section>
     );
 };
