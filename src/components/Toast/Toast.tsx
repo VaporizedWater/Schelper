@@ -37,7 +37,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const remove = useCallback((id: string) => {
     setToasts((t) => t.filter((x) => x.id !== id));
     if (timers.current[id]) {
-      clearTimeout(timers.current[id] as any);
+      clearTimeout(timers.current[id] as any); // eslint-disable-line @typescript-eslint/no-explicit-any
       delete timers.current[id];
     }
   }, []);

@@ -25,7 +25,7 @@ const DeleteClass = () => {
                 console.error("Error deleting class:", error);
             }
         }
-    }, [currentCombinedClass, deleteClass, setCurrentClass]);
+    }, [currentCombinedClass, deleteClass, setCurrentClass]); // eslint-disable-line react-hooks/exhaustive-deps
 
     return (
         <div

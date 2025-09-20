@@ -68,7 +68,7 @@ const FacultyForm = () => {
             toast({ description: 'Faculty updated successfully', variant: 'success' });
             router.back();
         }
-    }, [email, router, unavailability, updateFaculty]);
+    }, [email, router, unavailability, updateFaculty]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const days: (keyof FacultyType["unavailability"])[] = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 

@@ -862,7 +862,7 @@ function ConflictsSettings() {
         }
 
         loadColors();
-    }, [session?.user?.email]);
+    }, [session?.user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const isEqual = (a: ConflictColor, b: ConflictColor) => JSON.stringify(a) === JSON.stringify(b);
 

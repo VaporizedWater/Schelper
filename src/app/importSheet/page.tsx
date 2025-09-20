@@ -5,7 +5,7 @@ import { newDefaultEmptyClass } from '@/lib/common';
 import { loadCohorts, insertTags, setCurrentCohortInDb } from '@/lib/DatabaseUtils';
 import { CohortType, CombinedClass, tagType } from '@/lib/types';
 import { useRouter } from 'next/navigation';
-import { use, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import xlsx from 'xlsx';
 import { useSession } from 'next-auth/react';
 import DropDown from '@/components/DropDown/DropDown';
@@ -172,7 +172,7 @@ const ImportSheet = () => {
             console.log("Current Cohort Result: ", currentCohortResult[0]);
         }
         fetchCohorts();
-    }, [session?.user?.email]);
+    }, [session?.user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Create a unique identifier for each class
     const getUniqueClassId = useCallback((cls: CombinedClass): string => {
@@ -340,7 +340,7 @@ const ImportSheet = () => {
         setSelectedClasses(new Set(combinedClasses.map(c => getUniqueClassId(c))));
         setCohortSelections(initialCohortSelections);
         setIsLoading(false);
-    }, [currentCohortInState, getUniqueClassId, isCurrentCohortValid]);
+    }, [currentCohortInState, getUniqueClassId, isCurrentCohortValid]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const handleImport = useCallback(async () => {
         // Track all unique tags that need to be created

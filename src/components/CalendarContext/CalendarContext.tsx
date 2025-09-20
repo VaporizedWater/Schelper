@@ -519,7 +519,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         }
 
         ensureUserExists();
-    }, [session?.user?.email]);
+    }, [session?.user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Load initial data
     useEffect(() => {

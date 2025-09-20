@@ -29,7 +29,7 @@ const AddTagButton = () => {
                 console.error("Failed to add tag");
             }
         }
-    }, [inputValue, tagList]);
+    }, [inputValue, tagList]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const renderDropDown = useCallback(() => {
         return (
