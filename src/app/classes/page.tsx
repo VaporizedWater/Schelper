@@ -214,12 +214,6 @@ export default function DepartmentClassesPage() {
     }
   };
 
-  const cancelUpload = () => {
-    setPendingUpload(null);
-    setFileName("");
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  };
-
   function classKey(c: ClassInfo) {
     // Prefer catalog_num; fallback to SUBJECT + NUMBER
     const cat = (c.catalog_num || "").replace(/\s+/g, "").toUpperCase();
