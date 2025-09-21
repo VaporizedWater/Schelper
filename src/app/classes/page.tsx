@@ -81,34 +81,34 @@ export default function DepartmentClassesPage() {
     }
   }
 
-  async function savePendingUpload() {
-    if (!pendingUpload || !hasDepartment) return;
-    if (!currentDepartment || !currentDepartment._id) return;
+  // async function savePendingUpload() {
+  //   if (!pendingUpload || !hasDepartment) return;
+  //   if (!currentDepartment || !currentDepartment._id) return;
 
-    setIsLoading(true);
-    try {
-      const result = await insertDepartmentCourses(pendingUpload, currentDepartment._id)
+  //   setIsLoading(true);
+  //   try {
+  //     const result = await insertDepartmentCourses(pendingUpload, currentDepartment._id)
 
-      if (!result) {
-        toast({ description: "Failed to save courses!", variant: "error" });
-        return;
-      } else {
-        toast({ description: "Courses saved!", variant: "success" });
-      }
+  //     if (!result) {
+  //       toast({ description: "Failed to save courses!", variant: "error" });
+  //       return;
+  //     } else {
+  //       toast({ description: "Courses saved!", variant: "success" });
+  //     }
 
-      setPendingUpload(null);
-      setFileName("");
+  //     setPendingUpload(null);
+  //     setFileName("");
 
-      if (fileInputRef.current) fileInputRef.current.value = "";
+  //     if (fileInputRef.current) fileInputRef.current.value = "";
 
-      await loadDepartmentCourses();
-    } catch (e) {
-      console.error(e);
-      toast({ description: "Failed to save courses.", variant: "error" });
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  //     await loadDepartmentCourses();
+  //   } catch (e) {
+  //     console.error(e);
+  //     toast({ description: "Failed to save courses.", variant: "error" });
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // }
 
   async function deleteCourse(id: string) {
     if (!hasDepartment) return;
@@ -249,6 +249,119 @@ export default function DepartmentClassesPage() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  function classKey(c: ClassInfo) {
+    // Prefer catalog_num; fallback to SUBJECT + NUMBER
+    const cat = (c.catalog_num || "").replace(/\s+/g, "").toUpperCase();
+    if (cat) return `CAT:${cat}`;
+    const subj = (c.course_subject || "").replace(/\s+/g, "").toUpperCase();
+    const num = (c.course_num || "").replace(/\s+/g, "").toUpperCase();
+    return `SN:${subj}-${num}`;
+  }
+
+  function sortClasses(list: ClassInfo[]) {
+    return [...list].sort((a, b) => {
+      const asub = (a.course_subject || "").toLowerCase();
+      const bsub = (b.course_subject || "").toLowerCase();
+      if (asub !== bsub) return asub < bsub ? -1 : 1;
+
+      const anum = (a.course_num || "").toLowerCase();
+      const bnum = (b.course_num || "").toLowerCase();
+      if (anum !== bnum) return anum.localeCompare(bnum, undefined, { numeric: true });
+
+      const atitle = (a.title || "").toLowerCase();
+      const btitle = (b.title || "").toLowerCase();
+      return atitle.localeCompare(btitle);
+    });
+  }
+
+  // Append parsed -> merge+dedupe against existing, then replace in DB
+  const handleAppendParsed = async () => {
+    if (!pendingUpload || !hasDepartment) return;
+    if (!currentDepartment || !currentDepartment._id) return;
+
+    setIsLoading(true);
+    try {
+      // Build map from current classes
+      const map = new Map<string, ClassInfo>();
+      for (const c of classes) map.set(classKey(c), c);
+
+      // Merge parsed: insert new or update title if the new row has a better/different title
+      for (const nc of pendingUpload) {
+        const key = classKey(nc);
+        const existing = map.get(key);
+        if (!existing) {
+          map.set(key, nc);
+        } else {
+          const title = (nc.title || "").trim();
+          // Prefer non-empty new title when different
+          const merged: ClassInfo = {
+            _id: existing._id, // keep existing id if present
+            course_subject: nc.course_subject || existing.course_subject,
+            course_num: nc.course_num || existing.course_num,
+            catalog_num: nc.catalog_num || existing.catalog_num,
+            title: title || existing.title,
+          };
+          map.set(key, merged);
+        }
+      }
+
+      const next = sortClasses(Array.from(map.values()));
+
+      // Replace the full list in DB with merged
+      const result = await insertDepartmentCourses(next, currentDepartment._id);
+      if (!result) {
+        toast({ description: "Failed to save merged courses", variant: "error" });
+        return;
+      }
+      toast({ description: "Appended & deduped courses successfully", variant: "success" });
+
+      setPendingUpload(null);
+      setFileName("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      await loadDepartmentCourses();
+    } catch (e) {
+      console.error(e);
+      toast({ description: "Failed to append & dedupe.", variant: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Replace all with parsed
+  const handleReplaceAllParsed = async () => {
+    if (!pendingUpload || !hasDepartment) return;
+    if (!currentDepartment || !currentDepartment._id) return;
+
+    setIsLoading(true);
+    try {
+      const next = sortClasses(pendingUpload);
+      const result = await insertDepartmentCourses(next, currentDepartment._id);
+      if (!result) {
+        toast({ description: "Failed to replace courses", variant: "error" });
+        return;
+      }
+      toast({ description: "Replaced all courses successfully", variant: "success" });
+
+      setPendingUpload(null);
+      setFileName("");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+
+      await loadDepartmentCourses();
+    } catch (e) {
+      console.error(e);
+      toast({ description: "Failed to replace.", variant: "error" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const clearParsed = () => {
+    setPendingUpload(null);
+    setFileName("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   if (!currentDepartment) {
     return (
       <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-5">
@@ -315,7 +428,7 @@ export default function DepartmentClassesPage() {
                   <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[140px]">{fileName}</span>
                 )}
 
-                {pendingUpload && (
+                {/* {pendingUpload && (
                   <>
                     <button
                       onClick={savePendingUpload}
@@ -332,7 +445,7 @@ export default function DepartmentClassesPage() {
                       Cancel
                     </button>
                   </>
-                )}
+                )} */}
               </>
             )}
           </div>
@@ -368,13 +481,48 @@ export default function DepartmentClassesPage() {
           </div>
         </div>
 
+        {pendingUpload && (
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-4 py-2 rounded-t-lg bg-blue-50 dark:bg-blue-900/30 border-t border-blue-200 dark:border-blue-800">
+            <div className="flex items-center gap-3">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                Parsed {pendingUpload.length} class{pendingUpload.length === 1 ? "" : "es"}
+              </span>
+              <span className="text-xs text-blue-900/70 dark:text-blue-200/80">
+                Review & confirm before saving
+              </span>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={handleAppendParsed}
+                disabled={isLoading || !hasDepartment}
+                className="px-3 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-500 transition-colors text-xs font-medium disabled:opacity-50"
+              >
+                Append &amp; Dedupe
+              </button>
+              <button
+                onClick={handleReplaceAllParsed}
+                disabled={isLoading || !hasDepartment}
+                className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors text-xs font-medium disabled:opacity-50"
+              >
+                Replace All
+              </button>
+              <button
+                onClick={clearParsed}
+                disabled={isLoading}
+                className="px-3 py-1.5 rounded-md bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors text-xs font-medium disabled:opacity-50"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        )}
         {/* Table */}
         {isLoading && !classes.length && !pendingUpload ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 dark:border-blue-400" />
           </div>
         ) : filtered.length > 0 ? (
-          <div className="overflow-hidden rounded-lg shadow-sm bg-gray-50 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600">
+          <div className="overflow-hidden rounded-lg rounded-t-none shadow-sm bg-gray-50 dark:bg-zinc-700 border border-gray-200 dark:border-zinc-600">
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
                 <thead className="bg-gray-100 dark:bg-zinc-600 text-gray-700 dark:text-gray-200">
@@ -414,24 +562,36 @@ export default function DepartmentClassesPage() {
             </div>
 
             {pendingUpload && (
-              <div className="flex items-center justify-between px-4 py-2 bg-blue-50 dark:bg-blue-900/30 border-t border-blue-200 dark:border-blue-800">
-                <span className="text-xs text-blue-800 dark:text-blue-200">
-                  Previewing {pendingUpload.length} course{pendingUpload.length === 1 ? "" : "s"} from upload
-                </span>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 border-t border-blue-200 dark:border-blue-800">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100">
+                    Parsed {pendingUpload.length} class{pendingUpload.length === 1 ? "" : "es"}
+                  </span>
+                  <span className="text-xs text-blue-900/70 dark:text-blue-200/80">
+                    Review & confirm before saving
+                  </span>
+                </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={savePendingUpload}
+                    onClick={handleAppendParsed}
                     disabled={isLoading || !hasDepartment}
-                    className="px-3 py-1.5 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 text-xs font-medium disabled:opacity-50"
+                    className="px-3 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-500 transition-colors text-xs font-medium disabled:opacity-50"
                   >
-                    Save
+                    Append &amp; Dedupe
                   </button>
                   <button
-                    onClick={cancelUpload}
-                    disabled={isLoading}
-                    className="px-3 py-1.5 bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-zinc-600 text-xs font-medium disabled:opacity-50"
+                    onClick={handleReplaceAllParsed}
+                    disabled={isLoading || !hasDepartment}
+                    className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors text-xs font-medium disabled:opacity-50"
                   >
-                    Cancel
+                    Replace All
+                  </button>
+                  <button
+                    onClick={clearParsed}
+                    disabled={isLoading}
+                    className="px-3 py-1.5 rounded-md bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors text-xs font-medium disabled:opacity-50"
+                  >
+                    Clear
                   </button>
                 </div>
               </div>
