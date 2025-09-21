@@ -583,6 +583,13 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         }
     }, [state.conflictPropertyChanged]); // eslint-disable-line react-hooks/exhaustive-deps
 
+    const departmentHasClass = (cls: CombinedClass): boolean => {
+        return !!state.departments.current?.class_list.some(c =>
+            c.course_subject.trim().toLowerCase() === cls.data.course_subject.trim().toLowerCase() &&
+            c.course_num.trim().toString() === cls.data.course_num.trim().toString()
+        );
+    }
+
     // Memoize context value to prevent unnecessary re-renders
     const contextValue = useMemo(() => {
         const displayEvents = [] as EventInput[];
@@ -599,7 +606,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         displayClasses.forEach(cls => {
             if (cls._id) {
 
-                const classEvents = createEventsFromCombinedClass(cls);
+                const classEvents = createEventsFromCombinedClass(cls, departmentHasClass(cls));
 
                 // Add class reference to each event's extendedProps
                 classEvents.forEach(event => {
