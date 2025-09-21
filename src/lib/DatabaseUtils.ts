@@ -5,9 +5,11 @@ import {
     CalendarInfo,
     CalendarPayload,
     CalendarType,
+    ClassInfo,
     CohortType,
     CombinedClass,
     DepartmentType,
+    FacultyInfo,
     FacultyType,
     tagCategory,
     tagListType,
@@ -128,13 +130,32 @@ export async function loadCohorts(departmentId: string, loadAll: string): Promis
     }
 }
 
-export async function loadFaculty(): Promise<FacultyType[]> {
+export async function loadAllFaculty(): Promise<FacultyType[]> {
     try {
-        const response = await fetchWithTimeout("./api/faculty");
+        const response = await fetchWithTimeout("./api/oldFaculty");
         const faculty = await parseJsonResponse<FacultyType[]>(response);
         return faculty;
     } catch (error) {
         console.error("Error fetching faculty:", error);
+        return [];
+    }
+}
+
+export async function loadFaculty(departmentId: string): Promise<FacultyInfo[]> {
+    try {
+        const response = await fetchWithTimeout("api/faculty", {
+            method: "GET",
+            headers: { departmentId: departmentId },
+        });
+
+        if (!response.ok) {
+            return [];
+        }
+
+        const result = await parseJsonResponse<FacultyInfo[]>(response);
+        return result;
+    } catch (error) {
+        console.error("Error fetching faculty.", error);
         return [];
     }
 }
@@ -178,6 +199,26 @@ export async function loadDepartments(): Promise<{ all: DepartmentType[]; curren
     } catch (error) {
         console.error("Failed to load departments ", error);
         return { all: [], current: null };
+    }
+}
+
+export async function loadDepartmentClasses(departmentId: string): Promise<ClassInfo[]> {
+    try {
+        const response = await fetchWithTimeout("api/classes", {
+            method: "GET",
+            headers: { departmentId: departmentId as string },
+        });
+
+        if (!response.ok) {
+            return [] as ClassInfo[];
+        }
+
+        const classes = await parseJsonResponse<ClassInfo[]>(response);
+
+        return classes || ([] as ClassInfo[]);
+    } catch (e) {
+        console.error(e);
+        return [] as ClassInfo[];
     }
 }
 
@@ -393,6 +434,48 @@ export async function insertDepartment(departmentData: DepartmentType): Promise<
     }
 }
 
+export async function insertDepartmentCourses(courses: ClassInfo[], departmentId: string): Promise<boolean | null> {
+    try {
+        const response = await fetchWithTimeout("api/classes", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", departmentId: departmentId },
+            body: JSON.stringify({ courses: courses }),
+        });
+
+        if (!response.ok) {
+            console.error("Couldn't insert department courses", response.status, response.statusText);
+            return null;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to insert department courses! ", error);
+        return null;
+    }
+}
+
+export async function insertFaculty(facultyList: FacultyInfo[], departmentId: string): Promise<boolean | null> {
+    try {
+        const response = await fetchWithTimeout("api/faculty", {
+            method: "POST",
+            headers: { departmentId: departmentId },
+            body: JSON.stringify({ faculty: facultyList }),
+        });
+
+        if (!response.ok) {
+            console.error("Couldn't insert faculty!", response.status, response.statusText);
+            return null;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to insert faculty", error);
+        return null;
+    }
+}
+
 // --------
 // PUTS/UPDATES
 export async function setCurrentCalendarToNew(calendarId: string) {
@@ -455,7 +538,7 @@ export async function updateCombinedClasses(
 
 export async function updateFaculty(faculty: FacultyType[]): Promise<boolean | null> {
     try {
-        const response = await fetchWithTimeout("api/faculty", {
+        const response = await fetchWithTimeout("api/oldFaculty", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(faculty), // Send array directly
@@ -617,7 +700,7 @@ export async function deleteCombinedClasses(classId: string, calendarId: string)
 
 export async function deleteStoredFaculty(facultyEmail: string): Promise<boolean> {
     try {
-        const response = await fetchWithTimeout("api/faculty", {
+        const response = await fetchWithTimeout("api/oldFaculty", {
             method: "DELETE",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email: facultyEmail }),
@@ -627,6 +710,27 @@ export async function deleteStoredFaculty(facultyEmail: string): Promise<boolean
         return result.success;
     } catch (error) {
         console.error("Failed to delete faculty:", error);
+        return false;
+    }
+}
+
+export async function deleteDepartmentFaculty(facultyEmail: string, departmentId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/faculty", {
+            method: "DELETE",
+            headers: { departmentId: departmentId },
+            body: JSON.stringify({ email: facultyEmail }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to delete faculty", response.status, response.statusText);
+            return false;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete faculty", error);
         return false;
     }
 }
@@ -689,6 +793,28 @@ export async function deleteDepartment(departmentId: string): Promise<boolean> {
         return result.success;
     } catch (error) {
         console.error("Failed to delete department:", error);
+        return false;
+    }
+}
+
+// Delete department course
+export async function deleteDepartmentCourse(classId: string, departmentId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/classes", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json", departmentId: departmentId },
+            body: JSON.stringify({ id: classId }),
+        });
+
+        if (!response.ok) {
+            console.error("Failed to delete department class", response.status, response.statusText);
+            return false;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Failed to delete department class", error);
         return false;
     }
 }

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useReducer, useState } from 'react';
 import { CalendarAction, CalendarContextType, CalendarInfo, CalendarState, CalendarType, CombinedClass, ConflictType, DepartmentType, FacultyType, ReactNodeChildren, tagListType } from '@/lib/types';
-import { updateCombinedClasses, loadCalendars, loadTags, deleteCombinedClasses, loadFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort, loadUserSettings, loadDepartments, insertUser, setCurrentDepartmentToNew } from '@/lib/DatabaseUtils';
+import { updateCombinedClasses, loadCalendars, loadTags, deleteCombinedClasses, loadAllFaculty, deleteStoredFaculty, updateFaculty, setCurrentCalendarToNew, deleteCohort, loadUserSettings, loadDepartments, insertUser, setCurrentDepartmentToNew } from '@/lib/DatabaseUtils';
 import { buildTagMapping, createEventsFromCombinedClass, initialCalendarState, mergeFacultyEntries, newDefaultEmptyCalendar, newDefaultEmptyClass } from '@/lib/common';
 import { useSession } from 'next-auth/react';
 import { EventInput } from '@fullcalendar/core/index.js';
@@ -533,7 +533,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     const [calendarPayload, allTags, faculty, userSettings, departments] = await Promise.all([
                         loadCalendars(),
                         loadTags(),
-                        loadFaculty(),
+                        loadAllFaculty(),
                         loadUserSettings(),
                         loadDepartments()
                     ]);
