@@ -299,6 +299,8 @@ export default function CohortSettings() {
 
   // Function to cancel editing
   const handleCancelEdit = () => {
+    setFileName("");
+    setCohort(null);
     setEditingCohortId(null);
   };
 
