@@ -81,35 +81,6 @@ export default function DepartmentClassesPage() {
     }
   }
 
-  // async function savePendingUpload() {
-  //   if (!pendingUpload || !hasDepartment) return;
-  //   if (!currentDepartment || !currentDepartment._id) return;
-
-  //   setIsLoading(true);
-  //   try {
-  //     const result = await insertDepartmentCourses(pendingUpload, currentDepartment._id)
-
-  //     if (!result) {
-  //       toast({ description: "Failed to save courses!", variant: "error" });
-  //       return;
-  //     } else {
-  //       toast({ description: "Courses saved!", variant: "success" });
-  //     }
-
-  //     setPendingUpload(null);
-  //     setFileName("");
-
-  //     if (fileInputRef.current) fileInputRef.current.value = "";
-
-  //     await loadDepartmentCourses();
-  //   } catch (e) {
-  //     console.error(e);
-  //     toast({ description: "Failed to save courses.", variant: "error" });
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // }
-
   async function deleteCourse(id: string) {
     if (!hasDepartment) return;
     if (!confirm("Remove this course from the department?")) return;
