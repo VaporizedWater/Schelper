@@ -9,9 +9,11 @@ import type { WorkBook, WorkSheet } from "xlsx";
 import { FacultyInfo } from "@/lib/types"; // uses your shared type
 import { deleteDepartmentFaculty, insertFaculty, loadFaculty } from "@/lib/DatabaseUtils";
 import Link from "next/link";
+import { useConfirm } from "@/components/Confirm/Confirm";
 
 export default function FacultyPage() {
     const { toast } = useToast();
+    const { confirm: confirmDialog } = useConfirm();
     const { currentDepartment } = useCalendarContext();
 
     const [faculty, setFaculty] = useState<FacultyInfo[]>([]);
@@ -77,6 +79,16 @@ export default function FacultyPage() {
         if (!departmentId) return;
         setIsLoading(true);
         try {
+            const isConfirmed = await confirmDialog({
+                title: `Delete faculty ${email}?`,
+                description: "This action cannot be undone.",
+                confirmText: "Delete",
+                cancelText: "Cancel",
+                variant: "danger",
+            });
+
+            if (!isConfirmed) return;
+
             const result = await deleteDepartmentFaculty(email, departmentId);
 
             if (!result) {

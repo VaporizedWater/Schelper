@@ -10,12 +10,14 @@ import Link from 'next/link';
 import { deleteCalendar, loadCalendars } from '@/lib/DatabaseUtils';
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
 import { useToast } from '@/components/Toast/Toast';
+import { useConfirm } from '@/components/Confirm/Confirm';
 
 export default function CalendarsPage() {
     const router = useRouter();
     const { data: session } = useSession();
     const { setContextToOtherCalendar } = useCalendarContext();
     const { toast } = useToast();
+    const { confirm: confirmDialog } = useConfirm();
 
     // Real data loader
     const [calendars, setCalendars] = useState<CalendarType[]>([]);
@@ -56,24 +58,41 @@ export default function CalendarsPage() {
             return;
         }
 
-        if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-            if (length === 0 || length > 0 && (confirm(`WARNING: You are about to delete ${name} which has ${length} classes. Are you sure?`))) {
-                try {
-                    const response = await deleteCalendar(id);
+        const okPrimary = await confirmDialog({
+            title: "Delete calendar?",
+            description: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+            confirmText: "Delete",
+            cancelText: "Cancel",
+            variant: "danger",
+        });
+        if (!okPrimary) return;
 
-                    if (!response) {
-                        throw new Error('Failed to delete calendar');
-                    } else {
-                        toast({ description: `Calendar "${name}" deleted successfully.`, variant: 'success' });
-                    }
-
-                    setCalendars(prev => prev.filter(cal => cal._id !== id));
-                } catch (err) {
-                    console.error("Error deleting calendar: ", err);
-                    toast({ description: 'Failed to delete calendar. Please try again.', variant: 'error' });
-                }
-            }
+        if (length > 0) {
+            const okSecondary = await confirmDialog({
+                title: "Calendar has classes",
+                description: `WARNING: You are about to delete "${name}", which has ${length} class${length === 1 ? "" : "es"}. Are you sure?`,
+                confirmText: "Delete anyway",
+                cancelText: "Keep calendar",
+                variant: "danger",
+            });
+            if (!okSecondary) return;
         }
+
+        try {
+            const response = await deleteCalendar(id);
+
+            if (!response) {
+                throw new Error("Failed to delete calendar");
+            } else {
+                toast({ description: `Calendar "${name}" deleted successfully.`, variant: "success" });
+            }
+
+            setCalendars((prev) => prev.filter((cal) => cal._id !== id));
+        } catch (err) {
+            console.error("Error deleting calendar: ", err);
+            toast({ description: "Failed to delete calendar. Please try again.", variant: "error" });
+        }
+
     };
 
     const setCurrentCalendar = (id: string) => {

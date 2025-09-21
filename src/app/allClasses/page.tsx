@@ -5,11 +5,13 @@ import { MdDelete, MdSearch, MdFilterList, MdVisibility, MdVisibilityOff, MdInfo
 import { useToast } from "@/components/Toast/Toast";
 import type { CombinedClass, ClassData, ClassProperty } from "@/lib/types";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
+import { useConfirm } from "@/components/Confirm/Confirm";
 
 type StatusFilter = "all" | "open" | "closed" | "cancelled";
 
 export default function MyClassesPage() {
   const { toast } = useToast();
+  const { confirm: confirmDialog } = useConfirm();
 
   // Pull classes + calendar info from context (preferred)
   const {
@@ -128,7 +130,14 @@ export default function MyClassesPage() {
       toast({ description: "Delete isn’t wired to context here.", variant: "info" });
       return;
     }
-    if (!confirm(`Delete "${cls.data.title}" (${formatCode(cls.data)})?`)) return;
+    const ok = await confirmDialog({
+      title: "Delete class?",
+      description: `Delete "${cls.data.title}" (${formatCode(cls.data)})?`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (!ok) return;
     try {
       setIsBusyId(cls._id);
       deleteClass(cls._id);

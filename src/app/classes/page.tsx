@@ -8,9 +8,11 @@ import type { ClassInfo } from "@/lib/types";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import { deleteDepartmentCourse, insertDepartmentCourses, loadDepartmentClasses } from "@/lib/DatabaseUtils";
 import Link from "next/link";
+import { useConfirm } from "@/components/Confirm/Confirm";
 
 export default function DepartmentClassesPage() {
   const { toast } = useToast();
+  const { confirm: confirmDialog } = useConfirm();
   const { currentDepartment } = useCalendarContext();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -81,9 +83,16 @@ export default function DepartmentClassesPage() {
     }
   }
 
-  async function deleteCourse(id: string) {
+  async function deleteCourse(id: string, courseSubject: string, courseNum: string) {
     if (!hasDepartment) return;
-    if (!confirm("Remove this course from the department?")) return;
+    const ok = await confirmDialog({
+      title: `Remove course ${courseSubject} ${courseNum}?`,
+      description: "Are you sure you want to remove this course from the department?",
+      confirmText: "Remove",
+      cancelText: "Cancel",
+      variant: "danger",
+    });
+    if (!ok) return;
     if (!currentDepartment || !currentDepartment._id) return;
 
     setIsLoading(true);
@@ -512,7 +521,7 @@ export default function DepartmentClassesPage() {
                       <td className="px-4 py-3 text-right">
                         {!pendingUpload && c._id && (
                           <button
-                            onClick={() => deleteCourse(c._id as string)}
+                            onClick={() => deleteCourse(c._id as string, c.course_subject, c.course_num)}
                             className="p-2 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors duration-150"
                             aria-label="Delete course"
                           >

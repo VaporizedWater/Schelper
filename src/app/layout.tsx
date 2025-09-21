@@ -6,6 +6,7 @@ import NavWrapper from "@/components/NavWrapper/NavWrapper";
 import { SessionProvider } from "next-auth/react";
 import ThemeProvider from "@/components/ThemeProvider/ThemeProvider";
 import { ToastProvider } from "@/components/Toast/Toast";
+import { ConfirmProvider } from "@/components/Confirm/Confirm";
 
 const geistSans = localFont({
     src: "./fonts/GeistVF.woff",
@@ -32,12 +33,14 @@ export default function RootLayout(
                 <ThemeProvider>
                     <SessionProvider>
                         <ToastProvider>
-                            <CalendarProvider>
-                                <NavWrapper />
-                                <div className="flex-1">
-                                    {children}
-                                </div>
-                            </CalendarProvider>
+                            <ConfirmProvider>
+                                <CalendarProvider>
+                                    <NavWrapper />
+                                    <div className="flex-1">
+                                        {children}
+                                    </div>
+                                </CalendarProvider>
+                            </ConfirmProvider>
                         </ToastProvider>
                     </SessionProvider>
                 </ThemeProvider>

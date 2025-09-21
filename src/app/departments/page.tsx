@@ -9,11 +9,13 @@ import Link from 'next/link';
 import { deleteDepartment, loadDepartments } from '@/lib/DatabaseUtils';
 import { useCalendarContext } from '@/components/CalendarContext/CalendarContext';
 import { useToast } from '@/components/Toast/Toast';
+import { useConfirm } from '@/components/Confirm/Confirm';
 
 export default function DepartmentsPage() {
     const { data: session } = useSession();
     const { setCurrentDepartment, allDepartments } = useCalendarContext();
     const { toast } = useToast();
+    const { confirm: confirmDialog } = useConfirm();
 
     // Real data loader
     const [departments, setDepartments] = useState<DepartmentType[]>([]);
@@ -48,23 +50,39 @@ export default function DepartmentsPage() {
             return;
         }
 
-        if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
-            if (length === 0 || length > 0 && (confirm(`WARNING: You are about to delete ${name} which has ${length} classes. Are you sure?`))) {
-                try {
-                    const response = await deleteDepartment(id);
+        const okPrimary = await confirmDialog({
+            title: "Delete department?",
+            description: `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+            confirmText: "Delete",
+            cancelText: "Cancel",
+            variant: "danger",
+        });
+        if (!okPrimary) return;
 
-                    if (!response) {
-                        throw new Error('Failed to delete department');
-                    } else {
-                        toast({ description: `Department "${name}" deleted successfully.`, variant: 'success' });
-                    }
+        if (length > 0) {
+            const okWarn = await confirmDialog({
+                title: "Warning",
+                description: `You are about to delete "${name}" which has ${length} classes. Are you sure?`,
+                confirmText: "Delete anyway",
+                cancelText: "Keep department",
+                variant: "danger",
+            });
+            if (!okWarn) return;
+        }
 
-                    setDepartments(prev => prev.filter(cal => cal._id !== id));
-                } catch (err) {
-                    console.error("Error deleting department: ", err);
-                    toast({ description: 'Failed to delete department', variant: 'error' });
-                }
+        try {
+            const response = await deleteDepartment(id);
+
+            if (!response) {
+                throw new Error("Failed to delete department");
+            } else {
+                toast({ description: `Department "${name}" deleted successfully.`, variant: "success" });
             }
+
+            setDepartments((prev) => prev.filter((cal) => cal._id !== id));
+        } catch (err) {
+            console.error("Error deleting department: ", err);
+            toast({ description: "Failed to delete department", variant: "error" });
         }
     };
 

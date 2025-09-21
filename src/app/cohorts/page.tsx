@@ -1,6 +1,7 @@
 "use client";
 
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
+import { useConfirm } from "@/components/Confirm/Confirm";
 import { useToast } from "@/components/Toast/Toast";
 import { newSemesterCourses } from "@/lib/common";
 import { insertCohort, loadCohorts, setCurrentCohortInDb, updateCohort } from "@/lib/DatabaseUtils";
@@ -65,6 +66,7 @@ export default function CohortSettings() {
   const [chosenSemester, setChosenSemester] = useState<'Fall' | 'Spring'>(['FA', 'FALL'].includes(currentCalendar.info.semester.toLocaleUpperCase()) ? 'Fall' : 'Spring');
 
   const { toast } = useToast();
+  const { confirm: confirmDialog } = useConfirm();
 
   // Define a type for the structured cohort data
   interface CohortCourses {
@@ -304,7 +306,7 @@ export default function CohortSettings() {
     setEditingCohortId(null);
   };
 
-  const handleDeleteCohort = async (cohortId: string) => {
+  const handleDeleteCohort = async (cohortId: string, cohortName: string) => {
     if (!session?.user?.email) {
       toast({ description: 'User email is not available', variant: 'error' });
       return;
@@ -317,8 +319,15 @@ export default function CohortSettings() {
 
     try {
       // Confirm deletion
-      const isConfirmed = window.confirm("Are you sure you want to delete this cohort?");
-      if (!isConfirmed) return;
+      const ok = await confirmDialog({
+        title: `Delete cohort "${cohortName}"?`,
+        description: "Are you sure you want to delete this cohort?",
+        confirmText: "Delete",
+        cancelText: "Cancel",
+        variant: "danger",
+      });
+
+      if (!ok) return;
 
       setIsLoading(true);
       // Call the removeCohort function
@@ -659,7 +668,7 @@ export default function CohortSettings() {
                             </button>
                             {c._id && (
                               <button
-                                onClick={() => handleDeleteCohort(c._id as string)}
+                                onClick={() => handleDeleteCohort(c._id as string, c.cohortName)}
                                 disabled={isLoading}
                                 className="p-2 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                                 aria-label="Delete cohort"

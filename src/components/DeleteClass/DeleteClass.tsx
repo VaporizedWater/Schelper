@@ -2,18 +2,24 @@ import { newDefaultEmptyClass } from "@/lib/common";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useCallback } from "react";
 import { useToast } from "../Toast/Toast";
+import { useConfirm } from "../Confirm/Confirm";
 
 const DeleteClass = () => {
     const { currentCombinedClass, deleteClass, setCurrentClass } = useCalendarContext();
     const { toast } = useToast();
+    const { confirm: confirmDialog } = useConfirm();
 
-    const handleDeleteClass = useCallback(() => {
+    const handleDeleteClass = useCallback(async () => {
         if (!currentCombinedClass || !currentCombinedClass._id) return;
 
         // Confirmation dialog
-        const isConfirmed = confirm(
-            `Are you sure you want to delete ${currentCombinedClass.data.course_subject} ${currentCombinedClass.data.course_num}?\n\nThis action cannot be undone.`
-        );
+        const isConfirmed = await confirmDialog({
+            title: `Delete ${currentCombinedClass.data.course_subject} ${currentCombinedClass.data.course_num}?`,
+            description: "This action cannot be undone.",
+            confirmText: "Delete",
+            cancelText: "Cancel",
+            variant: "danger",
+        });
 
         if (isConfirmed) {
             try {

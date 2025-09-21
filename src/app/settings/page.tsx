@@ -13,6 +13,7 @@ import ThemeToggle from '@/components/ThemeToggle/ThemeToggle';
 import { useTheme } from 'next-themes';
 import { defaultSettings } from '@/lib/common';
 import { useToast } from '@/components/Toast/Toast';
+import { useConfirm } from '@/components/Confirm/Confirm';
 
 // Define settings sections
 const SETTINGS_SECTIONS = [
@@ -328,6 +329,7 @@ function ConflictsSettings() {
 
 function TagsSettings() {
     const { unlinkAllTagsFromAllClasses } = useCalendarContext();
+    const { confirm: confirmDialog } = useConfirm();
 
     return (
         <div>
@@ -339,9 +341,16 @@ function TagsSettings() {
 
                 <button
                     className="flex gap-2 items-center justify-center bg-white dark:bg-zinc-700 px-2 shadow-lg border border-gray-300 dark:border-zinc-600 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-600 transition-colors duration-150 w-fit text-black dark:text-gray-200"
-                    onClick={() => {
+                    onClick={async () => {
                         // Get confirmation from user
-                        const isConfirmed = window.confirm("Are you sure you want to unlink all tags from all classes?\n (This will not delete any tags)");
+                        const isConfirmed = await confirmDialog({
+                            title: "Unlink all tags?",
+                            description:
+                                "This will unlink every tag from every class.\nIt will NOT delete any tags.",
+                            confirmText: "Unlink All",
+                            cancelText: "Cancel",
+                            variant: "danger",
+                        });
                         if (!isConfirmed) return;
 
                         // unlink all tags

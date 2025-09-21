@@ -7,8 +7,10 @@ import { LuUserRoundX } from "react-icons/lu";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import DropDown from "@/components/DropDown/DropDown";
 import { EventInput } from '@fullcalendar/core';
+import { useConfirm } from "@/components/Confirm/Confirm";
 
 const FacultyDisplayPage = () => {
+    const { confirm: confirmDialog } = useConfirm();
     const { faculty, deleteFaculty, updateFaculty, isLoading: contextLoading } = useCalendarContext();
     const [facultyData, setFacultyData] = useState<FacultyType[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -148,7 +150,13 @@ const FacultyDisplayPage = () => {
 
     // Handler to delete an entire faculty record
     const handleDeleteFaculty = async (facultyEmail: string) => {
-        const confirmed = window.confirm("Are you sure you want to delete this faculty record?");
+        const confirmed = await confirmDialog({
+            title: "Delete faculty?",
+            description: "Are you sure you want to delete this faculty record?",
+            confirmText: "Delete",
+            cancelText: "Cancel",
+            variant: "danger",
+        });
         if (!confirmed) return;
 
         try {
@@ -168,7 +176,13 @@ const FacultyDisplayPage = () => {
         start: string,
         end: string
     ) => {
-        const confirmed = window.confirm(`Remove time slot ${start} - ${end} on ${day}?`);
+        const confirmed = await confirmDialog({
+            title: "Remove time slot?",
+            description: `Remove time slot ${start} - ${end} on ${day}?`,
+            confirmText: "Remove",
+            cancelText: "Cancel",
+            variant: "warning",
+        });
         if (!confirmed) return;
 
         try {

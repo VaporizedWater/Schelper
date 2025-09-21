@@ -5,8 +5,10 @@ import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useCallback, useEffect, useState } from "react";
 import { BiUnlink } from "react-icons/bi";
 import { tagType } from "@/lib/types";
+import { useConfirm } from "../Confirm/Confirm";
 
 const TagDisplay = () => {
+    const { confirm: confirmDialog } = useConfirm();
     const { tagList, allClasses, unlinkTagFromClass, unlinkAllClassesFromTag } = useCalendarContext();
     const [hoveredTagId, setHoveredTagId] = useState<string | null>(null);
     const [hoveredTagClassId, setHoveredTagClassId] = useState<string[] | null>(null);
@@ -25,26 +27,39 @@ const TagDisplay = () => {
         setIsLoading(false);
     }, [tagList]);
 
-    const handleTagUnlink = useCallback((tagName: string) => {
-        const isConfirmed = window.confirm(`unlink tag "${tagName}" from all its classes?`);
+    const handleTagUnlink = useCallback(async (tagName: string) => {
+        const isConfirmed = await confirmDialog({
+            title: "Unlink tag?",
+            description: `Unlink tag "${tagName}" from all its classes?`,
+            confirmText: "Unlink",
+            cancelText: "Cancel",
+            variant: "warning",
+        });
 
         if (isConfirmed) {
             unlinkAllClassesFromTag(tagName);
             tagList.delete(tagName);
         }
-    }, [tagList, unlinkAllClassesFromTag]);
+    }, [tagList, unlinkAllClassesFromTag]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const handleClassUnlink = useCallback((tagId: string, classId: string) => {
+    const handleClassUnlink = useCallback(async (tagId: string, classId: string) => {
         // Get class name from id
         const className = allClasses.find((cls) => String(cls._id) === classId)?.data.title;
 
         console.log(`Unlink class "${className}" with id "${classId}" from tag "${tagId}"`);
-        const isConfirmed = window.confirm(`Unlink class "${className}" from tag "${tagId}"?`);
+
+        const isConfirmed = await confirmDialog({
+            title: "Unlink class from tag?",
+            description: `Unlink class "${className}" from tag "${tagId}"?`,
+            confirmText: "Unlink",
+            cancelText: "Cancel",
+            variant: "warning",
+        });
 
         if (isConfirmed) {
             unlinkTagFromClass(tagId, classId);
         }
-    }, [allClasses, unlinkTagFromClass]);
+    }, [allClasses, unlinkTagFromClass]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isLoading) {
         return (
