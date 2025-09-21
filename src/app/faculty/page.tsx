@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MdDelete, MdAdd, MdSearch, MdFilterList, MdApartment, MdFileUpload } from "react-icons/md";
+import { MdDelete, MdAdd, MdSearch, MdFilterList, MdApartment, MdFileUpload, MdArrowRightAlt } from "react-icons/md";
 import { useToast } from "@/components/Toast/Toast";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import * as xlsx from "xlsx";
 import type { WorkBook, WorkSheet } from "xlsx";
 import { FacultyInfo } from "@/lib/types"; // uses your shared type
 import { deleteDepartmentFaculty, insertFaculty, loadFaculty } from "@/lib/DatabaseUtils";
+import Link from "next/link";
 
 export default function FacultyPage() {
     const { toast } = useToast();
@@ -321,12 +322,18 @@ export default function FacultyPage() {
     // ---- UI ----
     if (!currentDepartment) {
         return (
-            <div className="p-4 text-black dark:text-gray-200">
-                <div className="max-w-7xl mx-auto">
-                    <h1 className="text-3xl font-bold mb-6">Department Faculty</h1>
-                    <div className="p-4 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-800 rounded-lg">
-                        Please create and select a department first.
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-5">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="text-yellow-900 dark:text-yellow-200">
+                        <p className="font-medium">No department selected</p>
+                        <p className="text-sm opacity-80">Please create and select a department before managing cohorts.</p>
                     </div>
+                    <Link
+                        href="/departments"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-yellow-100 dark:bg-yellow-800/50 text-yellow-900 dark:text-yellow-50 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors"
+                    >
+                        Open Departments <MdArrowRightAlt />
+                    </Link>
                 </div>
             </div>
         );

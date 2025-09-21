@@ -2,11 +2,12 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as xlsx from "xlsx";
-import { MdDelete, MdFileUpload, MdSearch } from "react-icons/md";
+import { MdArrowRightAlt, MdDelete, MdFileUpload, MdSearch } from "react-icons/md";
 import { useToast } from "@/components/Toast/Toast";
 import type { ClassInfo } from "@/lib/types";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import { deleteDepartmentCourse, insertDepartmentCourses, loadDepartmentClasses } from "@/lib/DatabaseUtils";
+import Link from "next/link";
 
 export default function DepartmentClassesPage() {
   const { toast } = useToast();
@@ -247,6 +248,25 @@ export default function DepartmentClassesPage() {
     setFileName("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  if (!currentDepartment) {
+    return (
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-5">
+        <div className="flex items-center justify-between gap-4">
+          <div className="text-yellow-900 dark:text-yellow-200">
+            <p className="font-medium">No department selected</p>
+            <p className="text-sm opacity-80">Please create and select a department before managing cohorts.</p>
+          </div>
+          <Link
+            href="/departments"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-yellow-100 dark:bg-yellow-800/50 text-yellow-900 dark:text-yellow-50 hover:bg-yellow-200 dark:hover:bg-yellow-800 transition-colors"
+          >
+            Open Departments <MdArrowRightAlt />
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 bg-white dark:bg-zinc-800 min-h-screen text-black dark:text-gray-200">
