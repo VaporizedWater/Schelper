@@ -4,10 +4,12 @@ import {
     CalendarState,
     CalendarType,
     ClassData,
+    ClassInfo,
     ClassProperty,
     CohortType,
     CombinedClass,
     DepartmentType,
+    FacultyInfo,
     FacultyType,
     SemesterCourses,
     tagListType,
@@ -316,10 +318,10 @@ export function createCalendarFromInfo(calendarInfo: CalendarInfo): CalendarType
 export function createDepartmentFromInfo(departmentInfo: { name: string }): DepartmentType {
     return {
         name: departmentInfo.name,
-        faculty_list: [] as string[],
+        faculty_list: [] as FacultyInfo[],
         cohorts: [] as CohortType[],
         current_cohort: "",
-        class_list: [] as CombinedClass[],
+        class_list: [] as ClassInfo[],
     };
 }
 

@@ -70,6 +70,14 @@ export type CalendarInfo = {
     year: number;
 };
 
+export type ClassInfo = {
+    _id?: string;
+    course_subject: string;
+    course_num: string;
+    catalog_num: string;
+    title: string;
+};
+
 // This serves as a type to transport the calendar/class data from the API to the calendar context via LoadCalendar (previously LoadCombinedClasses)
 export type CalendarType = {
     _id?: string;
@@ -179,24 +187,13 @@ export type CalendarContextType = {
     resetContextToEmpty: () => void;
 };
 
-// export type UserType = {
-//     userId: string;
-//     email: string;
-//     current_calendar: string;
-//     calendars: CalendarType[];
-//     current_cohort: ObjectId;
-//     cohorts: ObjectId[];
-//     settings: UserSettingType;
-//     user_classes: CombinedClass[];
-// };
-
 export type DepartmentType = {
     _id?: string;
     name: string;
-    faculty_list: string[]; // List of faculty emails
+    faculty_list: FacultyInfo[]; // List of faculty {email, name}
     cohorts: CohortType[];
     current_cohort: string;
-    class_list: CombinedClass[];
+    class_list: ClassInfo[];
 };
 
 export type UserType = {
@@ -275,6 +272,11 @@ export type FacultyType = {
         Thu: EventInput[];
         Fri: EventInput[];
     };
+};
+
+export type FacultyInfo = {
+    email: string;
+    name: string;
 };
 
 export type SemesterCourses = {
