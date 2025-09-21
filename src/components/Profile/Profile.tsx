@@ -92,8 +92,8 @@ const Profile = () => {
                     { href: "/settings", label: "Settings", sub: false },
                     { href: "/calendars", label: "My Calendars", sub: false },
                     { href: "/departments", label: "My Departments", sub: false },
-                    { href: "/professors", label: "My Professors", sub: true },
-                    { href: "/professors", label: "My Classes", sub: true },
+                    { href: "/faculty", label: "My Faculty", sub: true },
+                    { href: "/classes", label: "My Classes", sub: true },
                 ].map(({ href, label, sub }, idx) => (
                     <Link
                         key={idx}
