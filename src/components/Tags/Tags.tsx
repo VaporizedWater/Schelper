@@ -3,10 +3,12 @@ import { ClassProperty, CombinedClass, tagType } from "@/lib/types";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { newDefaultEmptyClass } from "@/lib/common";
 import { updateCombinedClasses } from "@/lib/DatabaseUtils";
+import { useToast } from "../Toast/Toast";
 
 {/* Tags Section */ }
 const Tags = () => {
-    const { tagList, currentCombinedClass, currentCombinedClasses, currentCalendar } = useCalendarContext();
+    const { toast } = useToast();
+    const { tagList, currentCombinedClass, currentCombinedClasses, currentCalendar, currentEditable } = useCalendarContext();
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
     const [tags, setTags] = useState<tagType[]>(Array.isArray(initialProps.tags) ? initialProps.tags : []);
 
@@ -18,6 +20,11 @@ const Tags = () => {
     }, [currentCombinedClass]);
 
     const handleTagCheck = useCallback((tag: tagType, isChecked: boolean) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot delete classes you don't own!", variant: "error" });
+            return;
+        };
+
         const updatedTags = isChecked
             ? [...tags, tag]
             : tags.filter(t => t.tagName !== tag.tagName);
@@ -47,7 +54,13 @@ const Tags = () => {
                 <p>Select a class to edit</p>
             </div>
         );
-    }
+    } else if (!currentEditable) {
+        return (
+            <div role="alert" className="flex items-center justify-center text-center h-full text-gray-400 pb-8">
+                <p>You don&apos;t own this class</p>
+            </div>
+        );
+    };
 
     return (
         <div

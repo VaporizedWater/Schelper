@@ -656,6 +656,14 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             currentCombinedClass: state.classes.current, // Selected on calendar
             currentCombinedClasses: state.classes.currentClasses, // Selected on calendar
 
+            currentEditable:
+                !!state.classes.current && departmentHasClass(state.classes.current),
+
+            canEditClass: (cls?: CombinedClass) => {
+                if (!state.classes.current) return false;
+                return !!(cls ?? state.classes.current) && departmentHasClass(cls ?? state.classes.current);
+            },
+
             // Tags
             tagList: state.tags,
 

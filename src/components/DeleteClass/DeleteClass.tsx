@@ -5,11 +5,16 @@ import { useToast } from "../Toast/Toast";
 import { useConfirm } from "../Confirm/Confirm";
 
 const DeleteClass = () => {
-    const { currentCombinedClass, deleteClass, setCurrentClass } = useCalendarContext();
+    const { currentCombinedClass, deleteClass, setCurrentClass, currentEditable } = useCalendarContext();
     const { toast } = useToast();
     const { confirm: confirmDialog } = useConfirm();
 
     const handleDeleteClass = useCallback(async () => {
+        if (!currentEditable) {
+            toast({ description: "Cannot delete classes you don't own!", variant: "error" });
+            return;
+        };
+
         if (!currentCombinedClass || !currentCombinedClass._id) return;
 
         // Confirmation dialog
@@ -32,6 +37,27 @@ const DeleteClass = () => {
             }
         }
     }, [currentCombinedClass, deleteClass, setCurrentClass]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    if (currentCombinedClass && currentCombinedClass._id && !currentEditable) {
+        return (
+            <div
+                role="region"
+                className="w-full h-full flex flex-col"
+            >
+                <div
+                    className="w-full text-left py-2 font-bold text-gray-700 dark:text-gray-300"
+                >
+                    Delete Class
+                </div>
+                <div
+                    role="alert"
+                    className="flex items-center justify-center text-center h-full text-gray-400 pb-8"
+                >
+                    <p>You don&apos;t own this class</p>
+                </div>
+            </div>
+        )
+    }
 
     return (
         <div

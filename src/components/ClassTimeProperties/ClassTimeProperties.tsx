@@ -2,9 +2,11 @@ import { ClassProperty, CombinedClass } from "@/lib/types";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { useCallback, useEffect, useState } from "react";
 import { createEventsFromCombinedClass, newDefaultEmptyClass, ShortenedDays } from "@/lib/common";
+import { useToast } from "../Toast/Toast";
 
 const ClassTimeProperties = () => {
-    const { currentCombinedClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
+    const { toast } = useToast();
+    const { currentCombinedClass, updateOneClass, toggleConflictPropertyChanged, currentEditable } = useCalendarContext();
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
     const [days, setDays] = useState<string[]>(initialProps.days || []);
     const [startTime, setStartTime] = useState(initialProps.start_time || '');
@@ -22,6 +24,11 @@ const ClassTimeProperties = () => {
     }, [currentCombinedClass]);
 
     const handleDaysChange = useCallback((day: string, isChecked: boolean) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const updatedDays = isChecked
             ? [...days, day]
             : days.filter(d => d !== day);
@@ -36,6 +43,11 @@ const ClassTimeProperties = () => {
     }, [currentCombinedClass, days, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleStartTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         // const oldVal = startTime;
         const newVal = e.target.value;
         // const diffTime = Number(newVal) - Number(oldVal);
@@ -52,6 +64,11 @@ const ClassTimeProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleEndTimeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const newVal = e.target.value;
         setEndTime(newVal);
         if (currentCombinedClass) {
@@ -88,6 +105,7 @@ const ClassTimeProperties = () => {
                                 id="start-time"
                                 name="startTime"
                                 type="time"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={startTime}
                                 onChange={handleStartTimeChange}
@@ -104,6 +122,7 @@ const ClassTimeProperties = () => {
                                 id="end-time"
                                 name="endTime"
                                 type="time"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={endTime}
                                 onChange={handleEndTimeChange}
@@ -128,6 +147,7 @@ const ClassTimeProperties = () => {
                                                 id={`day-${day}`}
                                                 name="days"
                                                 type="checkbox"
+                                                disabled={!currentEditable}
                                                 value={day}
                                                 checked={days.includes(day)}
                                                 onChange={e => handleDaysChange(day, e.target.checked)}

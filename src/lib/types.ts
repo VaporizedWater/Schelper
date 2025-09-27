@@ -163,6 +163,9 @@ export type CalendarContextType = {
     uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
     deleteClass: (classId: string) => void;
 
+    currentEditable: boolean;
+    canEditClass: (cls?: CombinedClass) => boolean;
+
     // Tags
     tagList: tagListType; // Map of tags to a set of class ids
     unlinkTagFromClass: (tagId: string, classId: string) => void;

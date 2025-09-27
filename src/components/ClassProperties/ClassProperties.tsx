@@ -2,13 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { ClassData, ClassProperty, CombinedClass, tagType } from '@/lib/types';
 import { newDefaultEmptyClass } from '@/lib/common';
+import { useToast } from '../Toast/Toast';
 
 // Cohort options constant
 const COHORT_OPTIONS = ["Freshman", "Sophomore", "Junior", "Senior"];
 
 const ClassProperties = () => {
-    // const {tagList, deleteClass, setCurrentClass} = useCalendarContext();
-    const { currentCombinedClass, updateOneClass, toggleConflictPropertyChanged } = useCalendarContext();
+    const { toast } = useToast();
+    const { currentCombinedClass, updateOneClass, toggleConflictPropertyChanged, currentEditable } = useCalendarContext();
     const initialData: ClassData = currentCombinedClass?.data || {} as ClassData;
     const initialProps: ClassProperty = currentCombinedClass?.properties || {} as ClassProperty;
 
@@ -37,6 +38,11 @@ const ClassProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleCourseSubjectChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const newVal = e.target.value;
         setCourseSubject(newVal);
         if (currentCombinedClass) {
@@ -48,6 +54,11 @@ const ClassProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleCourseNumChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const newVal = e.target.value;
         setCourseNum(newVal);
         if (currentCombinedClass) {
@@ -59,6 +70,11 @@ const ClassProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleSectionChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const newVal = e.target.value;
         setSection(newVal);
         if (currentCombinedClass) {
@@ -70,6 +86,11 @@ const ClassProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const newVal = e.target.value;
         setTitle(newVal);
         if (currentCombinedClass) {
@@ -81,6 +102,11 @@ const ClassProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleInstructorChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const newVal = e.target.value;
         setInstructor(newVal);
         if (currentCombinedClass) {
@@ -92,6 +118,11 @@ const ClassProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleEmailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const newVal = e.target.value;
         setEmail(newVal);
         if (currentCombinedClass) {
@@ -103,6 +134,11 @@ const ClassProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleRoomChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const newVal = e.target.value;
         setRoom(newVal);
         if (currentCombinedClass) {
@@ -114,6 +150,11 @@ const ClassProperties = () => {
     }, [currentCombinedClass, toggleConflictPropertyChanged, updateOneClass]);
 
     const handleCohortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+        if (!currentEditable) {
+            toast({ description: "Cannot edit classes you don't own!", variant: "error" });
+            return;
+        };
+
         const newVal = e.target.value;
         setCohort(newVal);
         if (currentCombinedClass) {
@@ -164,6 +205,7 @@ const ClassProperties = () => {
                                 name="courseSubject"
                                 type="text"
                                 placeholder="Subject"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={courseSubject}
                                 onChange={handleCourseSubjectChange}
@@ -183,6 +225,7 @@ const ClassProperties = () => {
                                 id="course-number"
                                 name="courseNum"
                                 type="text"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={courseNum}
                                 onChange={handleCourseNumChange}
@@ -202,6 +245,7 @@ const ClassProperties = () => {
                                 id="course-section"
                                 name="section"
                                 type="text"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={section}
                                 onChange={handleSectionChange}
@@ -220,6 +264,7 @@ const ClassProperties = () => {
                                 id="course-title"
                                 name="title"
                                 type="text"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={title}
                                 onChange={handleTitleChange}
@@ -238,6 +283,7 @@ const ClassProperties = () => {
                                 id="course-instructor"
                                 name="instructor"
                                 type="text"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={instructor}
                                 onChange={handleInstructorChange}
@@ -256,6 +302,7 @@ const ClassProperties = () => {
                                 id="course-email"
                                 name="email"
                                 type="email"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={email}
                                 onChange={handleEmailChange}
@@ -274,6 +321,7 @@ const ClassProperties = () => {
                                 id="course-room"
                                 name="room"
                                 type="text"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={room}
                                 onChange={handleRoomChange}
@@ -291,6 +339,7 @@ const ClassProperties = () => {
                             <select
                                 id="course-cohort"
                                 name="cohort"
+                                disabled={!currentEditable}
                                 className="flex-1 hover:border-gray-200 dark:hover:border-gray-600 border-transparent border pl-1 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-300 rounded"
                                 value={cohort}
                                 onChange={handleCohortChange}
