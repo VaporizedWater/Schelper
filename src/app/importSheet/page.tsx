@@ -74,7 +74,7 @@ const assignCohort = (cls: CombinedClass, cohort: CohortType, semester: "Fall" |
 const ImportSheet = () => {
     // State to store loaded cohorts
     const { data: session } = useSession();
-    const { uploadNewClasses, currentDepartment, currentCalendar } = useCalendarContext();
+    const { uploadNewClasses, currentDepartment, currentCalendar, departmentHasClass } = useCalendarContext();
     const router = useRouter();
 
     const [allCohorts, setAllCohorts] = useState<CohortType[]>([]);
@@ -405,6 +405,11 @@ const ImportSheet = () => {
 
                 const newCohortTag = cohortToTag(selectedCohort);
                 addTag(newCohortTag, "cohort");
+
+                // Add department tag
+                if (departmentHasClass(cls) && currentDepartment?.name) {
+                    addTag(currentDepartment?.name.trim().toLowerCase().replace(/\s/g, ""), "department");
+                }
 
                 return {
                     ...cls,

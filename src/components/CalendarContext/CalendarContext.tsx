@@ -622,6 +622,20 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             }
         });
 
+        // ADD: small helper that checks the current department by subject/number
+        const hasCourse = (subject?: string, num?: string): boolean => {
+            const dept = state.departments.current;
+            if (!dept || !dept.class_list) return false;
+
+            const s = (subject ?? "").trim().toLowerCase();
+            const n = String(num ?? "").trim();
+
+            return dept.class_list.some(c =>
+                (c.course_subject ?? "").trim().toLowerCase() === s &&
+                String(c.course_num ?? "").trim() === n
+            );
+        };
+
         return {
             // Department
             currentDepartment: state.departments?.current ? state.departments.current : null,
@@ -656,12 +670,19 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             currentCombinedClass: state.classes.current, // Selected on calendar
             currentCombinedClasses: state.classes.currentClasses, // Selected on calendar
 
+            departmentHasClass: (cls: CombinedClass) =>
+                hasCourse(cls?.data?.course_subject, cls?.data?.course_num),
+
+            departmentHasCourse: (course_subject: string, course_num: string) =>
+                hasCourse(course_subject, course_num),
+
             currentEditable:
                 !!state.classes.current && departmentHasClass(state.classes.current),
 
             canEditClass: (cls?: CombinedClass) => {
-                if (!state.classes.current) return false;
-                return !!(cls ?? state.classes.current) && departmentHasClass(cls ?? state.classes.current);
+                const c = cls ?? state.classes.current;
+                if (!c) return false;
+                return hasCourse(c.data.course_subject, c.data.course_num);
             },
 
             // Tags

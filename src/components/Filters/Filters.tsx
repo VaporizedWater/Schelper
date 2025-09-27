@@ -35,6 +35,7 @@ const Filters = () => {
     const [instructorTags, setInstructorTags] = useState<Map<string, Set<string>>>(new Map());
     const [levelTags, setLevelTags] = useState<Map<string, Set<string>>>(new Map());
     const [subjectTags, setSubjectTags] = useState<Map<string, Set<string>>>(new Map());
+    const [departmentTags, setDepartmentTags] = useState<Map<string, Set<string>>>(new Map());
     const [userTags, setUserTags] = useState<Map<string, Set<string>>>(new Map());
 
     // Category-specific 
@@ -50,6 +51,7 @@ const Filters = () => {
         const newInstructor = new Map<string, Set<string>>();
         const newLevel = new Map<string, Set<string>>();
         const newSubject = new Map<string, Set<string>>();
+        const newDepartment = new Map<string, Set<string>>();
         const newUser = new Map<string, Set<string>>();
 
         for (const [tagName, info] of tagList.entries()) {
@@ -72,6 +74,9 @@ const Filters = () => {
                 case "subject":
                     newSubject.set(tagName, classes);
                     break;
+                case "department":
+                    newDepartment.set(tagName, classes);
+                    break;
                 case "user":
                     newUser.set(tagName, classes);
                     break;
@@ -83,6 +88,7 @@ const Filters = () => {
         setInstructorTags(newInstructor);
         setLevelTags(newLevel);
         setSubjectTags(newSubject);
+        setDepartmentTags(newDepartment);
         setUserTags(newUser);
 
         // Consolidate every tagName so we can set initial states
@@ -92,6 +98,7 @@ const Filters = () => {
             ...newInstructor,
             ...newLevel,
             ...newSubject,
+            ...newDepartment,
             ...newUser,
         ]);
 
@@ -177,6 +184,7 @@ const Filters = () => {
                 ...instructorTags.keys(),
                 ...levelTags.keys(),
                 ...subjectTags.keys(),
+                ...departmentTags.keys(),
                 ...userTags.keys(),
             ];
             const allInclude = allTags.every((t) => next.get(t) === "include");
@@ -185,7 +193,7 @@ const Filters = () => {
             }
             return next;
         });
-    }, [cohortTags, roomTags, instructorTags, levelTags, subjectTags, userTags]);
+    }, [cohortTags, roomTags, instructorTags, levelTags, subjectTags, userTags, departmentTags]);
 
 
     // ───────────────────────────────────────────────────────────
@@ -198,6 +206,7 @@ const Filters = () => {
         ...instructorTags.keys(),
         ...levelTags.keys(),
         ...subjectTags.keys(),
+        ...departmentTags.keys(),
         ...userTags.keys(),
     ];
     const allIncluded = allTags.every((t) => tagStates.get(t) === "include");
@@ -250,6 +259,7 @@ const Filters = () => {
                 <CategoryFilter title="Instructor" tagMap={instructorTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
                 <CategoryFilter title="Level" tagMap={levelTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
                 <CategoryFilter title="Subject" tagMap={subjectTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
+                <CategoryFilter title="Department" tagMap={departmentTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
                 <CategoryFilter title="User Tags" tagMap={userTags} tagStates={tagStates} toggleCategoryAll={toggleCategoryAll} toggleOneTag={toggleOneTag} />
             </div>
         </section>

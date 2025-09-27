@@ -127,7 +127,7 @@ export type ConflictType = {
     conflictType: string;
 };
 
-export type tagCategory = "cohort" | "room" | "instructor" | "subject" | "level" | "user";
+export type tagCategory = "department" | "cohort" | "room" | "instructor" | "subject" | "level" | "user";
 
 export type tagType = { tagName: string; tagCategory: tagCategory };
 
@@ -163,6 +163,8 @@ export type CalendarContextType = {
     uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
     deleteClass: (classId: string) => void;
 
+    departmentHasClass: (cls: CombinedClass) => boolean;
+    departmentHasCourse: (course_subject: string, course_num: string) => boolean;
     currentEditable: boolean;
     canEditClass: (cls?: CombinedClass) => boolean;
 
