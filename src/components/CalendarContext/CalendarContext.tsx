@@ -631,7 +631,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             },
 
             updateFaculty: (faculty: FacultyType[], doMerge: boolean): Promise<boolean> => {
-                let mergedFaculty: FacultyType[] = doMerge ? mergeFacultyEntries(state.faculty, faculty) : faculty;
+                const mergedFaculty: FacultyType[] = doMerge ? mergeFacultyEntries(state.faculty, faculty) : faculty;
 
                 return new Promise((resolve) => {
                     updateFaculty(mergedFaculty)
