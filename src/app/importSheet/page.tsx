@@ -392,6 +392,11 @@ const ImportSheet = () => {
                     }
                 }
 
+                // Add department tag
+                if (departmentHasClass(cls) && currentDepartment?.name) {
+                    addTag(currentDepartment?.name.trim().toLowerCase().replace(/\s/g, ""), "department");
+                }
+
                 // Add the new cohort tag
                 if (!selectedCohort || selectedCohort === "None") {
                     return {
@@ -405,11 +410,6 @@ const ImportSheet = () => {
 
                 const newCohortTag = cohortToTag(selectedCohort);
                 addTag(newCohortTag, "cohort");
-
-                // Add department tag
-                if (departmentHasClass(cls) && currentDepartment?.name) {
-                    addTag(currentDepartment?.name.trim().toLowerCase().replace(/\s/g, ""), "department");
-                }
 
                 return {
                     ...cls,
@@ -659,6 +659,12 @@ const ImportSheet = () => {
                             className="pl-3 pr-4 py-2 w-full border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:cursor-text transition-colors"
                         />
                     </div>
+                    <div className="flex items-center gap-3 mb-2 text-sm text-gray-600 dark:text-gray-400">
+                        <span className="inline-flex items-center gap-2">
+                            <span className="inline-block h-3 w-3 rounded-sm bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-300/70 dark:border-emerald-700/60" />
+                            In current department
+                        </span>
+                    </div>
                     <div className="overflow-auto max-h-[55vh] bg-gray-50 dark:bg-zinc-800">
                         <table className="min-w-full">
                             <thead className="bg-gray-50 dark:bg-zinc-800 sticky top-0">
@@ -696,11 +702,16 @@ const ImportSheet = () => {
                                     .filter(cls => cls.assignedCohort && cls.assignedCohort !== "")
                                     .map((cls) => {
                                         const uniqueId = getUniqueClassId(cls);
+                                        const inDept = departmentHasClass(cls);
                                         return (
                                             <tr
                                                 key={uniqueId}
                                                 onClick={() => { console.log(cls.assignedCohort, "assigned cohort"); }}
-                                                className="hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
+                                                title={inDept ? "This class is in the current department" : "This class is NOT in the current department"}
+                                                className={
+                                                    "transition-colors hover:bg-gray-50 dark:hover:bg-zinc-700 " +
+                                                    (inDept ? " bg-emerald-50/60 dark:bg-emerald-900/20 border-l-4 border-emerald-500/70 dark:border-emerald-500/60 " : "")
+                                                }
                                             >
                                                 <td className="p-2 border dark:border-zinc-700 text-center">
                                                     <input
@@ -717,6 +728,15 @@ const ImportSheet = () => {
                                                             console.log(selectedClasses.size);
                                                         }}
                                                     />
+                                                </td>
+
+                                                <td className="p-2 border dark:border-zinc-700">
+                                                    {cls.data.course_subject} {cls.data.course_num}
+                                                    {inDept && (
+                                                        <span className="ml-2 px-1.5 py-0.5 rounded-md text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                                            Dept
+                                                        </span>
+                                                    )}
                                                 </td>
 
                                                 <td className="p-2 border dark:border-zinc-700">{cls.data.course_subject} {cls.data.course_num}</td>
@@ -766,10 +786,15 @@ const ImportSheet = () => {
                                     .filter(cls => cls.assignedCohort === "" || cls.assignedCohort === null)
                                     .map((cls) => {
                                         const uniqueId = getUniqueClassId(cls);
+                                        const inDept = departmentHasClass(cls);
                                         return (
                                             <tr
                                                 key={uniqueId}
-                                                className="hover:bg-gray-50 dark:hover:bg-zinc-700 transition-colors"
+                                                title={inDept ? "This class is in the current department" : "This class is NOT in the current department"}
+                                                className={
+                                                    "transition-colors hover:bg-gray-50 dark:hover:bg-zinc-700 " +
+                                                    (inDept ? " bg-emerald-50/60 dark:bg-emerald-900/20 border-l-4 border-emerald-500/70 dark:border-emerald-500/60 " : "")
+                                                }
                                             >
                                                 <td className="p-2 border dark:border-zinc-700 text-center">
                                                     <input
@@ -786,6 +811,15 @@ const ImportSheet = () => {
                                                             console.log(selectedClasses.size);
                                                         }}
                                                     />
+                                                </td>
+
+                                                <td className="p-2 border dark:border-zinc-700">
+                                                    {cls.data.course_subject} {cls.data.course_num}
+                                                    {inDept && (
+                                                        <span className="ml-2 px-1.5 py-0.5 rounded-md text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                                                            Dept
+                                                        </span>
+                                                    )}
                                                 </td>
 
                                                 <td className="p-2 border dark:border-zinc-700">
