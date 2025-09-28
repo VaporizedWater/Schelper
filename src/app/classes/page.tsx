@@ -342,7 +342,7 @@ export default function DepartmentClassesPage() {
         <div className="flex items-center justify-between gap-4">
           <div className="text-yellow-900 dark:text-yellow-200">
             <p className="font-medium">No department selected</p>
-            <p className="text-sm opacity-80">Please create and select a department before managing cohorts.</p>
+            <p className="text-sm opacity-80">Please create and select a department before managing classes.</p>
           </div>
           <Link
             href="/departments"
