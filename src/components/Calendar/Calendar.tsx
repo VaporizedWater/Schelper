@@ -7,7 +7,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput, EventMountArg } from "@fullcalendar/core";
 import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { dayIndex, defaultBackgroundColor, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
+import { dayIndex, defaultBackgroundColor, defaultSettings, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
 import { CombinedClass } from "@/lib/types";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -252,15 +252,6 @@ const Calendar = () => {
         let backgroundColor = '#3788d8';
 
         if (classConflicts.length > 0) {
-            // Add debug logging to see what conflicts are found
-            // console.log(`Class ${eventInfo.event.title} has ${classConflicts.length} conflicts:`,
-            //     classConflicts.map(c => ({
-            //         with: c.class1._id === classId ?
-            //             c.class2 : c.class1,
-            //         type: c.conflictType
-            //     }))
-            // );
-
             // Determine most severe conflict type (all > room + instructor > room + cohort > instructor + cohort > room > instructor > cohort)
             const hasAllConflict = classConflicts.some(c => c.conflictType === "all");
             const hasRoomInstructorConflict = classConflicts.some(c => c.conflictType === "room + instructor");
@@ -270,10 +261,7 @@ const Calendar = () => {
             const hasInstructorConflict = classConflicts.some(c => c.conflictType === "instructor");
             const hasCohortConflict = classConflicts.some(c => c.conflictType === "cohort");
 
-            // console.log(userSettings, "USER SETTINGS!")
-            const conflictColors = userSettings.settings.conflicts;
-
-            // console.log("Conflict colors INstructor: ", conflictColors.instructor);
+            const conflictColors = userSettings?.settings?.conflicts || defaultSettings.settings.conflicts;
 
             if (hasAllConflict) {
                 backgroundColor = conflictColors.all; // Room + Instructor + Cohort conflict
@@ -290,7 +278,6 @@ const Calendar = () => {
             } else if (hasCohortConflict) {
                 backgroundColor = conflictColors.cohort; // Amber for room or instructor or cohort conflicts
             }
-
         }
 
         // Get the section from the extendedProps
