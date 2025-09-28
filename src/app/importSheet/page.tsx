@@ -310,7 +310,7 @@ const ImportSheet = () => {
                 const levelTag = extractCourseLevel(combinedClass.data.course_num);
 
                 if (levelTag) {
-                    combinedClass.properties.tags.push({ tagName: levelTag, tagCategory: "level" });
+                    combinedClass.properties.tags.push({ tagName: levelTag, tagCategory: "level", });
                 }
 
                 combinedClasses.push(combinedClass);
@@ -362,7 +362,7 @@ const ImportSheet = () => {
 
                 // Helper function to add a tag both to class and our collection list
                 const addTag = (tagName: string, tagCategory: string) => {
-                    const tag = { tagName, tagCategory } as tagType;
+                    const tag = { tagName: tagName.toLowerCase().replace(/\s+/g, ""), tagCategory } as tagType;
                     updatedTags.push(tag);
 
                     // Track unique tags for database insertion
@@ -375,18 +375,18 @@ const ImportSheet = () => {
 
                 // Add subject tag (e.g., "CS", "MATH")
                 if (cls.data.course_subject) {
-                    const subjectName = cls.data.course_subject.toLowerCase();
+                    const subjectName = cls.data.course_subject;
                     addTag(subjectName, "subject");
                 }
 
                 // Add room tag if it exists and isn't empty
                 if (cls.properties.room && cls.properties.room.trim() !== '') {
-                    addTag(cls.properties.room.toLowerCase().replace(/\s+/g, ""), "room");
+                    addTag(cls.properties.room, "room");
                 }
 
                 // Add instructor tag if it exists and isn't empty
                 if (cls.properties.instructor_name && cls.properties.instructor_name.trim() !== '') {
-                    addTag(cls.properties.instructor_name.toLowerCase().replace(/\s+/g, ""), "instructor");
+                    addTag(cls.properties.instructor_name, "instructor");
                     if (cls.data.course_subject === "EDSGN") {
                         console.log("Added instructor tag:", cls.properties.instructor_name, "to class catalog num", cls.data.class_num);
                     }
@@ -394,7 +394,7 @@ const ImportSheet = () => {
 
                 // Add department tag
                 if (departmentHasClass(cls) && currentDepartment?.name) {
-                    addTag(currentDepartment?.name.trim().toLowerCase().replace(/\s/g, ""), "department");
+                    addTag(currentDepartment?.name, "department");
                 }
 
                 // Add the new cohort tag

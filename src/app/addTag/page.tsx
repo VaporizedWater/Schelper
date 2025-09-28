@@ -7,6 +7,13 @@ import { useCalendarContext } from "@/components/CalendarContext/CalendarContext
 import { tagType } from "@/lib/types";
 import { useToast } from "@/components/Toast/Toast";
 
+// Helpers
+const norm = (v: unknown) =>
+    String(v ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "");
+
 const AddTag = () => {
     const { tagList } = useCalendarContext();
     const [tag, setTag] = useState("");
@@ -15,7 +22,7 @@ const AddTag = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const trimmedTag = tag.trim();
+        const trimmedTag = norm(tag)
 
         if (!trimmedTag) {
             toast({ description: 'Tag name cannot be empty', variant: 'error' });

@@ -6,6 +6,13 @@ import { useCalendarContext } from "../CalendarContext/CalendarContext";
 import { insertTags } from "@/lib/DatabaseUtils";
 import { useToast } from "../Toast/Toast";
 
+// Helpers
+const norm = (v: unknown) =>
+    String(v ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "");
+
 const AddTagButton = () => {
     const { tagList } = useCalendarContext();
     const [inputValue, setInputValue] = useState("");
@@ -13,7 +20,7 @@ const AddTagButton = () => {
 
     const handleAddTag = useCallback(async () => {
         if (inputValue.trim() !== "") {
-            const trimmedValue = inputValue.trim();
+            const trimmedValue = norm(inputValue)
             const result = await insertTags([{ tagName: trimmedValue, tagCategory: "user" }]);
 
             if (result) {

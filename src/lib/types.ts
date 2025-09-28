@@ -129,7 +129,7 @@ export type ConflictType = {
 
 export type tagCategory = "department" | "cohort" | "room" | "instructor" | "subject" | "level" | "user";
 
-export type tagType = { tagName: string; tagCategory: tagCategory };
+export type tagType = { tagName: string; tagCategory: tagCategory; user?: string };
 
 export type tagListType = Map<string, { tagCategory: tagCategory; classIds: Set<string> }>; // Map of tag id to a set of class ids
 
