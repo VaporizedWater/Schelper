@@ -2,9 +2,6 @@ import clientPromise from "@/lib/mongodb";
 import { requireEmail } from "@/lib/requireEmail";
 import { Collection, ObjectId } from "mongodb";
 
-const client = await clientPromise;
-const collection = client.db("class-scheduling-app").collection("users") as Collection<Document>;
-
 export async function PUT(request: Request): Promise<Response> {
     try {
         const userEmail = await requireEmail();
