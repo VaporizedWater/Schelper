@@ -43,17 +43,17 @@ export async function GET(): Promise<Response> {
                         { $sort: { yearSort: -1, semesterSort: -1 } },
                         { $replaceRoot: { newRoot: "$info" } },
                     ],
-                    as: "skibidi", // Have to prepare this app for a possible future new-gen senior design team, also... will anyone see this?
+                    as: "result",
                 },
             },
-            { $unwind: "$skibidi" },
-            { $replaceRoot: { newRoot: "$skibidi" } },
+            { $unwind: "$result" },
+            { $replaceRoot: { newRoot: "$result" } },
         ];
 
         const data = await collection.aggregate(pipeline).toArray();
 
         if (!data.length) {
-            return new Response(JSON.stringify({ error: "No classes found-aahhhh" }), { status: 404 });
+            return new Response(JSON.stringify({ error: "No classes found" }), { status: 404 });
         }
 
         const json = JSON.stringify(data);
@@ -137,68 +137,6 @@ export async function POST(request: Request): Promise<Response> {
         if (error instanceof Response) return error; // Propagate Response errors directly
 
         console.error("Error in POST /api/calendars:", error);
-        return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-        });
-    }
-}
-
-export async function PUT(request: Request): Promise<Response> {
-    try {
-        const userEmail = await requireEmail();
-
-        const { calendarId } = await request.json();
-
-        if (!calendarId) {
-            return new Response(JSON.stringify({ success: false, error: "Invalid calendar Id" }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" },
-            });
-        }
-
-        if (!ObjectId.isValid(calendarId)) {
-            return new Response(JSON.stringify({ success: false, error: "Invalid calendar Id format" }), {
-                status: 400,
-                headers: { "Content-Type": "application/json" },
-            });
-        }
-
-        const client = await clientPromise;
-        const db = client.db("class-scheduling-app");
-        const usersColl = db.collection("users") as Collection<Document>;
-
-        const objectCalId = ObjectId.createFromHexString(calendarId);
-
-        const result = await usersColl.updateOne(
-            {
-                email: userEmail,
-                user_calendars: objectCalId, // ensure the user actually has that calendar
-            },
-            {
-                $set: { current_calendar: objectCalId }, // update the current_calendar field
-            }
-        );
-
-        if (result.matchedCount === 0) {
-            // either no such user, or calendarId not in their user_calendars
-            return new Response(
-                JSON.stringify({
-                    success: false,
-                    error: "User not found or calendar not in user calendars",
-                }),
-                { status: 404, headers: { "Content-Type": "application/json" } }
-            );
-        }
-
-        return new Response(JSON.stringify({ success: true }), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-        });
-    } catch (error) {
-        if (error instanceof Response) return error; // Propagate Response errors directly
-
-        console.error("Error in PUT /api/combined_classes:", error);
         return new Response(JSON.stringify({ success: false, error: "Internal server error" }), {
             status: 500,
             headers: { "Content-Type": "application/json" },
