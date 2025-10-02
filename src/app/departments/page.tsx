@@ -13,20 +13,22 @@ import { useConfirm } from '@/components/Confirm/Confirm';
 
 export default function DepartmentsPage() {
     const { data: session } = useSession();
-    const { setCurrentDepartment, allDepartments } = useCalendarContext();
+    const { setCurrentDepartment, allDepartments, currentDepartment, isLoading, renameDepartment } = useCalendarContext();
     const { toast } = useToast();
     const { confirm: confirmDialog } = useConfirm();
 
     // Real data loader
     const [departments, setDepartments] = useState<DepartmentType[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isBusy, setIsBusy] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentDepartmentId, setCurrentDepartmentId] = useState<string | null>(null);
+    const [editingDepartmentId, setEditingDepartmentId] = useState<string | null>(null);
+    const [editNameValue, setEditNameValue] = useState<string>('');
 
     useEffect(() => {
         if (!session?.user?.email) return;
 
-        setIsLoading(true);
+        setIsBusy(true);
 
         loadDepartments()
             .then(({ current, all: list }) => {
@@ -41,8 +43,57 @@ export default function DepartmentsPage() {
             .catch(err => {
                 console.error("Error loading departments:", err);
             })
-            .finally(() => setIsLoading(false));
+            .finally(() => setIsBusy(false));
     }, [session?.user?.email]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // 🔁 Keep local departments in sync with context whenever it changes
+    useEffect(() => {
+        if (Array.isArray(allDepartments)) {
+            setDepartments(allDepartments);
+        }
+    }, [allDepartments]);
+
+    // 🔁 Keep the local "current" id in sync with context currentDepartment
+    useEffect(() => {
+        setCurrentDepartmentId(currentDepartment?._id ?? null);
+    }, [currentDepartment?._id]);
+
+    const handleEditDepartment = (dept: DepartmentType) => {
+        if (!dept?._id) return;
+        setEditingDepartmentId(dept._id);
+        setEditNameValue(dept.name || '');
+    };
+
+    const handleCancelEdit = () => {
+        setEditingDepartmentId(null);
+        setEditNameValue('');
+    };
+
+    const handleUpdateDepartment = async (dept: DepartmentType) => {
+        if (!dept?._id) return;
+        const next = editNameValue.trim();
+        if (!next) {
+            toast({ description: 'Please provide a department name', variant: 'error' });
+            return;
+        }
+        setIsBusy(true);
+        try {
+            const ok = await renameDepartment(dept._id as string, next);
+            if (!ok) {
+                toast({ description: 'Failed to update department', variant: 'error' });
+                return;
+            }
+            // keep local list in sync immediately (also covered by context sync)
+            setDepartments(prev => prev.map(d => (d._id === dept._id ? { ...d, name: next } : d)));
+            setEditingDepartmentId(null);
+            toast({ description: 'Department updated successfully!', variant: 'success' });
+        } catch (e) {
+            console.error('Error updating department:', e);
+            toast({ description: 'An error occurred while updating the department', variant: 'error' });
+        } finally {
+            setIsBusy(false);
+        }
+    };
 
     const handleDeleteDepartment = async (id: string, name: string, length: number) => {
         if (!session?.user?.email) {
@@ -80,6 +131,10 @@ export default function DepartmentsPage() {
             }
 
             setDepartments((prev) => prev.filter((cal) => cal._id !== id));
+
+            if (currentDepartmentId === id) {
+                setCurrentDepartmentId(null);
+            }
         } catch (err) {
             console.error("Error deleting department: ", err);
             toast({ description: "Failed to delete department", variant: "error" });
@@ -87,14 +142,13 @@ export default function DepartmentsPage() {
     };
 
     const setCurrDept = (id: string) => {
-        console.log("ALL DEPARTMENTS:", allDepartments);
         if (!id || id === "") {
             toast({ description: 'Invalid department ID', variant: 'error' });
             console.error('Invalid department ID:', id);
             return;
         }
 
-        const foundDepartment = allDepartments.find(dept => dept._id === id);
+        const foundDepartment = departments.find(dept => dept._id === id);
 
         if (!foundDepartment) {
             toast({ description: 'Department not found', variant: 'error' });
@@ -152,7 +206,7 @@ export default function DepartmentsPage() {
                     </div>
                 </div>
 
-                {isLoading ? (
+                {isLoading || isBusy ? (
                     <div className="flex justify-center items-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 dark:border-blue-400"></div>
                     </div>
@@ -203,6 +257,7 @@ export default function DepartmentsPage() {
                             .map((department) => {
                                 // Use local state for current department highlight
                                 const isCurrent = (currentDepartmentId === department._id);
+                                const isEditing = editingDepartmentId === department._id;
                                 return (
                                     <div
                                         key={department._id}
@@ -213,40 +268,77 @@ export default function DepartmentsPage() {
                                     >
                                         <div className="p-5 flex flex-col h-full">
                                             <div className="flex justify-between items-center mb-4">
-                                                <div className="flex items-center">
+                                                <div className="flex items-start gap-2 min-w-0">
                                                     {getDepartmentStatusIcon(department.class_list?.length)}
-                                                    <h2 className="text-xl font-semibold ml-2">{department.name}</h2>
-                                                    {isCurrent && (
-                                                        <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
-                                                            Current
-                                                        </span>
-                                                    )}
+                                                    <div className="min-w-0">
+                                                        {isEditing ? (
+                                                            <div className="flex flex-col gap-2">
+                                                                <input
+                                                                    type="text"
+                                                                    value={editNameValue}
+                                                                    onChange={(e) => setEditNameValue(e.target.value)}
+                                                                    className="px-2 py-1 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                                                    autoFocus
+                                                                />
+                                                                <div className="flex gap-2">
+                                                                    <button
+                                                                        onClick={() => handleUpdateDepartment(department)}
+                                                                        disabled={isBusy || editNameValue.trim() === department.name}
+                                                                        className="px-3 py-1 text-sm bg-blue-600 dark:bg-blue-700 text-white disabled:text-gray-500 disabled:dark:text-gray-400 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-200 disabled:dark:bg-zinc-600"
+                                                                    >
+                                                                        {isBusy ? 'Saving...' : 'Save'}
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={handleCancelEdit}
+                                                                        className="px-3 py-1 text-sm bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-zinc-600"
+                                                                    >
+                                                                        Cancel
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-center gap-2">
+                                                                <h2 className="text-xl font-semibold truncate">{department.name}</h2>
+                                                                {isCurrent && (
+                                                                    <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded-full">
+                                                                        Current
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                                <div className="flex space-x-1 items-center">
-                                                    {!isCurrent && (
+                                                {!isEditing && (
+                                                    <div className="flex space-x-1 items-center">
+                                                        {!isCurrent && (
+                                                            <button
+                                                                onClick={() => (department._id) ? setCurrDept(department._id) : null}
+                                                                className="py-2 px-3 text-xs rounded text-white bg-green-600 dark:bg-emerald-600 hover:bg-green-700 dark:hover:bg-emerald-500 transition-colors duration-150 font-medium whitespace-nowrap"
+                                                                aria-label="Set as current department"
+                                                            >
+                                                                Set as Current
+                                                            </button>
+                                                        )}
                                                         <button
-                                                            onClick={() => (department._id) ? setCurrDept(department._id) : null}
-                                                            className="py-2 px-3 text-xs rounded text-white bg-green-600 dark:bg-emerald-600 hover:bg-green-700 dark:hover:bg-emerald-500 transition-colors duration-150 font-medium whitespace-nowrap"
-                                                            aria-label="Set as current department"
+                                                            onClick={() => handleEditDepartment(department)}
+                                                            disabled={isBusy}
+                                                            className="p-2 rounded-md text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                                                            aria-label="Edit department"
                                                         >
-                                                            Set as Current
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                                            </svg>
                                                         </button>
-                                                    )}
-                                                    {/* <button
-                                                        onClick={() => navigateToDepartment(department._id || '')}
-                                                        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150"
-                                                        aria-label="Open department"
-                                                    >
-                                                        <MdOpenInNew size={20} />
-                                                    </button> */}
-                                                    <button
-                                                        onClick={() => handleDeleteDepartment(department._id || '', department.name, department.class_list?.length || 0)}
-                                                        className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150 text-red-500 dark:text-red-400"
-                                                        aria-label="Delete department"
-                                                    >
-                                                        <MdDelete size={20} />
-                                                    </button>
-                                                </div>
+                                                        <button
+                                                            onClick={() => handleDeleteDepartment(department._id || '', department.name, department.class_list?.length || 0)}
+                                                            className="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors duration-150 text-red-500 dark:text-red-400"
+                                                            aria-label="Delete department"
+                                                        >
+                                                            <MdDelete size={20} />
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="mt-auto space-y-1 text-sm">

@@ -139,6 +139,7 @@ export type CalendarContextType = {
     currentDepartment: DepartmentType | null;
     allDepartments: DepartmentType[];
     setCurrentDepartment: (newDepartment: DepartmentType) => void;
+    renameDepartment: (id: string, name: string) => Promise<boolean>;
 
     // Faculty
     faculty: FacultyType[];
@@ -265,7 +266,8 @@ export type CalendarAction =
     | { type: "DELETE_CLASS"; payload: string }
     | { type: "UPDATE_FACULTY"; payload: FacultyType[] }
     | { type: "SET_NEW_CALENDAR"; payload: { userEmail: string; calendarId: string } }
-    | { type: "SET_CURRENT_DEPARTMENT"; payload: DepartmentType };
+    | { type: "SET_CURRENT_DEPARTMENT"; payload: DepartmentType }
+    | { type: "RENAME_DEPARTMENT"; payload: { id: string; name: string } };
 
 export type FacultyType = {
     _id?: string;

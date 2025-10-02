@@ -28,6 +28,7 @@ import {
     loadDepartments,
     insertUser,
     setCurrentDepartmentToNew,
+    updateDepartmentName,
 } from "@/lib/DatabaseUtils";
 import {
     buildTagMapping,
@@ -376,6 +377,18 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         case "SET_CURRENT_DEPARTMENT":
             return { ...state, departments: { all: state.departments.all, current: action.payload } };
 
+        case "RENAME_DEPARTMENT": {
+            const { id, name } = action.payload;
+            const all = (state.departments.all ?? []).map((d) =>
+                String(d._id) === String(id) ? { ...d, name } : d
+            );
+            const current =
+                state.departments.current && String(state.departments.current._id) === String(id)
+                    ? { ...state.departments.current, name }
+                    : state.departments.current;
+            return { ...state, departments: { all, current } };
+        }
+
         default:
             return state;
     }
@@ -586,6 +599,27 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     .finally(() => {
                         setForceUpdate(Date.now().toString());
                     });
+            },
+
+            // Rename department (optimistic, with rollback on failure)
+            renameDepartment: async (id: string, name: string) => {
+                const prev =
+                    state.departments.all.find((d) => String(d._id) === String(id))?.name ?? "";
+                // optimistic
+                dispatch({ type: "RENAME_DEPARTMENT", payload: { id, name } });
+                try {
+                    const ok = await updateDepartmentName(name, id);
+                    if (!ok) {
+                        // rollback
+                        dispatch({ type: "RENAME_DEPARTMENT", payload: { id, name: prev } });
+                        return false;
+                    }
+                    return true;
+                } catch (e) {
+                    console.error("renameDepartment failed:", e);
+                    dispatch({ type: "RENAME_DEPARTMENT", payload: { id, name: prev } });
+                    return false;
+                }
             },
 
             /* Faculty */

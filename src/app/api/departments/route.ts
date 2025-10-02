@@ -98,6 +98,55 @@ export async function POST(request: Request) {
     }
 }
 
+export async function PUT(request: Request) {
+    try {
+        const userEmail = await requireEmail();
+
+        const departmentIdHeader = request.headers.get("departmentId");
+
+        if (!departmentIdHeader || !ObjectId.isValid(departmentIdHeader)) {
+            return new Response(JSON.stringify("Header: 'departmentId' is missing or invalid"), { status: 400 });
+        }
+
+        const { newDepartmentName } = await request.json();
+
+        const cleanName = String(newDepartmentName ?? "").trim();
+
+        if (!cleanName) {
+            return new Response(JSON.stringify({ error: "No department name provided" }), { status: 400 });
+        }
+
+        const client = await clientPromise;
+        const usersCollection = client.db("class-scheduling-app").collection<UserType>("users");
+
+        // Perform the update using the positional operator
+        const updateResult = await usersCollection.updateOne(
+            { email: userEmail, "departments._id": new ObjectId(departmentIdHeader) },
+            { $set: { "departments.$.name": cleanName } }
+        );
+
+        if (updateResult.matchedCount === 0) {
+            // No department with that _id for this user
+            return new Response(JSON.stringify({ error: "Department not found" }), { status: 404 });
+        }
+
+        return new Response(
+            JSON.stringify({
+                success: true,
+                departmentId: departmentIdHeader,
+                name: cleanName,
+                message: updateResult.modifiedCount > 0 ? "Department name updated" : "No changes",
+            }),
+            { status: 200 }
+        );
+    } catch (error) {
+        if (error instanceof Response) return error;
+
+        console.error("Error in PUT /api/departments:", error);
+        return new Response(JSON.stringify({ error: "Internal server error" }), { status: 500 });
+    }
+}
+
 export async function DELETE(request: Request): Promise<Response> {
     try {
         const userEmail = await requireEmail();

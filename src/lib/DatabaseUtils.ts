@@ -607,6 +607,27 @@ export async function updateUserSettings(newSettings: UserSettingType): Promise<
     }
 }
 
+export async function updateDepartmentName(newDepartmentName: string, departmentId: string): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/departments", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json", departmentId },
+            body: JSON.stringify({ newDepartmentName }),
+        });
+
+        if (!response.ok) {
+            console.error(`Failed to update department: ${response.status}`);
+            return false;
+        }
+
+        const result = await parseJsonResponse<{ success: boolean }>(response);
+        return result.success;
+    } catch (error) {
+        console.error("Error setting department name", error);
+        return false;
+    }
+}
+
 export async function setCurrentCohortInDb(
     cohortId: string,
     currentDepartmentId: string
