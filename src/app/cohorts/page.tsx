@@ -15,25 +15,27 @@ import xlsx, { WorkBook, WorkSheet } from 'xlsx';
 export default function CohortSettings() {
   // State to store loaded cohorts
   const [cohorts, setCohorts] = useState<CohortType[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isBusy, setIsBusy] = useState(false);
 
   // In the CohortSettings component, add a new state variable
   const [currentCohortId, setCurrentCohortId] = useState<string | null>(null);
   const { data: session } = useSession();
-  const { currentCalendar, removeCohort, currentDepartment } = useCalendarContext();
+  const { currentCalendar, removeCohort, currentDepartment, isLoading } = useCalendarContext();
 
   // Load cohorts when component mounts
   useEffect(() => {
     async function fetchCohorts() {
-      setIsLoading(true);
+      if (!isLoading) return;
+
       try {
         if (!session?.user?.email) return;
 
         if (!currentDepartment || !currentDepartment._id) {
           console.log("No current department found for the user.", currentDepartment);
-          setIsLoading(false);
           return;
         }
+
+        setIsBusy(true);
 
         // Get all cohorts
         const result = await loadCohorts(currentDepartment._id, 'true');
@@ -49,12 +51,12 @@ export default function CohortSettings() {
         console.error('Error loading cohorts:', error);
         toast({ description: 'Failed to load cohorts', variant: 'error' });
       } finally {
-        setIsLoading(false);
+        setIsBusy(false);
       }
     }
     fetchCohorts();
     // eslint-disable-next-line
-  }, [session?.user?.email, currentDepartment]);
+  }, [session?.user?.email, currentDepartment, isLoading]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -132,7 +134,7 @@ export default function CohortSettings() {
     if (!file) return;
 
     setFileName(file.name);
-    setIsLoading(true);
+    setIsBusy(true);
 
     try {
       const data = await file.arrayBuffer();
@@ -143,7 +145,7 @@ export default function CohortSettings() {
 
       if (!rawRows || rawRows.length === 0) {
         toast({ description: 'No data found in the uploaded file', variant: 'error' });
-        setIsLoading(false);
+        setIsBusy(false);
         return;
       }
 
@@ -183,7 +185,7 @@ export default function CohortSettings() {
       console.error('Error reading file:', error);
       toast({ description: 'Failed to process file', variant: 'error' });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   };
 
@@ -198,7 +200,7 @@ export default function CohortSettings() {
       return;
     }
 
-    setIsLoading(true);
+    setIsBusy(true);
     try {
       if (!session?.user?.email) {
         toast({ description: 'User email is not available', variant: 'error' });
@@ -207,7 +209,7 @@ export default function CohortSettings() {
 
       if (!currentDepartment || !currentDepartment._id) {
         toast({ description: 'No department selected. Please select a department first.', variant: 'error' });
-        setIsLoading(false);
+        setIsBusy(false);
         return;
       }
 
@@ -239,7 +241,7 @@ export default function CohortSettings() {
       console.error("Error saving cohort:", error);
       toast({ description: 'An error occurred while saving the cohort', variant: 'error' });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   };
 
@@ -259,7 +261,7 @@ export default function CohortSettings() {
       return;
     }
 
-    setIsLoading(true);
+    setIsBusy(true);
     try {
       if (!session?.user?.email) {
         toast({ description: 'User email is not available', variant: 'error' });
@@ -268,7 +270,7 @@ export default function CohortSettings() {
 
       if (!currentDepartment || !currentDepartment._id) {
         toast({ description: 'No department selected. Please select a department first.', variant: 'error' });
-        setIsLoading(false);
+        setIsBusy(false);
         return;
       }
 
@@ -295,7 +297,7 @@ export default function CohortSettings() {
       console.error("Error updating cohort:", error);
       toast({ description: 'An error occurred while updating the cohort', variant: 'error' });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   };
 
@@ -329,7 +331,7 @@ export default function CohortSettings() {
 
       if (!ok) return;
 
-      setIsLoading(true);
+      setIsBusy(true);
       // Call the removeCohort function
       await removeCohort(cohortId, currentDepartment._id);
 
@@ -342,7 +344,7 @@ export default function CohortSettings() {
       console.error("Error deleting cohort:", error);
       toast({ description: 'An error occurred while deleting the cohort', variant: 'error' });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   }
 
@@ -364,11 +366,11 @@ export default function CohortSettings() {
       return;
     }
 
-    setIsLoading(true);
+    setIsBusy(true);
     try {
       if (!currentDepartment || !currentDepartment._id) {
         toast({ description: 'No department selected. Please select a department first.', variant: 'error' });
-        setIsLoading(false);
+        setIsBusy(false);
         return;
       }
 
@@ -384,10 +386,22 @@ export default function CohortSettings() {
       console.error("Error updating current cohort:", error);
       toast({ description: 'An error occurred while updating the current cohort', variant: 'error' });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   };
   // Different rendering based on whether current department is defined or not
+
+  if (isLoading) {
+    // Still determining department; show a loading placeholder, not the “no department” message
+    return (
+      <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 border border-gray-200 dark:border-zinc-700">
+        <div className="flex items-center gap-3">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+          <span className="text-sm text-gray-700 dark:text-gray-300">Loading department…</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentDepartment) {
     // Ask to create department first
@@ -468,7 +482,7 @@ export default function CohortSettings() {
 
           {/* Right: Upload + Save/Cancel */}
           <div className="flex items-center gap-3">
-            {isLoading ? (
+            {isBusy ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-700 dark:border-blue-400" />
             ) : (
               <>
@@ -488,7 +502,7 @@ export default function CohortSettings() {
                     accept=".csv, .xlsx, .xls"
                     onChange={handleFileUpload}
                     className="hidden"
-                    disabled={isLoading}
+                    disabled={isBusy}
                   />
                 </label>
 
@@ -500,14 +514,14 @@ export default function CohortSettings() {
                   <>
                     <button
                       onClick={handleSaveCohort}
-                      disabled={isLoading}
+                      disabled={isBusy}
                       className="px-3 py-1.5 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 text-xs font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {isLoading ? "Saving..." : "Save"}
+                      {isBusy ? "Saving..." : "Save"}
                     </button>
                     <button
                       onClick={handleCancelEdit}
-                      disabled={isLoading}
+                      disabled={isBusy}
                       className="px-3 py-1.5 bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-zinc-600 text-xs font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
@@ -584,7 +598,7 @@ export default function CohortSettings() {
             </span>
           </div>
 
-          {isLoading && !cohort ? (
+          {isBusy && !cohort ? (
             <div className="flex justify-center items-center py-12">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 dark:border-blue-400" />
             </div>
@@ -613,10 +627,10 @@ export default function CohortSettings() {
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => handleUpdateCohort(c)}
-                                  disabled={isLoading}
+                                  disabled={isBusy}
                                   className="px-3 py-1 text-sm bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600"
                                 >
-                                  {isLoading ? "Saving..." : "Save"}
+                                  {isBusy ? "Saving..." : "Save"}
                                 </button>
                                 <button
                                   onClick={handleCancelEdit}
@@ -648,7 +662,7 @@ export default function CohortSettings() {
                             {currentCohortId !== c._id && c._id && (
                               <button
                                 onClick={() => setCurrentCohort(c._id as string)}
-                                disabled={isLoading}
+                                disabled={isBusy}
                                 className="min-w-fit py-2 px-3 text-xs mr-1.5 rounded text-white bg-emerald-600 hover:bg-emerald-500 dark:bg-emerald-600 dark:hover:bg-emerald-500 transition-colors font-medium whitespace-nowrap"
                                 aria-label="Set as current cohort"
                               >
@@ -657,7 +671,7 @@ export default function CohortSettings() {
                             )}
                             <button
                               onClick={() => handleEditCohort(c)}
-                              disabled={isLoading}
+                              disabled={isBusy}
                               className="p-2 mr-1 rounded-md text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
                               aria-label="Edit cohort"
                             >
@@ -669,7 +683,7 @@ export default function CohortSettings() {
                             {c._id && (
                               <button
                                 onClick={() => handleDeleteCohort(c._id as string, c.cohortName)}
-                                disabled={isLoading}
+                                disabled={isBusy}
                                 className="p-2 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                                 aria-label="Delete cohort"
                               >
