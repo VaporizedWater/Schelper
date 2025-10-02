@@ -480,7 +480,7 @@ export async function insertFaculty(facultyList: FacultyInfo[], departmentId: st
 // PUTS/UPDATES
 export async function setCurrentCalendarToNew(calendarId: string) {
     try {
-        const response = await fetchWithTimeout("api/calendars", {
+        const response = await fetchWithTimeout("api/calendars/current", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ calendarId }),
@@ -616,7 +616,7 @@ export async function setCurrentCohortInDb(
     modifiedCount?: number;
 }> {
     try {
-        const response = await fetchWithTimeout("api/users", {
+        const response = await fetchWithTimeout("api/cohorts/current", {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
@@ -659,7 +659,7 @@ export async function setCurrentCohortInDb(
 
 export async function setCurrentDepartmentToNew(departmentId: string): Promise<boolean> {
     try {
-        const response = await fetchWithTimeout("api/departments", {
+        const response = await fetchWithTimeout("api/departments/current", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ departmentId }),
