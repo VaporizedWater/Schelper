@@ -3,15 +3,6 @@
     Good for swapping out images using one place instead of having to swap it in many (saves dev time).
 */
 
-
-// import alertTrianglePath from "public/AlertTriangle.svg";
-// import fileIconPath from "public/file.svg";
-// import calendarWhiteIconPath from "public/calendar-white.svg";
-// import calendarIconPath from "public/calendar.svg";
-// import globeIconPath from "public/globe.svg";
-// import logoTextIconPath from "public/logotype.svg";
-// import windowIconPath from "public/window.svg";
-
 // Images
 import leftTrianglePath from "public/left_triangle.png";
 import rightTrianglePath from "public/right_triangle.png";
@@ -22,28 +13,46 @@ import horizontalTextPSULogoPath from "public/psu_logo_horizontal_text.png";
 // Home Page Carousel
 import clockTowerPath from "public/HomePageCarousel/ClockTower.jpg";
 import lionShrinePath from "public/HomePageCarousel/LionShrine.jpg";
-import nightCampusPath from "public/HomePageCarousel/NightCampus.jpg";
 import dayCampusPath from "public/HomePageCarousel/DayCampus.jpg";
+
+// Better images
+import amicPath from "public/ProfLewisPhotos/AMIC.jpg";
+import bridgeOverTroutPath from "public/ProfLewisPhotos/BridgeOverTroutRun.jpg";
+import glenhillFarmhousePath from "public/ProfLewisPhotos/GlenhillFarmhouseFall.jpg";
+import glenhillRhodyPath from "public/ProfLewisPhotos/GlenhillRhody1.jpg";
+import junkerGymPath from "public/ProfLewisPhotos/JunkerGym.jpg";
+import lilleyLibraryPath from "public/ProfLewisPhotos/LilleyLibrary.jpg";
+import lionMascotBenchPath from "public/ProfLewisPhotos/LionMascotBench.jpg"
+import lionMascotNumber1Path from "public/ProfLewisPhotos/LionMascotNumber1.jpg"
+import lionShrineAerialPath from "public/ProfLewisPhotos/LionShrineAerial.jpg"
+import maryBehrendMonumentPath from "public/ProfLewisPhotos/MaryBehrendMonument.jpg";
+import smithChapelSummerPath from "public/ProfLewisPhotos/SmithChapelSummer.jpg"
+
+
 import { SVGProps } from "./types";
 
 
 // Exported Global Variables
 export const ClockTower = clockTowerPath;
 export const LionShrine = lionShrinePath;
-export const NightCampus = nightCampusPath;
 export const DayCampus = dayCampusPath;
+export const AMIC = amicPath;
+export const BridgeOverTrout = bridgeOverTroutPath;
+export const GlenhillFarmhouse = glenhillFarmhousePath;
+export const GlenhillRhody = glenhillRhodyPath;
+export const JunkerGym = junkerGymPath;
+export const LilleyLibrary = lilleyLibraryPath;
+export const LionMascotBench = lionMascotBenchPath;
+export const LionMascotNumber1 = lionMascotNumber1Path;
+export const LionShrineAerial = lionShrineAerialPath;
+export const MaryBehrendMonument = maryBehrendMonumentPath;
+export const SmithChapelSummer = smithChapelSummerPath;
+
 export const LeftTriangle = leftTrianglePath;
 export const RightTriangle = rightTrianglePath;
 export const PSU_Logo = logoPSUPath;
 export const TagsImage = tagPath;
 export const HorizontalTextPSULogo = horizontalTextPSULogoPath;
-
-// export const FileIcon = fileIconPath;
-// export const CalendarIcon = calendarIconPath;
-// export const GlobeIcon = globeIconPath;
-// export const LogoTextIcon = logoTextIconPath;
-// export const WindowIcon = windowIconPath;
-
 
 // SVG Icons
 export const AlertTriangleIcon = ({ width, height, fill_color, stroke_width, stroke_color, className }: SVGProps) => {

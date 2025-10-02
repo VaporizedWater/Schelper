@@ -3,12 +3,12 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import Footer from '@/components/Footer/Footer';
 import Link from "next/link";
-import { ClockTower, DayCampus, LionShrine, NightCampus } from '../lib/icons';
+import { ClockTower, DayCampus, LionShrine, AMIC, BridgeOverTrout, GlenhillFarmhouse, GlenhillRhody, LilleyLibrary, JunkerGym, LionMascotBench, LionMascotNumber1, LionShrineAerial, MaryBehrendMonument, SmithChapelSummer } from '../lib/icons';
 import { useSession } from "next-auth/react"
 import SignIn from "@/components/SignIn/SignIn";
 import { MdCalendarMonth } from "react-icons/md";
 
-const images = [LionShrine, DayCampus, NightCampus, ClockTower];
+const images = [LionShrine, AMIC, BridgeOverTrout, GlenhillFarmhouse, GlenhillRhody, LilleyLibrary, JunkerGym, LionMascotBench, LionMascotNumber1, LionShrineAerial, MaryBehrendMonument, SmithChapelSummer, DayCampus, ClockTower];
 
 const FADE_MS = 2500;
 const HOLD_MS = 5000;
@@ -52,16 +52,18 @@ const Home = () => {
     const loggedOut = useMemo(() => {
         return (
             <div className="flex flex-col h-screen">
-                <div className="h-full w-full">
-                    <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
-                        <h1 className='text-lightblue text-shadow-lg text-8xl font-bold flex items-center justify-center gap-4'>
-                            Schelper
-                        </h1>
-                        <h2 className='pt-4 text-3xl text-shadow-lg text-graybg drop-shadow-lg'>The Class Scheduling App</h2>
-                        <p className='pt-4 text-xl text-shadow-lg text-graybg drop-shadow-lg'>Please log in to continue</p>
-                        <div className="mt-4">
-                            <SignIn></SignIn>
-                        </div>
+                <div className="flex flex-col h-full w-full items-center justify-start text-center p-8">
+                    <h1 className="text-lightblue p-4 rounded-lg w-fit text-shadow-lg text-8xl backdrop-blur-[1px] font-bold flex items-center justify-center gap-4">
+                        Schelper
+                    </h1>
+                    <h2 className="pt-4 text-3xl text-shadow-lg text-graybg drop-shadow-lg">
+                        The Class Scheduling App
+                    </h2>
+                    <p className="pt-4 text-xl text-shadow-lg text-graybg drop-shadow-lg">
+                        Please log in to continue
+                    </p>
+                    <div className="mt-4">
+                        <SignIn />
                     </div>
                 </div>
                 <Footer />
@@ -72,23 +74,22 @@ const Home = () => {
     const loggedIn = useMemo(() => {
         return (
             <div className='flex flex-col h-screen'>
-                <div className="h-full w-full">
-                    <div className='min-h-full min-w-full items-center text-center backdrop-blur-xs p-8'>
-                        <h1 className='text-lightblue text-shadow-lg text-8xl font-bold flex items-center justify-center gap-4'>
-                            Schelper
-                        </h1>
-                        <h2 className='pt-4 text-3xl text-graybg text-shadow-lg drop-shadow-lg'>The Class Scheduling App</h2>
-
-                        {/* Main navigation options */}
-                        <div className='mt-10 flex flex-col items-center justify-center'>
-                            <Link className="overflow-hidden"
-                                href='/calendar'>
-                                <button className="inline-flex gap-2 items-center px-6 py-3 rounded-lg bg-psublue/50 hover:bg-psublue/60 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/40 text-white font-semibold cursor-pointer transition transform duration-200">
-                                    <MdCalendarMonth className="h-7 w-7" />
-                                    Calendar
-                                </button>
-                            </Link>
-                        </div>
+                <div className="flex flex-col h-full w-full items-center justify-start text-center p-8">
+                    <h1 className="text-lightblue p-4 rounded-lg w-fit text-shadow-lg text-8xl backdrop-blur-[1px] font-bold flex items-center justify-center gap-4">
+                        Schelper
+                    </h1>
+                    <h2 className="mt-4 text-4xl text-shadow-lg text-graybg drop-shadow-lg">
+                        The Class Scheduling App
+                    </h2>
+                    {/* Main navigation options */}
+                    <div className='mt-10 flex flex-col items-center justify-center'>
+                        <Link className="overflow-hidden"
+                            href='/calendar'>
+                            <button className="inline-flex gap-2 items-center px-6 py-3 rounded-lg bg-psublue/50 hover:bg-psublue/60 dark:bg-zinc-800/50 dark:hover:bg-zinc-800/40 text-white font-semibold cursor-pointer transition transform duration-200">
+                                <MdCalendarMonth className="h-7 w-7" />
+                                Calendar
+                            </button>
+                        </Link>
                     </div>
                 </div>
                 <Footer />
