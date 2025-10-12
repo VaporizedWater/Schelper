@@ -16,7 +16,6 @@ const CalendarNav = ({ toggleCalendar }: CalendarOpenProps) => {
     const createDropList = [
         { content: "Class", link: "/createClass" },
         { content: "Tag", link: "/addTag" },
-        { content: "Faculty", link: "/addFacultyUnavailability" },
         { content: "Calendar", link: "/createCalendar" },
     ];
 
