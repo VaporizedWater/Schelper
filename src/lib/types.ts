@@ -135,62 +135,73 @@ export type tagListType = Map<string, { tagCategory: tagCategory; classIds: Set<
 
 // Usually same as CalendarState, but only include here if you want external objects to access context values and functions
 export type CalendarContextType = {
-    // Department
-    currentDepartment: DepartmentType | null;
-    allDepartments: DepartmentType[];
-    setCurrentDepartment: (newDepartment: DepartmentType) => void;
-    renameDepartment: (id: string, name: string) => Promise<boolean>;
+  // Department
+  currentDepartment: DepartmentType | null;
+  allDepartments: DepartmentType[];
+  setCurrentDepartment: (newDepartment: DepartmentType) => void;
+  renameDepartment: (id: string, name: string) => Promise<boolean>;
 
-    // Faculty
-    faculty: FacultyType[];
-    updateFaculty: (faculty: FacultyType[], doMerge: boolean) => Promise<boolean>;
-    deleteFaculty: (faculty: string) => void;
+  // Faculty
+  /** Enriched faculty for the CURRENT department (email, name, unavailability) */
+  departmentFaculty: FacultyType[];
+  /** Re-fetch department faculty (enriched) */
+  refreshDepartmentFaculty: () => Promise<void>;
+  /** Replace membership list and receive enriched rows back */
+  replaceDepartmentFaculty: (rows: { email: string; name?: string }[]) => Promise<boolean>;
+  /** Remove one email from membership */
+  removeDepartmentFaculty: (email: string) => Promise<boolean>;
+  /** Patch ONLY user-added unavailability for one email */
+  updateFacultyAddedUnavailabilityFor: (email: string, added: DaySlots) => Promise<boolean>;
+  /**Remove specific user-added entry  */
+  deleteFacultyAddedUnavailabilityFor: (email: string, remainingAddedUnavailability: DaySlots) => Promise<boolean>;
+  /** Replace class-derived unavailability for one email (used when classes move) */
+  updateFacultyClassUnavailabilityFor: (email: string, classSlots: DaySlots) => Promise<boolean>;
 
-    // Calendars
-    currentCalendar: CalendarType;
-    calendarInfoList: CalendarInfo[];
-    setContextToOtherCalendar: (newCalendarId: string) => void;
+  // Calendars
+  currentCalendar: CalendarType;
+  calendarInfoList: CalendarInfo[];
+  setContextToOtherCalendar: (newCalendarId: string) => void;
 
-    // Classes
-    allClasses: CombinedClass[];
-    displayClasses: CombinedClass[];
-    displayEvents: EventInput[];
-    currentCombinedClass?: CombinedClass | undefined;
-    currentCombinedClasses: CombinedClass[]; // Used for displaying multiple classes in the calendar
-    setCurrentClass: (newClasses: CombinedClass) => void;
-    setCurrentClasses: (newClasses: CombinedClass) => void;
-    updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
-    updateAllClasses: (newClasses: CombinedClass[]) => void;
-    uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
-    deleteClass: (classId: string) => void;
+  // Classes
+  allClasses: CombinedClass[];
+  displayClasses: CombinedClass[];
+  displayEvents: EventInput[];
+  currentCombinedClass?: CombinedClass | undefined;
+  currentCombinedClasses: CombinedClass[]; // Used for displaying multiple classes in the calendar
+  setCurrentClass: (newClasses: CombinedClass) => void;
+  setCurrentClasses: (newClasses: CombinedClass) => void;
+  updateOneClass: (combinedClassToUpdate: CombinedClass) => void;
+  updateAllClasses: (newClasses: CombinedClass[]) => void;
+  uploadNewClasses: (uploadedClasses: CombinedClass[]) => void;
+  deleteClass: (classId: string) => void;
 
-    departmentHasClass: (cls: CombinedClass) => boolean;
-    departmentHasCourse: (course_subject: string, course_num: string) => boolean;
-    currentEditable: boolean;
-    canEditClass: (cls?: CombinedClass) => boolean;
+  departmentHasClass: (cls: CombinedClass) => boolean;
+  departmentHasCourse: (course_subject: string, course_num: string) => boolean;
+  currentEditable: boolean;
+  canEditClass: (cls?: CombinedClass) => boolean;
 
-    // Tags
-    tagList: tagListType; // Map of tags to a set of class ids
-    unlinkTagFromClass: (tagId: string, classId: string) => void;
-    unlinkAllTagsFromClass: (classId: string) => void;
-    unlinkAllClassesFromTag: (tagId: string) => void;
-    unlinkAllTagsFromAllClasses: () => void;
+  // Tags
+  tagList: tagListType; // Map of tags to a set of class ids
+  unlinkTagFromClass: (tagId: string, classId: string) => void;
+  unlinkAllTagsFromClass: (classId: string) => void;
+  unlinkAllClassesFromTag: (tagId: string) => void;
+  unlinkAllTagsFromAllClasses: () => void;
 
-    // Conflicts
-    conflicts: ConflictType[];
-    conflictPropertyChanged: boolean;
-    toggleConflictPropertyChanged: () => void;
+  // Conflicts
+  conflicts: ConflictType[];
+  conflictPropertyChanged: boolean;
+  toggleConflictPropertyChanged: () => void;
 
-    // Cohorts
-    removeCohort: (cohortId: string, departmentId: string) => void;
+  // Cohorts
+  removeCohort: (cohortId: string, departmentId: string) => void;
 
-    // Settings
-    userSettings: UserSettingType;
+  // Settings
+  userSettings: UserSettingType;
 
-    // Misc
-    isLoading: boolean;
-    error: string | null;
-    resetContextToEmpty: () => void;
+  // Misc
+  isLoading: boolean;
+  error: string | null;
+  resetContextToEmpty: () => void;
 };
 
 export type DepartmentType = {
@@ -231,7 +242,9 @@ export type CalendarState = {
     user: Session | null;
     currentCalendar: CalendarType;
     calendars: CalendarInfo[];
-    faculty: FacultyType[];
+
+    departmentFaculty: FacultyType[];
+
     conflictPropertyChanged: boolean;
     userSettings: UserSettingType;
 };
@@ -244,10 +257,10 @@ export type CalendarAction =
               tags: tagListType;
               currentCalendar: CalendarType;
               calendars: CalendarInfo[];
-              faculty: FacultyType[];
               userSettings: UserSettingType;
               allDepartments: DepartmentType[];
               currentDepartment: DepartmentType | null;
+              departmentFaculty?: FacultyType[];
           };
       }
     | { type: "TOGGLE_CONFLICT_PROPERTY_CHANGED"; payload: boolean }
@@ -264,26 +277,32 @@ export type CalendarAction =
     | { type: "UNLINK_ALL_TAGS_FROM_ALL_CLASSES" }
     | { type: "UPLOAD_CLASSES"; payload: CombinedClass[] }
     | { type: "DELETE_CLASS"; payload: string }
-    | { type: "UPDATE_FACULTY"; payload: FacultyType[] }
+    | { type: "SET_DEPARTMENT_FACULTY"; payload: FacultyType[] }
+    | { type: "UPDATE_DEPARTMENT_FACULTY_ROW"; payload: FacultyType }
+    | { type: "REMOVE_DEPARTMENT_FACULTY_EMAIL"; payload: string }
     | { type: "SET_NEW_CALENDAR"; payload: { userEmail: string; calendarId: string } }
     | { type: "SET_CURRENT_DEPARTMENT"; payload: DepartmentType }
     | { type: "RENAME_DEPARTMENT"; payload: { id: string; name: string } };
 
+export type DaySlots = {
+    Mon: EventInput[];
+    Tue: EventInput[];
+    Wed: EventInput[];
+    Thu: EventInput[];
+    Fri: EventInput[];
+};
+
 export type FacultyType = {
     _id?: string;
     email: string;
-    unavailability: {
-        Mon: EventInput[];
-        Tue: EventInput[];
-        Wed: EventInput[];
-        Thu: EventInput[];
-        Fri: EventInput[];
-    };
+    name?: string;
+    classUnavailability: DaySlots;
+    addedUnavailability: DaySlots;
 };
 
 export type FacultyInfo = {
     email: string;
-    name: string;
+    name?: string;
 };
 
 export type SemesterCourses = {
