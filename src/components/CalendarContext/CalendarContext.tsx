@@ -11,7 +11,6 @@ import {
     ConflictType,
     DaySlots,
     DepartmentType,
-    FacultyType,
     ReactNodeChildren,
     tagListType,
 } from "@/lib/types";
