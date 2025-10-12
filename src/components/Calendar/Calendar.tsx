@@ -7,17 +7,44 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { BusinessHoursInput, EventClickArg, EventDropArg, EventInput, EventMountArg } from "@fullcalendar/core";
 import { useRef, useEffect, useState, useCallback, useMemo } from "react";
 import { useCalendarContext } from "../CalendarContext/CalendarContext";
-import { dayIndex, defaultBackgroundColor, defaultSettings, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
-import { CombinedClass } from "@/lib/types";
+import { dayIndex, defaultBackgroundColor, defaultSettings, mergeDaySlots, newDefaultEmptyClass, selectedBackgroundColor, ShortenedDays, viewFiveDays } from "@/lib/common";
+import { CombinedClass, DaySlots } from "@/lib/types";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 
 const selectedEvents: HTMLElement[] = [];
 
+const computeClassUnavailabilityForInstructor = (email: string, classes: CombinedClass[]): DaySlots => {
+    const target = (email || "").trim().toLowerCase();
+    const acc: DaySlots = { Mon: [], Tue: [], Wed: [], Thu: [], Fri: [] };
+
+    for (const cls of classes) {
+        const e = (cls?.properties?.instructor_email || "").trim().toLowerCase();
+        if (!e || e !== target) continue;
+
+        const { start_time, end_time, days } = cls.properties;
+        if (!start_time || !end_time || !Array.isArray(days)) continue;
+
+        for (const d of days as (keyof DaySlots)[]) {
+            if (!acc[d]) continue;
+            acc[d].push({ start: start_time, end: end_time });
+        }
+    }
+
+    // Always normalize/merge with a consistent call shape.
+    return {
+        Mon: mergeDaySlots(acc.Mon),
+        Tue: mergeDaySlots(acc.Tue),
+        Wed: mergeDaySlots(acc.Wed),
+        Thu: mergeDaySlots(acc.Thu),
+        Fri: mergeDaySlots(acc.Fri),
+    };
+};
+
 const Calendar = () => {
     const { theme, resolvedTheme } = useTheme();
     const calendarRef = useRef<FullCalendar>(null);
-    const { faculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, setCurrentClasses, updateOneClass, toggleConflictPropertyChanged, userSettings, currentCalendar } = useCalendarContext();
+    const { departmentFaculty, allClasses, displayClasses, displayEvents, currentCombinedClass, conflicts, isLoading, setCurrentClass, setCurrentClasses, updateOneClass, toggleConflictPropertyChanged, userSettings, currentCalendar, updateFacultyClassUnavailabilityFor } = useCalendarContext();
     // const [events, setEvents] = useState<EventInput[]>([]);
     const [businessHours, setBusinessHours] = useState<BusinessHoursInput>([] as EventInput[]);
 
@@ -103,7 +130,7 @@ const Calendar = () => {
 
             // Use the instructor's email to find the matching Faculty record
             const instructorEmail = foundClass.properties.instructor_email;
-            const matchedFaculty = faculty.find(faculty => faculty.email === instructorEmail);
+            const matchedFaculty = (departmentFaculty ?? []).find(f => f.email === instructorEmail);
 
             if (matchedFaculty) {
                 console.log("Matched Faculty: ", matchedFaculty);
@@ -112,8 +139,16 @@ const Calendar = () => {
                 const fullDayEnd = "21:00";
                 const newBusinessHours: BusinessHoursInput = [] as EventInput[];
 
-                // Iterate through the unavailability slots and create available time slots
-                Object.entries(matchedFaculty.unavailability).forEach(([dayKey, slots]) => {
+                // merge class + added only for display (business hours)
+                const both: DaySlots = {
+                    Mon: mergeDaySlots(matchedFaculty.classUnavailability?.Mon ?? [], matchedFaculty.addedUnavailability?.Mon ?? []),
+                    Tue: mergeDaySlots(matchedFaculty.classUnavailability?.Tue ?? [], matchedFaculty.addedUnavailability?.Tue ?? []),
+                    Wed: mergeDaySlots(matchedFaculty.classUnavailability?.Wed ?? [], matchedFaculty.addedUnavailability?.Wed ?? []),
+                    Thu: mergeDaySlots(matchedFaculty.classUnavailability?.Thu ?? [], matchedFaculty.addedUnavailability?.Thu ?? []),
+                    Fri: mergeDaySlots(matchedFaculty.classUnavailability?.Fri ?? [], matchedFaculty.addedUnavailability?.Fri ?? []),
+                };
+
+                Object.entries(both).forEach(([dayKey, slots]) => {
                     // Normalize and sort the blocks by start time
                     const blocks = slots
                         .map(s => ({ start: s.start, end: s.end }))
@@ -161,7 +196,7 @@ const Calendar = () => {
         } else {
             console.log("Class not found");
         }
-    }, [faculty, findClass, selectEvent, setCurrentClass, setCurrentClasses, unselectAll]);
+    }, [departmentFaculty, findClass, selectEvent, setCurrentClass, setCurrentClasses, unselectAll]);
 
     // This triggers when clicking on any date/time slot that isn't an event
     const handleDateClick = useCallback((info: DateClickArg) => {
@@ -174,69 +209,108 @@ const Calendar = () => {
         setBusinessHours([]);
     }, [unselectAll, setCurrentClass, setCurrentClasses, setBusinessHours]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const handleEventDrop = useCallback((info: EventDropArg) => {
+    const handleEventDrop = useCallback(async (info: EventDropArg) => {
         // Update the class in the context
         const foundClass = findClass(info);
 
-        if (foundClass) {
-            // Get the new start and end times and the day if changed
-            const newStart = info.event.start?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-            const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-            const newDay = ShortenedDays[(info.event.start?.getDay() ?? 1) - 1];
+        if (!foundClass) return;
 
-            if (!newStart || !newEnd || !newDay) {
-                info.revert();
-                return;
-            }
+        // capture before to detect instructor change if that ever happens
+        const prevInstructor = foundClass.properties.instructor_email;
 
-            const multiDays = foundClass.properties.days.length > 1;
+        // Get the new start and end times and the day if changed
+        const newStart = info.event.start?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        const newDay = ShortenedDays[(info.event.start?.getDay() ?? 1) - 1];
 
-            // Update class properties
-            const updatedClass = {
-                ...foundClass,
-                properties: {
-                    ...foundClass.properties,
-                    start_time: newStart,
-                    end_time: newEnd,
-                    // Only modify days if it's a single day event
-                    days: multiDays ? foundClass.properties.days : [newDay]
-                }
-            };
-
-            // updateEventsForClass(updatedClass);
-
-            // Then update in context/database
-            toggleConflictPropertyChanged();
-            updateOneClass(updatedClass);
+        if (!newStart || !newEnd || !newDay) {
+            info.revert();
+            return;
         }
-    }, [findClass, toggleConflictPropertyChanged, updateOneClass]);
 
-    const handleEventResize = useCallback((info: EventResizeStopArg) => {
+        const multiDays = foundClass.properties.days.length > 1;
+
+        // Update class properties
+        const updatedClass = {
+            ...foundClass,
+            properties: {
+                ...foundClass.properties,
+                start_time: newStart,
+                end_time: newEnd,
+                // Only modify days if it's a single day event
+                days: multiDays ? foundClass.properties.days : [newDay]
+            }
+        };
+
+        // updateEventsForClass(updatedClass);
+
+        // Then update in context/database
+        // build "next classes" snapshot locally and recompute against that
+        const nextAll = allClasses.map(c => c._id === updatedClass._id ? updatedClass : c);
+        const nextInstructor = updatedClass.properties.instructor_email;
+
+        // recompute full class-unavailability for affected instructors
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const updates: Promise<any>[] = [];
+        if (nextInstructor) {
+            const nextUnavail = computeClassUnavailabilityForInstructor(nextInstructor, nextAll);
+            console.log("C1: ", computeClassUnavailabilityForInstructor(nextInstructor, nextAll))
+            updates.push(updateFacultyClassUnavailabilityFor(nextInstructor, nextUnavail));
+        }
+        // if instructor changed, also recompute for the previous one
+        if (prevInstructor && prevInstructor !== nextInstructor) {
+            const prevUnavail = computeClassUnavailabilityForInstructor(prevInstructor, nextAll);
+            console.log("C2: ", computeClassUnavailabilityForInstructor(prevInstructor, nextAll))
+            updates.push(updateFacultyClassUnavailabilityFor(prevInstructor, prevUnavail));
+        }
+
+        // persist class and the unavailability updates together
+        await Promise.all([updateOneClass(updatedClass), ...updates]);
+
+        toggleConflictPropertyChanged();
+
+    }, [findClass, toggleConflictPropertyChanged, updateOneClass, allClasses, updateFacultyClassUnavailabilityFor]);
+
+    const handleEventResize = useCallback(async (info: EventResizeStopArg) => {
         const foundClass = findClass(info);
 
-        if (foundClass) {
-            const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        if (!foundClass) return;
 
-            if (!newEnd) {
-                return;
+        const prevInstructor = foundClass.properties.instructor_email;
+
+        const newEnd = info.event.end?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+        if (!newEnd) return;
+
+        // Update class properties
+        const updatedClass = {
+            ...foundClass,
+            properties: {
+                ...foundClass.properties,
+                end_time: newEnd
             }
+        };
 
-            // Update class properties
-            const updatedClass = {
-                ...foundClass,
-                properties: {
-                    ...foundClass.properties,
-                    end_time: newEnd
-                }
-            };
+        // updateEventsForClass(updatedClass);
 
-            // updateEventsForClass(updatedClass);
+        // Then update in context/database
+        const nextAll = allClasses.map(c => c._id === updatedClass._id ? updatedClass : c);
+        const nextInstructor = updatedClass.properties.instructor_email;
 
-            // Then update in context/database
-            updateOneClass(updatedClass);
-            toggleConflictPropertyChanged();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const updates: Promise<any>[] = [];
+        if (nextInstructor) {
+            const nextUnavail = computeClassUnavailabilityForInstructor(nextInstructor, nextAll);
+            updates.push(updateFacultyClassUnavailabilityFor(nextInstructor, nextUnavail));
         }
-    }, [findClass, toggleConflictPropertyChanged, updateOneClass]);
+        if (prevInstructor && prevInstructor !== nextInstructor) {
+            const prevUnavail = computeClassUnavailabilityForInstructor(prevInstructor, nextAll);
+            updates.push(updateFacultyClassUnavailabilityFor(prevInstructor, prevUnavail));
+        }
+
+        await Promise.all([updateOneClass(updatedClass), ...updates]);
+        toggleConflictPropertyChanged();
+
+    }, [findClass, toggleConflictPropertyChanged, updateOneClass, allClasses, updateFacultyClassUnavailabilityFor]);
 
     // Memoize the event content renderer
     const eventContent = useCallback((eventInfo: EventInput) => {
@@ -405,8 +479,9 @@ const Calendar = () => {
             handleWindowResize={true}
             windowResizeDelay={0}
         />);
+    }, [businessHours, displayEvents, allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    }, [businessHours, allClasses]); // eslint-disable-line react-hooks/exhaustive-deps
+    console.log("CURRENT CAL", currentCalendar);
 
     if (isLoading) {
         return (
