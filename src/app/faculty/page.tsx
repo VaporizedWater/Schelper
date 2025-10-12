@@ -1,107 +1,80 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { MdDelete, MdAdd, MdSearch, MdFilterList, MdApartment, MdFileUpload, MdArrowRightAlt } from "react-icons/md";
+import { MdDelete, MdAdd, MdSearch, MdFilterList, MdApartment, MdFileUpload, MdArrowRightAlt, MdExpandMore, MdExpandLess, MdLock, MdViewAgenda, MdViewModule } from "react-icons/md";
 import { useToast } from "@/components/Toast/Toast";
 import { useCalendarContext } from "@/components/CalendarContext/CalendarContext";
 import * as xlsx from "xlsx";
 import type { WorkBook, WorkSheet } from "xlsx";
-import { FacultyInfo } from "@/lib/types"; // uses your shared type
-import { deleteDepartmentFaculty, insertFaculty, loadFaculty } from "@/lib/DatabaseUtils";
+import { DaySlots, FacultyType } from "@/lib/types"; // uses your shared type
 import Link from "next/link";
 import { useConfirm } from "@/components/Confirm/Confirm";
+
+type DepartmentMember = Pick<FacultyType, "email" | "name">;
+type DayKey = keyof DaySlots;
+const days: DayKey[] = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
 export default function FacultyPage() {
     const { toast } = useToast();
     const { confirm: confirmDialog } = useConfirm();
-    const { currentDepartment } = useCalendarContext();
-
-    const [faculty, setFaculty] = useState<FacultyInfo[]>([]);
+    const {
+        currentDepartment,
+        departmentFaculty,
+        refreshDepartmentFaculty,
+        replaceDepartmentFaculty,
+        removeDepartmentFaculty,
+        updateFacultyAddedUnavailabilityFor,
+        deleteFacultyAddedUnavailabilityFor
+    } = useCalendarContext();
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [newEmail, setNewEmail] = useState("");
     const [newName, setNewName] = useState("");
     const [filterDomain, setFilterDomain] = useState("all");
+    const [openEmail, setOpenEmail] = useState<string | null>(null);
 
     // Import handling
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [fileName, setFileName] = useState("");
-    const [parsedPreview, setParsedPreview] = useState<FacultyInfo[] | null>(null);
+    const [parsedPreview, setParsedPreview] = useState<DepartmentMember[] | null>(null);
+
+    // Layout toggle: 'one' = 1/card per row, 'three' = 3/cards per row (current)
+    const [cardsLayout, setCardsLayout] = useState<"one" | "three">("three");
+
+    // Compute grid classes from the toggle
+    const cardsGridClass = useMemo(() => {
+        return cardsLayout === "one"
+            ? "grid grid-cols-1 gap-6"
+            : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6";
+    }, [cardsLayout]);
+
+    const innerCardClass = useMemo(() => {
+        return cardsLayout === "one"
+            ? "grid grid-cols-1 sm:grid-cols-5 gap-4"
+            : "grid grid-cols-1 sm:grid-cols-2 gap-4";
+    }, [cardsLayout]);
 
     const departmentId = currentDepartment?._id ?? null;
 
-    // ---- API helpers ----
-    async function fetchFaculty() {
-        if (!departmentId) return;
-        setIsLoading(true);
-        try {
-            const result = await loadFaculty(departmentId);
-
-            if (!result) {
-                toast({ description: "Failed to load faculty", variant: "error" });
-                return;
-            } else {
-                toast({ description: "Loaded faculty", variant: "success" });
-            }
-
-            setFaculty(sortFaculty(result));
-        } catch (e) {
-            console.error(e);
-            toast({ description: "Failed to load faculty", variant: "error" });
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    async function replaceFaculty(next: FacultyInfo[]) {
-        if (!departmentId) return;
-        setIsLoading(true);
-        try {
-            const result = await insertFaculty(next, departmentId);
-
-            if (!result) {
-                toast({ description: "Failed to save list", variant: "error" });
-                return;
-            } else {
-                toast({ description: "Faculty list saved", variant: "success" });
-            }
-
-            setFaculty(sortFaculty(next));
-        } catch (e) {
-            console.error(e);
-            toast({ description: "Failed to save", variant: "error" });
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
+    // ---- Context-backed helpers ----
     async function removeFaculty(email: string) {
         if (!departmentId) return;
+        const ok = await confirmDialog({
+            title: `Remove faculty ${email}?`,
+            description: "This removes them from this department only (directory profile remains).",
+            confirmText: "Remove",
+            cancelText: "Cancel",
+            variant: "danger",
+        });
+        if (!ok) return;
         setIsLoading(true);
         try {
-            const isConfirmed = await confirmDialog({
-                title: `Delete faculty ${email}?`,
-                description: "This action cannot be undone.",
-                confirmText: "Delete",
-                cancelText: "Cancel",
-                variant: "danger",
-            });
-
-            if (!isConfirmed) return;
-
-            const result = await deleteDepartmentFaculty(email, departmentId);
-
-            if (!result) {
+            const success = await removeDepartmentFaculty(email);
+            if (!success) {
                 toast({ description: "Failed to remove faculty", variant: "error" });
                 return;
-            } else {
-                toast({ description: "Removed faculty", variant: "success" });
             }
-
-            setFaculty((cur) => cur.filter((f) => f.email !== email));
-        } catch (e) {
-            console.error(e);
-            toast({ description: "Failed to remove", variant: "error" });
+            toast({ description: "Removed faculty", variant: "success" });
         } finally {
             setIsLoading(false);
         }
@@ -110,26 +83,31 @@ export default function FacultyPage() {
     // ---- Load on department change ----
     useEffect(() => {
         if (!departmentId) {
-            setFaculty([]);
             setIsLoading(false);
             return;
         }
-        fetchFaculty();
+        setIsLoading(true);
+        refreshDepartmentFaculty()
+            .then(() => {
+                /* no-op */
+            })
+            .catch(() => toast({ description: "Failed to load faculty", variant: "error" }))
+            .finally(() => setIsLoading(false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [departmentId]);
 
     // ---- Filtering ----
     const domains = useMemo(() => {
         const set = new Set<string>();
-        faculty.forEach(({ email }) => {
+        (departmentFaculty ?? []).forEach(({ email }) => {
             const at = email.indexOf("@");
             if (at > -1) set.add(email.slice(at + 1));
         });
         return ["all", ...Array.from(set).sort()];
-    }, [faculty]);
+    }, [departmentFaculty]);
 
     const filtered = useMemo(() => {
-        return faculty.filter(({ email, name }) => {
+        return (departmentFaculty ?? []).filter(({ email, name }) => {
             const q = searchTerm.toLowerCase();
             const matchesSearch =
                 email.toLowerCase().includes(q) || (name || "").toLowerCase().includes(q);
@@ -137,7 +115,7 @@ export default function FacultyPage() {
                 filterDomain === "all" || email.toLowerCase().endsWith("@" + filterDomain.toLowerCase());
             return matchesSearch && matchesDomain;
         });
-    }, [faculty, searchTerm, filterDomain]);
+    }, [departmentFaculty, searchTerm, filterDomain]);
 
     // ---- Add one ----
     const handleAdd = async () => {
@@ -147,21 +125,25 @@ export default function FacultyPage() {
             toast({ description: "Enter a valid email", variant: "error" });
             return;
         }
-        // merge/dedupe by email (case-insensitive)
-        const map = new Map(faculty.map((f) => [f.email.toLowerCase(), f]));
-        const existing = map.get(email.toLowerCase());
-        if (existing) {
-            // Update name if provided and different
-            if (name && name !== existing.name) {
-                map.set(email.toLowerCase(), { email: existing.email, name });
-            } else {
-                toast({ description: "Faculty already exists", variant: "info" });
+        // optimistic merge with current context list
+        const existing = (departmentFaculty ?? []).find((f) => f.email.toLowerCase() === email.toLowerCase());
+        const next: DepartmentMember[] = existing
+            ? (departmentFaculty ?? []).map((f) =>
+                f.email.toLowerCase() === email.toLowerCase() ? { email: f.email, name: name || f.name || "" } : { email: f.email, name: f.name || "" }
+            )
+            : [...(departmentFaculty ?? []).map((f) => ({ email: f.email, name: f.name || "" })), { email, name }];
+
+        setIsLoading(true);
+        try {
+            const ok = await replaceDepartmentFaculty(next);
+            if (!ok) {
+                toast({ description: "Failed to save list", variant: "error" });
                 return;
             }
-        } else {
-            map.set(email.toLowerCase(), { email, name });
+            toast({ description: "Faculty list saved", variant: "success" });
+        } finally {
+            setIsLoading(false);
         }
-        await replaceFaculty(Array.from(map.values()));
         setNewEmail("");
         setNewName("");
     };
@@ -195,7 +177,7 @@ export default function FacultyPage() {
                 return;
             }
 
-            const parsed: FacultyInfo[] = [];
+            const parsed: DepartmentMember[] = [];
             for (let r = headerIndex + 1; r < rows.length; r++) {
                 const row = rows[r];
                 if (!row || row.length === 0) continue;
@@ -228,7 +210,10 @@ export default function FacultyPage() {
     // merge append
     const handleAppendParsed = async () => {
         if (!parsedPreview) return;
-        const map = new Map(faculty.map((f) => [f.email.toLowerCase(), f]));
+        const currentAsInfo: DepartmentMember[] = (departmentFaculty ?? []).map((f) => ({ email: f.email, name: f.name ?? "" }));
+        const map = new Map<string, DepartmentMember>(
+            currentAsInfo.map((f) => [f.email.toLowerCase(), f] as const)
+        );
         for (const f of parsedPreview) {
             const existing = map.get(f.email.toLowerCase());
             if (!existing) {
@@ -237,7 +222,14 @@ export default function FacultyPage() {
                 map.set(f.email.toLowerCase(), { email: existing.email, name: f.name });
             }
         }
-        await replaceFaculty(Array.from(map.values()));
+        setIsLoading(true);
+        try {
+            const ok = await replaceDepartmentFaculty(Array.from(map.values()));
+            if (!ok) toast({ description: "Failed to save list", variant: "error" });
+            else toast({ description: "Faculty list saved", variant: "success" });
+        } finally {
+            setIsLoading(false);
+        }
         setParsedPreview(null);
         setFileName("");
         if (fileInputRef.current) fileInputRef.current.value = "";
@@ -246,14 +238,27 @@ export default function FacultyPage() {
     // replace all
     const handleReplaceAllParsed = async () => {
         if (!parsedPreview) return;
-        await replaceFaculty(parsedPreview);
+        setIsLoading(true);
+        try {
+            const ok = await replaceDepartmentFaculty(parsedPreview);
+            if (!ok) toast({ description: "Failed to save list", variant: "error" });
+            else toast({ description: "Faculty list saved", variant: "success" });
+        } finally {
+            setIsLoading(false);
+        }
         setParsedPreview(null);
         setFileName("");
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
+    function resetUploadUI() {
+        setParsedPreview(null);
+        setFileName("");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+
     // ---- Helpers ----
-    function sortFaculty(list: FacultyInfo[]) {
+    function sortFaculty(list: DepartmentMember[]) {
         return [...list].sort((a, b) => {
             const an = (a.name || "").toLowerCase();
             const bn = (b.name || "").toLowerCase();
@@ -262,8 +267,8 @@ export default function FacultyPage() {
         });
     }
 
-    function normalize(list: FacultyInfo[]) {
-        const seen = new Map<string, FacultyInfo>();
+    function normalize(list: DepartmentMember[]) {
+        const seen = new Map<string, DepartmentMember>();
         for (const f of list) {
             const email = f.email.trim();
             const name = (f.name || "").trim();
@@ -318,7 +323,7 @@ export default function FacultyPage() {
 
     // If you already compute a filtered list elsewhere, reuse it.
     // Otherwise, this gives you a simple name/email search filter.
-    const visibleFaculty = faculty.filter((f) => {
+    const visibleFaculty = (departmentFaculty ?? []).filter((f) => {
         if (!searchTerm.trim()) return true;
         const q = searchTerm.toLowerCase();
         return (
@@ -328,8 +333,82 @@ export default function FacultyPage() {
     });
 
     const shown = visibleFaculty.length;
-    const total = faculty.length;
+    const total = (departmentFaculty ?? []).length;
     const countLabel = shown === total ? `${total} total` : `Showing ${shown} of ${total}`;
+
+    // ----- Unavailability editor helpers -----
+    const [newSlotTimes, setNewSlotTimes] = useState<Record<string, Record<DayKey, { start: string; end: string }>>>({});
+
+    useEffect(() => {
+        // seed draft state when list changes
+        const seed: Record<string, Record<DayKey, { start: string; end: string }>> = {};
+        (departmentFaculty ?? []).forEach((r) => {
+            seed[r.email] = {
+                Mon: { start: "", end: "" },
+                Tue: { start: "", end: "" },
+                Wed: { start: "", end: "" },
+                Thu: { start: "", end: "" },
+                Fri: { start: "", end: "" },
+            };
+        });
+        setNewSlotTimes(seed);
+    }, [departmentFaculty]);
+
+    const handleNewSlotChange = (email: string, day: DayKey, field: "start" | "end", value: string) => {
+        setNewSlotTimes((prev) => ({
+            ...prev,
+            [email]: { ...prev[email], [day]: { ...prev[email]?.[day], [field]: value } },
+        }));
+    };
+
+    const handleAddTimeSlot = async (email: string, day: DayKey) => {
+        const row = (departmentFaculty ?? []).find((r) => r.email === email);
+        if (!row) return;
+        const { start, end } = newSlotTimes[email]?.[day] || { start: "", end: "" };
+        if (!start || !end) return;
+        setIsLoading(true);
+        try {
+            const next = {
+                ...row.addedUnavailability,
+                [day]: [...(row.addedUnavailability?.[day] ?? []), { start, end }],
+            } as DaySlots;
+            const ok = await updateFacultyAddedUnavailabilityFor(email, next);
+            if (!ok) toast({ description: "Failed to add time slot", variant: "error" });
+            else {
+                // clear draft
+                setNewSlotTimes((prev) => ({
+                    ...prev,
+                    [email]: { ...prev[email], [day]: { start: "", end: "" } },
+                }));
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRemoveTimeSlot = async (email: string, day: DayKey, start: string, end: string) => {
+        const ok = await confirmDialog({
+            title: "Remove time slot?",
+            description: `Remove ${start} – ${end} on ${day}?`,
+            confirmText: "Remove",
+            cancelText: "Cancel",
+            variant: "warning",
+        });
+        if (!ok) return;
+        const row = (departmentFaculty ?? []).find((r) => r.email === email);
+        if (!row) {toast({description: "No email found", variant: "error"}); return;}
+        setIsLoading(true);
+        try {
+            const nextForDay = (row.addedUnavailability?.[day] ?? []).filter((s) => s.start !== start || s.end !== end);
+            const next = { ...row.addedUnavailability, [day]: nextForDay } as DaySlots;
+            console.log("Email: ", email, " Next:", next);
+            const ok2 = await deleteFacultyAddedUnavailabilityFor(email, next);
+            if (!ok2) toast({ description: "Failed to remove time slot", variant: "error" });
+            else { toast({ description: "Removed.", variant: "success" }) }
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // ---- UI ----
     if (!currentDepartment) {
@@ -360,13 +439,50 @@ export default function FacultyPage() {
                         <h1 className="text-3xl font-bold">Department Faculty</h1>
                         <span
                             className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium 
-                         bg-blue-50 text-blue-700 border border-blue-200
-                         dark:bg-blue-900/30 dark:text-blue-200 dark:border-blue-800 select-none"
+               bg-blue-50 text-blue-700 border border-blue-200
+               dark:bg-blue-900/30 dark:text-blue-200 dark:border-blue-800 select-none"
                             title="Current Department"
                         >
                             <MdApartment className="opacity-80" size={16} />
                             Department: {currentDepartment.name}
                         </span>
+
+                        {/* Layout toggle */}
+                        <div className="px-2 inline-flex items-center gap-2">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">Layout</span>
+                            <div role="group" aria-label="Card layout" className="inline-flex overflow-hidden rounded-md border border-gray-300 dark:border-zinc-600">
+                                <button
+                                    type="button"
+                                    onClick={() => setCardsLayout("one")}
+                                    aria-pressed={cardsLayout === "one"}
+                                    title="1 per row"
+                                    className={[
+                                        "px-2.5 py-1.5 text-sm flex items-center gap-1 transition-colors",
+                                        cardsLayout === "one"
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-600"
+                                    ].join(" ")}
+                                >
+                                    <MdViewAgenda size={18} />
+                                    <span className="hidden sm:inline">1</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setCardsLayout("three")}
+                                    aria-pressed={cardsLayout === "three"}
+                                    title="3 per row"
+                                    className={[
+                                        "px-2.5 py-1.5 text-sm flex items-center gap-1 transition-colors border-l border-gray-300 dark:border-zinc-600",
+                                        cardsLayout === "three"
+                                            ? "bg-blue-600 text-white"
+                                            : "bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-600"
+                                    ].join(" ")}
+                                >
+                                    <MdViewModule size={18} />
+                                    <span className="hidden sm:inline">3</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -390,7 +506,9 @@ export default function FacultyPage() {
                             />
                         </label>
                         {fileName && (
-                            <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[160px]">{fileName}</span>
+                            <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[160px]">
+                                {fileName}
+                            </span>
                         )}
                     </div>
                 </div>
@@ -487,11 +605,7 @@ export default function FacultyPage() {
                                     Replace All
                                 </button>
                                 <button
-                                    onClick={() => {
-                                        setParsedPreview(null);
-                                        setFileName("");
-                                        if (fileInputRef.current) fileInputRef.current.value = "";
-                                    }}
+                                    onClick={resetUploadUI}
                                     className="px-3 py-1.5 rounded-md bg-gray-200 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-zinc-600 transition-colors"
                                 >
                                     Clear
@@ -555,8 +669,8 @@ export default function FacultyPage() {
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 dark:border-blue-400"></div>
                     </div>
                 ) : filtered.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {filtered.map(({ email, name }) => {
+                    <div className={cardsGridClass}>
+                        {filtered.map(({ email, name, classUnavailability, addedUnavailability }) => {
                             const initials = (name || email)
                                 .split(" ")
                                 .map((p) => p[0])
@@ -565,6 +679,7 @@ export default function FacultyPage() {
                                 .slice(0, 2)
                                 .toUpperCase();
                             const domain = email.split("@")[1] ?? "";
+                            const isOpen = openEmail === email;
                             return (
                                 <div
                                     key={email}
@@ -590,15 +705,134 @@ export default function FacultyPage() {
                                                 )}
                                             </div>
                                         </div>
-                                        <button
-                                            onClick={() => removeFaculty(email)}
-                                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
-                                            aria-label={`Remove ${email}`}
-                                            title="Remove"
-                                        >
-                                            <MdDelete size={18} />
-                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => setOpenEmail(isOpen ? null : email)}
+                                                className="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-zinc-600 transition"
+                                                aria-label="Toggle unavailability"
+                                                title="Toggle unavailability"
+                                            >
+                                                {isOpen ? <MdExpandLess size={18} /> : <MdExpandMore size={18} />}
+                                            </button>
+                                            <button
+                                                onClick={() => removeFaculty(email)}
+                                                className="p-2 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                                                aria-label={`Remove ${email}`}
+                                                title="Remove from department"
+                                            >
+                                                <MdDelete size={18} />
+                                            </button>
+                                        </div>
                                     </div>
+
+                                    {isOpen && (
+                                        <div className="px-5 pb-4">
+                                            <div className={innerCardClass}>
+                                                {days.map((day) => {
+                                                    const classSlots = classUnavailability?.[day] ?? [];
+                                                    const addedSlots = addedUnavailability?.[day] ?? [];
+                                                    return (
+                                                        <div
+                                                            key={day}
+                                                            className="rounded-md border border-gray-200 dark:border-zinc-600 p-3 flex flex-col h-full"
+                                                        >
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <h4 className="font-medium text-sm">{day}</h4>
+                                                                <span className="text-xs opacity-70">
+                                                                    {addedSlots.length} added • {classSlots.length} class
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Class (auto) – read-only */}
+                                                            <div className="mb-2">
+                                                                <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                                                                    <MdLock size={14} /> Class (auto)
+                                                                </div>
+                                                                {classSlots.length > 0 ? (
+                                                                    <ul className="mt-1 space-y-1 text-sm">
+                                                                        {classSlots.map((s, i) => (
+                                                                            <li key={i}>{String(s.start)} – {String(s.end)}</li>
+                                                                        ))}
+                                                                    </ul>
+                                                                ) : (
+                                                                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                                                        No class slots
+                                                                    </p>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Added (manual) – editable */}
+                                                            <div className="mt-2 flex flex-col flex-1">
+                                                                <div className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                                                                    Added (manual)
+                                                                </div>
+                                                                {addedSlots.length > 0 ? (
+                                                                    <ul className="mt-1 space-y-1 text-sm">
+                                                                        {addedSlots.map((slot, idx) => (
+                                                                            <li
+                                                                                key={idx}
+                                                                                className="flex items-center justify-between"
+                                                                            >
+                                                                                <span>{String(slot.start)} – {String(slot.end)}</span>
+                                                                                <button
+                                                                                    onClick={() =>
+                                                                                        handleRemoveTimeSlot(
+                                                                                            email,
+                                                                                            day,
+                                                                                            String(slot.start),
+                                                                                            String(slot.end)
+                                                                                        )
+                                                                                    }
+                                                                                    className="p-1 rounded-md text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                                                                                    title="Remove this manual slot"
+                                                                                >
+                                                                                    <MdDelete size={16} />
+                                                                                </button>
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                ) : (
+                                                                    <p className="text-sm text-gray-500 dark:text-gray-400 italic">
+                                                                        No manual slots
+                                                                    </p>
+                                                                )}
+
+                                                                <div className="pt-3 grid grid-cols-2 gap-2 mt-auto">
+                                                                    <input
+                                                                        type="time"
+                                                                        value={newSlotTimes[email]?.[day]?.start || ""}
+                                                                        onChange={(e) =>
+                                                                            handleNewSlotChange(email, day, "start", e.target.value)
+                                                                        }
+                                                                        className="px-2 py-1 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-sm"
+                                                                    />
+                                                                    <input
+                                                                        type="time"
+                                                                        value={newSlotTimes[email]?.[day]?.end || ""}
+                                                                        onChange={(e) =>
+                                                                            handleNewSlotChange(email, day, "end", e.target.value)
+                                                                        }
+                                                                        className="px-2 py-1 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-sm"
+                                                                    />
+                                                                    <button
+                                                                        onClick={() => handleAddTimeSlot(email, day)}
+                                                                        disabled={
+                                                                            isLoading ||
+                                                                            !newSlotTimes[email]?.[day]?.start ||
+                                                                            !newSlotTimes[email]?.[day]?.end
+                                                                        }
+                                                                        className="w-full col-span-2 px-3 py-1.5 bg-green-600 dark:bg-green-600 text-white rounded-md hover:bg-green-500 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                    >
+                                                                        Add
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             );
                         })}
