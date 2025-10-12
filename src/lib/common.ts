@@ -8,6 +8,7 @@ import {
     ClassProperty,
     CohortType,
     CombinedClass,
+    DaySlots,
     DepartmentType,
     FacultyInfo,
     FacultyType,
@@ -111,13 +112,32 @@ export function newDefaultEmptyFaculty(): FacultyType {
     return {
         _id: "",
         email: "",
-        unavailability: {
+        classUnavailability: {
             Mon: [],
             Tue: [],
             Wed: [],
             Thu: [],
             Fri: [],
         },
+        addedUnavailability: {
+            Mon: [],
+            Tue: [],
+            Wed: [],
+            Thu: [],
+            Fri: [],
+        },
+    };
+}
+
+export const EMPTY_DAY_SLOTS: DaySlots = { Mon: [], Tue: [], Wed: [], Thu: [], Fri: [] };
+
+export function normalizeDaySlots(ds?: DaySlots): DaySlots {
+    return {
+        Mon: Array.isArray(ds?.Mon) ? ds!.Mon : [],
+        Tue: Array.isArray(ds?.Tue) ? ds!.Tue : [],
+        Wed: Array.isArray(ds?.Wed) ? ds!.Wed : [],
+        Thu: Array.isArray(ds?.Thu) ? ds!.Thu : [],
+        Fri: Array.isArray(ds?.Fri) ? ds!.Fri : [],
     };
 }
 
@@ -183,111 +203,61 @@ export const buildTagMapping = (classes: CombinedClass[], existingMapping?: tagL
     return mapping;
 };
 
-// Helper function to merge faculty entries
-export const mergeFacultyEntries = (existingFaculty: FacultyType[] = [], newFaculty: FacultyType[] = []): FacultyType[] => {
-    // Create a map of existing faculty for quick lookups
-    const facultyMap = new Map<string, FacultyType>();
-    existingFaculty.forEach((faculty) => {
-        if (faculty.email) {
-            facultyMap.set(faculty.email, { ...faculty });
-        }
-    });
-
-    // Process each new faculty entry
-    newFaculty.forEach((newEntry) => {
-        if (!newEntry.email) return;
-
-        if (facultyMap.has(newEntry.email)) {
-            // Merge with existing entry
-            const existingEntry = facultyMap.get(newEntry.email)!;
-            facultyMap.set(newEntry.email, {
-                ...existingEntry,
-                unavailability: {
-                    Mon: mergeDaySlots(existingEntry.unavailability.Mon, newEntry.unavailability.Mon),
-                    Tue: mergeDaySlots(existingEntry.unavailability.Tue, newEntry.unavailability.Tue),
-                    Wed: mergeDaySlots(existingEntry.unavailability.Wed, newEntry.unavailability.Wed),
-                    Thu: mergeDaySlots(existingEntry.unavailability.Thu, newEntry.unavailability.Thu),
-                    Fri: mergeDaySlots(existingEntry.unavailability.Fri, newEntry.unavailability.Fri),
-                },
-            });
-        } else {
-            // Add new entry
-            facultyMap.set(newEntry.email, { ...newEntry });
-        }
-    });
-
-    // Convert the map back to an array
-    return Array.from(facultyMap.values());
-};
-
 // Helper function to merge time slots for a specific day
-const mergeDaySlots = (existingSlots: EventInput[] = [], newSlots: EventInput[] = []): EventInput[] => {
-    // If either array is empty, just return the other (or empty if both empty)
-    if (existingSlots.length === 0) return [...newSlots];
-    if (newSlots.length === 0) return [...existingSlots];
+export const mergeDaySlots = (...lists: EventInput[][]): EventInput[] => {
+    // Flatten and sanitize input
+    const flat = (lists.flat() as EventInput[]).filter(Boolean);
+    if (flat.length === 0) return [];
 
-    // Helper function to convert time string "HH:MM" to minutes for easier comparison
-    const timeToMinutes = (timeStr: string | undefined): number => {
-        if (!timeStr) return 0;
-        const [hours, minutes] = timeStr.split(":").map(Number);
-        return hours * 60 + minutes;
+    // "HH:MM" -> minutes
+    const toMin = (t?: string) => {
+        if (!t) return NaN;
+        const [h, m] = t.split(":").map(Number);
+        if (Number.isNaN(h) || Number.isNaN(m)) return NaN;
+        return h * 60 + m;
     };
 
-    // Helper function to convert minutes back to time string "HH:MM"
-    const minutesToTime = (minutes: number): string => {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return `${hours.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}`;
+    // minutes -> "HH:MM"
+    const toHHMM = (mins: number) => {
+        const h = Math.floor(mins / 60);
+        const m = mins % 60;
+        return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
     };
 
-    // Create a type-safe array of interval objects for processing
-    type TimeInterval = { start: number; end: number; originalSlot: EventInput };
+    type Seg = { start: number; end: number; base?: EventInput };
 
-    // Combine all slots and convert to interval objects with numeric values
-    const intervals: TimeInterval[] = [
-        ...existingSlots.map((slot) => ({
-            start: timeToMinutes(slot.start as string),
-            end: timeToMinutes(slot.end as string),
-            originalSlot: slot,
-        })),
-        ...newSlots.map((slot) => ({
-            start: timeToMinutes(slot.start as string),
-            end: timeToMinutes(slot.end as string),
-            originalSlot: slot,
-        })),
-    ];
+    // Convert to numeric intervals; drop invalid/empty (start >= end)
+    const intervals: Seg[] = [];
+    for (const slot of flat) {
+        const s = toMin(slot.start as string);
+        const e = toMin(slot.end as string);
+        if (!Number.isFinite(s) || !Number.isFinite(e)) continue;
+        if (s >= e) continue;
+        intervals.push({ start: s, end: e, base: slot });
+    }
 
-    // Sort by start time
-    intervals.sort((a, b) => a.start - b.start);
+    if (intervals.length === 0) return [];
 
-    // Merge overlapping intervals
-    const mergedIntervals: TimeInterval[] = [];
+    // Sort by start (then end)
+    intervals.sort((a, b) => a.start - b.start || a.end - b.end);
 
-    for (const interval of intervals) {
-        // If this is the first interval or if it doesn't overlap with the last merged interval
-        if (mergedIntervals.length === 0 || interval.start > mergedIntervals[mergedIntervals.length - 1].end) {
-            mergedIntervals.push(interval);
+    // Merge overlapping/contiguous intervals
+    const merged: Seg[] = [];
+    for (const cur of intervals) {
+        const last = merged[merged.length - 1];
+        if (!last || cur.start > last.end) {
+            merged.push({ ...cur });
         } else {
-            // Overlapping case: extend the end time of the last merged interval if needed
-            mergedIntervals[mergedIntervals.length - 1].end = Math.max(
-                mergedIntervals[mergedIntervals.length - 1].end,
-                interval.end
-            );
+            last.end = Math.max(last.end, cur.end);
         }
     }
 
-    // Convert back to EventInput format
-    return mergedIntervals.map((interval) => {
-        // Start with properties from one of the original slots
-        const baseSlot = { ...interval.originalSlot };
-
-        // Update only the start and end times
-        return {
-            ...baseSlot,
-            start: minutesToTime(interval.start),
-            end: minutesToTime(interval.end),
-        };
-    });
+    // Convert back to EventInput, preserving any extra properties from a source slot
+    return merged.map((seg) => ({
+        ...(seg.base ?? {}),
+        start: toHHMM(seg.start),
+        end: toHHMM(seg.end),
+    }));
 };
 
 export function createCalendarFromInfo(calendarInfo: CalendarInfo): CalendarType {
@@ -323,6 +293,24 @@ export function createDepartmentFromInfo(departmentInfo: { name: string }): Depa
         current_cohort: "",
         class_list: [] as ClassInfo[],
     };
+}
+
+export function computeAddedUnavailability(current: DaySlots | undefined, incoming: DaySlots, merge: boolean): DaySlots {
+  const cur = normalizeDaySlots(current);
+  const inc = normalizeDaySlots(incoming);
+
+  if (merge) {
+    return {
+      Mon: mergeDaySlots(cur.Mon, inc.Mon),
+      Tue: mergeDaySlots(cur.Tue, inc.Tue),
+      Wed: mergeDaySlots(cur.Wed, inc.Wed),
+      Thu: mergeDaySlots(cur.Thu, inc.Thu),
+      Fri: mergeDaySlots(cur.Fri, inc.Fri),
+    };
+  }
+
+  // replace (no merge) – caller provides the fully-updated set (e.g., with the deletion applied)
+  return inc;
 }
 
 /// CONSTANTS
@@ -387,13 +375,13 @@ export const initialCalendarState: CalendarState = {
     user: null,
     currentCalendar: newDefaultEmptyCalendar(),
     calendars: [],
-    faculty: [newDefaultEmptyFaculty()],
     conflictPropertyChanged: false,
     userSettings: defaultSettings,
     departments: {
         all: [],
         current: null,
     },
+    departmentFaculty: [],
 };
 
 export const darkenRGBColor = (color: string, amount: number = 0.2): string => {
