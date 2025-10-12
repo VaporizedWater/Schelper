@@ -1,16 +1,23 @@
+// app/api/faculty/route.ts
 "use server";
 
 import clientPromise from "@/lib/mongodb";
 import { requireEmail } from "@/lib/requireEmail";
-import { ObjectId } from "mongodb";
+import { ObjectId, Collection, Document } from "mongodb";
+import type { DaySlots, FacultyType } from "@/lib/types";
 
-// Shared shape (kept locally to avoid coupling)
-type FacultyInfo = { email: string; name: string };
+const DEFAULT_DAY_SLOTS: DaySlots = {
+    Mon: [],
+    Tue: [],
+    Wed: [],
+    Thu: [],
+    Fri: [],
+};
 
-function normalizeFacultyList(input: unknown): FacultyInfo[] {
+function normalizeFacultyList(input: unknown): { email: string; name?: string }[] {
     if (!Array.isArray(input)) return [];
-    const seen = new Set<string>(); // lowercase email for dedupe
-    const out: FacultyInfo[] = [];
+    const seen = new Set<string>();
+    const out: { email: string; name?: string }[] = [];
 
     for (const it of input) {
         if (!it || typeof it !== "object") continue;
@@ -21,14 +28,71 @@ function normalizeFacultyList(input: unknown): FacultyInfo[] {
         const key = email.toLowerCase();
         if (seen.has(key)) continue;
         seen.add(key);
-        out.push({ email, name });
+        out.push({ email, name: name || undefined });
     }
-
     return out;
 }
 
+async function ensureEmailIndex() {
+    const client = await clientPromise;
+    const facCol = client.db("class-scheduling-app").collection("faculty") as Collection<Document>;
+    // Idempotent in MongoDB; inexpensive if already present
+    await facCol.createIndex({ email: 1 }, { unique: true });
+}
+
+async function fetchEnriched(userEmail: string, departmentIdHeader: string): Promise<FacultyType[]> {
+    const client = await clientPromise;
+    const db = client.db("class-scheduling-app");
+    const users = db.collection("users") as Collection<Document>;
+    const facCol = db.collection("faculty") as Collection<Document>;
+
+    const departmentId = new ObjectId(departmentIdHeader);
+
+    // Verify user + department
+    const user = await users.findOne(
+        { email: userEmail, "departments._id": departmentId },
+        { projection: { "departments.$": 1, _id: 0 } }
+    );
+
+    if (!user?.departments?.[0]) return [];
+
+    const dept = user.departments[0] as any; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const list = Array.isArray(dept.faculty_list) ? dept.faculty_list : [];
+    if (list.length === 0) return [];
+
+    const emails = list.map((f: any) => String(f.email || "").trim()).filter(Boolean); // eslint-disable-line
+    const namesByEmail = new Map<string, string | undefined>(
+        list.map((f: any) => [String(f.email).toLowerCase(), f.name || undefined]) // eslint-disable-line
+    );
+
+    // Query directory
+    const cursor = facCol.find(
+        { email: { $in: emails } },
+        { projection: { email: 1, name: 1, classUnavailability: 1, addedUnavailability: 1 } }
+    );
+
+    const dirDocs = await cursor.toArray();
+    const dirByEmail = new Map(dirDocs.map((d) => [String(d.email).toLowerCase(), d]));
+
+    // Build DTO preserving department order
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const dto: FacultyType[] = emails.map((raw: any) => {
+        const key = raw.toLowerCase();
+        const dir = dirByEmail.get(key);
+        return {
+            email: raw,
+            name: namesByEmail.get(key),
+            _id: dir?._id?.toString(),
+            classUnavailability: (dir?.classUnavailability as DaySlots) ?? DEFAULT_DAY_SLOTS,
+            addedUnavailability: (dir?.addedUnavailability as DaySlots) ?? DEFAULT_DAY_SLOTS,
+        };
+    });
+
+    return dto;
+}
+
 /**
- * GET -> returns FacultyInfo[] for the given department
+ * GET -> returns enriched FacultyType[] for the given department
  * Header required: departmentId
  */
 export async function GET(request: Request): Promise<Response> {
@@ -39,33 +103,9 @@ export async function GET(request: Request): Promise<Response> {
         if (!departmentIdHeader || !ObjectId.isValid(departmentIdHeader)) {
             return new Response(JSON.stringify({ error: "Header: 'departmentId' is missing or invalid" }), { status: 400 });
         }
-        const departmentId = new ObjectId(departmentIdHeader);
 
-        const client = await clientPromise;
-        const usersCollection = client.db("class-scheduling-app").collection("users");
-
-        // 1) Verify user & presence of the target department (for clean 404s)
-        const user = (await usersCollection.findOne({ email: userEmail })) as
-            | (Document & { departments?: any[]; current_department_id?: any }) // eslint-disable-line @typescript-eslint/no-explicit-any
-            | null;
-
-        if (!user) {
-            return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
-        }
-
-        const departments = Array.isArray(user?.departments) ? user.departments : [];
-        const departmentExists = departments.some((d) => String(d?._id) === departmentIdHeader);
-        if (!departmentExists) {
-            return new Response(JSON.stringify({ error: "Department not found" }), { status: 404 });
-        }
-
-        const doc = await usersCollection.findOne(
-            { email: userEmail, "departments._id": departmentId },
-            { projection: { "departments.$": 1, _id: 0 } }
-        );
-
-        const list: FacultyInfo[] = doc?.departments?.[0]?.faculty_list ?? [];
-        return new Response(JSON.stringify(list), { status: 200 });
+        const enriched = await fetchEnriched(userEmail, departmentIdHeader);
+        return new Response(JSON.stringify(enriched), { status: 200 });
     } catch (err) {
         if (err instanceof Response) return err;
         console.error("GET /api/faculty error:", err);
@@ -76,7 +116,10 @@ export async function GET(request: Request): Promise<Response> {
 /**
  * POST -> replace the department's faculty_list with provided FacultyInfo[]
  * Header required: departmentId
- * Body: { faculty: FacultyInfo[] }
+ * Body: { faculty: {email, name?}[] }
+ * - Replaces membership
+ * - Ensures directory docs exist (upsert-by-email with default unavailability)
+ * - Returns enriched DTO[]
  */
 export async function POST(request: Request): Promise<Response> {
     try {
@@ -92,33 +135,43 @@ export async function POST(request: Request): Promise<Response> {
         const clean = normalizeFacultyList(body?.faculty);
 
         const client = await clientPromise;
-        const usersCollection = client.db("class-scheduling-app").collection("users");
+        const db = client.db("class-scheduling-app");
+        const users = db.collection("users") as Collection<Document>;
+        const facCol = db.collection("faculty") as Collection<Document>;
 
-        // 1) Verify user & presence of the target department (for clean 404s)
-        const user = (await usersCollection.findOne({ email: userEmail })) as
-            | (Document & { departments?: any[]; current_department_id?: any }) // eslint-disable-line @typescript-eslint/no-explicit-any
-            | null;
+        await ensureEmailIndex();
 
-        if (!user) {
-            return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
-        }
-
-        const departments = Array.isArray(user?.departments) ? user.departments : [];
-        const departmentExists = departments.some((d) => String(d?._id) === departmentIdHeader);
-        if (!departmentExists) {
-            return new Response(JSON.stringify({ error: "Department not found" }), { status: 404 });
-        }
-
-        const result = await usersCollection.updateOne(
+        // 1) Replace membership list
+        const update = await users.updateOne(
             { email: userEmail, "departments._id": departmentId },
             { $set: { "departments.$.faculty_list": clean } }
         );
-
-        if (result.matchedCount === 0) {
+        if (update.matchedCount === 0) {
             return new Response(JSON.stringify({ error: "User or department not found" }), { status: 404 });
         }
 
-        return new Response(JSON.stringify({ success: true, replaced: clean.length }), { status: 201 });
+        // 2) Ensure directory presence using upsert-by-email
+        if (clean.length > 0) {
+            const ops = clean.map(({ email }) => ({
+                updateOne: {
+                    filter: { email },
+                    update: {
+                        $setOnInsert: {
+                            email,
+                            classUnavailability: DEFAULT_DAY_SLOTS,
+                            addedUnavailability: DEFAULT_DAY_SLOTS,
+                        },
+                    },
+                    upsert: true,
+                },
+            }));
+            // unordered to avoid E11000 aborting the whole batch if two clients race
+            await facCol.bulkWrite(ops, { ordered: false });
+        }
+
+        // 3) Return enriched rows
+        const enriched = await fetchEnriched(userEmail, departmentIdHeader);
+        return new Response(JSON.stringify(enriched), { status: 200 });
     } catch (err) {
         if (err instanceof Response) return err;
         console.error("POST /api/faculty error:", err);
@@ -127,9 +180,10 @@ export async function POST(request: Request): Promise<Response> {
 }
 
 /**
- * DELETE -> remove a single faculty by email from the department's faculty_list
+ * DELETE -> remove a single faculty by email from department membership
  * Header required: departmentId
  * Body: { email: string }
+ * (Does NOT delete the global directory doc)
  */
 export async function DELETE(request: Request): Promise<Response> {
     try {
@@ -148,24 +202,9 @@ export async function DELETE(request: Request): Promise<Response> {
         }
 
         const client = await clientPromise;
-        const usersCollection = client.db("class-scheduling-app").collection("users");
+        const users = client.db("class-scheduling-app").collection("users") as Collection<Document>;
 
-        // 1) Verify user & presence of the target department (for clean 404s)
-        const user = (await usersCollection.findOne({ email: userEmail })) as
-            | (Document & { departments?: any[]; current_department_id?: any }) // eslint-disable-line @typescript-eslint/no-explicit-any
-            | null;
-
-        if (!user) {
-            return new Response(JSON.stringify({ error: "User not found" }), { status: 404 });
-        }
-
-        const departments = Array.isArray(user?.departments) ? user.departments : [];
-        const departmentExists = departments.some((d) => String(d?._id) === departmentIdHeader);
-        if (!departmentExists) {
-            return new Response(JSON.stringify({ error: "Department not found" }), { status: 404 });
-        }
-
-        const result = await usersCollection.updateOne({ email: userEmail, "departments._id": departmentId }, {
+        const result = await users.updateOne({ email: userEmail, "departments._id": departmentId }, {
             $pull: { "departments.$.faculty_list": { email: trimmed } },
         } as any); // eslint-disable-line @typescript-eslint/no-explicit-any
 
