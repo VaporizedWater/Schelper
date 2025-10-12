@@ -1,6 +1,6 @@
 // import { headers } from "next/headers";
 import { EventInput } from "@fullcalendar/core/index.js";
-import { mergeFacultyEntries, newDefaultEmptyCalendar } from "./common";
+import { mergeDaySlots, newDefaultEmptyCalendar } from "./common";
 import {
     CalendarInfo,
     CalendarPayload,
@@ -15,6 +15,7 @@ import {
     tagListType,
     tagType,
     UserSettingType,
+    DaySlots,
 } from "./types";
 
 /**
@@ -130,18 +131,7 @@ export async function loadCohorts(departmentId: string, loadAll: string): Promis
     }
 }
 
-export async function loadAllFaculty(): Promise<FacultyType[]> {
-    try {
-        const response = await fetchWithTimeout("./api/oldFaculty");
-        const faculty = await parseJsonResponse<FacultyType[]>(response);
-        return faculty;
-    } catch (error) {
-        console.error("Error fetching faculty:", error);
-        return [];
-    }
-}
-
-export async function loadFaculty(departmentId: string): Promise<FacultyInfo[]> {
+export async function loadFaculty(departmentId: string): Promise<FacultyType[]> {
     try {
         const response = await fetchWithTimeout("api/faculty", {
             method: "GET",
@@ -152,7 +142,7 @@ export async function loadFaculty(departmentId: string): Promise<FacultyInfo[]> 
             return [];
         }
 
-        const result = await parseJsonResponse<FacultyInfo[]>(response);
+        const result = await parseJsonResponse<FacultyType[]>(response);
         return result;
     } catch (error) {
         console.error("Error fetching faculty.", error);
@@ -223,14 +213,24 @@ export async function loadDepartmentClasses(departmentId: string): Promise<Class
 }
 
 ///
-export function getUnavailabilityFromClass(cls: CombinedClass, currentUnavailability?: FacultyType): FacultyType {
-    const unavailability = {
+export function getUnavailabilityFromClass(cls: CombinedClass, current?: FacultyType): FacultyType {
+    const unavailability: DaySlots = {
         Mon: [] as EventInput[],
         Tue: [] as EventInput[],
         Wed: [] as EventInput[],
         Thu: [] as EventInput[],
         Fri: [] as EventInput[],
     };
+
+    if (!cls?.properties?.start_time || !cls?.properties?.end_time || !Array.isArray(cls?.properties?.days)) {
+        return (
+            current ?? {
+                email: cls.properties.instructor_email!,
+                classUnavailability: { Mon: [], Tue: [], Wed: [], Thu: [], Fri: [] },
+                addedUnavailability: { Mon: [], Tue: [], Wed: [], Thu: [], Fri: [] },
+            }
+        );
+    }
 
     for (const day of cls.properties.days) {
         if (day === "Mon") {
@@ -261,14 +261,33 @@ export function getUnavailabilityFromClass(cls: CombinedClass, currentUnavailabi
         }
     }
 
-    if (currentUnavailability) {
-        return mergeFacultyEntries(
-            [{ email: cls.properties.instructor_email, unavailability: unavailability }] as FacultyType[],
-            [currentUnavailability]
-        )[0];
+    const email = cls.properties.instructor_email!;
+    if (current) {
+        // merge inside the class category only
+        return {
+            ...current,
+            email,
+            classUnavailability: {
+                Mon: mergeDaySlots(current.classUnavailability?.Mon ?? [], unavailability.Mon),
+                Tue: mergeDaySlots(current.classUnavailability?.Tue ?? [], unavailability.Tue),
+                Wed: mergeDaySlots(current.classUnavailability?.Wed ?? [], unavailability.Wed),
+                Thu: mergeDaySlots(current.classUnavailability?.Thu ?? [], unavailability.Thu),
+                Fri: mergeDaySlots(current.classUnavailability?.Fri ?? [], unavailability.Fri),
+            },
+        };
     }
-
-    return { email: cls.properties.instructor_email, unavailability: unavailability } as FacultyType;
+    // first class for this instructor
+    return {
+        email,
+        classUnavailability: {
+            Mon: mergeDaySlots([], unavailability.Mon),
+            Tue: mergeDaySlots([], unavailability.Tue),
+            Wed: mergeDaySlots([], unavailability.Wed),
+            Thu: mergeDaySlots([], unavailability.Thu),
+            Fri: mergeDaySlots([], unavailability.Fri),
+        },
+        addedUnavailability: { Mon: [], Tue: [], Wed: [], Thu: [], Fri: [] },
+    };
 }
 
 // Helper function to get professor unavailability from classes
@@ -455,7 +474,7 @@ export async function insertDepartmentCourses(courses: ClassInfo[], departmentId
     }
 }
 
-export async function insertFaculty(facultyList: FacultyInfo[], departmentId: string): Promise<boolean | null> {
+export async function insertFaculty(facultyList: FacultyInfo[], departmentId: string): Promise<FacultyType[] | null> {
     try {
         const response = await fetchWithTimeout("api/faculty", {
             method: "POST",
@@ -468,8 +487,8 @@ export async function insertFaculty(facultyList: FacultyInfo[], departmentId: st
             return null;
         }
 
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
+        const result = await parseJsonResponse<FacultyType[]>(response);
+        return result;
     } catch (error) {
         console.error("Failed to insert faculty", error);
         return null;
@@ -502,9 +521,10 @@ export async function setCurrentCalendarToNew(calendarId: string) {
 export async function updateCombinedClasses(
     combinedClasses: CombinedClass[],
     calendarId?: string,
-    skipTags: boolean = false
+    opts: { skipTags?: boolean; skipFaculty?: boolean; facultySnapshot?: FacultyType[] } = {}
 ): Promise<boolean> {
     try {
+        const { skipTags = false, skipFaculty = false, facultySnapshot } = opts;
         // Create a deep copy to avoid mutating the original objects
         const classesToSend = combinedClasses.map((cls) => ({
             ...cls,
@@ -514,12 +534,17 @@ export async function updateCombinedClasses(
             conflictPropertyChanged: undefined, // Only set conflictPropertyChanged to undefined in the copy
         }));
 
-        const payload = {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const payload: any = {
             calendarId: calendarId,
             classes: classesToSend,
-            facultyData: getProfessorsUnavailability(combinedClasses),
             skipTags: skipTags, // Add skipTags to the payload
         };
+
+        // ⬇️ Only include facultyData if we explicitly want to update it
+        if (!skipFaculty) {
+            payload.facultyData = facultySnapshot ?? getProfessorsUnavailability(combinedClasses);
+        }
 
         const response = await fetchWithTimeout("api/combined_classes", {
             method: "PUT",
@@ -536,23 +561,33 @@ export async function updateCombinedClasses(
     }
 }
 
-export async function updateFaculty(faculty: FacultyType[]): Promise<boolean | null> {
+export async function updateFacultyAddedUnavailability(email: string, addedUnavailability: DaySlots): Promise<boolean> {
     try {
-        const response = await fetchWithTimeout("api/oldFaculty", {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(faculty), // Send array directly
+        const response = await fetchWithTimeout("api/faculty/unavailability/added", {
+            method: "PATCH",
+            body: JSON.stringify({ email, addedUnavailability }),
         });
+        if (!response.ok) return false;
+        const res = await parseJsonResponse<{ success: boolean }>(response);
+        return res.success;
+    } catch (e) {
+        console.error("Failed to update unavailability", e);
+        return false;
+    }
+}
 
-        if (!response.ok) {
-            return null;
-        }
-
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
-    } catch (error) {
-        console.error("Failed to update faculty:", error);
-        return null;
+export async function updateFacultyClassUnavailability(email: string, classUnavailability: DaySlots): Promise<boolean> {
+    try {
+        const response = await fetchWithTimeout("api/faculty/unavailability/class", {
+            method: "PUT",
+            body: JSON.stringify({ email, classUnavailability }),
+        });
+        if (!response.ok) return false;
+        const res = await parseJsonResponse<{ success: boolean }>(response);
+        return !!res.success;
+    } catch (e) {
+        console.error("Failed to update CLASS unavailability", e);
+        return false;
     }
 }
 
@@ -719,18 +754,17 @@ export async function deleteCombinedClasses(classId: string, calendarId: string)
     }
 }
 
-export async function deleteStoredFaculty(facultyEmail: string): Promise<boolean> {
+export async function deleteFacultyAddedUnavailability(email: string, addedUnavailability: DaySlots): Promise<boolean> {
     try {
-        const response = await fetchWithTimeout("api/oldFaculty", {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: facultyEmail }),
+        const response = await fetchWithTimeout("api/faculty/unavailability/added", {
+            method: "PUT",
+            body: JSON.stringify({ email, addedUnavailability }),
         });
-
-        const result = await parseJsonResponse<{ success: boolean }>(response);
-        return result.success;
-    } catch (error) {
-        console.error("Failed to delete faculty:", error);
+        if (!response.ok) return false;
+        const res = await parseJsonResponse<{ success: boolean }>(response);
+        return res.success;
+    } catch (e) {
+        console.error("Failed to update unavailability", e);
         return false;
     }
 }
