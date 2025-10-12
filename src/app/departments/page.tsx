@@ -284,7 +284,7 @@ export default function DepartmentsPage() {
                                                                     <button
                                                                         onClick={() => handleUpdateDepartment(department)}
                                                                         disabled={isBusy || editNameValue.trim() === department.name}
-                                                                        className="px-3 py-1 text-sm bg-blue-600 dark:bg-blue-700 text-white disabled:text-gray-500 disabled:dark:text-gray-400 rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-200 disabled:dark:bg-zinc-600"
+                                                                        className="px-3 py-1 text-sm bg-blue-600 dark:bg-blue-700 text-white disabled:text-gray-500 disabled:dark:text-gray-400 disabled:cursor-not-allowed rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-200 disabled:dark:bg-zinc-600"
                                                                     >
                                                                         {isBusy ? 'Saving...' : 'Save'}
                                                                     </button>

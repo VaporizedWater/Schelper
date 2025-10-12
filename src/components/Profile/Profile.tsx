@@ -11,8 +11,10 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 
 const Profile = () => {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
     const { theme, resolvedTheme } = useTheme();
+    const isLoading = status === "loading";
+    const isAuthed = status === "authenticated";
 
     // stable ID for this dropdown
     const dropdownId = useMemo(() => "profile-dropdown", []);
@@ -46,27 +48,45 @@ const Profile = () => {
                     aria-hidden="true"
                 />
                 <div className="flex justify-center w-full">
-                    {session?.user ? (
+                    {isLoading ? (
+                        <span className="inline-flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <span
+                                id={`${dropdownId}-loading-spinner`}
+                                role="status"
+                                aria-busy="true"
+                                aria-describedby={`${dropdownId}-loading-text`}
+                                title="Loading"
+                                className="w-4 h-4 border-2 border-gray-300 border-t-blue-500 dark:border-gray-600 dark:border-t-blue-300 rounded-full animate-spin"
+                            />
+                            <span id={`${dropdownId}-loading-text`} className="sr-only">
+                                Loading…
+                            </span>
+                        </span>
+                    ) : isAuthed ? (
                         <span
                             className="text-sm font-medium text-gray-800 dark:text-gray-200"
-                            aria-label={`Signed in as ${session.user.email}`}
+                            aria-label={`Signed in as ${session?.user?.email}`}
                         >
-                            {session.user.email?.split("@")[0]}
+                            {session?.user?.email?.split("@")[0]}
                         </span>
-                    ) : null}
+                    ) : (
+                        <span className="text-sm text-transparent select-none">.</span>
+                    )}
                 </div>
-                {isOpen ? (
-                    <IoMdArrowDropup
-                        className="size-4 ml-0.5 text-gray-600 dark:text-gray-400"
-                        aria-hidden="true"
-                    />
-                ) : (
-                    <IoMdArrowDropdown
-                        className="size-4 ml-0.5 text-gray-600 dark:text-gray-400"
-                        aria-hidden="true"
-                    />
-                )}
-            </div>
+                {
+                    isOpen ? (
+                        <IoMdArrowDropup
+                            className="size-4 ml-0.5 text-gray-600 dark:text-gray-400"
+                            aria-hidden="true"
+                        />
+                    ) : (
+                        <IoMdArrowDropdown
+                            className="size-4 ml-0.5 text-gray-600 dark:text-gray-400"
+                            aria-hidden="true"
+                        />
+                    )
+                }
+            </div >
         ),
         [dropdownId, session]
     );
@@ -113,11 +133,24 @@ const Profile = () => {
                     role="none"
                     className="border-t border-gray-200 dark:border-gray-700 pt-2 mt-2 w-full flex justify-center"
                 >
-                    <SignIn />
+                    {isLoading ? (
+                        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                            <span
+                                role="status"
+                                aria-busy="true"
+                                aria-describedby={`${dropdownId}-loading-text-2`}
+                                title="Loading"
+                                className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 dark:border-gray-600 dark:border-t-blue-300 rounded-full animate-spin"
+                            />
+                            <span id={`${dropdownId}-loading-text-2`}>Loading…</span>
+                        </div>
+                    ) : (
+                        <SignIn />
+                    )}
                 </div>
             </div>
         ),
-        [dropdownId, theme, resolvedTheme]
+        [dropdownId, theme, resolvedTheme, isLoading, isAuthed, session?.user?.email]
     );
 
     return (

@@ -13,9 +13,9 @@ import { useConfirm } from "@/components/Confirm/Confirm";
 export default function DepartmentClassesPage() {
   const { toast } = useToast();
   const { confirm: confirmDialog } = useConfirm();
-  const { currentDepartment } = useCalendarContext();
+  const { currentDepartment, isLoading } = useCalendarContext();
 
-  const [isLoading, setIsLoading] = useState(false);
+  const [isBusy, setIsBusy] = useState(false);
   const [fileName, setFileName] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -70,7 +70,7 @@ export default function DepartmentClassesPage() {
     if (!hasDepartment) return;
     if (!currentDepartment || !currentDepartment._id) return;
 
-    setIsLoading(true);
+    setIsBusy(true);
 
     try {
       const result = await loadDepartmentClasses(currentDepartment._id)
@@ -79,7 +79,7 @@ export default function DepartmentClassesPage() {
       console.error(e);
       toast({ description: "Failed to load department classes.", variant: "error" });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   }
 
@@ -95,7 +95,7 @@ export default function DepartmentClassesPage() {
     if (!ok) return;
     if (!currentDepartment || !currentDepartment._id) return;
 
-    setIsLoading(true);
+    setIsBusy(true);
     try {
       const result = await deleteDepartmentCourse(id, currentDepartment._id)
 
@@ -111,7 +111,7 @@ export default function DepartmentClassesPage() {
       console.error(e);
       toast({ description: "Failed to remove course.", variant: "error" });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   }
 
@@ -197,7 +197,7 @@ export default function DepartmentClassesPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsLoading(true);
+    setIsBusy(true);
     setFileName(file.name);
 
     try {
@@ -219,7 +219,7 @@ export default function DepartmentClassesPage() {
       console.error(err);
       toast({ description: "Failed to read file.", variant: "error" });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   };
 
@@ -253,7 +253,7 @@ export default function DepartmentClassesPage() {
     if (!pendingUpload || !hasDepartment) return;
     if (!currentDepartment || !currentDepartment._id) return;
 
-    setIsLoading(true);
+    setIsBusy(true);
     try {
       // Build map from current classes
       const map = new Map<string, ClassInfo>();
@@ -298,7 +298,7 @@ export default function DepartmentClassesPage() {
       console.error(e);
       toast({ description: "Failed to append & dedupe.", variant: "error" });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   };
 
@@ -307,7 +307,7 @@ export default function DepartmentClassesPage() {
     if (!pendingUpload || !hasDepartment) return;
     if (!currentDepartment || !currentDepartment._id) return;
 
-    setIsLoading(true);
+    setIsBusy(true);
     try {
       const next = sortClasses(pendingUpload);
       const result = await insertDepartmentCourses(next, currentDepartment._id);
@@ -326,7 +326,7 @@ export default function DepartmentClassesPage() {
       console.error(e);
       toast({ description: "Failed to replace.", variant: "error" });
     } finally {
-      setIsLoading(false);
+      setIsBusy(false);
     }
   };
 
@@ -335,6 +335,18 @@ export default function DepartmentClassesPage() {
     setFileName("");
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  if (isLoading) {
+    // Still determining department; show a loading placeholder, not the “no department” message
+    return (
+      <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 border border-gray-200 dark:border-zinc-700">
+        <div className="flex items-center gap-3">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+          <span className="text-sm text-gray-700 dark:text-gray-300">Loading department…</span>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentDepartment) {
     return (
@@ -374,7 +386,7 @@ export default function DepartmentClassesPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            {isLoading ? (
+            {isBusy ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-700 dark:border-blue-400" />
             ) : (
               <>
@@ -394,32 +406,13 @@ export default function DepartmentClassesPage() {
                     accept=".csv, .xlsx, .xls"
                     onChange={handleFileUpload}
                     className="hidden"
-                    disabled={isLoading}
+                    disabled={isBusy}
                   />
                 </label>
 
                 {fileName && (
                   <span className="text-xs text-gray-600 dark:text-gray-400 truncate max-w-[140px]">{fileName}</span>
                 )}
-
-                {/* {pendingUpload && (
-                  <>
-                    <button
-                      onClick={savePendingUpload}
-                      disabled={isLoading || !hasDepartment}
-                      className="px-3 py-1.5 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 text-xs font-medium transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isLoading ? "Saving..." : "Save"}
-                    </button>
-                    <button
-                      onClick={cancelUpload}
-                      disabled={isLoading}
-                      className="px-3 py-1.5 bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-zinc-600 text-xs font-medium transition-colors duration-150 disabled:opacity-50"
-                    >
-                      Cancel
-                    </button>
-                  </>
-                )} */}
               </>
             )}
           </div>
@@ -468,21 +461,21 @@ export default function DepartmentClassesPage() {
             <div className="flex gap-2">
               <button
                 onClick={handleAppendParsed}
-                disabled={isLoading || !hasDepartment}
+                disabled={isBusy || !hasDepartment}
                 className="px-3 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-500 transition-colors text-xs font-medium disabled:opacity-50"
               >
                 Append &amp; Dedupe
               </button>
               <button
                 onClick={handleReplaceAllParsed}
-                disabled={isLoading || !hasDepartment}
+                disabled={isBusy || !hasDepartment}
                 className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors text-xs font-medium disabled:opacity-50"
               >
                 Replace All
               </button>
               <button
                 onClick={clearParsed}
-                disabled={isLoading}
+                disabled={isBusy}
                 className="px-3 py-1.5 rounded-md bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors text-xs font-medium disabled:opacity-50"
               >
                 Clear
@@ -491,7 +484,7 @@ export default function DepartmentClassesPage() {
           </div>
         )}
         {/* Table */}
-        {isLoading && !classes.length && !pendingUpload ? (
+        {isBusy && !classes.length && !pendingUpload ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 dark:border-blue-400" />
           </div>
@@ -548,21 +541,21 @@ export default function DepartmentClassesPage() {
                 <div className="flex gap-2">
                   <button
                     onClick={handleAppendParsed}
-                    disabled={isLoading || !hasDepartment}
+                    disabled={isBusy || !hasDepartment}
                     className="px-3 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-500 transition-colors text-xs font-medium disabled:opacity-50"
                   >
                     Append &amp; Dedupe
                   </button>
                   <button
                     onClick={handleReplaceAllParsed}
-                    disabled={isLoading || !hasDepartment}
+                    disabled={isBusy || !hasDepartment}
                     className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors text-xs font-medium disabled:opacity-50"
                   >
                     Replace All
                   </button>
                   <button
                     onClick={clearParsed}
-                    disabled={isLoading}
+                    disabled={isBusy}
                     className="px-3 py-1.5 rounded-md bg-gray-100 dark:bg-zinc-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-zinc-600 transition-colors text-xs font-medium disabled:opacity-50"
                   >
                     Clear

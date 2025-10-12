@@ -18,6 +18,7 @@ export default function FacultyPage() {
     const { toast } = useToast();
     const { confirm: confirmDialog } = useConfirm();
     const {
+        isLoading,
         currentDepartment,
         departmentFaculty,
         refreshDepartmentFaculty,
@@ -26,7 +27,7 @@ export default function FacultyPage() {
         updateFacultyAddedUnavailabilityFor,
         deleteFacultyAddedUnavailabilityFor
     } = useCalendarContext();
-    const [isLoading, setIsLoading] = useState(true);
+    const [isBusy, setIsBusy] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [newEmail, setNewEmail] = useState("");
     const [newName, setNewName] = useState("");
@@ -67,7 +68,7 @@ export default function FacultyPage() {
             variant: "danger",
         });
         if (!ok) return;
-        setIsLoading(true);
+        setIsBusy(true);
         try {
             const success = await removeDepartmentFaculty(email);
             if (!success) {
@@ -76,23 +77,23 @@ export default function FacultyPage() {
             }
             toast({ description: "Removed faculty", variant: "success" });
         } finally {
-            setIsLoading(false);
+            setIsBusy(false);
         }
     }
 
     // ---- Load on department change ----
     useEffect(() => {
         if (!departmentId) {
-            setIsLoading(false);
+            setIsBusy(false);
             return;
         }
-        setIsLoading(true);
+        setIsBusy(true);
         refreshDepartmentFaculty()
             .then(() => {
                 /* no-op */
             })
             .catch(() => toast({ description: "Failed to load faculty", variant: "error" }))
-            .finally(() => setIsLoading(false));
+            .finally(() => setIsBusy(false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [departmentId]);
 
@@ -133,7 +134,7 @@ export default function FacultyPage() {
             )
             : [...(departmentFaculty ?? []).map((f) => ({ email: f.email, name: f.name || "" })), { email, name }];
 
-        setIsLoading(true);
+        setIsBusy(true);
         try {
             const ok = await replaceDepartmentFaculty(next);
             if (!ok) {
@@ -142,7 +143,7 @@ export default function FacultyPage() {
             }
             toast({ description: "Faculty list saved", variant: "success" });
         } finally {
-            setIsLoading(false);
+            setIsBusy(false);
         }
         setNewEmail("");
         setNewName("");
@@ -155,7 +156,7 @@ export default function FacultyPage() {
 
         setFileName(file.name);
         setParsedPreview(null);
-        setIsLoading(true);
+        setIsBusy(true);
 
         try {
             const data = await file.arrayBuffer();
@@ -203,7 +204,7 @@ export default function FacultyPage() {
             console.error(err);
             toast({ description: "Failed to parse file", variant: "error" });
         } finally {
-            setIsLoading(false);
+            setIsBusy(false);
         }
     };
 
@@ -222,13 +223,13 @@ export default function FacultyPage() {
                 map.set(f.email.toLowerCase(), { email: existing.email, name: f.name });
             }
         }
-        setIsLoading(true);
+        setIsBusy(true);
         try {
             const ok = await replaceDepartmentFaculty(Array.from(map.values()));
             if (!ok) toast({ description: "Failed to save list", variant: "error" });
             else toast({ description: "Faculty list saved", variant: "success" });
         } finally {
-            setIsLoading(false);
+            setIsBusy(false);
         }
         setParsedPreview(null);
         setFileName("");
@@ -238,13 +239,13 @@ export default function FacultyPage() {
     // replace all
     const handleReplaceAllParsed = async () => {
         if (!parsedPreview) return;
-        setIsLoading(true);
+        setIsBusy(true);
         try {
             const ok = await replaceDepartmentFaculty(parsedPreview);
             if (!ok) toast({ description: "Failed to save list", variant: "error" });
             else toast({ description: "Faculty list saved", variant: "success" });
         } finally {
-            setIsLoading(false);
+            setIsBusy(false);
         }
         setParsedPreview(null);
         setFileName("");
@@ -366,7 +367,7 @@ export default function FacultyPage() {
         if (!row) return;
         const { start, end } = newSlotTimes[email]?.[day] || { start: "", end: "" };
         if (!start || !end) return;
-        setIsLoading(true);
+        setIsBusy(true);
         try {
             const next = {
                 ...row.addedUnavailability,
@@ -382,7 +383,7 @@ export default function FacultyPage() {
                 }));
             }
         } finally {
-            setIsLoading(false);
+            setIsBusy(false);
         }
     };
 
@@ -397,7 +398,7 @@ export default function FacultyPage() {
         if (!ok) return;
         const row = (departmentFaculty ?? []).find((r) => r.email === email);
         if (!row) {toast({description: "No email found", variant: "error"}); return;}
-        setIsLoading(true);
+        setIsBusy(true);
         try {
             const nextForDay = (row.addedUnavailability?.[day] ?? []).filter((s) => s.start !== start || s.end !== end);
             const next = { ...row.addedUnavailability, [day]: nextForDay } as DaySlots;
@@ -406,11 +407,23 @@ export default function FacultyPage() {
             if (!ok2) toast({ description: "Failed to remove time slot", variant: "error" });
             else { toast({ description: "Removed time slot successfully.", variant: "success" }) }
         } finally {
-            setIsLoading(false);
+            setIsBusy(false);
         }
     };
 
     // ---- UI ----
+    if (isLoading) {
+        // Still determining department; show a loading placeholder, not the “no department” message
+        return (
+            <div className="bg-white dark:bg-zinc-800 rounded-lg p-6 border border-gray-200 dark:border-zinc-700">
+                <div className="flex items-center gap-3">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600" />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">Loading department…</span>
+                </div>
+            </div>
+        );
+    }
+    
     if (!currentDepartment) {
         return (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-5">
@@ -502,7 +515,7 @@ export default function FacultyPage() {
                                 accept=".csv, .xlsx, .xls"
                                 onChange={handleFileUpload}
                                 className="hidden"
-                                disabled={isLoading}
+                                disabled={isBusy}
                             />
                         </label>
                         {fileName && (
@@ -556,7 +569,7 @@ export default function FacultyPage() {
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
                             className="px-3 py-2 w-full md:w-56 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            disabled={isLoading}
+                            disabled={isBusy}
                         />
                         <input
                             type="email"
@@ -564,11 +577,11 @@ export default function FacultyPage() {
                             value={newEmail}
                             onChange={(e) => setNewEmail(e.target.value)}
                             className="px-3 py-2 w-full md:w-64 border border-gray-300 dark:border-zinc-600 rounded-md bg-white dark:bg-zinc-700 text-black dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            disabled={isLoading}
+                            disabled={isBusy}
                         />
                         <button
                             onClick={handleAdd}
-                            disabled={isLoading}
+                            disabled={isBusy}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-md hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <MdAdd /> Add
@@ -592,14 +605,14 @@ export default function FacultyPage() {
                             <div className="flex gap-2">
                                 <button
                                     onClick={handleAppendParsed}
-                                    disabled={isLoading}
+                                    disabled={isBusy}
                                     className="px-3 py-1.5 rounded-md bg-emerald-600 text-white hover:bg-emerald-500 transition-colors disabled:opacity-50"
                                 >
                                     Append &amp; Dedupe
                                 </button>
                                 <button
                                     onClick={handleReplaceAllParsed}
-                                    disabled={isLoading}
+                                    disabled={isBusy}
                                     className="px-3 py-1.5 rounded-md bg-blue-600 text-white hover:bg-blue-500 transition-colors disabled:opacity-50"
                                 >
                                     Replace All
@@ -664,7 +677,7 @@ export default function FacultyPage() {
                 )}
 
                 {/* Content */}
-                {isLoading ? (
+                {isBusy ? (
                     <div className="flex justify-center items-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-700 dark:border-blue-400"></div>
                     </div>
@@ -817,7 +830,7 @@ export default function FacultyPage() {
                                                                     <button
                                                                         onClick={() => handleAddTimeSlot(email, day)}
                                                                         disabled={
-                                                                            isLoading ||
+                                                                            isBusy ||
                                                                             !newSlotTimes[email]?.[day]?.start ||
                                                                             !newSlotTimes[email]?.[day]?.end
                                                                         }
