@@ -404,7 +404,7 @@ export default function FacultyPage() {
             console.log("Email: ", email, " Next:", next);
             const ok2 = await deleteFacultyAddedUnavailabilityFor(email, next);
             if (!ok2) toast({ description: "Failed to remove time slot", variant: "error" });
-            else { toast({ description: "Removed time slot successfully!.", variant: "success" }) }
+            else { toast({ description: "Removed time slot successfully.", variant: "success" }) }
         } finally {
             setIsLoading(false);
         }
