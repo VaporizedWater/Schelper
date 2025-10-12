@@ -9,6 +9,7 @@ import {
     CalendarType,
     CombinedClass,
     ConflictType,
+    DaySlots,
     DepartmentType,
     FacultyType,
     ReactNodeChildren,
@@ -19,9 +20,6 @@ import {
     loadCalendars,
     loadTags,
     deleteCombinedClasses,
-    loadAllFaculty,
-    deleteStoredFaculty,
-    updateFaculty,
     setCurrentCalendarToNew,
     deleteCohort,
     loadUserSettings,
@@ -29,14 +27,22 @@ import {
     insertUser,
     setCurrentDepartmentToNew,
     updateDepartmentName,
+    loadFaculty as loadDeptFaculty, // enriched per-department
+    insertFaculty as replaceDeptFaculty, // returns enriched
+    deleteDepartmentFaculty as removeDeptFaculty,
+    updateFacultyAddedUnavailability,
+    updateFacultyClassUnavailability,
+    deleteFacultyAddedUnavailability,
 } from "@/lib/DatabaseUtils";
 import {
     buildTagMapping,
+    computeAddedUnavailability,
     createEventsFromCombinedClass,
     initialCalendarState,
-    mergeFacultyEntries,
+    mergeDaySlots,
     newDefaultEmptyCalendar,
     newDefaultEmptyClass,
+    normalizeDaySlots,
 } from "@/lib/common";
 import { useSession } from "next-auth/react";
 import { EventInput } from "@fullcalendar/core/index.js";
@@ -165,7 +171,7 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 status: { loading: false, error: null },
                 user: state.user,
                 currentCalendar: action.payload.currentCalendar,
-                faculty: action.payload.faculty || state.faculty,
+                departmentFaculty: action.payload.departmentFaculty ?? state.departmentFaculty ?? [],
                 conflictPropertyChanged: !state.conflictPropertyChanged,
                 calendars: action.payload.calendars,
                 userSettings: action.payload.userSettings || state.userSettings,
@@ -179,8 +185,22 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
         case "TOGGLE_CONFLICT_PROPERTY_CHANGED":
             return { ...state, conflictPropertyChanged: action.payload };
 
-        case "UPDATE_FACULTY":
-            return { ...state, faculty: action.payload };
+        case "SET_DEPARTMENT_FACULTY":
+            return { ...state, departmentFaculty: action.payload };
+
+        case "UPDATE_DEPARTMENT_FACULTY_ROW": {
+            const row = action.payload;
+            const next = (state.departmentFaculty ?? []).map((r) =>
+                r.email.toLowerCase() === row.email.toLowerCase() ? row : r
+            );
+            return { ...state, departmentFaculty: next };
+        }
+
+        case "REMOVE_DEPARTMENT_FACULTY_EMAIL": {
+            const email = action.payload.toLowerCase();
+            const next = (state.departmentFaculty ?? []).filter((r) => r.email.toLowerCase() !== email);
+            return { ...state, departmentFaculty: next };
+        }
 
         case "SET_CURRENT_CLASS":
             return { ...state, classes: { ...state.classes, current: action.payload } };
@@ -195,7 +215,6 @@ function calendarReducer(state: CalendarState, action: CalendarAction): Calendar
                 classes: { all: [], current: newDefaultEmptyClass(), currentClasses: [] },
                 tags: new Map() as tagListType,
                 status: { loading: false, error: null },
-                faculty: [],
                 conflictPropertyChanged: !state.conflictPropertyChanged,
                 conflicts: [] as ConflictType[],
             };
@@ -424,10 +443,9 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: "SET_LOADING", payload: true });
 
                 if (session?.user?.email) {
-                    const [calendarPayload, allTags, faculty, userSettings, departments] = await Promise.all([
+                    const [calendarPayload, allTags, userSettings, departments] = await Promise.all([
                         loadCalendars(),
                         loadTags(),
-                        loadAllFaculty(),
                         loadUserSettings(),
                         loadDepartments(),
                     ]);
@@ -435,6 +453,16 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     const calendar = calendarPayload.calendar;
                     const classes = calendar.classes;
                     calendar.classes = [];
+
+                    // Enriched department faculty (depends on current department)
+                    let departmentFaculty = [] as ReturnType<typeof Array.prototype.slice>;
+                    try {
+                        if (departments.current?._id) {
+                            departmentFaculty = await loadDeptFaculty(departments.current._id);
+                        }
+                    } catch (e) {
+                        console.warn("Failed to load department faculty", e);
+                    }
 
                     if (mounted) {
                         dispatch({
@@ -444,10 +472,10 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                                 tags: allTags,
                                 currentCalendar: calendar,
                                 calendars: calendarPayload.calendars,
-                                faculty,
                                 userSettings,
                                 allDepartments: departments.all,
                                 currentDepartment: departments.current,
+                                departmentFaculty
                             },
                         });
                     }
@@ -459,10 +487,10 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                             tags: new Map(),
                             currentCalendar: state.currentCalendar,
                             calendars: state.calendars,
-                            faculty: state.faculty,
                             userSettings: state.userSettings,
                             allDepartments: [],
                             currentDepartment: null,
+                            departmentFaculty: [],
                         },
                     });
                 }
@@ -576,6 +604,37 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         [state.classes.current, departmentHasCourse]
     );
 
+    const upsertFacultyAddedUnavailabilityFor = useCallback(
+        async (email: string, addedUnavailability: DaySlots, merge: boolean) => {
+            try {
+                const lower = (email || "").toLowerCase();
+                const existing = (state.departmentFaculty ?? []).find(r => r.email.toLowerCase() === lower);
+
+                const next = computeAddedUnavailability(
+                    existing?.addedUnavailability,
+                    addedUnavailability,
+                    merge
+                );
+                    
+                const ok = merge 
+                    ? await updateFacultyAddedUnavailability(email, next) 
+                    : await deleteFacultyAddedUnavailability(email, next);
+
+                if (ok && existing) {
+                    dispatch({
+                        type: "UPDATE_DEPARTMENT_FACULTY_ROW",
+                        payload: { ...existing, addedUnavailability: next },
+                    });
+                }
+                return ok;
+            } catch (e) {
+                console.error("upsertFacultyAddedUnavailabilityFor failed", e);
+                return false;
+            }
+        },
+        [state.departmentFaculty]
+    );
+
     /* -------------------------- actions (inline) -------------------------- */
     // (We keep these inline. They’ll change identity with relevant state; that’s OK.)
 
@@ -590,8 +649,20 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                     return;
                 }
                 setCurrentDepartmentToNew(newDepartment._id)
-                    .then(() => {
+                    .then(async () => {
                         dispatch({ type: "SET_CURRENT_DEPARTMENT", payload: newDepartment });
+                        // refresh enriched faculty for new department
+                        try {
+                            if (!newDepartment || !newDepartment._id) {
+                                console.error("Invalid department:", newDepartment);
+                                return;
+                            }
+                            const rows = await loadDeptFaculty(newDepartment._id);
+                            dispatch({ type: "SET_DEPARTMENT_FACULTY", payload: rows });
+                        } catch (e) {
+                            console.warn("Load department faculty for new current failed", e);
+                            dispatch({ type: "SET_DEPARTMENT_FACULTY", payload: [] });
+                        }
                     })
                     .catch((error) => {
                         console.error("Error setting current department:", error);
@@ -623,7 +694,80 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
             },
 
             /* Faculty */
-            faculty: state.faculty,
+            departmentFaculty: state.departmentFaculty ?? [],
+            refreshDepartmentFaculty: async () => {
+                try {
+                    const deptId = state.departments.current?._id;
+                    if (!deptId) {
+                        dispatch({ type: "SET_DEPARTMENT_FACULTY", payload: [] });
+                        return;
+                    }
+                    const rows = await loadDeptFaculty(deptId);
+                    dispatch({ type: "SET_DEPARTMENT_FACULTY", payload: rows });
+                } catch (e) {
+                    console.error("refreshDepartmentFaculty failed", e);
+                }
+            },
+            replaceDepartmentFaculty: async (rows) => {
+                try {
+                    const deptId = state.departments.current?._id;
+                    if (!deptId) return false;
+                    const enriched = await replaceDeptFaculty(rows, deptId);
+                    if (!enriched) return false;
+                    dispatch({ type: "SET_DEPARTMENT_FACULTY", payload: enriched });
+                    return true;
+                } catch (e) {
+                    console.error("replaceDepartmentFaculty failed", e);
+                    return false;
+                }
+            },
+            removeDepartmentFaculty: async (email: string) => {
+                try {
+                    const deptId = state.departments.current?._id;
+                    if (!deptId) return false;
+                    const ok = await removeDeptFaculty(email, deptId);
+                    if (ok) dispatch({ type: "REMOVE_DEPARTMENT_FACULTY_EMAIL", payload: email });
+                    return ok;
+                } catch (e) {
+                    console.error("removeDepartmentFaculty failed", e);
+                    return false;
+                }
+            },
+            // NEW — Only updates the ADDED bucket (MERGE within the category)
+            updateFacultyAddedUnavailabilityFor: async (email, addedUnavailability) => {
+                return upsertFacultyAddedUnavailabilityFor(email, addedUnavailability, true);
+            },
+
+            deleteFacultyAddedUnavailabilityFor: async (email, remainingAddedUnavailability) => {
+                // IMPORTANT: caller should pass the *remaining* DaySlots after deletion
+                return upsertFacultyAddedUnavailabilityFor(email, remainingAddedUnavailability, false);
+            },
+
+            // NEW — Replaces the CLASS bucket (used after class moves)
+            updateFacultyClassUnavailabilityFor: async (email, classUnavailability) => {
+                try {
+                    const norm = normalizeDaySlots(classUnavailability);
+                    const next: DaySlots = {
+                        Mon: mergeDaySlots(norm.Mon),
+                        Tue: mergeDaySlots(norm.Tue),
+                        Wed: mergeDaySlots(norm.Wed),
+                        Thu: mergeDaySlots(norm.Thu),
+                        Fri: mergeDaySlots(norm.Fri),
+                    };
+
+                    const ok = await updateFacultyClassUnavailability(email, next);
+                    if (ok) {
+                        const existing = (state.departmentFaculty ?? []).find(r => r.email.toLowerCase() === email.toLowerCase());
+                        if (existing) {
+                            dispatch({ type: "UPDATE_DEPARTMENT_FACULTY_ROW", payload: { ...existing, classUnavailability: next } });
+                        }
+                    }
+                    return ok;
+                } catch (e) {
+                    console.error("updateFacultyClassUnavailabilityFor failed", e);
+                    return false;
+                }
+            },
 
             /* Calendar meta */
             currentCalendar: state.currentCalendar,
@@ -664,22 +808,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: "TOGGLE_CONFLICT_PROPERTY_CHANGED", payload: !state.conflictPropertyChanged });
             },
 
-            updateFaculty: (faculty: FacultyType[], doMerge: boolean): Promise<boolean> => {
-                const mergedFaculty: FacultyType[] = doMerge ? mergeFacultyEntries(state.faculty, faculty) : faculty;
-
-                return new Promise((resolve) => {
-                    updateFaculty(mergedFaculty)
-                        .then(() => {
-                            dispatch({ type: "UPDATE_FACULTY", payload: mergedFaculty });
-                            resolve(true);
-                        })
-                        .catch((error) => {
-                            console.error("Error updating faculty:", error);
-                            resolve(false);
-                        });
-                });
-            },
-
             resetContextToEmpty: () => {
                 dispatch({
                     type: "INITIALIZE_DATA",
@@ -688,7 +816,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         tags: new Map(),
                         currentCalendar: newDefaultEmptyCalendar(),
                         calendars: [],
-                        faculty: [],
                         userSettings: state.userSettings,
                         allDepartments: [],
                         currentDepartment: null,
@@ -716,7 +843,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
 
             updateOneClass: async (cls: CombinedClass) => {
                 try {
-                    await updateCombinedClasses([cls], state.currentCalendar._id);
+                    await updateCombinedClasses([cls], state.currentCalendar._id, { skipFaculty: true });
                     dispatch({ type: "UPDATE_CLASS", payload: cls });
                     return true;
                 } catch (error) {
@@ -737,7 +864,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                         ...classToUpdate,
                         properties: { ...classToUpdate.properties, tags: classToUpdate.properties.tags.filter((t) => t.tagName !== tagId) },
                     };
-                    updateCombinedClasses([updatedClass], state.currentCalendar._id);
+                    updateCombinedClasses([updatedClass], state.currentCalendar._id, { skipFaculty: true });
                 }
             },
 
@@ -746,7 +873,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 const classToUpdate = state.classes.all.find((c) => c._id === classId);
                 if (classToUpdate) {
                     const updatedClass = { ...classToUpdate, properties: { ...classToUpdate.properties, tags: [] } };
-                    updateCombinedClasses([updatedClass], state.currentCalendar._id);
+                    updateCombinedClasses([updatedClass], state.currentCalendar._id, { skipFaculty: true });
                 }
             },
 
@@ -762,7 +889,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                                 ...c,
                                 properties: { ...c.properties, tags: c.properties.tags.filter((t) => t.tagName !== tagId) },
                             };
-                            updateCombinedClasses([updatedClass], state.currentCalendar._id);
+                            updateCombinedClasses([updatedClass], state.currentCalendar._id, { skipFaculty: true });
                         });
                 }
             },
@@ -771,7 +898,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 dispatch({ type: "UNLINK_ALL_TAGS_FROM_ALL_CLASSES" });
                 state.classes.all.forEach((c) => {
                     const updatedClass = { ...c, properties: { ...c.properties, tags: [] } };
-                    updateCombinedClasses([updatedClass], state.currentCalendar._id);
+                    updateCombinedClasses([updatedClass], state.currentCalendar._id, { skipFaculty: true });
                 });
             },
 
@@ -806,19 +933,6 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
                 }
             },
 
-            deleteFaculty: (facultyToDeleteEmail: string) => {
-                try {
-                    if (facultyToDeleteEmail) deleteStoredFaculty(facultyToDeleteEmail);
-                    const updatedFaculty = state.faculty.filter((f) => f.email !== facultyToDeleteEmail);
-                    dispatch({ type: "UPDATE_FACULTY", payload: updatedFaculty });
-                    toast({ description: `Faculty ${facultyToDeleteEmail} deleted successfully.`, variant: "success" });
-                    return true;
-                } catch (error) {
-                    console.error("Error deleting faculty:", error);
-                    return false;
-                }
-            },
-
             removeCohort: async (cohortId: string, departmentId: string) => {
                 try {
                     const success = await deleteCohort(cohortId, departmentId);
@@ -845,7 +959,7 @@ export const CalendarProvider = ({ children }: ReactNodeChildren) => {
         state.status.loading,
         state.status.error,
         state.currentCalendar,
-        state.faculty,
+        state.departmentFaculty,
         state.tags,
         state.conflicts,
         state.conflictPropertyChanged,
